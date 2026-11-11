@@ -978,6 +978,9 @@
 .crf-rd .crf-focus__card {
   display: flex;
   flex-direction: column;
+  /* The minimum between the three blocks, applied equally — see the note on
+     `crf-focus__label`. */
+  gap: 10px;
   width: 100%;
   box-sizing: border-box;
 }
@@ -1140,8 +1143,12 @@
   border-radius: 10px;
   background: var(--rd-white);
 }
+/* ⚠ NO BOTTOM MARGIN. The body below centres itself in the free space, and a
+   margin here is added to the TOP gap only — measured at 28px above the group
+   against 18 below, which is a centre that is not one. The card's own `gap`
+   keeps the minimum spacing, evenly on both sides. */
 .crf-rd .crf-focus__label {
-  margin: 0 0 10px;
+  margin: 0;
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.08em;
@@ -1159,12 +1166,13 @@
   color: var(--rd-rubi);
   flex: 0 0 auto;
 }
+/* ⚠ NO `margin-top: auto` ANY MORE. The body below claims the slack at both
+   ends, which puts the actions on the floor as a consequence rather than by a
+   second rule — two auto margins in one column fight over the same space. */
 .crf-rd .crf-focus__cta {
   display: flex;
   align-items: center;
   gap: 16px;
-  margin-top: auto;
-  padding-top: 14px;
   flex-wrap: wrap;
 }
 
@@ -1305,4 +1313,15 @@
   display: inline-flex;
   margin-bottom: 8px;
   color: var(--rd-steel-deep);
+}
+
+/* The next step's middle — the mark, the title and the meta as one block,
+   centred between the eyebrow at the top and the actions at the bottom.
+   2026-11-11: "have these items be grouped together and centered vertically
+   within this space". `margin: auto 0` takes the free space at BOTH ends, so
+   the group centres and the actions land on the floor without a rule of their
+   own. */
+.crf-rd .crf-focus__body {
+  margin: auto 0;
+  min-width: 0;
 }

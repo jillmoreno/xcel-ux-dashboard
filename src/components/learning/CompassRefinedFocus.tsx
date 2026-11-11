@@ -203,11 +203,19 @@ function FocusNext({ hero, next }: { hero: Hero; next?: RefinedSection }) {
             the title, which on this blue half read as a second card edge. A
             bare glyph in its own line is a mark on the section rather than a
             box in it. `aria-hidden`, because the title says the word. */}
-        <span className="crf-focus__mark" aria-hidden>
-          <SectionIcon kind={next?.kind} />
-        </span>
-        <p className="crf-focus__lessonname">{next?.title ?? hero.next ?? hero.title}</p>
-        {hero.meta ? <p className="crf-focus__note">{hero.meta}</p> : null}
+        {/* ⚠ ONE GROUP, CENTRED IN WHAT IS LEFT — 2026-11-11: "have these
+            items be grouped together and centered vertically within this
+            space". The mark, the title and the meta are one statement about
+            the next section; they had been three loose children of a column
+            with the eyebrow above and the actions below, so they sat hard
+            under the eyebrow with all the slack beneath them. */}
+        <div className="crf-focus__body">
+          <span className="crf-focus__mark" aria-hidden>
+            <SectionIcon kind={next?.kind} />
+          </span>
+          <p className="crf-focus__lessonname">{next?.title ?? hero.next ?? hero.title}</p>
+          {hero.meta ? <p className="crf-focus__note">{hero.meta}</p> : null}
+        </div>
         <div className="crf-focus__cta">
           {hero.cta ? (
             <button type="button" className="crf-focus__go">
