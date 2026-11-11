@@ -1717,6 +1717,49 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'compass-overview-focus',
+    /* COURSE PROGRESS AND YOUR NEXT STEP, AS ONE CARD — 2026-11-11,
+       Jillienne: "these 2 components should be redesigned into 1 simple
+       component that shows the Course Progress on the left, and the Your Next
+       Step on the right. The Progress UI should more closely match the screen
+       from atlas with the pacing details as well. Please explore a few
+       variations before implementing them."
+
+       ⚠ THE CONTROL IS THE EXPLORATION. Three arrangements, live, flipped
+       from the bar — which is how this project explores, and what
+       `decide-defaults` later freezes. Writing three static mock-ups would
+       have put the comparison somewhere the product is not.
+
+       ⚠ THEY DIFFER IN ONE DECISION: what separates the two halves. A rule, a
+       tinted ground, or Atlas's labelled rows in place of prose. Three
+       designs that differed in several things each would make a pick
+       unexplainable — the reviewer could say which they liked and not why.
+
+       ⚠ `split` IS THE DEFAULT because it is the most conservative reading of
+       the ask: left and right as asked, nothing else re-decided. The arm is
+       the question; the baseline is not.
+
+       ⚠ THE COURSE SERIES ONLY. The unified states pair the progress ring
+       with the READINESS panel instead, which answers a different question,
+       so the hero stays its own card there until somebody decides otherwise. */
+    surface: 'design',
+    owner: 'anjani',
+    versions: ['hybrid-pacing', 'eric-atlas-e2e'],
+    surfaces: ['compass:refined'],
+    group: 'Widgets',
+    label: 'Progress + next step',
+    description:
+      'How the Overview\u2019s first card arranges Course Progress and Your Next Step \u2014 one component since 2026-11-11, where his build stacked two. Split draws a vertical rule between the two halves. Panel tints the progress bay instead, so state and action read as different kinds of thing without a line. Figures replaces the pace sentence with Atlas\u2019s labelled rows beside a smaller ring \u2014 the densest, and the furthest from his. All three take the pace fields from Atlas\u2019s card; the stage\u2019s own note still renders under them.',
+    variants: [
+      { value: 'split', label: 'Split', description: 'A rule between the halves' },
+      { value: 'panel', label: 'Panel', description: 'The progress bay is tinted' },
+      { value: 'figures', label: 'Figures', description: 'Atlas\u2019s labelled rows' },
+    ],
+    defaultVariant: 'split',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'compass-refined-readiness-hero',
     /* THE READINESS TO PASS SECTION, on the Refined page — 2026-11-09,
        Jillienne: "Add a feature flag concept that focuses on the Readiness to

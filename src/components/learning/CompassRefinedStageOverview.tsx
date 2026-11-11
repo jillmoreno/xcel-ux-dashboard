@@ -1,4 +1,5 @@
 import { CompassRefinedJourney } from './CompassRefinedJourney'
+import type { FocusLayout } from './CompassRefinedFocus'
 import { CompassRefinedPrepPage } from './CompassRefinedPrepPage'
 import { seriesOf } from './compassReadinessModel'
 import './compassRefinedJourney.css'
@@ -12,8 +13,15 @@ import './compassRefinedJourney.css'
  * is a phase after the course or a signal running beside it, which is the
  * decision this port exists to let people make.
  */
-export function CompassRefinedStageOverview({ stage = 'p2' }: { stage?: string }) {
+export function CompassRefinedStageOverview({
+  stage = 'p2',
+  layout,
+}: {
+  stage?: string
+  /** `compass-overview-focus`, for the course series' merged card. */
+  layout?: FocusLayout
+}) {
   const series = seriesOf(stage)
   if (series === 'prep') return <CompassRefinedPrepPage stage={stage} />
-  return <CompassRefinedJourney stage={stage} />
+  return <CompassRefinedJourney stage={stage} layout={layout} />
 }

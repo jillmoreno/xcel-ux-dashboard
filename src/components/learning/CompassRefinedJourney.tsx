@@ -1,4 +1,5 @@
 import { REFINED_COURSE, REFINED_OVERVIEW_TITLE } from '@/data/compassRefinedCopy'
+import { CompassRefinedFocus, type FocusLayout } from './CompassRefinedFocus'
 import { useState } from 'react'
 import { CircleCheck, Clock, FileText, RubiLogo } from '@/icons'
 import { PathLine, ReadinessRing, TopicTable } from './CompassRefinedParts'
@@ -34,7 +35,16 @@ import './compassRefinedJourney.css'
  * the four regulated steps. The `u` stages draw the pair — Readiness to pass
  * beside Your course progress — and, from u3, a tab strip over the table.
  */
-export function CompassRefinedJourney({ stage = 'u3' }: { stage?: string }) {
+export function CompassRefinedJourney({
+  stage = 'u3',
+  layout = 'split',
+}: {
+  stage?: string
+  /** `compass-overview-focus` — which of the three arrangements of Course
+   *  Progress and Your Next Step draws. Passed in, so this stays a plain
+   *  function of its props. */
+  layout?: FocusLayout
+}) {
   const m = journeyStage(stage)
   const [tab, setTab] = useState(0)
   const tabs = m.tabs ?? []
@@ -91,56 +101,63 @@ export function CompassRefinedJourney({ stage = 'u3' }: { stage?: string }) {
         </section>
       ) : null}
 
-      {m.hero?.title ? <Hero hero={m.hero} /> : null}
+      {/* ⚠ THE HERO AND THE COURSE-PROGRESS CARD ARE ONE COMPONENT ON THE
+          COURSE SERIES — 2026-11-11, Jillienne: "these 2 components should be
+          redesigned into 1 simple component that shows the Course Progress on
+          the left, and the Your Next Step on the right."
 
-      {/* ---- the signals ---- */}
+          ⚠ ONLY ON THIS BRANCH. The unified (`uLayout`) states pair the
+          progress ring with the READINESS panel instead — a different
+          composition answering a different question — so the hero stays its
+          own card there until somebody decides otherwise. Merging both on one
+          reading of the ask would have been two changes under one sentence. */}
       {m.uLayout ? (
-        <div className="crf-rd-pair">
-          <section className="crf-rd-ready" aria-label="Readiness to pass">
-            <ReadinessPanel m={m} />
-          </section>
-          <section className="crf-rd-progress" aria-label="Your course progress">
-            <div className="crf-rd-ready-head">
-              <span className="crf-rd-eyebrow">Your course progress</span>
-              <span className="crf-rd-note">from your course lessons</span>
-            </div>
-            <ProgressRing prog={m.prog} />
-          </section>
-        </div>
+        <>
+          {m.hero?.title ? <Hero hero={m.hero} /> : null}
+          <div className="crf-rd-pair">
+            <section className="crf-rd-ready" aria-label="Readiness to pass">
+              <ReadinessPanel m={m} />
+            </section>
+            <section className="crf-rd-progress" aria-label="Your course progress">
+              <div className="crf-rd-ready-head">
+                <span className="crf-rd-eyebrow">Your course progress</span>
+                <span className="crf-rd-note">from your course lessons</span>
+              </div>
+              <ProgressRing prog={m.prog} />
+            </section>
+          </div>
+        </>
       ) : (
-        <section className="crf-rd-qe" aria-label="Your course progress">
-          <div className="crf-rd-ready-head">
-            <span className="crf-rd-eyebrow">Your course progress</span>
-            {/* ⚠ "from your course lessons" — the same caption the unified
-                page puts over this ring, and the other half of the sentence
-                the Readiness ring carries ("from Exam Prep practice only").
-                The table's own note belongs over the table. */}
-            <span className="crf-rd-note">from your course lessons</span>
-          </div>
-          <div className="crf-rd-qe-body">
-            <ProgressRing prog={m.prog} />
-            {m.prog?.hasSteps && m.prog.steps?.length ? (
-              /* The four regulated steps — lessons, affidavit, final exam,
-                 survey and certificate. ⚠ Their ORDER is the regulation. */
-              <ol className="crf-rd-steps">
-                {m.prog.steps.map((s, i) => (
-                  <li key={s.label} className={`is-${s.mark || 'todo'}`}>
-                    <span className="crf-rd-step-n" aria-hidden>
-                      {i + 1}
+        <>
+          <CompassRefinedFocus
+            hero={m.hero?.title ? m.hero : undefined}
+            prog={m.prog}
+            layout={layout}
+          />
+          {/* ⚠ THE FOUR REGULATED STEPS KEEP THEIR OWN BLOCK. Lessons,
+              affidavit, final exam, survey-and-certificate — their ORDER is
+              the regulation, and a four-item list has no business inside a
+              half-width bay beside a ring. They sit under the pair, where the
+              progress story continues. */}
+          {m.prog?.hasSteps && m.prog.steps?.length ? (
+            <ol className="crf-rd-steps crf-rd-steps--own">
+              {m.prog.steps.map((s, i) => (
+                <li key={s.label} className={`is-${s.mark || 'todo'}`}>
+                  <span className="crf-rd-step-n" aria-hidden>
+                    {i + 1}
+                  </span>
+                  <span>
+                    <b style={{ color: `var(--rd-${s.color})` }}>{s.label}</b>
+                    <span className="crf-rd-step-status" style={{ color: `var(--rd-${s.stColor})` }}>
+                      {s.status}
                     </span>
-                    <span>
-                      <b style={{ color: `var(--rd-${s.color})` }}>{s.label}</b>
-                      <span className="crf-rd-step-status" style={{ color: `var(--rd-${s.stColor})` }}>
-                        {s.status}
-                      </span>
-                      {s.detail && <span className="crf-rd-note">{s.detail}</span>}
-                    </span>
-                  </li>
-                ))}
-              </ol>
-            ) : null}
-          </div>
-        </section>
+                    {s.detail && <span className="crf-rd-note">{s.detail}</span>}
+                  </span>
+                </li>
+              ))}
+            </ol>
+          ) : null}
+        </>
       )}
 
       {/* ⚠ READINESS APPEARS AT Q8, AND HIS DATA SAYS SO: `uPath` is empty

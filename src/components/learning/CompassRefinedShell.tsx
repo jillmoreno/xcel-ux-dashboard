@@ -14,6 +14,7 @@ import { CompassRefinedQuestionSet } from './CompassRefinedQuestionSet'
 import { CompassRefinedCardStudy } from './CompassRefinedCardStudy'
 import { CompassJeffCourse } from './CompassJeffCourse'
 import { refinedSourceFor } from './compassRefinedPages'
+import type { FocusLayout } from './CompassRefinedFocus'
 import type { JeffMvpPage } from '@/data/compassJeffMvpFixtures'
 /* ⚠ HIS STYLESHEET, BECAUSE MOST SLOTS ARE STILL HIS. It leaves when the
    last slot does; a forked page brings its own and uses none of it. */
@@ -59,6 +60,7 @@ export function CompassRefinedShell({
   onSelectPage,
   readinessHero,
   stage,
+  focus,
 }: {
   page: JeffMvpPage
   onSelectPage: (p: JeffMvpPage) => void
@@ -68,6 +70,8 @@ export function CompassRefinedShell({
   /** `compass-readiness-stage` — which of the sixteen learner states the
    *  Overview draws. Read by `CompassLearningPage`, for the same reason. */
   stage?: string
+  /** `compass-overview-focus` — the Overview's merged Progress/Next card. */
+  focus?: FocusLayout
 }) {
   /* ⚠ THE TWO TAKEOVERS ARE HIS DECISIONS AND ARE READ FIRST, before the rail
      is drawn — the simulated exam is imitating a Pearson VUE test centre and
@@ -97,6 +101,7 @@ export function CompassRefinedShell({
         onSelectPage={onSelectPage}
         readinessHero={readinessHero}
         stage={stage}
+        focus={focus}
       />
     </div>
   )
@@ -115,6 +120,7 @@ function RefinedPage({
   onSelectPage,
   readinessHero,
   stage,
+  focus,
 }: {
   page: JeffMvpPage
   onSelectPage: (p: JeffMvpPage) => void
@@ -122,6 +128,7 @@ function RefinedPage({
   /** `compass-readiness-stage` — which of the sixteen learner states the
    *  Overview draws. Read by `CompassLearningPage` and passed down. */
   stage?: string
+  focus?: FocusLayout
 }) {
   const source = refinedSourceFor(page)
 
@@ -151,7 +158,7 @@ function RefinedPage({
          doing what it was built for — one page of Refined answering to a
          different component. `CompassRefinedOverview` is kept unreferenced,
          by the archive convention, so going back is a one-line change. */
-      return <CompassRefinedStageOverview stage={stage} />
+      return <CompassRefinedStageOverview stage={stage} layout={focus} />
     case 'practice':
       return <CompassRefinedPractice onSelectPage={onSelectPage} />
     case 'prep-review':

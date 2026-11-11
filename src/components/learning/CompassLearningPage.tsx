@@ -24,6 +24,7 @@ import { CompassJeffMvpShell } from './CompassJeffMvpShell'
 import { CompassRefinedShell } from './CompassRefinedShell'
 import type { JeffMvpPage } from '@/data/compassJeffMvpFixtures'
 import type { RefinedHeroStyle } from './CompassReadinessRefined'
+import type { FocusLayout } from './CompassRefinedFocus'
 
 /**
  * COMPASS LEARNING — the top nav's second destination (Figma 765:3471).
@@ -124,6 +125,11 @@ export function CompassLearningPage({
      the tested three rings with a matching key. Read here with the other
      Compass controls; the page is a plain function of its props. */
   const refinedHero = useFeatureFlag('compass-refined-readiness-hero').variant as RefinedHeroStyle
+  /* ⚠ THE OVERVIEW'S MERGED PROGRESS + NEXT CARD — 2026-11-11, three
+     arrangements while the shape is being decided. Read here with the other
+     Compass controls so every component below stays a plain function of its
+     props. */
+  const overviewFocus = useFeatureFlag('compass-overview-focus').variant as FocusLayout
   useDeclareDesignSurface(
     refined ? 'compass:refined' : jeffMvp ? 'compass:jeff-mvp' : (`compass:${page}` as DesignSurfaceId),
   )
@@ -200,6 +206,7 @@ export function CompassLearningPage({
             onSelectPage={setJeffPage}
             readinessHero={refinedHero}
             stage={readinessStage}
+            focus={overviewFocus}
           />
         ) : (
           <CompassJeffMvpShell page={jeffPage} onSelectPage={setJeffPage} />

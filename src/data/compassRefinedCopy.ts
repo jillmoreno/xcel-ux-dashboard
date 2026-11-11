@@ -106,3 +106,38 @@ export const REFINED_RAIL_LABELS: Record<string, string> = {
   'exam-simulator': 'Exam Simulator',
   readiness: 'Readiness',
 }
+
+/**
+ * THE PACE FIGURES, AS ATLAS STATES THEM — 2026-11-11, Jillienne: "The
+ * Progress UI should more closely match the screen from atlas with the pacing
+ * details as well."
+ *
+ * ⚠ THEY DID NOT EXIST IN THE DATA. Every stage carries a `prog.note` and it
+ * is free prose — "Your 6-week goal: about 10 hours a week. Estimated
+ * completion Jul 18." on q1, "On pace · 6 lessons this week." on q2, "Lessons
+ * complete Jul 15. Access ends Jul 31." on q5. One sentence, different shape
+ * each time, so there is nothing to lift a pace NAME or an hours-per-week
+ * figure out of. Atlas's card states them as fields: a gauge, "Average · N
+ * Week Goal", "about N hours / week".
+ *
+ * ⚠ SO THIS IS INVENTED DATA, and it says so. The pace is the LEARNER's, not
+ * the stage's — Atlas shows one pace across its whole card and Compass's
+ * planner heads the same plan "Your pace · Average" — so one block serves
+ * every state rather than sixteen sets of figures nobody has written. The
+ * stage's own `note` still renders beneath it, which is where the per-state
+ * truth stays.
+ *
+ * ⚠ THE FIGURES TRACK `nyProducerRequirements.ts`'S PRECEDENT, not a real
+ * plan: hours and a goal that read right beside q1's own sentence. Confirm
+ * them before any of this reaches a stakeholder.
+ */
+export const REFINED_PACE = {
+  eyebrow: 'Study Pace',
+  /** The pace's name, as Compass's planner heads it. */
+  name: 'Average',
+  /** Atlas's "N Week Goal", beside the name. */
+  goal: '6 Week Goal',
+  hours: 'about 10 hours / week',
+  /** Atlas closes the section with a way to change it. */
+  action: 'Customize your pace',
+} as const

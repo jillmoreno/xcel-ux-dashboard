@@ -119,6 +119,9 @@ const REBRAND_FLAGS = [
   'compass-mvp-version',
   // The Refined Readiness page's hero — single ring vs the tested three rings
   // (2026-11-09). Only bites on the Refined arm of Compass version.
+  // The Overview's merged Progress + Next step card (2026-11-11) — three
+  // arrangements, flipped from the bar while the shape is being decided.
+  'compass-overview-focus',
   'compass-refined-readiness-hero',
   'compass-planner-rubi',
   'compass-planner-return',

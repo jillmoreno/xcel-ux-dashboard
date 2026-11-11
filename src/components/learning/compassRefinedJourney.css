@@ -883,3 +883,241 @@
 .crf-rd .crf-rd-head {
   min-width: 0;
 }
+
+/* ---------- Course Progress + Your Next Step, as one — 2026-11-11 ----------
+   Three arrangements of the same content, differing in ONE decision: what
+   separates the two halves. See `CompassRefinedFocus.tsx`. */
+
+.crf-rd .crf-focus {
+  display: grid;
+  grid-template-columns: minmax(260px, 340px) minmax(0, 1fr);
+  align-items: stretch;
+  gap: 0;
+  margin: 0 0 18px;
+  border: 1px solid var(--rd-hairline);
+  border-radius: 14px;
+  overflow: hidden;
+  background: var(--rd-white);
+}
+/* ⚠ ONE HALF ONLY, AND THE GRID COLLAPSES. Early states carry no hero and the
+   prep series carries no QE ring; a fixed two-column grid would leave an
+   empty bay where the missing half was. */
+.crf-rd .crf-focus > :only-child {
+  grid-column: 1 / -1;
+}
+@media (max-width: 900px) {
+  .crf-rd .crf-focus {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.crf-rd .crf-focus__prog {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 22px 24px 20px;
+  text-align: center;
+}
+.crf-rd .crf-focus__next {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 22px 26px 20px;
+  min-width: 0;
+}
+
+/* ⚠ THE EYEBROWS STAY LEFT WHERE THE CONTENT IS CENTRED, which is Atlas's own
+   pattern on this card: "the label left, the thing it names centred". */
+.crf-rd .crf-focus__eyebrow {
+  align-self: flex-start;
+  margin: 0;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--rd-muted);
+}
+
+/* --- the ring --- */
+.crf-rd .crf-focus__ring {
+  position: relative;
+  display: grid;
+  place-items: center;
+}
+.crf-rd .crf-focus__ringnum {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1.1;
+}
+.crf-rd .crf-focus__ringnum b {
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--rd-ink);
+}
+.crf-rd .crf-focus__ringnum span {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--rd-muted);
+}
+.crf-rd .crf-focus__lessons {
+  margin: 0;
+  font-size: 13px;
+  color: var(--rd-body);
+}
+
+/* --- the pace block, Atlas's fields --- */
+.crf-rd .crf-focus__rule {
+  width: 100%;
+  height: 1px;
+  background: var(--rd-hairline);
+  margin: 4px 0 2px;
+}
+.crf-rd .crf-focus__pace {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  text-align: left;
+}
+.crf-rd .crf-focus__gauge {
+  display: inline-flex;
+  color: var(--rd-steel);
+}
+.crf-rd .crf-focus__pace b {
+  display: block;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--rd-ink);
+}
+.crf-rd .crf-focus__hours {
+  display: block;
+  font-size: 12px;
+  color: var(--rd-muted);
+}
+.crf-rd .crf-focus__note {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--rd-muted);
+}
+.crf-rd .crf-focus__link {
+  margin-top: 2px;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--rd-steel-deep);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* --- the next step --- */
+.crf-rd .crf-focus__title {
+  margin: 0;
+  font-size: 22px;
+  line-height: 1.25;
+  font-weight: 700;
+  color: var(--rd-ink);
+}
+.crf-rd .crf-focus__sub {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--rd-body);
+}
+.crf-rd .crf-focus__lesson {
+  width: 100%;
+  margin: 8px 0 2px;
+  padding: 10px 12px;
+  border: 1px solid var(--rd-hairline);
+  border-radius: 10px;
+  background: var(--rd-white);
+}
+.crf-rd .crf-focus__label {
+  margin: 0 0 2px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--rd-muted);
+}
+.crf-rd .crf-focus__lessonname {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0 0 2px;
+  font-size: 14px;
+  color: var(--rd-ink);
+}
+.crf-rd .crf-focus__lessonname svg {
+  color: var(--rd-rubi);
+  flex: 0 0 auto;
+}
+.crf-rd .crf-focus__cta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+
+/* ---------- 1 · SPLIT — a vertical rule, two peers on one ground ---------- */
+.crf-rd .crf-focus--split .crf-focus__next {
+  border-left: 1px solid var(--rd-hairline);
+}
+
+/* ---------- 2 · PANEL — the ground does the separating ----------
+   State and action are different kinds of thing; a tinted left bay says so
+   without drawing a line through the card. */
+.crf-rd .crf-focus--panel .crf-focus__prog {
+  background: var(--rd-paper);
+  border-right: 1px solid var(--rd-hairline);
+}
+
+/* ---------- 3 · FIGURES — Atlas's labelled rows, ring beside them ----------
+   The densest of the three and the least like his: the plan stops being a
+   sentence and becomes three things you can read at a glance. */
+.crf-rd .crf-focus--figures .crf-focus__prog {
+  align-items: flex-start;
+  text-align: left;
+  gap: 12px;
+}
+.crf-rd .crf-focus__figrow {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+}
+.crf-rd .crf-focus__figures {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin: 0;
+  min-width: 0;
+}
+.crf-rd .crf-focus__figures div {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.crf-rd .crf-focus__figures dt {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--rd-muted);
+}
+.crf-rd .crf-focus__figures dd {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--rd-ink);
+}
