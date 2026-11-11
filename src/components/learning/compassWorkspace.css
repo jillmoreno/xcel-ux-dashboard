@@ -1,0 +1,1173 @@
+/* ANJANI'S COMPASS WORKSPACE, on this repo's tokens (2026-11-04).
+
+   Ported from the `.ws-*` and `.f-*` rules in
+   `public/prototypes/xcel-compass-workspace-v4.html`. Her prototype declares
+   its own palette in its own `:root`; none of those names exist here, so the
+   first block below maps each one to the token this project actually ships and
+   everything after it reads as she wrote it.
+
+     --c-ink      #1F1D18  → --color-compass-page-heading
+     --c-muted    #5B5560  → --color-compass-page-body
+     --c-faint    #706B63  → --color-compass-page-muted
+     --c-hairline #E0DBCD  → --color-compass-page-rule
+     --c-surface           → --color-surface-card
+     --c-steel    #3D5A73  → --color-primary-500   (#2d5872 — her blue, near enough to be the same decision)
+     --c-pass     #2F7A5A  → --color-success-700
+     --c-review   #835B16  → --color-warning-700
+     --c-emphasis-fill     → --color-atlas-nav-active-fill
+     --font-serif          → --font-heading-serif
+     --font-sans           → --font-body
+
+   Her `--c-terracotta` (#B4552F) is the RUBI accent — the left border on a
+   Rubi card, the "Rubi answer" label — and it needs no approximation: the
+   2026-10-15 port already took it into `tokens.css` as
+   `--color-compass-page-rubi`, so this surface and her Learn page draw Rubi in
+   one colour rather than two near-misses.
+
+   ⚠ EVERY RULE IS SCOPED UNDER `.cre-ws`. This stylesheet is imported
+   globally like every other one here, and her bare utility classes — `on`,
+   `sel`, `big`, `dot`, `n`, `sp`, `from` — would otherwise land on half the
+   app. Her distinctive names are prefixed (`.ws-card` → `.cre-ws-card`,
+   `.f-bar` → `.cre-wsf-bar`); the bare ones keep their names and are held in
+   by this scope. */
+
+.cre-ws {
+  --cre-ws-ink: var(--color-compass-page-heading);
+  --cre-ws-muted: var(--color-compass-page-body);
+  --cre-ws-faint: var(--color-compass-page-muted);
+  --cre-ws-hairline: var(--color-compass-page-rule);
+  --cre-ws-surface: var(--color-surface-card);
+  --cre-ws-steel: var(--color-primary-500);
+  --cre-ws-terracotta: var(--color-compass-page-rubi);
+  --cre-ws-fill: var(--color-atlas-nav-active-fill);
+  --cre-ws-rule-strong: var(--color-border-subtle);
+
+  font-family: var(--font-body);
+  color: var(--cre-ws-ink);
+  /* ⚠ WHITE PAPER, not the grey page. Measured on her build: body and shell
+     are both #fff and nothing inside carries a card. Audit 3. */
+  background: var(--cre-ws-surface);
+  min-height: 100%;
+  padding-bottom: 80px;
+}
+
+/* ---- the bar across the top ---- */
+.cre-ws .cre-wsf-bar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 0 18px;
+  min-height: 58px;
+  border-bottom: 1px solid var(--cre-ws-hairline);
+  background: var(--cre-ws-surface);
+  position: sticky;
+  top: 0;
+  z-index: 30;
+}
+/* ⚠ ONE LINE. "Workspace · New session ✎ ☆" reads as a breadcrumb; stacked,
+   it reads as a title with a subtitle, which is a different thing. */
+.cre-ws .cre-wsf-bar-t { flex: 1; min-width: 0; display: flex; align-items: center; gap: 2px; }
+.cre-ws .cre-wsf-title { margin: 0; font-size: 15px; line-height: 20px; flex: none; }
+.cre-ws .cre-wsf-homebtn {
+  border: 0;
+  background: none;
+  padding: 0;
+  font-family: var(--font-heading-serif);
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--cre-ws-ink);
+  cursor: pointer;
+}
+.cre-ws .cre-wsf-bar-a { display: flex; gap: 8px; }
+.cre-ws .cre-wsf-iconbtn {
+  border: 1px solid var(--cre-ws-hairline);
+  background: var(--cre-ws-surface);
+  border-radius: 8px;
+  width: 32px;
+  height: 32px;
+  color: var(--cre-ws-muted);
+  cursor: pointer;
+  line-height: 1;
+}
+
+/* ---- her head block ---- */
+.cre-ws .cre-ws-head { max-width: 1180px; margin: 0 auto; padding: 36px 44px 0; }
+.cre-ws .cre-ws-title {
+  font-family: var(--font-heading-serif);
+  font-weight: 700;
+  font-size: 32px;
+  line-height: 38px;
+  letter-spacing: -0.02em;
+  color: var(--cre-ws-ink);
+  margin-bottom: 8px;
+}
+.cre-ws .cre-ws-lede {
+  font-size: 15px;
+  line-height: 23px;
+  color: var(--cre-ws-muted);
+  max-width: 62ch;
+}
+
+/* ---- the six shells. Her grids, unchanged. ---- */
+/* ⚠ FLUSH — her `f-flat`: gap 0, no padding, no max-width. The columns butt
+   up against hairline rules and each pane pads itself. Earlier passes gave
+   the shell a 24px gutter and every pane a rounded card, which is the "weird
+   layout with a different background colour". Audit 3. */
+.cre-ws .cre-ws-shell {
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0;
+}
+.cre-ws .cre-ws-shell.one { grid-template-columns: minmax(0, 1fr); }
+.cre-ws .cre-ws-shell.three { grid-template-columns: 270px minmax(0, 1fr) 300px; }
+.cre-ws .cre-ws-shell.note { grid-template-columns: 300px minmax(0, 1fr) 320px; }
+.cre-ws .cre-ws-shell.idx { grid-template-columns: 220px minmax(0, 1fr); }
+.cre-ws .cre-ws-shell.f { grid-template-columns: 300px minmax(0, 1fr) 320px; }
+.cre-ws .cre-ws-col { min-width: 0; }
+
+/* A collapsed rail drops its column rather than leaving a gap. */
+.cre-ws .cre-ws-shell.f:has(.cre-wsf-cl):not(:has(.cre-wsf-cr)) { grid-template-columns: 300px minmax(0, 1fr); }
+.cre-ws .cre-ws-shell.f:not(:has(.cre-wsf-cl)):has(.cre-wsf-cr) { grid-template-columns: minmax(0, 1fr) 320px; }
+.cre-ws .cre-ws-shell.f:not(:has(.cre-wsf-cl)):not(:has(.cre-wsf-cr)) { grid-template-columns: minmax(0, 1fr); }
+
+/* ---- panes ---- */
+/* ⚠ A PANE IS NOT A CARD. Transparent, no border, no radius — her measured
+   values. What separates the columns is a hairline on the COLUMN, below. */
+.cre-ws .cre-ws-pane {
+  border: 0;
+  border-radius: 0;
+  background: none;
+  padding: 22px 24px;
+}
+.cre-ws .cre-wsf-cl { border-right: 1px solid var(--cre-ws-hairline); }
+.cre-ws .cre-wsf-cr { border-left: 1px solid var(--cre-ws-hairline); }
+.cre-ws .cre-ws-pane h4 {
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--cre-ws-faint);
+  font-weight: 600;
+  margin: 0 0 12px;
+  font-family: var(--font-body);
+}
+.cre-ws .cre-ws-sticky { position: sticky; top: 76px; }
+.cre-ws .cre-wsnb-head { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+.cre-ws .cre-wsnb-head h4 { margin: 0; }
+.cre-ws .cre-wsnb-head span { flex: 1; }
+.cre-ws .cre-wsf-coll {
+  border: 1px solid var(--cre-ws-hairline);
+  background: none;
+  border-radius: 6px;
+  width: 24px;
+  height: 24px;
+  color: var(--cre-ws-faint);
+  cursor: pointer;
+  line-height: 1;
+}
+
+/* ---- her form fields ---- */
+.cre-ws .cre-wsf-field {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid var(--cre-ws-hairline);
+  border-radius: 8px;
+  background: var(--cre-ws-surface);
+  padding: 8px 10px;
+  font-size: 13px;
+  font-family: var(--font-body);
+  color: var(--cre-ws-ink);
+  margin-bottom: 8px;
+}
+.cre-ws .cre-ws-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* ---- the filter / action bar ---- */
+.cre-ws .cre-ws-bar {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  padding: 10px 0 12px;
+  border-bottom: 1px solid var(--cre-ws-hairline);
+  margin-bottom: 4px;
+}
+.cre-ws .cre-ws-bar.sel { border-bottom-color: var(--cre-ws-steel); }
+.cre-ws .cre-ws-bar .cnt { font-size: 13px; font-weight: 600; color: var(--cre-ws-ink); margin-right: 4px; }
+.cre-ws .cre-ws-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--cre-ws-hairline);
+  background: var(--cre-ws-surface);
+  color: var(--cre-ws-muted);
+  border-radius: 999px;
+  padding: 7px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: var(--font-body);
+  cursor: pointer;
+}
+.cre-ws .cre-ws-chip.on { background: var(--cre-ws-fill); color: var(--cre-ws-ink); }
+.cre-ws .cre-wsf-n { color: var(--cre-ws-faint); font-weight: 400; }
+.cre-ws .cre-ws-act {
+  border: 1px solid var(--cre-ws-steel);
+  background: var(--cre-ws-steel);
+  color: var(--color-neutral-50);
+  border-radius: 999px;
+  padding: 7px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: var(--font-body);
+  cursor: pointer;
+}
+.cre-ws .cre-ws-act.ghost { background: var(--cre-ws-surface); color: var(--cre-ws-steel); }
+.cre-ws .cre-ws-act.q { border-color: transparent; background: none; color: var(--cre-ws-faint); font-weight: 400; }
+.cre-ws .cre-wsf-pinbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--cre-ws-muted);
+  padding: 8px 0;
+}
+.cre-ws .cre-wsnb-clr { border: 0; background: none; color: var(--cre-ws-steel); font-size: 12px; cursor: pointer; }
+
+/* ---- a mark ---- */
+.cre-ws .cre-ws-card {
+  display: flex;
+  gap: 13px;
+  border: 1px solid var(--cre-ws-hairline);
+  border-radius: 12px;
+  background: var(--cre-ws-surface);
+  padding: 15px 17px;
+  margin-bottom: 9px;
+}
+.cre-ws .cre-ws-card.sel { border-color: var(--cre-ws-steel); box-shadow: inset 0 0 0 1px var(--cre-ws-steel); }
+.cre-ws .cre-ws-card.rubi { border-left: 3px solid var(--cre-ws-terracotta); }
+.cre-ws .cre-ws-check {
+  width: 17px;
+  height: 17px;
+  border: 1.5px solid var(--cre-ws-rule-strong);
+  border-radius: 5px;
+  flex: none;
+  margin-top: 2px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.cre-ws .cre-ws-check.on { background: var(--cre-ws-steel); border-color: var(--cre-ws-steel); }
+.cre-ws .cre-ws-check.on::after {
+  content: '';
+  width: 9px;
+  height: 5px;
+  border-left: 2px solid var(--color-neutral-50);
+  border-bottom: 2px solid var(--color-neutral-50);
+  transform: rotate(-45deg);
+  margin-top: -2px;
+}
+.cre-ws .cre-ws-body { min-width: 0; flex: 1; }
+.cre-ws .cre-ws-kind {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--cre-ws-faint);
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+.cre-ws .cre-ws-kind .rb { color: var(--cre-ws-terracotta); }
+.cre-ws .cre-ws-kind .dot { width: 3px; height: 3px; border-radius: 50%; background: currentColor; opacity: 0.5; }
+.cre-ws .cre-ws-origin { color: var(--cre-ws-steel); }
+.cre-ws .cre-ws-ico { width: 8px; height: 8px; border-radius: 50%; flex: none; display: inline-block; }
+.cre-ws .cre-ws-quote {
+  font-family: var(--font-heading-serif);
+  font-size: 15px;
+  line-height: 23px;
+  color: var(--cre-ws-ink);
+  margin: 0;
+}
+.cre-ws .cre-ws-quote.big { font-size: 20px; line-height: 29px; }
+.cre-ws .cre-ws-note {
+  margin: 8px 0 0;
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--cre-ws-muted);
+  border-left: 2px solid var(--cre-ws-fill);
+  padding-left: 10px;
+}
+.cre-ws .cre-ws-acts { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
+.cre-ws .cre-ws-acts button {
+  border: 0;
+  background: none;
+  padding: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--cre-ws-steel);
+  cursor: pointer;
+  font-family: var(--font-body);
+}
+.cre-ws .cre-ws-thread-n { font-size: 11px; color: var(--cre-ws-faint); }
+
+/* ---- the compact mark ---- */
+.cre-ws .cre-ws-mini {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  text-align: left;
+  border: 0;
+  background: none;
+  padding: 6px 0;
+  font-size: 13px;
+  line-height: 19px;
+  color: var(--cre-ws-muted);
+  cursor: pointer;
+  font-family: var(--font-body);
+}
+.cre-ws .cre-ws-mini span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cre-ws .cre-ws-mini.on { color: var(--cre-ws-ink); font-weight: 600; }
+.cre-ws .cre-ws-mini.r { border-left: 2px solid var(--cre-ws-terracotta); padding-left: 8px; }
+.cre-ws .cre-ws-minih {
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--cre-ws-faint);
+  font-weight: 600;
+  margin: 14px 0 4px;
+}
+
+/* ---- groups and headings ---- */
+.cre-ws .cre-ws-group { margin-top: 24px; }
+.cre-ws .cre-ws-stage {
+  font-size: 11px;
+  line-height: 15px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--cre-ws-faint);
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+.cre-ws .cre-ws-gh { display: flex; align-items: baseline; gap: 10px; margin-bottom: 10px; }
+.cre-ws .cre-ws-gh h3 {
+  font-family: var(--font-heading-serif);
+  font-weight: 600;
+  font-size: 20px;
+  line-height: 26px;
+  letter-spacing: -0.01em;
+  color: var(--cre-ws-ink);
+  margin: 0;
+}
+.cre-ws .cre-ws-gh span { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--cre-ws-faint); }
+.cre-ws .cre-wsnb-chh {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  border: 0;
+  background: none;
+  padding: 12px 0 6px;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--cre-ws-faint);
+  cursor: pointer;
+  font-family: var(--font-body);
+}
+.cre-ws .cre-wsnb-chh .n { margin-left: auto; color: var(--cre-ws-faint); }
+.cre-ws .cre-ws-empty {
+  border: 1px dashed var(--cre-ws-hairline);
+  border-radius: 10px;
+  padding: 18px;
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--cre-ws-faint);
+  text-align: center;
+}
+
+/* ---- make, and what it made ---- */
+.cre-ws .cre-ws-make { display: grid; gap: 8px; }
+.cre-ws .cre-ws-make button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  border: 1px solid var(--cre-ws-hairline);
+  border-radius: 10px;
+  background: var(--cre-ws-surface);
+  padding: 11px 13px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--cre-ws-ink);
+  cursor: pointer;
+  font-family: var(--font-body);
+}
+.cre-ws .cre-ws-make button:disabled { opacity: 0.5; cursor: default; }
+.cre-ws .cre-ws-make small { display: block; font-weight: 400; color: var(--cre-ws-faint); margin-top: 2px; }
+.cre-ws .cre-ws-asset {
+  border: 1px solid var(--color-atlas-nav-active-fill);
+  background: var(--cre-ws-fill);
+  border-radius: 10px;
+  padding: 12px 13px;
+  margin-bottom: 8px;
+}
+.cre-ws .cre-ws-asset b { display: block; font-size: 13px; color: var(--cre-ws-ink); }
+.cre-ws .cre-ws-asset .from { display: block; font-size: 11px; color: var(--cre-ws-faint); margin-top: 2px; }
+
+/* ---- the hero the Review-first and Today views open on ---- */
+.cre-ws .cre-ws-hero {
+  border: 1px solid var(--color-atlas-nav-active-fill);
+  background: var(--cre-ws-fill);
+  border-radius: 16px;
+  padding: 28px 30px;
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  margin: 4px 0 16px;
+  flex-wrap: wrap;
+}
+.cre-ws .cre-ws-hero .big {
+  font-family: var(--font-heading-serif);
+  font-size: 32px;
+  line-height: 36px;
+  color: var(--cre-ws-ink);
+  font-weight: 700;
+}
+.cre-ws .cre-ws-hero p { margin: 6px 0 0; font-size: 15px; line-height: 23px; color: var(--cre-ws-muted); max-width: 48ch; }
+.cre-ws .cre-ws-hero .sp { flex: 1; }
+
+/* ---- Rubi ---- */
+.cre-ws .cre-wsf-rubi { margin-top: 16px; display: grid; gap: 14px; }
+.cre-ws .cre-wsf-turn { display: block; }
+.cre-ws .cre-wsf-q {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--cre-ws-ink);
+  margin: 0 0 4px;
+}
+.cre-ws .cre-wsf-a {
+  display: flex;
+  gap: 10px;
+  font-size: 14px;
+  line-height: 22px;
+  color: var(--cre-ws-muted);
+  border-left: 2px solid var(--cre-ws-terracotta);
+  padding-left: 12px;
+  margin: 0;
+}
+.cre-ws .cre-wsf-a p { margin: 0; }
+.cre-ws .cre-wsf-avatar {
+  width: 26px;
+  height: 26px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--cre-ws-terracotta);
+  color: var(--color-neutral-50);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+}
+/* Her five reply shapes. The content is identical in all five — the axis is
+   how an answer ARRIVES, not what it says. */
+.cre-ws .cre-wsf-rubi.shape-a .cre-wsf-a { border-left-color: var(--cre-ws-fill); }
+.cre-ws .cre-wsf-rubi.shape-b .cre-wsf-a { border-left: 0; padding-left: 0; }
+.cre-ws .cre-wsf-rubi.shape-c .cre-wsf-a {
+  border-left: 0;
+  padding: 13px 15px;
+  border: 1px solid var(--cre-ws-hairline);
+  border-radius: 12px;
+  background: var(--cre-ws-surface);
+}
+.cre-ws .cre-wsf-rubi.shape-d .cre-wsf-a { border-left: 0; padding-left: 0; align-items: flex-start; }
+
+/* ---- saved sessions ---- */
+.cre-ws .cre-wsf-sessions { margin-top: 22px; display: grid; gap: 6px; }
+.cre-ws .cre-wsf-sess {
+  display: block;
+  width: 100%;
+  text-align: left;
+  border: 1px solid var(--cre-ws-hairline);
+  border-radius: 10px;
+  background: var(--cre-ws-surface);
+  padding: 11px 13px;
+  cursor: pointer;
+  font-family: var(--font-body);
+}
+.cre-ws .cre-wsf-sess.on { border-color: var(--cre-ws-steel); }
+.cre-ws .cre-wsf-sess.pin { border-left: 3px solid var(--cre-ws-steel); }
+.cre-ws .cre-wsf-sess b { display: block; font-size: 13px; color: var(--cre-ws-ink); }
+.cre-ws .cre-wsf-sess .when,
+.cre-ws .cre-wsf-sess .marks { display: block; font-size: 11px; color: var(--cre-ws-faint); margin-top: 2px; }
+.cre-ws .cre-wsf-sessbody { display: block; margin-top: 10px; display: grid; gap: 10px; }
+.cre-ws .cre-wsf-sessions.view-cards { grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); }
+.cre-ws .cre-wsf-sessions.view-cards .cre-wsf-sess { min-height: 92px; }
+
+/* ---- the index layouts ---- */
+.cre-ws .cre-ws-idx { padding: 14px; }
+.cre-ws .cre-ws-idxh {
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--cre-ws-faint);
+  font-weight: 600;
+  margin: 14px 0 6px;
+}
+.cre-ws .cre-ws-idx > button {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  border: 0;
+  background: none;
+  padding: 7px 8px;
+  border-radius: 8px;
+  font-size: 13px;
+  color: var(--cre-ws-muted);
+  cursor: pointer;
+  text-align: left;
+  font-family: var(--font-body);
+}
+.cre-ws .cre-ws-idx > button.on { background: var(--cre-ws-fill); color: var(--cre-ws-ink); font-weight: 600; }
+.cre-ws .cre-ws-idx > button em { margin-left: auto; font-style: normal; color: var(--cre-ws-faint); font-size: 11px; }
+
+/* ---- the stage board ---- */
+.cre-ws .cre-ws-board { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; align-items: start; }
+.cre-ws .cre-ws-board .cre-ws-pane.wide { grid-column: span 1; }
+
+/* ---- the course notebook's written page ---- */
+.cre-ws .cre-wsnb-scroll { max-height: none; }
+.cre-ws .cre-ws-rc { margin: 0 0 22px; border-left: 2px solid var(--cre-ws-terracotta); padding: 2px 0 2px 18px; }
+
+/* ---- the home views ---- */
+.cre-ws .cre-ws-home { min-width: 0; }
+.cre-ws .cre-ws-shelfgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 4px 18px; }
+.cre-ws .cre-ws-map { display: grid; gap: 10px; }
+.cre-ws .cre-ws-mapch { display: flex; align-items: center; gap: 12px; }
+.cre-ws .cre-ws-mapname { font-size: 13px; color: var(--cre-ws-muted); width: 190px; flex: none; }
+.cre-ws .cre-ws-maprow { display: flex; gap: 4px; flex-wrap: wrap; flex: 1; }
+.cre-ws .cre-ws-mapdot { width: 10px; height: 10px; border-radius: 50%; }
+.cre-ws .cre-ws-mapn { font-size: 11px; color: var(--cre-ws-faint); }
+
+/* ---- the toast ---- */
+.cre-ws .cre-ws-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 28px;
+  transform: translateX(-50%) translateY(8px);
+  background: var(--cre-ws-ink);
+  color: var(--color-surface-card);
+  border-radius: 999px;
+  padding: 9px 18px;
+  font-size: 13px;
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity 0.18s ease,
+    transform 0.18s ease;
+  z-index: 60;
+}
+.cre-ws .cre-ws-toast[data-show='on'] { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* ---- her device frames ---- */
+.cre-ws.device-ios .cre-ws-shell,
+.cre-ws.device-android .cre-ws-shell {
+  grid-template-columns: minmax(0, 1fr);
+  max-width: 420px;
+  padding-left: 18px;
+  padding-right: 18px;
+}
+.cre-ws.device-ios .cre-ws-head,
+.cre-ws.device-android .cre-ws-head { max-width: 420px; padding-left: 18px; padding-right: 18px; }
+.cre-ws.device-ios .cre-wsf-cr,
+.cre-ws.device-android .cre-wsf-cr { display: none; }
+
+/* ---- narrow ---- */
+@media (max-width: 1000px) {
+  .cre-ws .cre-ws-shell,
+  .cre-ws .cre-ws-shell.f,
+  .cre-ws .cre-ws-shell.three,
+  .cre-ws .cre-ws-shell.note,
+  .cre-ws .cre-ws-shell.idx { grid-template-columns: minmax(0, 1fr); }
+  .cre-ws .cre-ws-board { grid-template-columns: minmax(0, 1fr); }
+  .cre-ws .cre-ws-head,
+  .cre-ws .cre-ws-shell { padding-left: 20px; padding-right: 20px; }
+  .cre-ws .cre-wsf-bar { padding-left: 20px; padding-right: 20px; }
+}
+
+/* ---- her home head (`homeHead()`), and the Pick-up hero ---- */
+.cre-ws .cre-ws-head { display: flex; align-items: flex-start; gap: 20px; }
+.cre-ws .cre-ws-head-t { flex: 1; min-width: 0; }
+.cre-ws .cre-ws-new { flex: none; }
+.cre-ws .cre-ws-kicker {
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--cre-ws-faint);
+  font-weight: 600;
+  margin: 10px 0 4px;
+}
+.cre-ws .cre-ws-meta { font-size: 12px; color: var(--cre-ws-faint); margin-top: 10px; }
+.cre-ws .cre-ws-home .cre-ws-head { padding: 0 0 4px; max-width: none; }
+
+/* ---- SECOND PASS (2026-11-04): the Studio, the Rubi strip and her session
+   cards, read off her live branch build rather than her source. ---- */
+.cre-ws .cre-ws-kind { margin: 8px 0 0; }
+.cre-ws .cre-ws-readiness { padding-bottom: 6px; border-bottom: 1px solid var(--cre-ws-hairline); }
+.cre-ws .cre-ws-rline { display: flex; justify-content: space-between; font-size: 13px; color: var(--cre-ws-muted); margin-bottom: 4px; }
+.cre-ws .cre-ws-rline b { color: var(--cre-ws-ink); }
+.cre-ws .cre-ws-rfocus { font-size: 13px; line-height: 20px; color: var(--cre-ws-muted); margin: 8px 0 10px; }
+.cre-ws .cre-ws-soon {
+  float: right;
+  font-style: normal;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--cre-ws-faint);
+  font-weight: 600;
+}
+.cre-ws .cre-ws-abody { font-size: 13px; line-height: 20px; color: var(--cre-ws-muted); margin: 8px 0 0; }
+
+/* the Rubi strip under the hero */
+.cre-ws .cre-ws-nudge {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 10px 0 14px;
+  font-size: 13px;
+  color: var(--cre-ws-muted);
+}
+.cre-ws .cre-ws-nudgek {
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--cre-ws-terracotta);
+}
+.cre-ws .cre-ws-nudget { flex: 0 1 auto; }
+.cre-ws .cre-ws-nudgea {
+  border: 0;
+  background: none;
+  padding: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--cre-ws-steel);
+  cursor: pointer;
+  font-family: var(--font-body);
+}
+.cre-ws .cre-ws-nudgex {
+  border: 0;
+  background: none;
+  color: var(--cre-ws-faint);
+  cursor: pointer;
+  margin-left: auto;
+  line-height: 1;
+}
+
+/* the hero, as she draws it */
+.cre-ws .cre-ws-herot { flex: 1; min-width: 0; }
+.cre-ws .cre-ws-hero h2.big { margin: 0; }
+.cre-ws .cre-ws-said { font-weight: 600; color: var(--cre-ws-ink); }
+
+/* "My sessions" — cards, not a list */
+.cre-ws .cre-ws-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: var(--cre-ws-fill);
+  color: var(--cre-ws-ink);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+}
+.cre-ws .cre-ws-sessgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 12px; }
+.cre-ws .cre-ws-sesscard {
+  display: block;
+  text-align: left;
+  border: 1px solid var(--cre-ws-hairline);
+  border-radius: 12px;
+  background: var(--cre-ws-surface);
+  padding: 14px 16px;
+  cursor: pointer;
+  font-family: var(--font-body);
+}
+.cre-ws .cre-ws-sesscard b {
+  display: block;
+  font-family: var(--font-heading-serif);
+  font-size: 16px;
+  line-height: 22px;
+  color: var(--cre-ws-ink);
+  margin: 6px 0 4px;
+}
+.cre-ws .cre-ws-sesscard .when { display: block; font-size: 12px; color: var(--cre-ws-faint); }
+.cre-ws .cre-ws-made {
+  display: inline-block;
+  margin-top: 10px;
+  font-size: 11px;
+  color: var(--cre-ws-muted);
+  border: 1px solid var(--cre-ws-hairline);
+  border-radius: 999px;
+  padding: 2px 9px;
+}
+
+/* Her three session arrangements, on the home's cards. */
+.cre-ws .cre-ws-sessgrid.view-list { grid-template-columns: minmax(0, 1fr); }
+.cre-ws .cre-ws-sessgrid.view-time .cre-ws-sesscard .when { font-weight: 600; color: var(--cre-ws-muted); }
+.cre-ws .cre-ws-sessgrid.view-cards { grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); }
+
+/* ⚠ THE HERO TEXT TAKES THE WIDTH, the button only what it needs. With a
+   flexible spacer between them the two halves split 50/50 and her title
+   ("Cash value vs death benefit") wrapped one word per line inside the
+   product shell, where the centre column is narrower than her standalone
+   prototype's. Caught on the second pass by looking at it. */
+.cre-ws .cre-ws-hero { align-items: center; }
+.cre-ws .cre-ws-herot { flex: 1 1 auto; min-width: 0; }
+.cre-ws .cre-ws-continue { flex: 0 0 auto; align-self: center; }
+.cre-ws .cre-ws-hero h2.big { font-size: 26px; line-height: 32px; }
+@media (max-width: 1320px) {
+  .cre-ws .cre-ws-hero { padding: 20px 22px; gap: 16px; }
+  .cre-ws .cre-ws-hero h2.big { font-size: 22px; line-height: 28px; }
+}
+
+/* ⚠ HER HOME IS ONE COLUMN. Measured on her build: `f-cl` and `f-cr` are
+   display:none on the home view and the shell collapses. Arriving at the
+   workspace you get the thread you left and the sessions you kept — the
+   marks rail and the Studio appear once a mark is open. */
+.cre-ws .cre-ws-shell.f.is-home { grid-template-columns: minmax(0, 1fr); }
+.cre-ws .cre-ws-homecol { max-width: 760px; }
+
+/* Her session card: an open button plus a star, side by side. */
+.cre-ws .cre-ws-sesscard { position: relative; display: flex; align-items: flex-start; padding: 0; border: 0; background: none; }
+.cre-ws .cre-ws-sessopen {
+  display: block;
+  flex: 1;
+  text-align: left;
+  border: 1px solid var(--cre-ws-hairline);
+  border-radius: 12px;
+  background: var(--cre-ws-surface);
+  padding: 14px 40px 14px 16px;
+  cursor: pointer;
+  font-family: var(--font-body);
+}
+.cre-ws .cre-ws-sessopen b {
+  display: block;
+  font-family: var(--font-heading-serif);
+  font-size: 17px;
+  line-height: 23px;
+  color: var(--cre-ws-ink);
+  margin: 6px 0 4px;
+}
+.cre-ws .cre-ws-sessopen .when { display: block; font-size: 12px; color: var(--cre-ws-faint); }
+.cre-ws .cre-ws-made {
+  display: inline-flex;
+  align-items: center;
+  margin-top: 12px;
+  color: var(--cre-ws-faint);
+  border: 0;
+  padding: 0;
+}
+.cre-ws .cre-ws-star {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  border: 0;
+  background: none;
+  padding: 4px;
+  cursor: pointer;
+  color: var(--cre-ws-hairline);
+  line-height: 0;
+}
+.cre-ws .cre-ws-star.on { color: var(--cre-ws-steel); }
+
+/* ---- A SESSION — the Notebook with Rubi (third pass, 2026-11-04).
+   Found by clicking "+ New workspace": her centre becomes a scoped
+   conversation, and the bar above it a breadcrumb. ---- */
+.cre-ws .cre-wsf-barsess { display: inline-flex; align-items: center; gap: 6px; margin-left: 8px; }
+.cre-ws .cre-wsf-sep { color: var(--cre-ws-faint); }
+.cre-ws .cre-wsf-sess { font-size: 15px; color: var(--cre-ws-muted); }
+.cre-ws .cre-wsf-mini {
+  border: 0;
+  background: none;
+  padding: 2px;
+  color: var(--cre-ws-faint);
+  cursor: pointer;
+  line-height: 1;
+  font-size: 13px;
+}
+/* Her centre pane breathes more than the rails: 28/36/18 measured. */
+.cre-ws .cre-wsnb-pane { display: flex; flex-direction: column; gap: 14px; padding: 28px 36px 18px; }
+.cre-ws .cre-wsnb-note {
+  font-family: var(--font-heading-serif);
+  font-size: 26px;
+  line-height: 32px;
+  color: var(--cre-ws-ink);
+  margin: 0 0 4px;
+}
+/* A Rubi block: her mark, then the text. */
+.cre-ws .cre-ws-rb { display: flex; gap: 10px; align-items: flex-start; }
+.cre-ws .cre-ws-rmk {
+  width: 13px;
+  height: 13px;
+  flex: none;
+  margin-top: 5px;
+  border-radius: 50%;
+  border: 2px solid var(--cre-ws-terracotta);
+}
+.cre-ws .cre-ws-rb .tx { font-size: 15px; line-height: 24px; color: var(--cre-ws-ink); }
+.cre-ws .cre-ws-rb .tx b { font-weight: 700; }
+
+/* The three she offers. */
+.cre-ws .cre-ws-sugg { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
+.cre-ws .cre-ws-sugg button {
+  border: 1px solid var(--cre-ws-hairline);
+  background: var(--cre-ws-surface);
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-size: 13px;
+  color: var(--cre-ws-muted);
+  cursor: pointer;
+  font-family: var(--font-body);
+}
+
+/* The composer, and the scope promise under it. */
+.cre-ws .cre-wsnb-comp {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--cre-ws-hairline);
+  border-radius: 999px;
+  background: var(--cre-ws-surface);
+  padding: 6px 8px 6px 6px;
+}
+.cre-ws .cre-wsnb-comp input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  background: none;
+  font-size: 14px;
+  font-family: var(--font-body);
+  color: var(--cre-ws-ink);
+  padding: 6px 2px;
+}
+.cre-ws .cre-wsnb-comp input:focus { outline: none; }
+.cre-ws .cre-ws-plus,
+.cre-ws .cre-ws-send {
+  flex: none;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 1px solid var(--cre-ws-hairline);
+  background: var(--cre-ws-surface);
+  color: var(--cre-ws-muted);
+  cursor: pointer;
+  line-height: 1;
+}
+.cre-ws .cre-ws-send { border-color: var(--cre-ws-steel); background: var(--cre-ws-steel); color: var(--color-neutral-50); }
+.cre-ws .cre-ws-scope { flex: none; font-size: 12px; color: var(--cre-ws-faint); }
+.cre-ws .cre-ws-caption { margin: 0; text-align: center; font-size: 12px; color: var(--cre-ws-faint); }
+
+/* Her Studio tiles are a two-up grid, not a list. */
+.cre-ws .cre-ws-make { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.cre-ws .cre-ws-readiness .cre-ws-stage { display: flex; justify-content: space-between; gap: 10px; }
+
+/* ---- THE DECK PLAYER, the scoped conversation, and Make's payloads
+   (2026-11-04, the sweep). None of this renders in her prototype until a
+   control is pressed, which is why four passes shipped without it. ---- */
+.cre-ws .cre-wsf-deckbar { display: flex; align-items: center; gap: 12px; }
+.cre-ws .cre-wsf-decktitle {
+  font-family: var(--font-heading-serif);
+  font-size: 18px;
+  line-height: 24px;
+  color: var(--cre-ws-ink);
+}
+.cre-ws .cre-wsf-deckpos { margin-left: auto; font-size: 12px; color: var(--cre-ws-faint); }
+.cre-ws .cre-wsf-iconbtn {
+  flex: none;
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--cre-ws-hairline);
+  border-radius: 8px;
+  background: var(--cre-ws-surface);
+  color: var(--cre-ws-muted);
+  cursor: pointer;
+  line-height: 1;
+}
+.cre-ws .cre-wsf-iconbtn:disabled { opacity: 0.4; cursor: default; }
+
+.cre-ws .cre-ws-fc {
+  border: 1px solid var(--cre-ws-hairline);
+  border-radius: 14px;
+  background: var(--cre-ws-surface);
+  padding: 28px 24px;
+  text-align: center;
+  display: grid;
+  gap: 14px;
+  justify-items: center;
+}
+.cre-ws .cre-ws-fcterm {
+  font-family: var(--font-heading-serif);
+  font-size: 28px;
+  line-height: 34px;
+  color: var(--cre-ws-ink);
+}
+.cre-ws .cre-ws-fcq { font-size: 13px; color: var(--cre-ws-faint); }
+.cre-ws .cre-ws-fcconf { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+.cre-ws .cre-ws-fcconf button {
+  border: 1px solid var(--cre-ws-hairline);
+  background: var(--cre-ws-surface);
+  border-radius: 999px;
+  padding: 7px 14px;
+  font-size: 13px;
+  color: var(--cre-ws-muted);
+  cursor: pointer;
+  font-family: var(--font-body);
+}
+.cre-ws .cre-ws-fcconf button[aria-pressed='true'] { background: var(--cre-ws-fill); color: var(--cre-ws-ink); font-weight: 600; }
+.cre-ws .cre-ws-fcback { display: grid; gap: 10px; justify-items: center; }
+.cre-ws .cre-ws-fcdef { font-size: 15px; line-height: 23px; color: var(--cre-ws-ink); max-width: 46ch; }
+.cre-ws .cre-ws-fcex { font-size: 13px; line-height: 20px; color: var(--cre-ws-faint); max-width: 46ch; }
+.cre-ws .cre-wsf-decknav { display: flex; gap: 8px; justify-content: center; }
+
+/* "Talking about · Note" */
+.cre-ws .cre-ws-about {
+  border-left: 2px solid var(--cre-ws-fill);
+  padding-left: 12px;
+}
+.cre-ws .cre-ws-asked { display: grid; gap: 10px; }
+
+/* Make's audio payload */
+.cre-ws .cre-ws-audio { display: flex; align-items: center; gap: 8px; margin-top: 10px; font-size: 12px; color: var(--cre-ws-faint); }
+.cre-ws .cre-ws-audio button {
+  width: 26px;
+  height: 26px;
+  flex: none;
+  border-radius: 50%;
+  border: 1px solid var(--cre-ws-steel);
+  background: var(--cre-ws-steel);
+  color: var(--color-neutral-50);
+  cursor: pointer;
+  line-height: 1;
+  font-size: 11px;
+}
+
+/* ---- A COLLAPSED PANE is a 56px rail, not a removed column (2026-11-04).
+   Hers keeps the toggle where it was, so the way back is where the way out
+   was, and the centre barely moves. ---- */
+.cre-ws .cre-ws-col.is-collapsed { min-width: 0; }
+.cre-ws .cre-wsf-rail {
+  display: flex;
+  justify-content: center;
+  padding: 18px 0;
+  border: 0;
+  background: none;
+  height: 100%;
+  box-sizing: border-box;
+  align-items: flex-start;
+}
+
+/* ---- THE WORKSPACE IS A TAKEOVER. It replaces the Compass shell, so it
+   owns the full width under the XCEL header and sets its own gutters. ---- */
+.cre-ws { flex: 1; min-width: 0; }
+.cre-ws .cre-ws-head { max-width: none; padding: 0 0 18px; }
+.cre-ws .cre-ws-homecol { max-width: 820px; margin: 0 auto; }
+
+/* ---- AUDIT 2 (2026-11-04): her home's real shape, measured.
+   `.f-home` max-width 1120 · hero = section > eyebrow + grey card + Rubi
+   strip · sessions = a three-column shelf of 281px cards. ---- */
+.cre-ws .cre-ws-homecol { max-width: 1120px; margin: 0 auto; }
+.cre-ws .cre-ws-home .cre-ws-head-t { max-width: 620px; }
+
+.cre-ws .cre-ws-home .cre-ws-hero {
+  display: block;
+  border: 0;
+  background: none;
+  border-radius: 0;
+  padding: 0;
+  margin: 0 0 24px;
+}
+.cre-ws .cre-ws-heroh {
+  font-size: 11px;
+  line-height: 15px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--cre-ws-faint);
+  font-weight: 600;
+  margin: 0 0 10px;
+}
+.cre-ws .cre-ws-herocard {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+  border-radius: 16px;
+  background: var(--cre-ws-fill);
+  border: 1px solid var(--color-atlas-nav-active-fill);
+  padding: 24px 26px;
+}
+.cre-ws .cre-ws-herocard .big {
+  font-family: var(--font-heading-serif);
+  font-size: 26px;
+  line-height: 32px;
+  font-weight: 700;
+  color: var(--cre-ws-ink);
+  margin: 4px 0 0;
+}
+.cre-ws .cre-ws-herocard p { margin: 8px 0 0; font-size: 15px; line-height: 23px; color: var(--cre-ws-muted); }
+
+/* the strip belongs to the hero, under its card */
+.cre-ws .cre-ws-rubiline {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 10px 0 0;
+  font-size: 13px;
+  color: var(--cre-ws-muted);
+}
+
+/* sessions: a shelf */
+.cre-ws .cre-ws-sessions { margin-top: 26px; }
+.cre-ws .cre-ws-sech { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.cre-ws .cre-ws-sech h3 {
+  font-family: var(--font-heading-serif);
+  font-size: 20px;
+  line-height: 26px;
+  color: var(--cre-ws-ink);
+  margin: 0;
+}
+.cre-ws .cre-ws-shelf { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.cre-ws .cre-ws-shelf.view-cards { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
+.cre-ws .cre-ws-shelf.view-time { grid-template-columns: minmax(0, 1fr); }
+@media (max-width: 900px) {
+  .cre-ws .cre-ws-shelf { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+/* The conversation scrolls; the composer is pinned under it (audit 2). */
+/* ⚠ IT DOES NOT ACTUALLY SCROLL — hers is `overflow: visible`. What the
+   region buys is ORDER: the conversation, then the questions, the composer
+   and its hint beneath it. Audit 3 corrected the overflow I had assumed. */
+.cre-ws .cre-wsnb-scrollregion { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 14px; }
+
+/* ---- AUDIT 4: a mark in the RAIL is a compact row, not the card.
+   Hers: a type-coloured pin that does the pinning, the passage truncated,
+   a meta line under it. The rail is for FINDING a mark; the centre is for
+   reading one. ---- */
+.cre-ws .cre-wsnb-src { display: flex; gap: 10px; align-items: flex-start; padding: 9px 0; }
+.cre-ws .cre-wsf-pinsel {
+  flex: none;
+  margin-top: 1px;
+  cursor: pointer;
+  line-height: 0;
+  opacity: 0.85;
+}
+.cre-ws .cre-wsf-pinsel.on { opacity: 1; }
+.cre-ws .cre-wsf-pinsel.on::after {
+  content: '';
+  display: block;
+  height: 2px;
+  margin-top: 2px;
+  border-radius: 2px;
+  background: currentColor;
+}
+.cre-ws .cre-wsf-open {
+  flex: 1;
+  min-width: 0;
+  display: block;
+  text-align: left;
+  border: 0;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+  font-family: var(--font-body);
+}
+/* her passage: serif, two lines, then an ellipsis */
+.cre-ws .cre-wsf-open .t {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-family: var(--font-heading-serif);
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--cre-ws-ink);
+}
+.cre-ws .cre-wsf-open .m {
+  display: block;
+  margin-top: 4px;
+  font-size: 11px;
+  line-height: 15px;
+  color: var(--cre-ws-faint);
+}
+.cre-ws .cre-wsf-open[aria-pressed='true'] .t { font-weight: 600; }
+
+/* her group heading: chevron, type glyph, plural, count on the right */
+.cre-ws .cre-wsnb-chh {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  width: 100%;
+  border: 0;
+  background: none;
+  padding: 16px 0 6px;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--cre-ws-faint);
+  cursor: pointer;
+  font-family: var(--font-body);
+}
+.cre-ws .cre-wsnb-chh .cv { font-size: 12px; line-height: 1; transition: transform 0.15s ease; }
+.cre-ws .cre-wsnb-chh.closed .cv { transform: rotate(-90deg); }
+.cre-ws .cre-wsnb-chh .n { margin-left: auto; letter-spacing: 0; }
+
+/* ---- AUDIT 5: the Make tiles are live with nothing pinned, the Coming soon
+   pair is aria-disabled rather than removed from the tab order, and what this
+   visit produced is badged. ---- */
+.cre-ws .cre-ws-make button b { display: block; font-weight: 600; }
+.cre-ws .cre-ws-make button .cre-ws-soon {
+  display: inline-block;
+  margin-left: 6px;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--cre-ws-faint);
+  font-weight: 600;
+  float: none;
+}
+.cre-ws .cre-ws-make button.cre-wsf-soon { opacity: 0.55; cursor: default; }
+.cre-ws .cre-ws-thissession {
+  display: inline-block;
+  margin-left: 8px;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--cre-ws-steel);
+}
+
+/* ---- AUDIT 6: the chips carry the TYPE GLYPH, as hers do — the same icon
+   the group heading below uses, so the chip row and the groups read as one
+   vocabulary. They carried a coloured dot before. ---- */
+.cre-ws .cre-ws-chip { gap: 7px; padding: 6px 13px; }
+.cre-ws .cre-ws-chip svg { flex: none; }
+.cre-ws .cre-ws-chip .cre-wsf-n { margin-left: 2px; }

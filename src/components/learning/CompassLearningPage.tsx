@@ -1,12 +1,21 @@
 import { useState, type CSSProperties } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { CompassSidebar, CompassPageBody, type CompassPage } from './CompassCoursePlayer'
-import { HYBRID_COMPASS_PAGES } from './compassPages'
+import { HYBRID_COMPASS_PAGES, HYBRID_COMPASS_PAGES_WITH_WORKSPACE } from './compassPages'
 import { useDeclareDesignSurface, type DesignSurfaceId } from '@/context/designSurface'
 import { CompassRail } from './CompassRail'
 import { CompassLearningOverview, OverviewHeader } from './CompassLearningOverview'
 import { CompassCourseLanding } from './CompassCourseLanding'
 import { useFeatureFlag } from '@/context/FeatureFlagContext'
+import { CompassWorkspace } from './CompassWorkspace'
+import type {
+  WorkspaceDeviceView,
+  WorkspaceHome,
+  WorkspaceLayout,
+  WorkspaceRubiShape,
+  WorkspaceSessionView,
+  WorkspaceStory,
+} from './compassWorkspaceModel'
 import { useNavPlacement } from '@/components/layout/navPlacement'
 import { CompassStudyPlanner } from './CompassStudyPlanner'
 import { CompassPlanProvider } from './CompassPlanContext'
@@ -68,7 +77,15 @@ export function CompassLearningPage({
      to Overview rather than rendering nothing. */
   const [page, setPage] = useState<CompassPage>(() => {
     const asked = seedParams.get('compassPage')
-    return HYBRID_COMPASS_PAGES.some((p) => p.id === asked) ? (asked as CompassPage) : 'overview'
+    /* ⚠ VALIDATED AGAINST THE FULL LIST, workspace included, even though the
+       flag may be off. The seed runs once at mount and the flag is read below
+       it; gating the seed on the flag would make `?compassPage=workspace`
+       depend on hook order rather than on the flag. A workspace page with the
+       flag off simply renders nothing special — the guard is on the render,
+       which is where it can see the flag. */
+    return HYBRID_COMPASS_PAGES_WITH_WORKSPACE.some((p) => p.id === asked)
+      ? (asked as CompassPage)
+      : 'overview'
   })
   /* Tell the Design bar which Compass page is open, so it can carry Anjani's
      controls for THIS page rather than all seven on every one of them. The
@@ -89,8 +106,34 @@ export function CompassLearningPage({
      go back to being inert, which is what it was until 2026-10-16 and what
      the landing page's own note explains. */
   const resumeOpensSession = useFeatureFlag('compass-resume-opens-session').enabled
+
+  /* ANJANI'S WORKSPACE AND ITS SIX AXES — 2026-11-04, from her v4. Read here
+     rather than inside the component so the component stays a plain function
+     of its props: a test can render all six layouts without a flag provider,
+     and the Variants deck can put two of them side by side. */
+  const workspaceOn = useFeatureFlag('compass-workspace').enabled
+  const workspaceLayout = useFeatureFlag('compass-workspace-layout').variant as WorkspaceLayout
+  const workspaceHome = useFeatureFlag('compass-workspace-home').variant as WorkspaceHome
+  const workspaceStory = useFeatureFlag('compass-workspace-story').variant as WorkspaceStory
+  const workspaceSessions = useFeatureFlag('compass-workspace-sessions').variant as WorkspaceSessionView
+  const workspaceRubi = useFeatureFlag('compass-workspace-rubi').variant as WorkspaceRubiShape
+  const workspaceView = useFeatureFlag('compass-workspace-view').variant as WorkspaceDeviceView
+  /* The rail gains a row only when the Workspace is on. Two lists rather than
+     a filter, so the rail never has to know the flag — see `compassPages.ts`. */
+  const railPages = workspaceOn ? HYBRID_COMPASS_PAGES_WITH_WORKSPACE : HYBRID_COMPASS_PAGES
   const resumeToVideo = resumeOpensSession && onStartSession ? () => onStartSession('course') : undefined
   const hybrid = anjani
+  /* ⚠ ONLY A SESSION TAKES OVER, not the Workspace page — 2026-11-04,
+     Jillienne: "workspace page should have a left nav option, its just the
+     new workspace that is a full-screen takeover". Measured on her build:
+     the Workspace HOME keeps her Compass rail at 220px and draws no
+     workspace bar; opening a session collapses the rail to 0 and the bar
+     appears. An earlier pass made the whole page a takeover, which lost the
+     rail on the one screen that still needs it. The Workspace reports its
+     own mode up, because the page owns the rail. */
+  const [workspaceInSession, setWorkspaceInSession] = useState(false)
+  const workspaceOpen = hybrid && workspaceOn && page === 'workspace'
+  const workspaceTakeover = workspaceOpen && workspaceInSession
   /* Option 3 only — the header and the rail both carry a Home there, so the
      sidebar's trail would be the third. See the prop. */
   const hideCrumb = useNavPlacement() === 'hybrid'
@@ -105,8 +148,16 @@ export function CompassLearningPage({
           `CompassSidebar` and was rejected: hers has the XCEL lockup where that
           one has a crumb and a progress bar, no row icons, and a footer of
           course hours / exam date / the learner. */}
-      {hybrid ? (
-        <CompassRail page={page} onSelectPage={setPage} pages={HYBRID_COMPASS_PAGES} />
+      {/* ⚠ THE WORKSPACE IS A TAKEOVER — 2026-11-04, Jillienne: "the new
+          workspace is supposed to be in a full screen takeover like the learn
+          page". Measured on her build: entering it collapses the Compass rail
+          to width 0 and the workspace shell starts at x=0, spanning the whole
+          viewport under the XCEL header alone. So the rail is not rendered
+          here at all while the Workspace is open — the workspace's own bar,
+          with its Close, is the only chrome. Three passes drew it inside the
+          Compass page with the rail still at 220px. */}
+      {workspaceTakeover ? null : hybrid ? (
+        <CompassRail page={page} onSelectPage={setPage} pages={railPages} />
       ) : (
       <CompassSidebar
         courseTitle={courseTitle}
@@ -120,7 +171,22 @@ export function CompassLearningPage({
         timeRemaining={timeRemaining}
       />
       )}
-      {hybrid && page === 'study-planner' ? (
+      {workspaceOpen ? (
+        /* HER WORKSPACE. It stands where the Study planner does — outside the
+           scroll column — for the same reason: it is its own multi-column
+           layout, and nesting it inside the column would collapse the three
+           panes her Notebook layout is about. */
+        <CompassWorkspace
+          layout={workspaceLayout}
+          home={workspaceHome}
+          story={workspaceStory}
+          sessionView={workspaceSessions}
+          rubiShape={workspaceRubi}
+          deviceView={workspaceView}
+          onModeChange={setWorkspaceInSession}
+          onClose={() => setPage('course')}
+        />
+      ) : hybrid && page === 'study-planner' ? (
         /* Her Study planner — the screen the rail's third row opened on an
            empty ground from 2026-10-08 until the OCT2 master drew it. It is
            its own two-column layout (the plan and calendar, Rubi's panel), so

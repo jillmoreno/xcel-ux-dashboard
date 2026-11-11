@@ -36,6 +36,13 @@ export type DesignSurfaceId =
   | 'compass:course'
   | 'compass:study-planner'
   | 'compass:progress'
+  /* THE WORKSPACE — 2026-11-04, from Anjani's v4. Its own surface rather than
+     a corner of `compass:course`, because it carries six design controls of
+     its own and they are about the workspace's shape, not the course's: the
+     layouts, the home views, the fill level, the session arrangement, the
+     Rubi reply shape and the device frame. Scoped here, none of those six
+     reach the Learn page, which renders no workspace at all. */
+  | 'compass:workspace'
   /* ⚠ THE INVITE & PURCHASE FLOW — 2026-10-22, Jillienne: "these design
      controls should not show when the Start is set to Invite & Checkout, they
      should display for Atlas."
@@ -106,6 +113,7 @@ export const DESIGN_SURFACE_LABELS: Record<DesignSurfaceId, string> = {
   'compass:course': 'Compass · Learn',
   'compass:study-planner': 'Compass · Study planner',
   'compass:progress': 'Compass · Progress',
+  'compass:workspace': 'Compass · Workspace',
   invite: 'Invite & Checkout',
   'atlas-admin': 'Atlas Admin',
 }

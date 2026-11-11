@@ -1,5 +1,5 @@
-import { describe, expect, it, beforeEach } from 'vitest'
-import { render, screen, within } from '@testing-library/react'
+import { afterEach, describe, expect, it, beforeEach, vi } from 'vitest'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import { UxDashboardPage } from '@/pages/UxDashboardPage'
@@ -10,6 +10,7 @@ import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { PROTOTYPE_FEATURES, PROTOTYPE_SCOPES, componentPreviewUrl } from '@/data/prototypeFeatures'
 import { ARCHIVED_ITEMS } from '@/data/archivedItems'
+import type { TodoCard } from '@/data/todoBoardStore'
 import { HUB_DOCS } from '@/data/hubDocs'
 import { HANDOFF_IDS } from '@/data/handoffFeatures'
 import { HUB_HOST, STAGE_BRANCH, STAGE_ORIGIN, prototypeHref } from '@/data/stageBuild'
@@ -857,6 +858,98 @@ describe('Prototypes — one row per scope, every row the same build', () => {
     expect(groups[0].textContent).toContain('next release')
     expect(groups[0].textContent).not.toContain('right now')
     expect(document.querySelector('[data-build-note]')!.textContent).toMatch(/stage branch/i)
+  })
+
+  /* ── The staged tag (2026-11-04) ────────────────────────────────────────
+   *
+   * The gap this closes, in the words it was reported in: "when Anjani
+   * pushes to stage, why is the prototype not updating?" The switch WAS
+   * working — it rewrote the row's href to the stage origin, which is all it
+   * ever claimed to do — but the card looked identical under both builds, so
+   * a designer who had just staged a surface had no way to tell the share had
+   * landed. The row now reads the On Stage card for its own scope and says so.
+   *
+   * ⚠ IT READS A CARD, NOT THE STAGE BUILD. `stageBuild.ts` still holds: the
+   * Hub cannot fetch the stage site (cross-origin, same site password). What
+   * it reads is its own Blobs store, which `/share-to-stage` wrote to — see
+   * `useStagedScopes`. */
+  const boardWith = (cards: Partial<TodoCard>[]) => {
+    const full = cards.map((c, i) => ({
+      id: `card-00${i + 1}`,
+      title: 'Compass — week view',
+      note: '',
+      owner: 'Anjani',
+      column: 'stage',
+      position: i,
+      addedDate: '2026-11-04',
+      updatedAt: '2026-11-04T17:12:48.000Z',
+      archived: false,
+      archivedAt: '',
+      archivedBy: '',
+      scope: 'compass',
+      ...c,
+    }))
+    return vi.spyOn(globalThis, 'fetch').mockImplementation((input: RequestInfo | URL) =>
+      String(input).startsWith('/api/todo-board')
+        ? Promise.resolve(
+            new Response(JSON.stringify({ cards: full, people: [] }), {
+              status: 200,
+              headers: { 'content-type': 'application/json' },
+            }),
+          )
+        : Promise.resolve(new Response('{}', { status: 404 })),
+    )
+  }
+
+  /* The spy is global, so it MUST come off — a later test in this file that
+     rendered the dashboard would otherwise still be reading a board with a
+     staged Compass card in it. */
+  afterEach(() => vi.restoreAllMocks())
+
+  it('a staged surface says so on its row — "Staged" under Stage, "Waiting on stage" under Main', async () => {
+    boardWith([{}])
+    const user = userEvent.setup()
+    renderDashboard()
+    const compass = () => document.querySelector('[data-row="xcel-compass"]')!
+
+    // UNDER MAIN the row opens main's build, which does NOT contain the
+    // staged work — so it must not say "Staged". It points at the switch.
+    await waitFor(() => expect(compass().textContent).toContain('Waiting on stage'))
+    expect(compass().textContent).not.toContain('Staged Nov')
+    // And the row still opens main, exactly as before.
+    expect(hrefOf('xcel-compass')).toBe('/dashboard-rebrand?demo=1&section=compass')
+
+    // UNDER STAGE it is the staged thing, so it says when and by whom.
+    await user.click(screen.getByRole('radio', { name: 'Stage' }))
+    await waitFor(() => expect(compass().textContent).toMatch(/Staged Nov 4 · Anjani/))
+    expect(compass().textContent).not.toContain('Waiting on stage')
+
+    // ⚠ ONLY THE SCOPE THAT WAS STAGED. A tag on every row would be the
+    // original bug wearing a label — four of these surfaces are untouched.
+    for (const f of openingRows().filter((f) => f.prototypeScope !== 'compass')) {
+      expect(document.querySelector(`[data-row="${f.id}"]`)!.textContent, f.id).not.toContain('Staged Nov')
+    }
+  })
+
+  it('an ARCHIVED stage card is a released surface — the row goes quiet', async () => {
+    /* Archiving the On Stage card is how a release clears this. A row that
+       kept its tag after the work shipped would say "waiting" for ever, which
+       is the one thing worse than saying nothing. */
+    boardWith([{ archived: true }])
+    renderDashboard()
+    await waitFor(() => expect(screen.getByRole('radio', { name: 'Main' })).toBeInTheDocument())
+    expect(document.querySelector('[data-row="xcel-compass"]')!.textContent).not.toContain('stage')
+  })
+
+  it('a card with no scope tags nothing — the board is mostly not about surfaces', async () => {
+    // Most cards on the board are a week's work, not a product surface. Only
+    // the ones `/share-to-stage` files carry a scope.
+    boardWith([{ scope: '', title: 'Write the release notes' }])
+    renderDashboard()
+    await waitFor(() => expect(screen.getByRole('radio', { name: 'Main' })).toBeInTheDocument())
+    for (const f of openingRows()) {
+      expect(document.querySelector(`[data-row="${f.id}"]`)!.textContent, f.id).not.toContain('Waiting on stage')
+    }
   })
 
   it('the build is in the address — `?build=stage` — and absent for Main', async () => {

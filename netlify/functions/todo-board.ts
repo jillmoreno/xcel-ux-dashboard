@@ -61,6 +61,20 @@ const STORE_NAME = 'todo-board'
  */
 export const COLUMNS = ['todo', 'working', 'refine', 'stage', 'handoff'] as const
 
+/**
+ * THE PROTOTYPES SCOPES a card may name (2026-11-04). Re-declared here rather
+ * than imported from `src/data/prototypeFeatures.ts` for the reason `COLUMNS`
+ * is: this is a trust boundary, and the client module is a compile-time claim
+ * about code we wrote. `TodoBoard.test.tsx` parses both files and asserts they
+ * agree, so the duplication cannot drift silently.
+ *
+ * A card carrying one of these in the `stage` column is what a Prototypes row
+ * reads to draw its "Staged" tag. An unknown value stores as '' — a card must
+ * not be able to claim a surface that does not exist, because a row that
+ * matched it would then be unreachable from the board that set it.
+ */
+export const SCOPES = ['end-to-end', 'invite', 'atlas', 'compass', 'admin'] as const
+
 /** The column that assigns itself. See "THE HANDOFF RULE" above. */
 export const AUTO_ASSIGN_COLUMN = 'handoff'
 export const AUTO_ASSIGN_OWNER = 'Jill'
@@ -303,6 +317,16 @@ function validateCard(
   const archivedBy = str(b.archivedBy)?.trim() ?? ''
   if (archivedBy.length > MAX_NAME) errors.push(`archivedBy is longer than ${MAX_NAME} characters.`)
   else out.archivedBy = archived ? archivedBy.slice(0, MAX_NAME) : ''
+
+  /* THE SCOPE (2026-11-04) — which Prototypes surface this card is about, set
+     by `/share-to-stage` and read by the Prototypes rows to say a surface is
+     waiting on a release. Normalised, not rejected: an unknown scope is a
+     skill that has run ahead of the catalog, and dropping the field is a card
+     that files correctly with no tag rather than a share that fails at the
+     last step. Like the archive fields, it is sent on EVERY write — a move
+     that omitted it would quietly clear it. */
+  const scope = str(b.scope)?.trim() ?? ''
+  out.scope = (SCOPES as readonly string[]).includes(scope) ? scope : ''
 
   // Always the server's, never the client's: a create, an edit, and an edit
   // that changed nothing all re-stamp it.

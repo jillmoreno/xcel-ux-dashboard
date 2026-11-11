@@ -220,10 +220,50 @@ and say so. Otherwise open the add form prefilled:
 ```bash
 OWNER=$(git config user.name | awk '{print $1}')
 node -e '
-const [site,title,note,url,owner]=process.argv.slice(1);
-const q=new URLSearchParams({section:"todo-board",add:"1",column:"stage",title,note:`${note} ${url}`.trim(),owner});
-console.log(`${site}/?${q}`)' "https://ux-design-xceldashboard.netlify.app" "$TITLE" "Staged $(date +%Y-%m-%d) —" "$STAGE_URL" "$OWNER"
+const [site,title,note,url,owner,scope]=process.argv.slice(1);
+const q=new URLSearchParams({section:"todo-board",add:"1",column:"stage",title,note:`${note} ${url}`.trim(),owner,scope});
+console.log(`${site}/?${q}`)' "https://ux-design-xceldashboard.netlify.app" "$TITLE" "Staged $(date +%Y-%m-%d) —" "$STAGE_URL" "$OWNER" "$SCOPE"
 ```
+
+### ⚠ First: does this branch actually change the surface it claims?
+
+Before putting a scope on the card, check that the branch changed REACT under
+that scope's paths — not only a document:
+
+```bash
+git diff --name-only origin/main...HEAD -- src | grep -E '<the scope.s src paths>'
+git diff --name-only origin/main...HEAD -- public/prototypes
+```
+
+**If the second has changes and the first has none, STOP and say this:**
+
+> This branch changes a Compass **document** (`public/prototypes/…`), not the
+> Compass surface. The Prototypes row opens the REACT build, so Stage will
+> look exactly as it does now and the row will say "Staged" over something
+> unchanged. Two ways on: port the delta with `/port-prototype`, or file the
+> card with NO scope so the row stays honest.
+
+This is the failure the whole 2026-11-04 session came out of: Anjani shared a
+Compass document to stage, the share succeeded, the build went up, and her
+Prototypes row showed nothing. It read as a broken tool for a day. With the
+scope field added that afternoon it would have been WORSE — the row would have
+said "Staged · Anjani" over an unchanged Compass, which is a confident wrong
+answer rather than a blank one. Hence this check, before the scope goes on.
+
+⚠ **`scope` IS WHAT MAKES THE PROTOTYPES ROW SAY ANYTHING** (2026-11-04). It
+is the scope id you decided the defaults for in step 3 — `compass`,
+`atlas`, `invite`, `end-to-end`, `admin` — and without it the card still
+files correctly and the row stays silent, which is exactly the failure this
+field was added to fix: Anjani shared Compass to stage on 2026-11-04, the
+share worked, and the Compass row looked identical because nothing on the
+Hub knew the card was about Compass. Set `SCOPE` alongside `TITLE` and
+`STAGE_URL`; if the branch staged more than one scope, file one card per
+scope rather than one card naming two.
+
+If the chunk already HAS a card you are moving rather than adding, the scope
+has to be set on it as well — the move is a drag on the board, which carries
+the field but cannot invent it. Say so: open the card, and if it was filed
+before this field existed, re-file it with the form above.
 
 Same rules as `share-branch` step 11: nothing saves until the button is
 clicked; the owner is resolved against the roster on the page.
@@ -254,8 +294,16 @@ release. Either is fine; archiving is the usual answer.
 - **Never names `main`.** Not in a push, not in a merge. `/release` is the
   only thing that writes main, and it is Jillienne's.
 - **The default dashboard version is Jillienne's**, on stage as on main.
-- **The card is the staged-date record.** Do not invent a `stagedAt` field on
-  the Prototypes rows; the Hub cannot read stage.
+- **A document is not a surface.** A branch that changes only
+  `public/prototypes/` gets its card WITHOUT a scope, and the designer is told
+  why — see step 8. A row that says "Staged" over an unchanged build is worse
+  than a row that says nothing.
+- **The card is the staged-date record,** and since 2026-11-04 it is also
+  what the Prototypes row READS to draw its "Staged" tag — which is why the
+  card must carry `scope`. Still do not invent a `stagedAt` field on the
+  Prototypes rows: the Hub cannot read the stage BUILD, and a hand-stamped
+  field in `prototypeFeatures.ts` would be a second copy of this record that
+  nobody remembers to update. The card is the one record; the row reads it.
 - **Say what Stage shows now, and that Main does not.** Every time.
 
 ## The other two
