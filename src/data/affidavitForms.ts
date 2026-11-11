@@ -680,7 +680,7 @@ FORMS.CT_POST=(function(){
     {id:pre+'zip',label:'Zip',required:true,placeholder:'ZIP code',ac:'off',inputmode:'numeric'}];
   FORMS.MN_POST={
   docHeader:'Generic Document',
-  title:'Pre-License Course EXAM Proctor Affidavit',
+  title:'Pre-License Course Exam Proctor Affidavit', // "EXAM" was the PDF's capitals (Afsana, 2026-11-11)
   source:'PDF · MN PE-Post Final Affidavit (Generic Document, Rev 1.17.23)',
   pages:[
     /* ⚑ 2026-11-10, Afsana — MINNESOTA AFTER THE EXAM, BROUGHT INTO LINE WITH
@@ -704,6 +704,8 @@ FORMS.CT_POST=(function(){
       ...stdAddr('loc_'),
       {id:'name',label:'Name',required:true,placeholder:'Full legal name',ac:'name',sameAs:'fullname'},
       {row:[{id:'license',label:'License #',required:true,placeholder:'License number'},{id:'dob',type:'date',label:'Date of Birth',required:true,ac:'bday'}]},
+      /* Named the way the exam's address is (2026-11-11, Afsana). */
+      {block:{h4:'Business Address'}},
       ...['addr1','addr2','city','state','zip'].map((id)=>FORMS.KY_PRE.fields.find((x)=>x.id===id)),
       /* Back 2026-11-10 (Sarah: it is on the state form): optional, as the document has it. */
       {block:{h4:'Mailing Address (if different than above)'}},
@@ -722,14 +724,19 @@ FORMS.CT_POST=(function(){
        Date is ours — OCD has no date for the exam monitor — pre-filled and
        locked. ⚑ Sarah, the same day: Employer & Job Title and the proctor's
        e-mail are on the state form, so both are back and required (as
-       "Employer & Job Title" and "Email Address"), whatever OCD does. */
+       "Employer & Job Title" and "Email Address"), whatever OCD does.
+       2026-11-11, Afsana: Employer and Job Title are two fields, and the
+       proctor's address sits under a "Business Address" heading, as the
+       student's does. */
     {who:'proctor',blocks:[],fields:[
       {id:'p_name',label:'Proctor’s Full Legal Name',required:true,placeholder:'Proctor full legal name'},
       {id:'p_rel',type:'radio',label:'Relationship to Examinee',required:true,options:['Co-Worker (neither above or below the line of supervision)','Librarian','Neighbor']},
       {block:{p:'I certify that I am at least 18 years of age, with no financial or other conflict of interest with respect to a student’s successful completion of the examination. I verified the identity of the student listed above on this form (i.e. valid photo ID), and I ensured that the exam was completed without outside assistance of any kind (i.e. human, study material, notes, computer, cell phone, etc.), and that I physically monitored the student throughout the entire exam process.'}},
       {id:'p_sig',label:'Proctor Signature',required:true,placeholder:'Proctor types full name'},
       {id:'p_date',type:'date',label:"Today's Date",required:true,sameAs:'sigdate'},
-      {id:'p_job',label:'Employer & Job Title',required:true,placeholder:'Employer and job title'},
+      /* Two fields since 2026-11-11 (Afsana); it was one "Employer & Job Title". */
+      {row:[{id:'p_employer',label:'Employer',required:true,placeholder:'Employer'},{id:'p_jobtitle',label:'Job Title',required:true,placeholder:'Job title'}]},
+      {block:{h4:'Business Address'}},
       {id:'p_addr',label:'Address',required:true},
       {row:[{id:'p_phone',type:'tel',label:'Phone Number',required:true,placeholder:'(555) 000-0000'},{id:'p_email',type:'email',label:'Email Address',required:true,placeholder:'Enter email address'}]}
     ]}
@@ -737,7 +744,7 @@ FORMS.CT_POST=(function(){
   fields:[],
   flagFields:['agree'],
   lock:['examdate','examtime','p_date'],
-  note:'This is a generic proctor affidavit (Rev 1.17.23) with "Name of Exam" pre-filled for Minnesota Life, shown read-only. Two pages: the student’s section, then the proctor’s. Since 2026-11-10 its fields follow OCD and the standard fields, plus what OCD skips but the state form asks for: the student’s License # and optional Mailing Address, the proctor’s Employer & Job Title and Email Address. The "I confirm that the above information is accurate" checkbox ends the student section. Exam Completion Date and Time of Exam Completion are pre-filled and locked. The proctor’s Today’s Date is pre-filled to match the student’s and locked.'
+  note:'This is a generic proctor affidavit (Rev 1.17.23) with "Name of Exam" pre-filled for Minnesota Life, shown read-only. Two pages: the student’s section, then the proctor’s. Since 2026-11-10 its fields follow OCD and the standard fields, plus what OCD skips but the state form asks for: the student’s License # and optional Mailing Address, the proctor’s Employer, Job Title and Email Address. Since 2026-11-11 the student’s and the proctor’s addresses each sit under a “Business Address” heading, as the exam’s does under “Address where exam was completed”. The "I confirm that the above information is accurate" checkbox ends the student section. Exam Completion Date and Time of Exam Completion are pre-filled and locked. The proctor’s Today’s Date is pre-filled to match the student’s and locked.'
   };
 })();
 FORMS.WV_POST={

@@ -460,7 +460,7 @@ describe('AffidavitModalV2 — the explorer’s forms', () => {
       'First Name', 'Middle Name', 'Last Name', 'License #', 'Date of Birth',
       ...ADDRESS, ...MAILING, 'Phone Number', 'Email Address', 'Signature', 'Today’s Date',
       'First Name', 'Middle Name', 'Last Name', 'Relationship to Examinee', 'Signature', 'Today’s Date',
-      'Employer & Job Title', ...ADDRESS, 'Phone Number', 'Email Address',
+      'Employer', 'Job Title', ...ADDRESS, 'Phone Number', 'Email Address',
     ],
     WI_POST: [...SIGNER, 'Today’s Date', ...ADDRESS, 'Phone Number', ...SIGNER, 'Relationship to Examinee', 'Today’s Date'],
     WV_POST: [...SIGNER, 'Relationship to Examinee', ...SIGNER, 'Today’s Date'],
@@ -558,15 +558,20 @@ describe('AffidavitModalV2 — the explorer’s forms', () => {
   })
 
   /* Sarah, 2026-11-10: what is on the state form is collected, whatever OCD
-     skips — License #, the Mailing Address, Employer & Job Title, the
+     skips — License #, the Mailing Address, Employer and Job Title (two fields since 2026-11-11), the
      proctor's e-mail. */
   it('Minnesota: collects what the state form asks for — the mailing address optional', () => {
     const fields = formFields('MN_POST')
     const req = (id: string) => fields.find((x) => x.id === id)?.required
-    expect(['license', 'p_job', 'p_email'].map(req)).toEqual([true, true, true])
+    expect(['license', 'p_employer', 'p_jobtitle', 'p_email'].map(req)).toEqual([true, true, true, true])
     expect(['mail_addr1', 'mail_city', 'mail_state', 'mail_zip'].map(req)).toEqual([undefined, undefined, undefined, undefined])
     render(<AffidavitModalV2 onClose={() => {}} moment="post" state="MN" />)
     expect(screen.getByText('Mailing Address (if different than above)')).toBeTruthy()
+    expect(screen.getByRole('heading', { level: 2 }).textContent).toBe('Pre-License Course Exam Proctor Affidavit')
+    // 2026-11-11, Afsana: each address under a heading, like the exam's — the student's after License # and Date of Birth, the proctor's before its Address Line 1.
+    const blocks = FORMS.MN_POST!.pages.map((p) => (p.fields ?? []).map((x) => x.block?.h4 ?? x.row?.map((r) => r.id).join('+') ?? x.id))
+    expect(blocks[0].slice(blocks[0].indexOf('license+dob'), blocks[0].indexOf('license+dob') + 3)).toEqual(['license+dob', 'Business Address', 'addr1'])
+    expect(blocks[1].slice(blocks[1].indexOf('p_employer+p_jobtitle'), blocks[1].indexOf('p_employer+p_jobtitle') + 3)).toEqual(['p_employer+p_jobtitle', 'Business Address', 'p_addr1'])
   })
 
   it('Minnesota: exam date and time pre-filled and locked; the student’s address pre-filled', () => {
