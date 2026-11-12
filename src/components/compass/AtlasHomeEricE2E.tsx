@@ -644,6 +644,8 @@ export function AtlasHomeEricE2E({
   /* Steps 2 and 3 and Quick Links leave for the state's requirements page
      on xcelsolutions.com while `atlas-state-licensing-links` is on. */
   const licensingUrl = useStateLicensingUrl(path.state)
+  // The Design bar's Quick Links height (2026-11-12) — Matched height (default) or Fixed padding.
+  const quickLinksFit = useFeatureFlag('atlas-quick-links-height').variant === 'fixed-padding'
   /* ⚠ "REVIEW COURSE" AT 100%, NOT "VIEW CERTIFICATE" (2026-10-21, Jillienne:
      "the cta should actually change to Review course if the course is complete
      and the access is still available"). A learner who has finished but still
@@ -1248,11 +1250,9 @@ export function AtlasHomeEricE2E({
           style={{
             ...RAIL_CARD_BORDER,
             border: '1px solid color-mix(in srgb, var(--color-atlas-slate-100) 95%, black)',
-            /* …except with the State Licensing Requirements row
-               (2026-11-12, Afsana): the card fits its rows, so the space
-               under the last one is the 24 above the title, not the rest of
-               the course panel's height. */
-            ...(onWhite && headH && !licensingUrl ? { height: headH } : null),
+            /* …unless the Design bar's Quick Links height says Fixed padding
+               (2026-11-12, Afsana): the card fits its rows, 24 below as above. */
+            ...(onWhite && headH && !quickLinksFit ? { height: headH } : null),
             // …and its 20 corners (same day).
             ...(onWhite ? { borderRadius: 20 } : null),
           }}

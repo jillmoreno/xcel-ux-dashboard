@@ -169,6 +169,7 @@ const REBRAND_FLAGS = [
   'atlas-v3-progress',
   'atlas-v3-link-tiles',
   'atlas-wip-quick-links-side',
+  'atlas-quick-links-height',
   'atlas-background',
   'demo-start-point',
   /* B2B vs B2C at Secure Checkout — 2026-10-22. On the Design bar AND here,

@@ -200,7 +200,10 @@ function SideLink({
 }) {
   const content = (
     <>
-        <span aria-hidden style={{ width: 18, flex: 'none', display: 'inline-flex', justifyContent: 'center', color: 'var(--color-atlas-home-icon, var(--color-compass-page-button))' }}>
+        {/* 18 tall — the label's line height — and centred in it, so an icon
+            on a row that wraps sits on the FIRST line's middle rather than at
+            the row's top edge (2026-11-12). One-line rows centre either way. */}
+        <span aria-hidden style={{ width: 18, height: 18, flex: 'none', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-atlas-home-icon, var(--color-compass-page-button))' }}>
           {icon}
         </span>
         {/* `data-label` feeds a hidden Medium copy (`.cre-quick-link-label`,

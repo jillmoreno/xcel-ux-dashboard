@@ -3056,6 +3056,28 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'atlas-quick-links-height',
+    /* QUICK LINKS' HEIGHT ON HOME (2026-11-12, Afsana). Matched height is
+       Eric's of 2026-10-14 — the card as tall as the course panel beside it —
+       and stays the default. Fixed padding fits the card to its rows, 24 below
+       as above, which reads tidier once State Licensing Requirements made the
+       list shorter. */
+    surface: 'design',
+    owner: 'eric',
+    versions: ['eric-atlas-e2e', 'jill-atlas-main'],
+    group: 'Navigation',
+    label: 'Quick Links height',
+    description:
+      'How tall Home’s Quick Links card is. Matched height (default) stretches it to the course panel beside it; Fixed padding fits it to its rows, 24 above and below.',
+    defaultEnabled: true,
+    defaultVariant: 'matched',
+    variants: [
+      { value: 'matched', label: 'Matched height' },
+      { value: 'fixed-padding', label: 'Fixed padding' },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'atlas-pages-quick-links',
     /* QUICK LINKS OFF THE LEARNING PAGES (2026-11-02, Jillienne: "they don't
        need to be here, so on default, hide that side, this will shift over the
