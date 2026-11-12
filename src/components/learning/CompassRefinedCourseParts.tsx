@@ -14,7 +14,6 @@
 
 import {
   Award,
-  GraduationCap,
   BallotCheckRegular,
   Check,
   ChevronRight,
@@ -241,10 +240,11 @@ export function CourseHeadCard({
 }) {
   return (
     <section className="crf-course crf-course--head" aria-label={REFINED_COURSE.name}>
+      {/* ⚠ NO BADGE — 2026-11-12: "remove the icon". It was a 36px
+          mortarboard tile, his, and on a card that now leads with the
+          course's name in the display face it was a second mark competing
+          with the ring on the other end of the same row. */}
       <header className="crf-course__head">
-        <span className="crf-tile" aria-hidden>
-          <GraduationCap size={16} />
-        </span>
         <div className="crf-course__name">
           {/* ⚠ COUNTED, NOT TYPED — his read "19 chapters · 28 of 40 hours", a
               chapter count wrong by two and an hours figure nothing
@@ -255,16 +255,26 @@ export function CourseHeadCard({
               should be Qualifying Education - Florida." The card led with the
               regulatory CATEGORY, which is true of every XCEL course. */}
           <h2 className="crf-h2">{REFINED_COURSE.name}</h2>
-          <p className="crf-course__sub">{REFINED_COURSE.kind}</p>
+          {/* ⚠ THE COUNT JOINS THIS LINE — 2026-11-12: "add the 0 of 21
+              lessons completed in this line." It was stacked in the stat
+              column on the right, over "In progress"; what is left there is
+              the state and the ring, which are the same fact drawn twice at
+              two sizes. The figure now reads as part of what the course IS.
+
+              ⚠ THE DOT IS `crf-step__sep`, the drawn circle the next-step
+              meta line uses — this line took that line's type on the same
+              day, so it takes its punctuation too rather than a second dot
+              of its own. */}
+          <p className="crf-course__sub">
+            {REFINED_COURSE.kind}
+            <span aria-hidden className="crf-step__sep" />
+            {header.lessonsDone} of {header.lessons} lessons completed
+          </p>
         </div>
+        {/* ⚠ THE STATE ALONE — the count moved into the line under the
+            course's name, above. */}
         <div className="crf-course__stat">
           <span className="crf-course__done">{header.status}</span>
-          {/* ⚠ OF TWENTY-ONE, THE FIGURE THE EYEBROW NAMES — 2026-11-12.
-              It read "8 of 44 lessons" beside "21 Lessons · …": one word for
-              two numbers on one card. See `lessonsDone`. */}
-          <span className="crf-course__of">
-            {header.lessonsDone} of {header.lessons} lessons
-          </span>
         </div>
         <CourseRing header={header} />
       </header>
