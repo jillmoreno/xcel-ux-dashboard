@@ -17,27 +17,29 @@ import { FIXTURE_TODAY, myCoursesFor, type MyCourseRecord } from './myCoursesFix
 export const ATLAS_MY_COURSES: readonly AtlasCourseCardData[] = [
   {
     id: 'xcel-ny-producer-prelicensing',
-    title: 'New York Life and Health Pre-licensing',
-    imageUrl: '/courses/ny-life-health.webp',
+    title: 'Florida Life and Health Pre-licensing',
+    imageUrl: '/courses/fl-life-health.webp', // Florida's beach (2026-11-12, Eric: the cards in Florida; New York's skyline before)
     badge: 'Due Soon',
     availableDate: 'October 19, 2026',
     availableTime: '5:49 PM CDT',
     actionLabel: 'Resume Course',
     // Figma 706:2416's facts (2026-11-12, Eric) — the state is the course's, New York; the design's frame says Florida.
-    state: 'New York',
+    state: 'Florida',
     category: 'Licensing',
     lineOfAuthority: 'Life and Health',
     progress: 45,
   },
   {
     id: 'demo-ny-pc',
-    title: 'New York Property & Casualty',
-    imageUrl: '/courses/ny-property-casualty.webp',
+    title: 'Florida Property & Casualty',
+    // A Florida street of tile roofs and palms (2026-11-12, Eric). Unsplash photo 4T4AcGJvARQ, Unsplash License — free, no
+    // credit required. New York's brownstones before.
+    imageUrl: '/courses/fl-property-casualty.jpg',
     availableDate: 'December 15, 2026',
     availableTime: '11:59 PM CST',
     actionLabel: 'Begin Course',
     actionStyle: 'secondary',
-    state: 'New York',
+    state: 'Florida',
     category: 'Licensing',
     lineOfAuthority: 'Property and Casualty',
     progress: 0,
@@ -51,15 +53,17 @@ export const ATLAS_MY_COURSES: readonly AtlasCourseCardData[] = [
      shows a New York home type"). */
   {
     id: 'demo-ny-preferred-business-practices',
-    title: 'NY Preferred Business Practices for the Insurance Producer',
-    imageUrl: '/courses/ny-preferred-business-practices.jpg',
+    title: 'FL Preferred Business Practices for the Insurance Producer',
+    // A white stucco Florida house under palms (2026-11-12, Eric). Unsplash photo Eek1JU-RFRw, Unsplash License — free, no
+    // credit required. The Hamptons house before.
+    imageUrl: '/courses/fl-preferred-business-practices.jpg',
     // COMPLETED (2026-10-06, Eric's request) — an invented past completion
     // date; it was "Available until January 31, 2027" with Begin Course.
     completed: true,
     availableDate: 'September 18, 2026',
     availableTime: '3:12 PM CDT',
     actionLabel: 'Completed',
-    state: 'New York',
+    state: 'Florida',
     category: 'Continuing Education',
     lineOfAuthority: 'All Lines',
     progress: 100,
@@ -70,7 +74,7 @@ export const ATLAS_MY_COURSES: readonly AtlasCourseCardData[] = [
      though not New York. */
   {
     id: 'demo-ny-personal-lines',
-    title: 'New York Personal Lines Pre-licensing',
+    title: 'Florida Personal Lines Pre-licensing',
     imageUrl: '/courses/0.webp',
     badge: 'Expired',
     availableDate: 'November 2, 2026',
@@ -78,7 +82,7 @@ export const ATLAS_MY_COURSES: readonly AtlasCourseCardData[] = [
     actionLabel: 'Purchase Extension',
     // Begin Course's outline (2026-11-12, Eric; the Expired pill's pink outline for a moment — `expired`, kept on the card).
     actionStyle: 'secondary',
-    state: 'New York',
+    state: 'Florida',
     category: 'Licensing',
     lineOfAuthority: 'Personal Lines',
     progress: 62,
@@ -88,12 +92,12 @@ export const ATLAS_MY_COURSES: readonly AtlasCourseCardData[] = [
      is the project's stock agent-and-clients meeting (`/courses/6.webp`). */
   {
     id: 'demo-ny-pclh-refresher-ce',
-    title: 'NY Property, Casualty, Life, and Health Refresher CE Package',
+    title: 'FL Property, Casualty, Life, and Health Refresher CE Package',
     imageUrl: '/courses/6.webp',
     availableDate: 'January 15, 2027',
     availableTime: '11:59 PM CST',
     actionLabel: 'Retake Course',
-    state: 'New York',
+    state: 'Florida',
     category: 'Continuing Education',
     lineOfAuthority: 'Property, Casualty, Life and Health',
     progress: 87, // (2026-11-12, Eric; 100 first)

@@ -91,7 +91,7 @@ describe('My Courses on the Atlas baseline', () => {
     // The design's three cards are a strict subset of nothing in the fixtures:
     // "Insurance Ethics" exists only in the library.
     expect(screen.getByText('Insurance Ethics')).toBeTruthy()
-    expect(screen.queryByText('New York Life and Health Pre-licensing')).toBeNull()
+    expect(screen.queryByText('Florida Life and Health Pre-licensing')).toBeNull() // the design cards' title (Florida since 2026-11-12)
   })
 
   /* "do NOT put a cta on the card" (2026-11-02). The shared card has never had
@@ -123,7 +123,7 @@ describe('My Courses on the Atlas baseline', () => {
       `section=courses&version=${BASELINE}` +
         `&ff=atlas-courses-card-style:atlas,atlas-courses-from-library:off`,
     )
-    expect(screen.getByText('New York Life and Health Pre-licensing')).toBeTruthy()
+    expect(screen.getByText('Florida Life and Health Pre-licensing')).toBeTruthy() // Florida since 2026-11-12 (New York before)
     expect(screen.queryByText('Insurance Ethics')).toBeNull()
   })
 })
@@ -176,7 +176,7 @@ describe('Eric’s WIP keeps the page he asked for', () => {
 
   it('still draws the Atlas course card, not the shared one', () => {
     renderShell(`section=courses&version=${ERIC_WIP}`)
-    expect(screen.getByText('New York Life and Health Pre-licensing')).toBeTruthy()
+    expect(screen.getByText('Florida Life and Health Pre-licensing')).toBeTruthy() // Florida since 2026-11-12 (New York before)
   })
 })
 

@@ -15,10 +15,10 @@ export type WhiteCourse = { id: string; title: string; coverUrl: string; expires
 export const WHITE_FIRST_COURSE_ID = 'ny-life-health'
 
 export const WHITE_COURSES: readonly WhiteCourse[] = [
-  { id: WHITE_FIRST_COURSE_ID, title: 'New York Life and Health Pre-licensing', coverUrl: '/courses/ny-life-health.webp', expires: '9 days' },
-  { id: 'demo-ny-pc', title: 'New York Life Property and Casualty', coverUrl: '/courses/ny-property-casualty.webp', expires: '15 days' },
+  { id: WHITE_FIRST_COURSE_ID, title: 'Florida Life and Health Pre-licensing', coverUrl: '/courses/fl-life-health.webp', expires: '9 days' },
+  { id: 'demo-ny-pc', title: 'Florida Life Property and Casualty', coverUrl: '/courses/fl-property-casualty.jpg', expires: '15 days' },
   // No cover in the design for this one: the Business Practices photo stands in.
-  { id: 'demo-ny-edu', title: 'New York Education Funding: A Guide for Insurance Producers', coverUrl: '/courses/ny-preferred-business-practices.jpg', expires: '42 days' },
+  { id: 'demo-ny-edu', title: 'Florida Education Funding: A Guide for Insurance Producers', coverUrl: '/courses/fl-preferred-business-practices.jpg', expires: '42 days' },
 ]
 
 /** `?whiteCourse=` → a known course id, else the first. */

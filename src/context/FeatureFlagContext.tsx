@@ -2836,7 +2836,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
       { value: 'in-card', label: 'In card', description: 'The tab strip in the course card\u2019s head' },
       { value: 'off', label: 'Off', description: 'No course picker \u2014 the card shows its course alone (2026-11-10)' },
     ],
-    defaultVariant: 'off', // Off by default (2026-11-10, Eric; 'above' earlier that day)
+    defaultVariant: 'above', // Above the card by default (2026-11-12, Eric; Off from 2026-11-10, 'above' before that)
     defaultEnabled: true,
     page: 'dashboard-rebrand',
   },

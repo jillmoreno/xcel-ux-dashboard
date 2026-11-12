@@ -75,8 +75,9 @@ import { AtlasPaceRingCardFigma } from './AtlasPaceRingCardFigma'
 import { AtlasReadinessCard } from './AtlasReadinessCard'
 import { useFeatureFlag, useFeatureFlags, useCourseDemo } from '@/context/FeatureFlagContext'
 import { AtlasCourseTabs, type AtlasCourseTab } from './AtlasCourseTabs'
-import { WHITE_COURSES, WHITE_COURSE_PARAM, whiteCourseFor } from '@/data/atlasWhiteCourses'
-import { ATLAS_HOME_COURSE_PARAM, atlasHomeCourseFor } from '@/data/atlasCourseCards'
+import { WHITE_COURSE_PARAM } from '@/data/atlasWhiteCourses'
+import { ATLAS_HOME_COURSE_PARAM, ATLAS_MY_COURSES, atlasHomeCourseFor, atlasHomeStateFor } from '@/data/atlasCourseCards'
+import { EXPIRY_FLAG_KEY } from '@/data/courseFixtures'
 import {
   applyJourneySequencing,
   journeyStopsFor,
@@ -173,7 +174,8 @@ const SHOW_COURSE_TABS: boolean = true
 
 /** Each course tab's progress, by position — a rung of the Progress demo control (2026-11-10, Eric): Florida Life and Health
  *  Not Started 0%, New York Life Property and Casualty Developing 36%, New York Education Funding Exam Simulators Completed 95%. */
-const TAB_PROGRESS: readonly string[] = ['not-started', 'developing', 'simulators-done']
+/* My Courses' cards still in play — not completed, expired or failed — the Home course tabs (2026-11-12, Eric). */
+const ACTIVE_MY_COURSES = ATLAS_MY_COURSES.filter((c) => !c.completed && c.badge !== 'Expired' && c.actionLabel !== 'Retake Course')
 
 /* THE COURSE BOXES (2026-11-10, Eric) — a row of outlined course boxes ABOVE the course card, the picked one carrying an
    angle-down — or the tab strip IN the card's head: the design bar's Course tabs control (`atlas-course-tabs-place`) picks
@@ -913,7 +915,6 @@ export function AtlasHomeJillMain({
       'atlas-v3-progress',
       ATLAS_PROGRESS_ORDER[(ATLAS_PROGRESS_ORDER.indexOf(progressPick) + 1) % ATLAS_PROGRESS_ORDER.length],
     )
-  const currentTitle = longTitle ? V2_LONG_TITLE : courseTitle
   /* THE COURSE TABS ARE WHITE'S THREE COURSES (2026-10-13, Eric's request:
      "Update the course tabs to the 3 used elsewhere") — the list the Top
      Nav's My Courses dropdown and White's own Home use. The pick rides the
@@ -922,13 +923,15 @@ export function AtlasHomeJillMain({
      course's. Until that day the tabs had their own two: Life & Health and
      an invented "New York Property & Casualty" (Figma 188:1006), picked in
      page state. */
-  const tabs = courses ?? WHITE_COURSES.map((c, i) => (i === 0 ? { id: c.id, title: currentTitle, coverUrl } : c))
+  /* THE COURSE TABS ARE MY COURSES' ACTIVE CARDS (2026-11-12, Eric: "only show the active courses from the My Courses page") —
+     every card not completed, expired or failed. White's three before. */
+  const tabs = courses ?? ACTIVE_MY_COURSES.map((c) => ({ id: c.id, title: c.title, coverUrl: c.imageUrl }))
   // 32 off the head's top when the tabs show it (2026-11-10, Eric: "remove 32 pixels of padding above the courses tabs").
   const headTop: CSSProperties | null = showInCardTabs && SHOW_COURSE_TABS && tabs.length > 1 ? { paddingTop: WHITE_HEAD_PAD - 24 } : null // 32 off, then 8 back (same day, Eric) — 16
   // Which course-header layout is up — flipped by clicking the cover.
   const [whiteHead, setWhiteHead] = useState(false)
-  const activeTabId = whiteCourseFor(searchParams.get(WHITE_COURSE_PARAM))
-  const activeTab = tabs.find((t) => t.id === activeTabId) ?? tabs[0]
+  // The picked course is the My Courses card's — `?atlasCourse=`, the same param a card click sets.
+  const activeTab = tabs.find((t) => t.id === searchParams.get(ATLAS_HOME_COURSE_PARAM)) ?? tabs[0]
   // The demo's course: the one Invited Product Detail sells (2026-10-15,
   // Eric's request), in place of the course data's title.
   /* A My Courses card's course, when the learner came from one (2026-11-04,
@@ -937,20 +940,25 @@ export function AtlasHomeJillMain({
   const cardCourse = atlasHomeCourseFor(searchParams.get(ATLAS_HOME_COURSE_PARAM), e2eBrand)
   // A course tab's title too, not only its cover (2026-11-10, Eric: "clicking one of the course tabs, change the course image and
   // title"); the first tab is the demo's own course, so it keeps the demo's title.
-  const shownTitle = cardCourse?.title ?? (activeTab && activeTab.id !== tabs[0]?.id ? activeTab.title : e2eTitle)
+  // The picked tab's title and cover — the first tab's when none is picked (2026-11-12).
+  // The design bar's long title is the last word when there is no course at all.
+  const shownTitle = cardCourse?.title ?? activeTab?.title ?? e2eTitle ?? (longTitle ? V2_LONG_TITLE : courseTitle)
   const shownCover = cardCourse?.imageUrl ?? activeTab?.coverUrl ?? coverUrl
   const selectCourse = (id: string) => {
     setParams((prev) => {
       const next = new URLSearchParams(prev)
-      next.delete(ATLAS_HOME_COURSE_PARAM)
-      if (id === WHITE_COURSES[0].id) next.delete(WHITE_COURSE_PARAM)
-      else next.set(WHITE_COURSE_PARAM, id)
+      next.delete(WHITE_COURSE_PARAM)
+      next.set(ATLAS_HOME_COURSE_PARAM, id)
       return next
     })
-    // Each tab opens its course at its own progress, set as if picked on the demo bar's Progress control — which still moves it
-    // freely afterwards (2026-11-10, Eric). The first tab is the demo's own course, at the control's default, Not Started.
-    const tabProgress = TAB_PROGRESS[tabs.findIndex((t) => t.id === id)]
-    if (tabProgress) setVariant('atlas-v3-progress', tabProgress)
+    /* Each tab opens its course in its card's state — progress and access window set as if picked on the demo bar, exactly as
+       clicking the card on My Courses does (`atlasHomeStateFor`); the bar still moves them freely afterwards (2026-11-12). */
+    const card = ACTIVE_MY_COURSES.find((c) => c.id === id)
+    if (card) {
+      const { progress, expiry } = atlasHomeStateFor(card)
+      setVariant('atlas-v3-progress', progress)
+      setVariant(EXPIRY_FLAG_KEY, expiry)
+    }
     onSelectCourse?.(id)
   }
 
@@ -3365,7 +3373,7 @@ function CourseBoxes({ courses, pickedId, onPick }: { courses: AtlasCourseTab[];
   const caps = natural.length === courses.length && room > 0 ? fillRow(natural, room, open) : []
   return (
     <nav ref={rowRef} aria-label="Your courses" style={{ ...COURSE_BOXES, position: 'relative' }}>
-      <span ref={labelRef} style={COURSE_BOXES_LABEL}>Courses:</span>
+      <span ref={labelRef} style={COURSE_BOXES_LABEL}>Active Courses:</span>{/* "Active Courses:" (2026-11-12, Eric; "Courses:" before) — the tabs are My Courses' active cards. */}
       {courses.map((t, i) => {
         const picked = t.id === pickedId
         return (
