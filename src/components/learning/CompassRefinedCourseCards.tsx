@@ -153,7 +153,7 @@ export function CompassRefinedCourseCards({
                   {c.number ? (
                     String(c.number).padStart(2, '0')
                   ) : (
-                    <BookOpenRegular size={13} />
+                    <BookOpenRegular size={12} />
                   )}
                 </span>
 

@@ -1754,11 +1754,13 @@
    bottom and past the last card — and would have to be clipped back. One
    segment per card ends where the cards do, by construction.
 
-   ⚠ 43px FROM THE CARD'S LEFT EDGE: the card's 1px border, the body's 20px
-   padding, and half the 44px chip. Those four numbers are a set — move any
-   of them and this moves with them. The first pass said 42 and was a pixel
-   off, because the border is easy to forget and impossible to see; measured
-   against the chip's own box in the browser rather than taken on trust.
+   ⚠ 36px FROM THE CARD'S LEFT EDGE: the card's 1px border, the body's 20px
+   padding, and half the 30px chip. Those four numbers are a set — move any
+   of them and this moves with them, which is what happened when the chip
+   went from a 44px square to a 30px tag. The first version said 42 against
+   the 44px chip and was a pixel off, because the border is easy to forget
+   and impossible to see; both figures were measured against the chip's own
+   box in the browser rather than taken on trust.
 
    ⚠ NOT AFTER THE LAST ONE. `:last-of-type` is the last `article`; the fold
    control is a `button`, so a dangling segment below the final card cannot
@@ -1766,7 +1768,7 @@
 .crf-map__card::after {
   content: '';
   position: absolute;
-  left: 43px;
+  left: 36px;
   top: 100%;
   width: 2px;
   height: 12px;
@@ -1792,18 +1794,34 @@
   gap: 16px;
   padding: 18px 20px;
 }
-/* The numbered chip. 44px square so two digits sit comfortably at 15px. */
+/* ⚠ THE CHIP IS A TAG, NOT A TILE — 2026-11-12: "have these be the same
+   size height as the tags." 23px is the status pill's measured height and
+   5px its radius, so the number and the word beside it read as two marks of
+   one kind rather than a badge and a block. It was a 44px square at 15px.
+
+   ⚠ 30px WIDE, NOT 23. Matching the height was the ask; matching the width
+   as well would put "01" in a 23px box with no room either side of two
+   digits. The chip stays wider than it is tall, which is also what keeps the
+   number legible at 12px.
+
+   ⚠ THE SPINE MOVES WITH IT. `.crf-map__card::after` is positioned on the
+   chip's centre — 1px border + 20px padding + half of THIS width. Change
+   the width here and change it there. */
 .crf-map__chip {
   display: flex;
   align-items: center;
   justify-content: center;
-  flex: 0 0 44px;
-  width: 44px;
-  height: 44px;
-  border-radius: 10px;
+  flex: 0 0 30px;
+  width: 30px;
+  height: 23px;
+  /* Half the difference between the 34px top row and this 23px chip. The
+     arithmetic says 5.5; 6 measured a pixel low and 5 measures level, which
+     is the sort of thing only the browser can settle. */
+  margin-top: 5px;
+  border-radius: 5px;
   background: var(--crf-locked-tile);
   color: var(--crf-locked-ink);
-  font-size: 15px;
+  font-size: 12px;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
@@ -1824,10 +1842,18 @@
 }
 /* The pill and the action share the top line — the action hard right, which
    is the instruction this variant was asked for. */
+/* ⚠ A FIXED HEIGHT SO THE CHIP CAN LINE UP WITH THE PILL — 2026-11-12. The
+   two are the same height now and sat 6px out of step, because this row is
+   as tall as whatever is in it: 34px on a card with a button, 23px on a
+   locked one with only the pill. The chip is outside the row and cannot
+   centre against something that changes size, so the row is pinned to the
+   button's height on every card and the chip takes the one offset that
+   follows from it. */
 .crf-map__top {
   display: flex;
   align-items: center;
   gap: 12px;
+  min-height: 34px;
   margin-bottom: 8px;
 }
 /* ⚠ A SQUARED TAG, NOT A CAPSULE — 2026-11-12: "have the locked look more
@@ -1839,7 +1865,15 @@
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  padding: 3px 10px;
+  /* ⚠ ONE HEIGHT FOR ALL FOUR, AND THE CHIP — 2026-11-12, following "have
+     these be the same size height as the tags". The tags were not the same
+     height as EACH OTHER: Completed and Locked have no border and measured
+     22, In Progress and Up Next have one and measured 24. Padding alone
+     cannot fix that, so the box is pinned and `border-box` absorbs the
+     border. 23 is the figure the chip matches. */
+  box-sizing: border-box;
+  height: 23px;
+  padding: 0 10px;
   border-radius: 5px;
   background: var(--crf-locked-tile);
   color: var(--crf-locked-ink);
