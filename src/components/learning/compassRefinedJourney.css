@@ -884,11 +884,15 @@
 
    The values are `.crf-page`'s exactly, not new ones: the complaint is that
    this page stopped matching its neighbours, so matching them is the fix. */
+/* ⚠ NO TOP PADDING — 2026-11-12: "remove top padding. this page and all
+   other pages." `.crf-page` lost the same 38px; this is the Overview's own
+   wrapper and had to be changed with it, or the one page a reviewer lands on
+   would be the one still indented. */
 .crf-rd {
   flex: 999 1 560px;
   min-width: 0;
   box-sizing: border-box;
-  padding: 38px 44px 72px;
+  padding: 0 44px 72px;
   margin: 0 auto;
 }
 

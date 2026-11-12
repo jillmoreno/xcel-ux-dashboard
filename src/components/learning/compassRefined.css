@@ -201,12 +201,17 @@
    Checked against Overview, Learn, Practice and Readiness: identical. The
    first pass guessed 28/40/64 on 1180 and left-aligned, which was close
    enough to look deliberate and wrong on all four counts. */
+/* ⚠ NO TOP PADDING — 2026-11-12: "remove top padding. this page and all
+   other pages." It was 38px above the eyebrow on every Refined page, which
+   put the course name a third of the way down the first screen. The sides
+   and the floor are unchanged; this is the gap between the app's header and
+   the page's own, and the app header already ends in a rule. */
 .crf-page {
   position: relative;
   flex: 999 1 560px;
   min-width: 0;
   box-sizing: border-box;
-  padding: 38px 44px 72px;
+  padding: 0 44px 72px;
 }
 .crf-page__col {
   width: 100%;
@@ -1008,7 +1013,12 @@
   display: flex;
   align-items: center;
   gap: 14px;
-  padding: 22px 20px;
+  /* ⚠ 16px TOP AND BOTTOM — 2026-11-12: "reduce top and bottom padding". It
+     was 22, set when the row carried a badge, a two-line name block and a
+     stacked stat column; the badge and the status word have both gone and
+     the count moved onto the name's own line, so the row is shorter content
+     in the same box. */
+  padding: 16px 20px;
   border-bottom: 1px solid var(--crf-card-edge);
 }
 .crf-tile {
@@ -1065,7 +1075,11 @@
   margin: 0;
   font-family: var(--font-heading-serif), Georgia, serif;
   font-size: 22px;
-  font-weight: 600;
+  /* ⚠ 700 — 2026-11-12, "make bold". Playfair is a variable face (300–900)
+     on this build, so this is a real weight rather than a synthesised one;
+     `font-synthesis-weight: none` means a missing one would quietly render
+     as the nearest instead of failing. Checked in the browser. */
+  font-weight: 700;
   line-height: 1.25;
   color: var(--crf-steel);
 }
@@ -1420,13 +1434,14 @@
    the chapter cards are outside this box, so without the next-step half the
    header would end on a line with nothing under it.
 
-   ⚠ AND IT IS BEIGE — 2026-11-12, "make this light beige background". The
-   same pairing the Overview's first card settled on: the progress half warm,
-   the next-step half the cool steel wash. Two halves of one card saying they
-   are two different kinds of thing, in the same two colours on both pages. */
+   ⚠ IT IS WHITE AGAIN — 2026-11-12, "make background white". It was beige
+   for an hour that morning, the pairing the Overview's first card settled on
+   (progress half warm, next-step half cool); white against the steel wash
+   below keeps the two halves distinct with one less colour on the page. The
+   beige ramp stays declared — it is hers and the panel arm uses it. */
 .crf-course--head .crf-course__head {
   border-bottom: 1px solid var(--crf-card-edge);
-  background: var(--crf-beige-100);
+  background: var(--crf-white);
 }
 
 /* ---------- the next-step card, 2026-11-12 ----------

@@ -271,11 +271,11 @@ export function CourseHeadCard({
             {header.lessonsDone} of {header.lessons} lessons completed
           </p>
         </div>
-        {/* ⚠ THE STATE ALONE — the count moved into the line under the
-            course's name, above. */}
-        <div className="crf-course__stat">
-          <span className="crf-course__done">{header.status}</span>
-        </div>
+        {/* ⚠ NO STATUS WORD — 2026-11-12: "remove". The stat column held "In
+            progress" over the lesson count; the count moved into the line
+            under the course's name an hour earlier, and the word went with
+            the column. The ring says the same thing with a number on it, and
+            "In progress" is true of every state but two. */}
         <CourseRing header={header} />
       </header>
       {/* ⚠ THE DIVIDER IS THE HEADER'S OWN BOTTOM RULE, which it already

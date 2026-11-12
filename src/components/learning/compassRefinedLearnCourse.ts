@@ -298,8 +298,10 @@ function buildHeader(
     `${chapters.length} Lessons`,
     ...finish.map((f) => REFINED_FINISH_COPY.summaryLabel[f.kind] ?? f.title),
   ].join(' · '),
-  /** ⚠ THE WORD FOLLOWS THE FIGURE. The header read "Completed" beside "1 of
-   *  41 sections" — his status string, kept while everything around it
+  /** ⚠ NOTHING DRAWS THIS SINCE 2026-11-12 ("remove"), and it is kept
+   *  because it is one line and because the rule it encodes is the one worth
+   *  not re-deriving: the header once read "Completed" beside "1 of 41
+   *  sections", his status string left behind while everything around it
    *  changed. A course is complete when its sections are. */
   status:
     progress.done >= REFINED_COURSE_TOTALS.sections ? 'Completed' : 'In progress',
