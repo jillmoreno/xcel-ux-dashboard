@@ -231,11 +231,14 @@ export function CourseHeadCard({
   header,
   step,
   mark,
+  image,
   onAct,
 }: {
   header: RefinedCourseView['header']
   step: RefinedNextStep
   mark?: NextMarkStyle
+  /** `compass-course-image` — the course's art beside its name. */
+  image?: boolean
   onAct?: () => void
 }) {
   return (
@@ -245,6 +248,13 @@ export function CourseHeadCard({
           course's name in the display face it was a second mark competing
           with the ring on the other end of the same row. */}
       <header className="crf-course__head">
+        {/* ⚠ THE COURSE'S OWN ART — 2026-11-12, behind
+            `compass-course-image`. `aria-hidden` and an empty alt: the name
+            is right beside it, so the picture says nothing a screen reader
+            is missing. */}
+        {image ? (
+          <img className="crf-course__art" src={REFINED_COURSE.image} alt="" aria-hidden />
+        ) : null}
         <div className="crf-course__name">
           {/* ⚠ COUNTED, NOT TYPED — his read "19 chapters · 28 of 40 hours", a
               chapter count wrong by two and an hours figure nothing

@@ -27,6 +27,8 @@ export type CourseOptions = {
   blurb: boolean
   /** Whether the locked run folds behind a count. Audit finding 1. */
   fold: boolean
+  /** `compass-course-image` — the course's art beside its name. */
+  image: boolean
   /**
    * ⚠ `compass-overview-next-mark`, READ BY THIS PAGE TOO — 2026-11-12. The
    * next-step card is one component on two pages ("This should be a 1:1"),
@@ -46,6 +48,7 @@ export const COURSE_DEFAULTS: CourseOptions = {
      something the bar never shows. */
   blurb: false,
   fold: true,
+  image: false,
   /* Agrees with `FOCUS_DEFAULTS.nextMark`, or a card rendered without
      options draws a shape the bar never shows. */
   nextMark: 'stacked',

@@ -150,6 +150,7 @@ export function CompassRefinedLearn({
           header={header}
           step={step}
           mark={options.nextMark}
+          image={options.image}
           onAct={openLesson}
         />
 

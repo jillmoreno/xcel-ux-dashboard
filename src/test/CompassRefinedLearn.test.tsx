@@ -17,6 +17,7 @@ import {
   REFINED_COURSE_SECTIONS,
   refinedProgressAt,
 } from '@/data/compassRefinedCourse'
+import { REFINED_COURSE } from '@/data/compassRefinedCopy'
 
 /* ⚠ RENDERED WITH NO STAGE, so the page draws the upload's own learner — one
    section done, the second open — and these are that learner's chapters. A
@@ -286,5 +287,23 @@ describe('the next step’s two states follow the data, not the page', () => {
         REFINED_COURSE_SECTIONS.find((s) => s.n === p.currentN)?.title,
       )
     }
+  })
+})
+
+describe('the course image toggle', () => {
+  it('draws nothing by default', () => {
+    const { container } = wrapWith({})
+    expect(container.querySelector('.crf-course__art')).toBeNull()
+    expect(COURSE_DEFAULTS.image).toBe(false)
+  })
+
+  it('puts the course’s own art left of its name when it is on', () => {
+    const { container } = wrapWith({ image: true })
+    const art = container.querySelector('.crf-course__art')!
+    const name = container.querySelector('.crf-course__name')!
+    expect(art.getAttribute('src')).toBe(REFINED_COURSE.image)
+    expect(art.compareDocumentPosition(name) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    /* ⚠ DECORATIVE. The course's name is the next thing in the row. */
+    expect(art.getAttribute('alt')).toBe('')
   })
 })

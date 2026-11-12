@@ -60,6 +60,18 @@ export const REFINED_COURSE = {
    * counted to. `CompassRefinedShell.test.tsx` holds them to each other.
    */
   accessEndsOn: '2027-01-20',
+  /**
+   * ⚠ THE COURSE'S OWN ART, ALREADY IN THE REPO — 2026-11-12, behind
+   * `compass-course-image`. It is the file the Atlas dashboard's course card
+   * draws (`COURSE_ART.fl` in `dashboardProgressFixtures.ts`) and the one
+   * the handoff previews use, so Compass and the dashboard show a learner
+   * the same picture of the same course rather than two.
+   *
+   * ⚠ NOT `import.meta.env.BASE_URL` — every other Compass asset on these
+   * pages is an absolute path and the app is served from the root. The
+   * handoff preview prefixes it because it renders inside a captured frame.
+   */
+  image: '/courses/fl-life-health.webp',
 } as const
 
 /**

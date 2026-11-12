@@ -1032,6 +1032,21 @@
   background: var(--crf-steel-pressed);
   color: var(--crf-body);
 }
+/* ⚠ THE COURSE'S ART — 2026-11-12, `compass-course-image`. 4:3 at 96px
+   wide, which is the thumbnail the next-step row below it already draws; the
+   source is 1312×980, so it crops to nothing and scales cleanly.
+
+   ⚠ `flex: 0 0 auto` AND AN EXPLICIT HEIGHT, because an `img` in a flex row
+   with only a width will stretch to the row's height on `align-items:
+   center` in some engines before it has loaded. Pinning both means the
+   header does not jump when the file arrives. */
+.crf-course__art {
+  flex: 0 0 96px;
+  width: 96px;
+  height: 72px;
+  border-radius: 10px;
+  object-fit: cover;
+}
 .crf-course__name {
   flex: 1 1 auto;
   min-width: 0;
