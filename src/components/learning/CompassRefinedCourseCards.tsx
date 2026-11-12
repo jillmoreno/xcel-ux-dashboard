@@ -25,7 +25,7 @@
 
 import { ChevronDown, LockRegular } from '@/icons'
 import { JEFF_MVP_LEARN_COPY as COPY } from '@/data/compassJeffMvpFixtures'
-import { REFINED_CHAPTER_BLURBS } from '@/data/compassRefinedCopy'
+import { REFINED_CHAPTER_BLURBS, REFINED_COURSE } from '@/data/compassRefinedCopy'
 import { ChapterMark, CourseRing, ExamRow, LessonMark } from './CompassRefinedCourseParts'
 import { GraduationCap } from '@/icons'
 import type { CourseListProps } from './compassRefinedCourseModel'
@@ -58,15 +58,16 @@ export function CompassRefinedCourseCards({
           counts and the course's name are the page's summary, not a property
           of how the chapters below are drawn — forking it would make the two
           arms differ in two things at once. */}
-      <section className="crf-course crf-course--head" aria-label={COPY.courseTitle}>
+      <section className="crf-course crf-course--head" aria-label={REFINED_COURSE.name}>
         <header className="crf-course__head">
           <span className="crf-tile" aria-hidden>
             <GraduationCap size={16} />
           </span>
           <div className="crf-course__name">
             <p className="crf-eyebrow">{header.eyebrow}</p>
-            <h2 className="crf-h2">{COPY.courseTitle}</h2>
-            <p className="crf-course__sub">{COPY.courseSub}</p>
+            {/* ⚠ THE COURSE'S NAME LEADS — see the rows layout's note. */}
+            <h2 className="crf-h2">{REFINED_COURSE.name}</h2>
+            <p className="crf-course__sub">{REFINED_COURSE.kind}</p>
           </div>
           <div className="crf-course__stat">
             <span className="crf-course__done">{header.status}</span>

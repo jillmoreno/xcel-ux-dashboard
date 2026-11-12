@@ -1016,11 +1016,38 @@
   flex: 1 1 auto;
   min-width: 0;
 }
+/* ⚠ PLAYFAIR, AND THE THIRD NAMED EXCEPTION TO THE 32px RULE — 2026-11-12:
+   "This should be the course name in the Playfair font style." It renders at
+   28px, under the line drawn on 2026-11-10; the Focus card's ring figure and
+   its lesson title were the first two, both the day before.
+
+   ⚠ THE RULE IS "OPEN SANS BELOW 32px UNLESS NAMED", and three holes in it
+   is enough to say so plainly rather than leaving it absolute. All three were
+   asked for BY NAME after being seen set in Open Sans, which is what the rule
+   is actually for: it stops a heading picking the display face up by accident.
+   None of these did.
+
+   ⚠ IT NEEDS THE SELECTOR, not just the family. `.crf :is(h1,…,h6)` sets
+   `--font-body` on every heading in the page and `.crf .crf-h1` is the only
+   thing that beats it; this is more specific than both, so it wins on
+   specificity rather than on source order.
+
+   ⚠ AND THE INK IS THE PAGE TITLE'S, for the reason the Focus card's lesson
+   title records: `--crf-ink` (#1f1d18) and `--color-text-primary` (#3a3a3a)
+   are a shade apart, and the one the display face wears on this page is the
+   title's. Audit finding 5. */
 .crf-course__name .crf-h2 {
   margin: 0;
+  font-family: var(--font-heading-serif), Georgia, serif;
   font-size: 28px;
-  font-weight: 500;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--color-text-primary);
 }
+/* ⚠ THE SMALLER LINE IS THE COURSE'S KIND NOW — "Qualifying Education -
+   Florida" — and the two swapped on 2026-11-12. It keeps its size and its
+   steel, which is what made it legible as a second line; what changed is
+   which of the two facts is the heading. */
 .crf-course__sub {
   margin: 2px 0 0;
   font-size: 17px;

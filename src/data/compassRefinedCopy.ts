@@ -22,6 +22,20 @@
 export const REFINED_COURSE = {
   /** The one course this platform is about. */
   name: 'Florida Life and Health Pre-licensing',
+  /**
+   * ⚠ WHAT KIND OF COURSE IT IS, UNDER THE NAME — 2026-11-12, Jillienne on
+   * the Your Course header: "This should be the course name in the Playfair
+   * font style. Below in smaller text should be Qualifying Education -
+   * Florida."
+   *
+   * The two lines swapped. The card led with "Qualifying Education" — the
+   * regulatory CATEGORY — and put the course underneath, so the biggest
+   * words in the card named something every XCEL course is rather than the
+   * one this platform is about.
+   *
+   * ⚠ A HYPHEN, HERS VERBATIM, like the Overview's title.
+   */
+  kind: 'Qualifying Education - Florida',
   /** ⚠ TO THE RIGHT OF THE NAME, dot-separated — the direct ask ("move the
    *  Access ends to the right of the florida eyebrow with a small dot
    *  divider"). It was a line in the Overview's meta row, beside two pills

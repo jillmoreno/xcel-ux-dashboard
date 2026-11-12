@@ -13,8 +13,7 @@
  */
 
 import { ChevronDown, GraduationCap } from '@/icons'
-import { JEFF_MVP_LEARN_COPY as COPY } from '@/data/compassJeffMvpFixtures'
-import { REFINED_CHAPTER_BLURBS } from '@/data/compassRefinedCopy'
+import { REFINED_CHAPTER_BLURBS, REFINED_COURSE } from '@/data/compassRefinedCopy'
 import { ChapterMark, CourseRing, ExamRow, LessonMark } from './CompassRefinedCourseParts'
 import type { CourseListProps } from './compassRefinedCourseModel'
 
@@ -32,7 +31,7 @@ export function CompassRefinedCourseRows({
   blurb,
 }: CourseListProps) {
   return (
-    <section className="crf-course" aria-label={COPY.courseTitle}>
+    <section className="crf-course" aria-label={REFINED_COURSE.name}>
         <header className="crf-course__head">
           <span className="crf-tile" aria-hidden>
             <GraduationCap size={16} />
@@ -42,8 +41,14 @@ export function CompassRefinedCourseRows({
                 chapter count that was wrong by two and an hours figure
                 nothing produces. */}
             <p className="crf-eyebrow">{header.eyebrow}</p>
-            <h2 className="crf-h2">{COPY.courseTitle}</h2>
-            <p className="crf-course__sub">{COPY.courseSub}</p>
+            {/* ⚠ THE COURSE'S NAME LEADS — 2026-11-12: "This should be the
+                course name in the Playfair font style. Below in smaller text
+                should be Qualifying Education - Florida." The card led with
+                "Qualifying Education", which is the regulatory CATEGORY and
+                is true of every XCEL course; the one this platform is about
+                was the smaller line under it. */}
+            <h2 className="crf-h2">{REFINED_COURSE.name}</h2>
+            <p className="crf-course__sub">{REFINED_COURSE.kind}</p>
           </div>
           <div className="crf-course__stat">
             <span className="crf-course__done">{header.status}</span>
