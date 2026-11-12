@@ -1248,7 +1248,11 @@ export function AtlasHomeEricE2E({
           style={{
             ...RAIL_CARD_BORDER,
             border: '1px solid color-mix(in srgb, var(--color-atlas-slate-100) 95%, black)',
-            ...(onWhite && headH ? { height: headH } : null),
+            /* …except with the State Licensing Requirements row
+               (2026-11-12, Afsana): the card fits its rows, so the space
+               under the last one is the 24 above the title, not the rest of
+               the course panel's height. */
+            ...(onWhite && headH && !licensingUrl ? { height: headH } : null),
             // …and its 20 corners (same day).
             ...(onWhite ? { borderRadius: 20 } : null),
           }}
