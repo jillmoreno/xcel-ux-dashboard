@@ -65,6 +65,18 @@ export type RefinedChapter = {
   /** Whether there is anything behind the chevron. See finding 8. */
   expandable: boolean
   /**
+   * ⚠ WHETHER THE OPEN CHAPTER HAS BEEN STARTED — 2026-11-12: "we should
+   * have Up Next for courses that are ready to start, and we should have in
+   * progress for courses that have progress." Only ever true of the chapter
+   * whose `state` is `current`; the word on its badge is this field.
+   *
+   * ⚠ TWO WAYS TO BE STARTED, and both count. Either the learner is part way
+   * through the chapter's own lesson row (`intoCurrent`), or they have
+   * finished it and are standing on its exam (`done >= n`) — a chapter you
+   * are being examined on is not one you are about to begin.
+   */
+  started: boolean
+  /**
    * ⚠ ITS NUMBER AMONG THE CHAPTERS — 1..21 — or undefined for a row that is
    * not one. The roadmap's chip shows it, so this is where "is this a
    * chapter?" is decided rather than in the layout.
@@ -211,6 +223,7 @@ function buildChapters(progress: RefinedProgress): RefinedChapter[] {
        Her upload has no lesson-level detail for that row, and until it does
        the honest row is one that does not offer to expand. */
     expandable: lessons.length > 0 || next?.kind === 'exam',
+    started: state === 'current' && (progress.done >= s.n || progress.intoCurrent > 0),
     number,
     /* ⚠ THE EXAM IS THE COURSE'S NEXT ROW, named as the course names it.
        His nested exam carried its own title ("Chapter 2 exam"); the course
@@ -403,13 +416,23 @@ function buildFinish(progress: RefinedProgress, chapters: RefinedChapter[]): Ref
  * current — three of the four depend on the first, and calling them
  * separately is how two of them end up built from different progress.
  *
- * ⚠ MEMOISED ON THE PERCENTAGE, because this runs on every render of the
- * page and the work is a pass over forty-four rows plus a title match per
- * chapter against Jeff's outline. Keyed on `pct` alone: `done` and
- * `currentN` are derived from it by `refinedProgressAt`, so two progresses
- * with the same percentage are the same learner.
+ * ⚠ MEMOISED, because this runs on every render of the page and the work is
+ * a pass over forty-four rows plus a title match per chapter against Jeff's
+ * outline.
+ *
+ * ⚠ KEYED ON THE WHOLE PROGRESS, NOT ON `pct`. It was the percentage alone,
+ * on the argument that `done` and `currentN` are derived from it — and that
+ * is true of every progress `refinedProgressAt` makes and false of the one
+ * below it. `REFINED_COURSE_PROGRESS` is TYPED (one section done, standing
+ * on the second) and its percentage rounds to 2; `refinedProgressAt(2)` is a
+ * different learner (nothing done, most of the first row read). They
+ * collided on the key, so asking for one returned the other — caught by a
+ * test sweeping every percentage, not by the page, because no stage fixture
+ * sits at 2%.
  */
-const VIEWS = new Map<number, RefinedCourseView>()
+const VIEWS = new Map<string, RefinedCourseView>()
+const viewKey = (p: RefinedProgress) =>
+  `${p.pct}|${p.done}|${p.currentN}|${p.intoCurrent.toFixed(6)}`
 
 export type RefinedCourseView = {
   chapters: RefinedChapter[]
@@ -418,7 +441,8 @@ export type RefinedCourseView = {
 }
 
 export function refinedCourseView(progress: RefinedProgress): RefinedCourseView {
-  const hit = VIEWS.get(progress.pct)
+  const key = viewKey(progress)
+  const hit = VIEWS.get(key)
   if (hit) return hit
   const chapters = buildChapters(progress)
   /* ⚠ THE ENDING IS BUILT BEFORE THE HEADER, which now names it — see the
@@ -429,7 +453,7 @@ export function refinedCourseView(progress: RefinedProgress): RefinedCourseView 
     header: buildHeader(progress, chapters, finish),
     finish,
   }
-  VIEWS.set(progress.pct, view)
+  VIEWS.set(key, view)
   return view
 }
 

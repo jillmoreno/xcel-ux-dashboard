@@ -1869,10 +1869,24 @@
   background: linear-gradient(180deg, var(--color-pass-100), var(--color-pass-200));
   color: var(--color-pass-600);
 }
-.crf-map__pill--open {
-  background: var(--crf-white);
-  border: 1px solid var(--crf-steel-deep);
+/* ⚠ THE OPEN CHAPTER'S TWO BADGES — 2026-11-12. Neither is green, amber or
+   red: her palette assigns those to success, warning and error, and "I have
+   started this" is none of the three. They take the page's own steel, which
+   is what every other "this is where you are" mark on the card already uses
+   — the chip, the border and the ground.
+
+   ⚠ FILLED FOR STARTED, OUTLINED FOR NOT. The difference between them is
+   whether there is anything to come back to, so the one with something
+   behind it is the one with a ground. */
+.crf-map__pill--progress {
+  background: var(--crf-steel-wash);
+  border: 1px solid var(--crf-steel-edge);
   color: var(--crf-steel-deep);
+}
+.crf-map__pill--next {
+  background: var(--crf-white);
+  border: 1px solid var(--crf-control-edge);
+  color: var(--crf-body);
 }
 .crf-map__top .crf-btn {
   margin-left: auto;

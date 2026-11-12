@@ -4,7 +4,10 @@ import { MemoryRouter } from 'react-router-dom'
 import { AccountProvider } from '@/context/AccountContext'
 import { FeatureFlagProvider } from '@/context/FeatureFlagContext'
 import { CompassRefinedLearn } from '@/components/learning/CompassRefinedLearn'
-import { REFINED_DEFAULT_VIEW } from '@/components/learning/compassRefinedLearnCourse'
+import {
+  REFINED_DEFAULT_VIEW,
+  refinedCourseView,
+} from '@/components/learning/compassRefinedLearnCourse'
 import {
   COURSE_DEFAULTS,
   type CourseOptions,
@@ -342,5 +345,69 @@ describe('the roadmap’s quick filters', () => {
 
     fireEvent.click(tab('All Modules'))
     expect(container.querySelector('.crf-map__more')).not.toBeNull()
+  })
+})
+
+describe('the open chapter’s badge says whether it has been started', () => {
+  /** The chapter's COURSE ROW (1..44), which is not its ordinal (1..21). */
+  const rowOf = (fullTitle: string) =>
+    REFINED_COURSE_SECTIONS.find((s) => s.title === fullTitle)!.n
+
+  it('is Up Next standing at the start of it, In Progress part way through', () => {
+    /* ⚠ THE SAME FACT THE CARD AT THE TOP OF THE PAGE READS — both come off
+       `intoCurrent`, so the badge and the next-step card cannot tell
+       different stories about one learner. */
+    const fresh = refinedCourseView(refinedProgressAt(0))
+    const freshOpen = fresh.chapters.find((c) => c.state === 'current')!
+    expect(freshOpen.started).toBe(false)
+    expect(refinedNextStep(refinedProgressAt(0), '1h').cta).toBe('Start lesson')
+
+    const partway = refinedCourseView(refinedProgressAt(19))
+    const openNow = partway.chapters.find((c) => c.state === 'current')!
+    expect(openNow.started).toBe(true)
+    expect(refinedNextStep(refinedProgressAt(19), '1h').cta).toBe('Resume lesson')
+  })
+
+  it('counts a chapter you are being examined on as started', () => {
+    /* ⚠ `chapter.n` IS THE CHAPTER'S ORDINAL (1..21), NOT ITS COURSE ROW
+       (1..44), and the two diverge from the second chapter on. The rule is
+       about the ROW. Getting that wrong is how this test first read — it
+       passed at 2% and failed at 25%. */
+    for (let pct = 0; pct <= 100; pct += 0.5) {
+      const p = refinedProgressAt(pct)
+      const open = refinedCourseView(p).chapters.find((c) => c.state === 'current')
+      if (!open) continue
+      const started = p.done >= rowOf(open.fullTitle) || p.intoCurrent > 0
+      expect(open.started, `${pct}%`).toBe(started)
+    }
+  })
+
+  it('agrees with the next-step card, which reads the same fact', () => {
+    for (let pct = 0; pct <= 100; pct += 0.5) {
+      const p = refinedProgressAt(pct)
+      const open = refinedCourseView(p).chapters.find((c) => c.state === 'current')
+      /* ⚠ ONLY WHERE THE CARD IS TALKING ABOUT THIS CHAPTER. Standing on a
+         chapter's exam makes the chapter started while the card is naming
+         the exam, which is its own row and has its own progress. */
+      if (!open || p.done >= rowOf(open.fullTitle)) continue
+      const resuming = refinedNextStep(p, '1h').cta === 'Resume lesson'
+      expect(open.started, `${pct}%`).toBe(resuming)
+    }
+  })
+
+  it('never puts a started badge on a chapter that is not the open one', () => {
+    for (const pct of [0, 19, 50, 81, 100]) {
+      for (const c of refinedCourseView(refinedProgressAt(pct)).chapters) {
+        if (c.state !== 'current') expect(c.started, `${c.title} at ${pct}%`).toBe(false)
+      }
+    }
+  })
+
+  it('draws the word on the card', () => {
+    const { container } = wrapWith({ rows: 'cards' })
+    const open = container.querySelector('.crf-map__card--current')
+    if (!open) return
+    const word = open.querySelector('.crf-map__pill')?.textContent
+    expect(['Up Next', 'In Progress']).toContain(word)
   })
 })

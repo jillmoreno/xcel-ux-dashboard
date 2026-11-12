@@ -51,17 +51,25 @@ const FILTER_STATE: Record<Exclude<RoadmapFilter, 'all'>, string> = {
  * The pill over the title. The word follows the state, as everywhere else on
  * this page — a chapter cannot be styled as two things at once.
  *
- * ⚠ THE OPEN CHAPTER HAS NO PILL — 2026-11-12, "remove this tag", on "Ready
- * to begin". It is the one card where three things said the same thing: the
- * navy chip, the tinted ground and border, and a filled Resume button in the
- * corner. The other two states keep theirs, and `Locked` earns its place —
- * those cards have no button at all, and the "opens when…" line was removed
- * from this layout earlier the same day, so the pill is the only thing left
- * that says the chapter is shut.
+ * ⚠ FOUR WORDS, NOT THREE — 2026-11-12: "we should have Up Next for courses
+ * that are ready to start, and we should have in progress for courses that
+ * have progress." The open chapter is two different things to a learner and
+ * had been one: "Ready to begin" was removed from it earlier the same day
+ * precisely because it said nothing the Resume button did not. These two say
+ * something the button cannot — whether there is anything to come back to.
+ *
+ * ⚠ IT IS THE SAME FACT THE CARD ABOVE READS. "Up Next" pairs with the
+ * next-step card's "Your next step · Start lesson" and "In Progress" with
+ * "Where you left off · Resume lesson"; both come off `intoCurrent`, so the
+ * badge and the card at the top of the page cannot tell different stories.
  */
 function statusPill(c: RefinedChapter) {
   if (c.state === 'done') return { word: 'Completed', tone: 'done' }
-  if (c.state === 'current') return null
+  if (c.state === 'current') {
+    return c.started
+      ? { word: 'In Progress', tone: 'progress' }
+      : { word: 'Up Next', tone: 'next' }
+  }
   return { word: COPY.lockedWord, tone: 'locked' }
 }
 
