@@ -1,10 +1,11 @@
 import {
-  REFINED_CHAPTERS,
-  REFINED_COURSE_HEADER,
-  REFINED_FINISH_STEPS,
-  REFINED_RESUME as RESUME,
+  refinedCourseView,
+  type RefinedChapter,
+  type RefinedCourseView,
   type RefinedFinishStep,
 } from './compassRefinedLearnCourse'
+import { refinedProgressAt } from '@/data/compassRefinedCourse'
+import { journeyStage } from './compassReadinessModel'
 import { REFINED_FINISH_COPY as FINISH, REFINED_PAGE_TITLES } from '@/data/compassRefinedCopy'
 import { useState } from 'react'
 import {
@@ -52,9 +53,22 @@ import './compassRefined.css'
  */
 export function CompassRefinedLearn({
   onSelectPage,
+  stage,
 }: {
   onSelectPage?: (p: JeffMvpPage) => void
+  /** ⚠ `compass-readiness-stage`, THE SAME ONE THE OVERVIEW READS —
+   *  2026-11-12, finding 4. Until now this page read none of it, so a
+   *  reviewer flipping the demo bar through the sixteen learner states saw
+   *  the Overview move and Your Course sit still, the two of them reporting
+   *  different percentages for one learner. Passed down by the shell rather
+   *  than read here, which is the shape every other prop on these pages
+   *  has. */
+  stage?: string
 } = {}) {
+  /* One reading of the stage, shared with the Overview — see
+     `refinedProgressAt`. */
+  const view = refinedCourseView(refinedProgressAt(journeyStage(stage ?? '').prog?.pct))
+  const { chapters, header, resume: RESUME, finish } = view
   /* ⚠ RESUME OPENS THE LESSON — `CompassJeffCourse`, which is this same
      designer's lesson ported from his earlier file. See the shell's note on
      why there is one component for it rather than two. */
@@ -83,13 +97,13 @@ export function CompassRefinedLearn({
    * nineteen near-identical lines. Three are information.
    */
   const [showAll, setShowAll] = useState(false)
-  const lastOpenIdx = REFINED_CHAPTERS.map((c) => c.state !== 'locked').lastIndexOf(true)
+  const lastOpenIdx = chapters.map((c) => c.state !== 'locked').lastIndexOf(true)
   const PEEK = 2
   const cutoff = lastOpenIdx + 1 + PEEK
-  const folded = !showAll && cutoff < REFINED_CHAPTERS.length
-  const shown = folded ? REFINED_CHAPTERS.slice(0, cutoff) : REFINED_CHAPTERS
-  const hiddenCount = REFINED_CHAPTERS.length - shown.length
-  const isOpen = (c: (typeof REFINED_CHAPTERS)[number]) =>
+  const folded = !showAll && cutoff < chapters.length
+  const shown = folded ? chapters.slice(0, cutoff) : chapters
+  const hiddenCount = chapters.length - shown.length
+  const isOpen = (c: RefinedChapter) =>
     c.expandable && (open[c.n] ?? c.state === 'current')
 
   return (
@@ -122,8 +136,8 @@ export function CompassRefinedLearn({
                 chapter's own name otherwise, rather than a lesson from
                 somewhere else. */}
             {RESUME.lesson ? <p className="crf-resume__lesson">{RESUME.lesson}</p> : null}
-            <span className="crf-bar" role="img" aria-label={REFINED_CHAPTERS[2]?.progAria}>
-              <span className="crf-bar__fill" style={{ width: `${REFINED_COURSE_HEADER.pct}%` }} />
+            <span className="crf-bar" role="img" aria-label={chapters[2]?.progAria}>
+              <span className="crf-bar__fill" style={{ width: `${header.pct}%` }} />
             </span>
           </div>
           <button type="button" className="crf-cta" onClick={openLesson}>
@@ -142,17 +156,17 @@ export function CompassRefinedLearn({
               {/* ⚠ COUNTED, NOT TYPED — his read "19 chapters · 28 of 40 hours", a
                   chapter count that was wrong by two and an hours figure
                   nothing produces. */}
-              <p className="crf-eyebrow">{REFINED_COURSE_HEADER.eyebrow}</p>
+              <p className="crf-eyebrow">{header.eyebrow}</p>
               <h2 className="crf-h2">{COPY.courseTitle}</h2>
               <p className="crf-course__sub">{COPY.courseSub}</p>
             </div>
             <div className="crf-course__stat">
-              <span className="crf-course__done">{REFINED_COURSE_HEADER.status}</span>
+              <span className="crf-course__done">{header.status}</span>
               <span className="crf-course__of">
-                {REFINED_COURSE_HEADER.done} of {REFINED_COURSE_HEADER.sections} sections
+                {header.done} of {header.sections} sections
               </span>
             </div>
-            <CourseRing />
+            <CourseRing header={header} />
           </header>
 
           {/* ⚠ THE REAL COURSE, NOT A SECOND LIST OF IT — 2026-11-11. These were
@@ -289,10 +303,10 @@ export function CompassRefinedLearn({
           {folded ? (
             <button type="button" className="crf-ch__more" onClick={() => setShowAll(true)}>
               <ChevronDown size={13} aria-hidden />
-              Show all {REFINED_CHAPTERS.length} chapters
+              Show all {chapters.length} chapters
               <span className="crf-ch__more-n">{hiddenCount} more, locked</span>
             </button>
-          ) : cutoff < REFINED_CHAPTERS.length ? (
+          ) : cutoff < chapters.length ? (
             <button type="button" className="crf-ch__more" onClick={() => setShowAll(false)}>
               <ChevronDown size={13} aria-hidden style={{ transform: 'rotate(180deg)' }} />
               Show less
@@ -305,7 +319,7 @@ export function CompassRefinedLearn({
             was his "Certification Exam" card: an exam the course list does
             not contain, noted "Opens after all 19 chapters" against
             twenty-one of them. The rows are
-            `REFINED_FINISH_STEPS` — whatever the chapters above do not
+            `finish` — whatever the chapters above do not
             consume — so the page ends where the course does. */}
         <section
           className="crf-course"
@@ -320,10 +334,10 @@ export function CompassRefinedLearn({
               <h2 className="crf-h2">{FINISH.title}</h2>
             </div>
             <span className="crf-ch__status">
-              {REFINED_FINISH_STEPS.every((f) => f.state === 'locked') ? COPY.lockedWord : ''}
+              {finish.every((f) => f.state === 'locked') ? COPY.lockedWord : ''}
             </span>
           </header>
-          {REFINED_FINISH_STEPS.map((f) => (
+          {finish.map((f) => (
             <FinishRow key={f.n} step={f} />
           ))}
         </section>
@@ -455,7 +469,7 @@ function AwardMark() {
  * ⚠ THE DASHARRAY IS HIS, AND IT DISAGREES WITH HIS OWN LABEL by about four
  * points — see the fixture note. Carried verbatim on purpose.
  */
-function CourseRing() {
+function CourseRing({ header }: { header: RefinedCourseView['header'] }) {
   return (
     <div className="crf-course__ring">
       <div style={{ position: 'relative', width: 72, height: 72 }}>
@@ -468,7 +482,7 @@ function CourseRing() {
           width="72"
           height="72"
           role="img"
-          aria-label={`Qualifying Education ${REFINED_COURSE_HEADER.pct}% complete, ${REFINED_COURSE_HEADER.done} of ${REFINED_COURSE_HEADER.sections} sections`}
+          aria-label={`Qualifying Education ${header.pct}% complete, ${header.done} of ${header.sections} sections`}
         >
           <g transform="rotate(-90 60 60)">
             <circle cx="60" cy="60" r="50" fill="none" stroke="var(--cjm-ring-pale)" strokeWidth="12" />
@@ -479,13 +493,13 @@ function CourseRing() {
               fill="none"
               stroke="var(--cjm-steel)"
               strokeWidth="12"
-              strokeDasharray={`${((REFINED_COURSE_HEADER.pct / 100) * 2 * Math.PI * 50).toFixed(1)} ${(2 * Math.PI * 50).toFixed(1)}`}
+              strokeDasharray={`${((header.pct / 100) * 2 * Math.PI * 50).toFixed(1)} ${(2 * Math.PI * 50).toFixed(1)}`}
               strokeLinecap="round"
             />
           </g>
         </svg>
         <span className="crf-course__pct" aria-hidden>
-          {REFINED_COURSE_HEADER.pct}%
+          {header.pct}%
         </span>
       </div>
     </div>

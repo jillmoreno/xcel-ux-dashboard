@@ -1,15 +1,24 @@
 import { describe, expect, it } from 'vitest'
 import { JEFF_MVP_LEARN } from '@/data/compassJeffMvpFixtures'
 import {
-  REFINED_CHAPTERS,
-  REFINED_COURSE_HEADER,
-  REFINED_FINISH_STEPS,
+  REFINED_DEFAULT_VIEW,
+  refinedCourseView,
 } from '@/components/learning/compassRefinedLearnCourse'
+
+/* ⚠ THE DEMO LEARNER OF THE UPLOAD. These were module-level constants until
+   2026-11-12, when the page became a function of the stage (finding 4);
+   `REFINED_DEFAULT_VIEW` is that same learner, built once. */
+const {
+  chapters: REFINED_CHAPTERS,
+  header: REFINED_COURSE_HEADER,
+  finish: REFINED_FINISH_STEPS,
+} = REFINED_DEFAULT_VIEW
 import {
   REFINED_COURSE_PROGRESS,
   REFINED_COURSE_SECTIONS,
   REFINED_COURSE_TOTALS,
   refinedCurrentSection,
+  refinedProgressAt,
 } from '@/data/compassRefinedCourse'
 
 /**
@@ -266,5 +275,53 @@ describe('the course\u2019s ending', () => {
 
   it('is locked while the learner is on section two', () => {
     expect(REFINED_FINISH_STEPS.every((f) => f.state === 'locked')).toBe(true)
+  })
+})
+
+/**
+ * ⚠ ONE LEARNER, ONE SET OF FIGURES — 2026-11-12, findings 3 and 4.
+ *
+ * Your Course read 2% and the Overview read 0% for the same learner, each
+ * deriving progress from the other's output; and the page counted sections in
+ * its header while its rows counted lessons. Both are arithmetic, which is
+ * the kind of thing a test can hold and an eye cannot.
+ */
+describe('one derivation of where the learner is', () => {
+  it('turns a stage percentage into sections, and back to the same percentage', () => {
+    for (const pct of ['0%', '19%', '50%', '81%', '100%']) {
+      const p = refinedProgressAt(pct)
+      expect(p.pct).toBe(Number.parseFloat(pct))
+      expect(p.done).toBe(Math.round((p.pct / 100) * REFINED_COURSE_TOTALS.sections))
+      /* The ring and the caption are one fact: the header's percentage is
+         the stage's, not a second rounding of the done figure. */
+      expect(refinedCourseView(p).header.pct).toBe(p.pct)
+      expect(refinedCourseView(p).header.done).toBe(p.done)
+    }
+  })
+
+  it('puts the learner in a chapter even when they are on its exam', () => {
+    /* At 19% the eighth section is done and the ninth is "Chapter 4 Exam".
+       Comparing lesson rows alone left no chapter current at all. */
+    const view = refinedCourseView(refinedProgressAt('19%'))
+    const current = view.chapters.filter((c) => c.state === 'current')
+    expect(current).toHaveLength(1)
+    expect(current[0].title).toBe('Life Insurance Policy Types')
+  })
+
+  it('never shows more than one chapter as current, at any stage', () => {
+    for (let pct = 0; pct <= 100; pct += 1) {
+      const view = refinedCourseView(refinedProgressAt(pct))
+      expect(
+        view.chapters.filter((c) => c.state === 'current').length,
+        `two current chapters at ${pct}%`,
+      ).toBeLessThanOrEqual(1)
+    }
+  })
+
+  it('counts the course in sections only — no lesson count in a row label', () => {
+    for (const c of REFINED_DEFAULT_VIEW.chapters) {
+      expect(c.eyebrow, `${c.title} counts a second unit`).not.toMatch(/lessons?/i)
+      expect(c.eyebrow).toBe(c.label)
+    }
   })
 })

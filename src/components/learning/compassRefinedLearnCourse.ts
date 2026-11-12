@@ -3,6 +3,7 @@ import {
   REFINED_COURSE_PROGRESS,
   REFINED_COURSE_SECTIONS,
   REFINED_COURSE_TOTALS,
+  type RefinedProgress,
   type RefinedSectionKind,
 } from '@/data/compassRefinedCourse'
 import { REFINED_FINISH_COPY } from '@/data/compassRefinedCopy'
@@ -103,7 +104,15 @@ function lockNote(n: number): string {
   return `Opens when ${label || title} is complete`
 }
 
-export const REFINED_CHAPTERS: RefinedChapter[] = LESSON_ROWS.map((s, i) => {
+/**
+ * ⚠ A FUNCTION OF THE LEARNER, NOT A CONSTANT — 2026-11-12, finding 4. This
+ * was a module-level array built once from the typed `REFINED_COURSE_PROGRESS`,
+ * which is why Your Course showed the same learner whichever of the sixteen
+ * states the demo bar was set to while the Overview beside it moved. The
+ * progress comes in; everything below is a reading of it.
+ */
+function buildChapters(progress: RefinedProgress): RefinedChapter[] {
+  return LESSON_ROWS.map((s, i) => {
   const next = REFINED_COURSE_SECTIONS.find((x) => x.n === s.n + 1)
   const { label, title } = splitTitle(s.title)
   /* ⚠ MATCHED BY TITLE, NOT BY POSITION, and the difference is not academic.
@@ -132,24 +141,37 @@ export const REFINED_CHAPTERS: RefinedChapter[] = LESSON_ROWS.map((s, i) => {
      complete with a score, Chapter 1 open with a Continue button, everything
      after it not started. `REFINED_COURSE_PROGRESS` is the same object the
      Overview counts against, so the two pages tell one story. */
+  /* ⚠ A CHAPTER SPANS ITS OWN EXAM — 2026-11-12. Comparing the lesson row's
+     number alone left the page with NO current chapter whenever the learner
+     stood on an exam: at stage q2 the eighth section is done, the ninth is
+     "Chapter 4 Exam", and five chapters read Completed followed by sixteen
+     Locked with nothing in between and an empty "Where you left off" card
+     above them. A learner taking a chapter's exam is in that chapter. */
+  const span = next?.kind === 'exam' ? next.n : s.n
   const state =
-    s.n < REFINED_COURSE_PROGRESS.currentN
-      ? 'done'
-      : s.n === REFINED_COURSE_PROGRESS.currentN
-        ? 'current'
-        : 'locked'
+    span < progress.currentN ? 'done' : s.n <= progress.currentN ? 'current' : 'locked'
 
   return {
     n: i + 1,
     label,
     title,
     fullTitle: s.title,
-    /* ⚠ THE COURSE'S OWN LABEL, THEN THE COUNT. His read "Chapter 2 · 7
-       lessons" off a typed string; this builds it, so a chapter whose lesson
-       list is not ported says only what it knows. */
-    eyebrow: [label, lessons.length ? `${lessons.length} lessons` : '']
-      .filter(Boolean)
-      .join(' · '),
+    /* ⚠ THE COURSE'S OWN LABEL, AND NOTHING ELSE — 2026-11-12, finding 3 of
+       the audit: "two units for one learner". The eyebrow carried "· 7
+       lessons" while the header counted sections ("8 of 44"), and nothing on
+       the page reconciled forty-four with twenty-one sevens. The course's own
+       instruction — "Complete all lessons in the list below" — counts the
+       rows, so sections is the unit and it is now the only one.
+
+       ⚠ IT WAS NEVER A WHOLE COLUMN ANYWAY. The count comes from Jeff's
+       outline, which matches ten of the twenty-one chapters by name, so half
+       the rows showed a size and half did not — a reader cannot tell a
+       chapter with no lessons from one whose lessons were not ported.
+
+       The lessons themselves stay: they are what is INSIDE a chapter, and
+       they are still listed when one is expanded. What goes is counting the
+       course in two units at once. */
+    eyebrow: label,
     state,
     /* The word follows the state, not his fixture — a chapter cannot read
        "Completed" because his copy of it was. */
@@ -190,10 +212,10 @@ export const REFINED_CHAPTERS: RefinedChapter[] = LESSON_ROWS.map((s, i) => {
       next?.kind === 'exam'
         ? {
             title: next.title,
-            done: next.n < REFINED_COURSE_PROGRESS.currentN,
-            locked: next.n >= REFINED_COURSE_PROGRESS.currentN,
+            done: next.n < progress.currentN,
+            locked: next.n >= progress.currentN,
             note:
-              next.n >= REFINED_COURSE_PROGRESS.currentN
+              next.n >= progress.currentN
                 ? lessons.length
                   ? `Opens after all ${lessons.length} lessons`
                   : 'Opens after all lessons'
@@ -212,7 +234,8 @@ export const REFINED_CHAPTERS: RefinedChapter[] = LESSON_ROWS.map((s, i) => {
         state === 'done' ? 'done' : state === 'current' ? (li === 0 ? 'current' : 'todo') : 'todo',
     })),
   }
-})
+  })
+}
 
 /**
  * THE COURSE HEADER'S FIGURES, counted rather than typed.
@@ -221,22 +244,24 @@ export const REFINED_CHAPTERS: RefinedChapter[] = LESSON_ROWS.map((s, i) => {
  * while the Overview said 41, and neither was reading the course. Both now
  * count `REFINED_COURSE_SECTIONS`.
  */
-export const REFINED_COURSE_HEADER = {
-  chapters: REFINED_CHAPTERS.length,
+function buildHeader(progress: RefinedProgress, chapters: RefinedChapter[]) {
+  return {
+  chapters: chapters.length,
   sections: REFINED_COURSE_TOTALS.sections,
   exams: REFINED_COURSE_TOTALS.exams,
-  eyebrow: `${REFINED_CHAPTERS.length} chapters · ${REFINED_COURSE_TOTALS.exams} exams`,
+  eyebrow: `${chapters.length} chapters · ${REFINED_COURSE_TOTALS.exams} exams`,
   /** ⚠ THE WORD FOLLOWS THE FIGURE. The header read "Completed" beside "1 of
    *  41 sections" — his status string, kept while everything around it
    *  changed. A course is complete when its sections are. */
   status:
-    REFINED_COURSE_PROGRESS.done >= REFINED_COURSE_TOTALS.sections ? 'Completed' : 'In progress',
+    progress.done >= REFINED_COURSE_TOTALS.sections ? 'Completed' : 'In progress',
   /** ⚠ SECTIONS FINISHED, COUNTED IN SECTIONS. The page read "2 of 41
    *  sections" against a 61% ring — two different claims about one learner,
    *  because the figure counted CHAPTERS and the denominator counted every
    *  row. Both are sections now, and the ring reads the same fraction. */
-  done: REFINED_COURSE_PROGRESS.done,
-  pct: Math.round((REFINED_COURSE_PROGRESS.done / REFINED_COURSE_TOTALS.sections) * 100),
+  done: progress.done,
+  pct: progress.pct,
+  }
 }
 
 /**
@@ -248,8 +273,8 @@ export const REFINED_COURSE_HEADER = {
  * the page had nothing in progress at all. Both failures are the same one:
  * the card was a string beside the data rather than a reading of it.
  */
-export const REFINED_RESUME = (() => {
-  const current = REFINED_CHAPTERS.find((c) => c.state === 'current')
+function buildResume(chapters: RefinedChapter[]) {
+  const current = chapters.find((c) => c.state === 'current')
   const open = current?.lessons.find((l) => l.state === 'current') ?? current?.lessons[0]
   return {
     title: current ? [current.label, current.title].filter(Boolean).join(' · ') : '',
@@ -258,7 +283,7 @@ export const REFINED_RESUME = (() => {
        contain is the mistake this object exists to stop. */
     lesson: open ? open.label : '',
   }
-})()
+}
 
 /**
  * THE COURSE'S ENDING — 2026-11-12.
@@ -291,23 +316,70 @@ export type RefinedFinishStep = {
   state: 'done' | 'current' | 'locked'
 }
 
-export const REFINED_FINISH_STEPS: RefinedFinishStep[] = REFINED_COURSE_SECTIONS.filter(
-  (s) => !CONSUMED.has(s.n),
-).map((s) => ({
+function buildFinish(progress: RefinedProgress, chapters: RefinedChapter[]): RefinedFinishStep[] {
+  return REFINED_COURSE_SECTIONS.filter((s) => !CONSUMED.has(s.n)).map((s) => ({
   n: s.n,
   kind: s.kind,
   title: s.title,
   eyebrow: REFINED_FINISH_COPY.kindLabel[s.kind] ?? '',
   /* ⚠ COUNTED, LIKE EVERY OTHER FIGURE ON THIS PAGE. His note said "all 19
      chapters" beside twenty-one of them. */
-  note: (REFINED_FINISH_COPY.stepNote[s.kind] ?? (() => ''))(REFINED_CHAPTERS.length),
+  note: (REFINED_FINISH_COPY.stepNote[s.kind] ?? (() => ''))(chapters.length),
   cta: REFINED_FINISH_COPY.cta[s.kind] ?? '',
   /* The same reading of `REFINED_COURSE_PROGRESS` the chapters use, so the
      ending cannot claim a state the course list disagrees with. */
   state:
-    s.n < REFINED_COURSE_PROGRESS.currentN
+    s.n < progress.currentN
       ? 'done'
-      : s.n === REFINED_COURSE_PROGRESS.currentN
+      : s.n === progress.currentN
         ? 'current'
         : 'locked',
-}))
+  }))
+}
+
+/**
+ * THE WHOLE PAGE, FOR ONE LEARNER.
+ *
+ * ⚠ ONE CALL, NOT FOUR. The header counts the chapters, the ending is what
+ * the chapters do not consume, and the resume card reads the chapter that is
+ * current — three of the four depend on the first, and calling them
+ * separately is how two of them end up built from different progress.
+ *
+ * ⚠ MEMOISED ON THE PERCENTAGE, because this runs on every render of the
+ * page and the work is a pass over forty-four rows plus a title match per
+ * chapter against Jeff's outline. Keyed on `pct` alone: `done` and
+ * `currentN` are derived from it by `refinedProgressAt`, so two progresses
+ * with the same percentage are the same learner.
+ */
+const VIEWS = new Map<number, RefinedCourseView>()
+
+export type RefinedCourseView = {
+  chapters: RefinedChapter[]
+  header: ReturnType<typeof buildHeader>
+  resume: ReturnType<typeof buildResume>
+  finish: RefinedFinishStep[]
+}
+
+export function refinedCourseView(progress: RefinedProgress): RefinedCourseView {
+  const hit = VIEWS.get(progress.pct)
+  if (hit) return hit
+  const chapters = buildChapters(progress)
+  const view: RefinedCourseView = {
+    chapters,
+    header: buildHeader(progress, chapters),
+    resume: buildResume(chapters),
+    finish: buildFinish(progress, chapters),
+  }
+  VIEWS.set(progress.pct, view)
+  return view
+}
+
+/**
+ * ⚠ THE DEMO LEARNER OF THE UPLOAD — one section done, the second open. It is
+ * the fallback for a render with no stage, and what the suite reads. Every
+ * other caller passes the stage's own progress; see finding 4.
+ */
+export const REFINED_DEFAULT_VIEW = refinedCourseView({
+  ...REFINED_COURSE_PROGRESS,
+  pct: Math.round((REFINED_COURSE_PROGRESS.done / REFINED_COURSE_TOTALS.sections) * 100),
+})

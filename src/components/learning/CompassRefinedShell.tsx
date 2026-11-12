@@ -149,7 +149,12 @@ function RefinedPage({
      for "what did Refined change here?". */
   switch (page) {
     case 'learn':
-      return <CompassRefinedLearn onSelectPage={onSelectPage} />
+      /* ⚠ THE STAGE REACHES THIS PAGE TOO — 2026-11-12, finding 4 of the Your
+         Course audit. It used to go only to the Overview, so the two pages
+         described different learners: the Overview followed the demo bar and
+         Your Course showed the course's own typed progress whatever was
+         selected. */
+      return <CompassRefinedLearn onSelectPage={onSelectPage} stage={stage} />
     case 'overview':
       /* ⚠ THE STAGE-AWARE OVERVIEW, NOT THE MVP'S — 2026-11-10, Jillienne:
          "jeffs version has all of this logic built in, will that also be

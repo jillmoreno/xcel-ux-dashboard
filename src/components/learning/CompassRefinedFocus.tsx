@@ -16,6 +16,7 @@ import {
 import {
   REFINED_COURSE_SECTIONS,
   REFINED_COURSE_TOTALS,
+  refinedProgressAt,
   type RefinedSection,
   type RefinedSectionKind,
 } from '@/data/compassRefinedCourse'
@@ -150,8 +151,11 @@ function FocusProgress({
      through the course that exists. Replacing the sixteen stage fixtures
      outright would have left their rings, bars and copy describing a
      different course; see the note in `compassRefinedCourse.ts`. */
-  const pct = Number.parseFloat(prog.pct) || 0
-  const done = Math.round((pct / 100) * REFINED_COURSE_TOTALS.sections)
+  /* ⚠ THE ARITHMETIC MOVED OUT — 2026-11-12, finding 4. It was two lines
+     here and its mirror image on Your Course, which is how one learner came
+     to have two percentages. `refinedProgressAt` is the only place this is
+     done now, and both pages call it. */
+  const { done } = refinedProgressAt(prog.pct)
   const lessons = `${done} of ${REFINED_COURSE_TOTALS.sections}`
 
   return (
@@ -374,11 +378,9 @@ function Ring({ prog, size }: { prog: Prog; size: number }) {
  */
 function nextSection(prog?: Prog): RefinedSection | undefined {
   if (!prog) return undefined
-  const pct = Number.parseFloat(prog.pct) || 0
-  const done = Math.round((pct / 100) * REFINED_COURSE_TOTALS.sections)
   /* Past the end is the end: a finished course has nothing after it, and the
      hero's own copy is the honest thing to show there. */
-  return REFINED_COURSE_SECTIONS[done]
+  return REFINED_COURSE_SECTIONS[refinedProgressAt(prog.pct).done]
 }
 
 /** The tile's glyph, by what the next section is. Unknown falls back to the

@@ -4,7 +4,12 @@ import { MemoryRouter } from 'react-router-dom'
 import { AccountProvider } from '@/context/AccountContext'
 import { FeatureFlagProvider } from '@/context/FeatureFlagContext'
 import { CompassRefinedLearn } from '@/components/learning/CompassRefinedLearn'
-import { REFINED_CHAPTERS } from '@/components/learning/compassRefinedLearnCourse'
+import { REFINED_DEFAULT_VIEW } from '@/components/learning/compassRefinedLearnCourse'
+
+/* ⚠ RENDERED WITH NO STAGE, so the page draws the upload's own learner — one
+   section done, the second open — and these are that learner's chapters. A
+   stage would be a second thing under test. */
+const REFINED_CHAPTERS = REFINED_DEFAULT_VIEW.chapters
 
 /**
  * THE YOUR COURSE AUDIT, 2026-11-12 — findings 1, 2, 7 and 8.

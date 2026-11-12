@@ -158,6 +158,42 @@ export const REFINED_COURSE_PROGRESS = {
   currentN: 2,
 }
 
+export type RefinedProgress = { done: number; currentN: number; pct: number }
+
+/**
+ * ONE DERIVATION OF HOW FAR THROUGH THE COURSE A LEARNER IS — 2026-11-12,
+ * finding 4 of the Your Course audit.
+ *
+ * ⚠ TWO RINGS SAID TWO NUMBERS ABOUT ONE LEARNER. Your Course read 2% and
+ * the Overview read 0%, because each derived progress from the other's
+ * output: the Overview took the stage's own percentage and multiplied it by
+ * the section count to get a done figure; Your Course took a typed done
+ * figure and divided it by the section count to get a percentage. Neither is
+ * wrong on its own, which is exactly why the disagreement survived — there
+ * was nothing for either page to be checked against.
+ *
+ * ⚠ THE STAGE IS THE INPUT, and that is not a toss-up. Sixteen learner
+ * states are what the demo bar flips through, so a page that does not read
+ * the stage shows the same learner whichever one a reviewer picks — which
+ * Your Course did, while the Overview beside it moved. The arithmetic below
+ * is the Overview's, lifted out of `CompassRefinedFocus` so that both pages
+ * run it rather than each keeping a version.
+ *
+ * ⚠ AND `currentN` IS `done + 1`, the course being linear: the row you are in
+ * is the one after the last you finished. Capped at the final row so a
+ * complete course does not point past its own end.
+ */
+export function refinedProgressAt(pct: string | number | undefined): RefinedProgress {
+  const n = typeof pct === 'number' ? pct : Number.parseFloat(pct ?? '') || 0
+  const clamped = Math.min(100, Math.max(0, n))
+  const done = Math.round((clamped / 100) * REFINED_COURSE_TOTALS.sections)
+  return {
+    done,
+    currentN: Math.min(done + 1, REFINED_COURSE_TOTALS.sections),
+    pct: clamped,
+  }
+}
+
 /** The section the learner is in, for the Overview's next step. */
 export const refinedCurrentSection = (): RefinedSection =>
   REFINED_COURSE_SECTIONS.find((s) => s.n === REFINED_COURSE_PROGRESS.currentN) ??
