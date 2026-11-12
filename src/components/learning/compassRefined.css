@@ -238,20 +238,30 @@
   letter-spacing: -0.02em;
   color: var(--crf-ink);
 }
-/* ⚠ THE LEAD IS PER-PAGE, and the differences are small enough to look like
-   noise and are his: Learn is 15px/1.5 capped at 600px with an 8px gap;
-   Readiness is 15px/1.55 capped at 680px with a 6px gap. One shared value
-   would be wrong on whichever page did not get picked. */
+/* ⚠ 12px ON EVERY PAGE — 2026-11-12, Jillienne: "lets make this sub-text on
+   every page the 12 px". It was 15, which is a SIZE the page uses for
+   content — the exam row titles are 15 and the Focus card's lesson title was
+   15 until it came down — so the line under the title was competing with the
+   things it introduces. Sub-text is the smallest register on the page now,
+   and it is one value across all seven leads rather than per-page.
+
+   ⚠ THE MEASURE CAME WITH IT. 600px holds about 97 characters at 12px, half
+   again past the line a reader can track comfortably; the cap drops to 420
+   so the line length stays what it was rather than growing because the type
+   shrank.
+
+   ⚠ WHAT IS LEFT PER-PAGE is Readiness's own margin and line-height, which
+   were his and are kept below. The sizes no longer differ. */
 .crf-lead {
   margin: 8px 0 0;
-  max-width: 600px;
-  font-size: 15px;
+  max-width: 420px;
+  font-size: 12px;
   line-height: 1.5;
   color: var(--crf-body);
 }
 .crf-lead--readiness {
   margin: 6px 0 0;
-  max-width: 680px;
+  max-width: 480px;
   line-height: 1.55;
 }
 .crf-live {
