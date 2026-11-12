@@ -188,7 +188,16 @@ describe('the Your Course page is built from the course list', () => {
   it('counts its header off the course, not off a typed figure', () => {
     expect(REFINED_COURSE_HEADER.sections).toBe(44)
     expect(REFINED_COURSE_HEADER.chapters).toBe(REFINED_CHAPTERS.length)
-    expect(REFINED_COURSE_HEADER.eyebrow).toBe('21 chapters · 21 exams')
+    /* ⚠ THE EYEBROW NAMES THE ENDING — 2026-11-12: "21 Sections - Final
+       Course Exam - Survey - Certificate". The tail is one label per closing
+       row, so a fourth would appear here without an edit; pinned against the
+       course rather than against the string. */
+    expect(REFINED_COURSE_HEADER.eyebrow).toBe(
+      '21 Sections · Final Course Exam · Survey · Certificate',
+    )
+    expect(REFINED_COURSE_HEADER.eyebrow.split(' · ')).toHaveLength(
+      1 + REFINED_FINISH_STEPS.length,
+    )
   })
 })
 

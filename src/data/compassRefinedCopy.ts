@@ -388,6 +388,23 @@ export const REFINED_FINISH_COPY = {
     survey: () => 'Opens after the final exam',
     certificate: () => 'Issued when the survey is complete',
   } as Record<string, (chapters: number) => string>,
+  /**
+   * ⚠ HOW THE ENDING IS NAMED IN THE COURSE HEADER'S EYEBROW — 2026-11-12,
+   * Jillienne replacing "21 chapters · 21 exams" with "21 Sections - Final
+   * Course Exam - Survey - Certificate".
+   *
+   * A SECOND name per kind, and deliberately: the rows are titled as the
+   * course titles them ("Final Exam", "Course Survey"), and the eyebrow is a
+   * summary of what the course contains — where "Final Course Exam" says
+   * what it is to somebody who has not scrolled to it, and "Survey" needs no
+   * qualifier. If the course's own titles are confirmed, these change with
+   * them.
+   */
+  summaryLabel: {
+    exam: 'Final Course Exam',
+    survey: 'Survey',
+    certificate: 'Certificate',
+  } as Record<string, string>,
   /** The button's words. A certificate is downloaded, not taken — so the
    *  verb follows the kind rather than being one word for all three.
    *  ⚠ "Take exam" IS THE CHAPTER EXAMS' OWN CTA (`examCta`), carried here so

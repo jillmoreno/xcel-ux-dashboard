@@ -262,12 +262,37 @@ function buildChapters(progress: RefinedProgress): RefinedChapter[] {
  * while the Overview said 41, and neither was reading the course. Both now
  * count `REFINED_COURSE_SECTIONS`.
  */
-function buildHeader(progress: RefinedProgress, chapters: RefinedChapter[]) {
+function buildHeader(
+  progress: RefinedProgress,
+  chapters: RefinedChapter[],
+  finish: RefinedFinishStep[],
+) {
   return {
   chapters: chapters.length,
   sections: REFINED_COURSE_TOTALS.sections,
   exams: REFINED_COURSE_TOTALS.exams,
-  eyebrow: `${chapters.length} chapters · ${REFINED_COURSE_TOTALS.exams} exams`,
+  /**
+   * ⚠ WHAT THE COURSE CONTAINS, ENDING INCLUDED — 2026-11-12, Jillienne: "21
+   * Sections - Final Course Exam - Survey - Certificate". It read "21
+   * chapters · 21 exams", which counted the chapter exams as a second
+   * category and then stopped — a learner reading the eyebrow had no way to
+   * know the course ends in a final exam, a survey and a certificate at all.
+   *
+   * ⚠ THE TAIL IS DERIVED, NOT TYPED. One label per row of the course's
+   * ending, so a fourth closing row names itself here. The words are
+   * `REFINED_FINISH_COPY.summaryLabel` — hers, and a shade fuller than the
+   * row titles.
+   *
+   * ⚠ "21 SECTIONS" IS HER WORD AND IT DISAGREES WITH THE FIGURE BESIDE IT,
+   * which reads "8 of 44 sections" — 44 being every row of the course, which
+   * is what audit finding 3 settled the page on. Carried as asked, and
+   * raised rather than silently resolved: which number "section" means is
+   * hers to decide.
+   */
+  eyebrow: [
+    `${chapters.length} Sections`,
+    ...finish.map((f) => REFINED_FINISH_COPY.summaryLabel[f.kind] ?? f.title),
+  ].join(' · '),
   /** ⚠ THE WORD FOLLOWS THE FIGURE. The header read "Completed" beside "1 of
    *  41 sections" — his status string, kept while everything around it
    *  changed. A course is complete when its sections are. */
@@ -382,11 +407,14 @@ export function refinedCourseView(progress: RefinedProgress): RefinedCourseView 
   const hit = VIEWS.get(progress.pct)
   if (hit) return hit
   const chapters = buildChapters(progress)
+  /* ⚠ THE ENDING IS BUILT BEFORE THE HEADER, which now names it — see the
+     eyebrow. */
+  const finish = buildFinish(progress, chapters)
   const view: RefinedCourseView = {
     chapters,
-    header: buildHeader(progress, chapters),
+    header: buildHeader(progress, chapters, finish),
     resume: buildResume(chapters),
-    finish: buildFinish(progress, chapters),
+    finish,
   }
   VIEWS.set(progress.pct, view)
   return view
