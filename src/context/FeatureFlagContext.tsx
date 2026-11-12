@@ -2866,6 +2866,9 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     defaultVariant: 'multi',
     variants: [
       { value: 'multi', label: 'Multi-product', description: 'Standard and Premier side by side, with the comparison grid. The default.' },
+      /* MULTI-PRODUCT 2 (2026-11-11, Eric: "duplicate this multi product page and add it to the products drop down as Multi-product
+         2") — the multi page as it stands today, a second copy to change without touching the first. The page reads it as `multi2`. */
+      { value: 'multi-2', label: 'Multi-product 2', description: 'A second multi-product page \u2014 a copy of Multi-product to try changes on.' },
       /* `single` is the Premier page — its value kept so links pinned to it still open it; labelled Premier since 2026-11-05. */
       { value: 'single', label: 'Premier', description: 'Premier alone, the grid captioned \u201cPackage includes:\u201d as a list of what it includes.' },
       /* STANDARD (2026-11-05, Eric: "Duplicate this page and make it a Standard Product page in the product dropdown"). */

@@ -3,7 +3,7 @@ import { Fragment, useEffect, useLayoutEffect, useRef, useState, type CSSPropert
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { E2E_ORIGINAL_PRICE, E2E_PARTNER_NAME, E2E_PARTNER_PRICE, useEndToEndDemoParams } from './endToEndDemo'
 import { PARTNER_HEADER_HEIGHT, PartnerHeader } from '@/components/e2e/PartnerHeader'
-import { AngleDownSolid, ArrowDownSolid, AngleRightSolid, BallotCheckLight, BookThin, CardsBlankThin, ChartLineUpLight, CrownSolid, FaceGrinLight, FileCertificateLight, FileCertificateSolid, RubiMark, RubiWordmark, ShieldCheckSolid } from '@/icons'
+import { AngleDownRegular, AngleDownSolid, ArrowDownSolid, AngleRightSolid, BallotCheckLight, BookThin, CardsBlankThin, ChartLineUpLight, CrownSolid, FaceGrinLight, FileCertificateLight, FileCertificateSolid, RubiMark, RubiWordmark, ShieldCheckSolid } from '@/icons'
 import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { StandaloneBrowserChrome } from '@/components/layout/BrowserChromeBar'
 import './inviteFlow.css'
@@ -107,6 +107,11 @@ export function TwoPackageProductDetailPage() {
     productsVariant === 'single' || productsVariant === 'california' ? 'premier' : productsVariant === 'standard' ? 'standard' : null
   const single = soloId !== null
   const california = productsVariant === 'california'
+  // Multi-product 2 (2026-11-11, Eric): the multi page duplicated — identical until a change is scoped to it with `multi2`.
+  const multi2 = productsVariant === 'multi-2'
+  // Multi-product 2's comparison: one row open at a time — opening another closes the last (2026-11-11, Eric; any number at first).
+  const [openRow, setOpenRow] = useState<string | null>(null)
+  const toggleRow = (key: string) => setOpenRow((prev) => (prev === key ? null : key))
   const standardOnly = soloId === 'standard'
   /* The single page's course head — A, B or C (2026-10-29, Eric; C the default, A and B kept to draw on). */
   const singleHead = useFeatureFlag('pdp-single-head').variant ?? 'c'
@@ -306,7 +311,8 @@ export function TwoPackageProductDetailPage() {
     const on = false
     // Copy C's (`lift`) both 2 larger (2026-10-29, Eric), its strike sized to the struck price rather than fixed.
     const prices = (
-      <span data-price-row style={OPTION_PRICE_ROW}>
+      // Multi-product 2: the cards are one depth, and the shallower one's spare space goes between its copy and its price (2026-11-11, Eric).
+      <span data-price-row style={multi2 && !lift && !bare && !plain ? { ...OPTION_PRICE_ROW, marginTop: 'auto' } : OPTION_PRICE_ROW}>
         <span style={lift ? { ...OPTION_PRICE, fontSize: `calc(${OPTION_PRICE.fontSize} + 2px)` } : OPTION_PRICE}>{p.price}</span>
         <span style={lift ? { ...OPTION_WAS, fontSize: `calc(${OPTION_WAS.fontSize} + 2px)` } : OPTION_WAS}>
           <s style={{ textDecoration: 'none' }}>{p.was}</s>
@@ -339,7 +345,7 @@ export function TwoPackageProductDetailPage() {
     // Not clickable now — a hover lifts it (cre-e2e-package-card, inviteFlow.css: the selected ring and shadow); Premier was lifted at rest; Standard had no hover at all (2026-10-29, Eric) — both hover now (2026-10-30).
     return (
       // Single, out of its card: no fill, ring or shadow — the contents on the ground, left (2026-10-29, Eric).
-      <div className={bare || plain ? undefined : p.id === 'premier' ? 'cre-e2e-package-card cre-e2e-package-card--on' : 'cre-e2e-package-card'} style={bare || plain ? UNCARDED : OPTION_CARD}>
+      <div className={bare || plain ? undefined : p.id === 'premier' ? 'cre-e2e-package-card cre-e2e-package-card--on' : 'cre-e2e-package-card'} style={bare || plain ? UNCARDED : multi2 ? { ...OPTION_CARD, flexGrow: 1 } : OPTION_CARD}>
         {/* Standard takes the hover ring too (2026-10-30, Eric). */}
         {/* THE TAB (2026-10-28, Eric; was the eyebrow over the title and PASS GUARANTEE top right): the mini tray's, top left —
             the package's name on tan, behind Premier's brick PASS GUARANTEE. */}
@@ -366,7 +372,7 @@ export function TwoPackageProductDetailPage() {
             </span>
           </span>
         ) : (
-          <span style={bare ? (left ? { ...UNCARDED_BODY, paddingTop: 0, alignItems: 'flex-start', textAlign: 'left' } : UNCARDED_BODY) : { ...OPTION_BODY, paddingTop: 40, paddingBottom: pinLerp(28, 24), alignItems: 'center', textAlign: 'center', ...(plain ? { padding: 0, alignItems: 'flex-start', textAlign: 'left' } : null) }}>
+          <span style={bare ? (left ? { ...UNCARDED_BODY, paddingTop: 0, alignItems: 'flex-start', textAlign: 'left' } : UNCARDED_BODY) : { ...OPTION_BODY, paddingTop: 40, paddingBottom: pinLerp(28, 24), alignItems: 'center', textAlign: 'center', ...(multi2 ? { flexGrow: 1 } : null), ...(plain ? { padding: 0, alignItems: 'flex-start', textAlign: 'left' } : null) }}>
             {/* Centred (2026-10-29, Eric). */}
             {/* 40 from the card's top (2026-10-29, Eric: 24 with no tab above it, then 8 more, and 8 more; 20 under the tab). */}
             {/* A card's own title where it has one — Standard's is "Standard Course" (2026-10-29, Eric). */}
@@ -385,6 +391,12 @@ export function TwoPackageProductDetailPage() {
                 {/* Plain (Single head E), 8 more under it (2026-10-30, Eric). */}
                 with Prepared to Pass Promise
               </button>
+            ) : null}
+            {/* Multi-product 2: what Premier adds, under its promise link (2026-11-11, Eric) — Standard's description's style. */}
+            {multi2 && p.id === 'premier' && !lift && !bare && !plain ? <p style={STANDARD_BLURB}>{PREMIER_BLURB_COPY}</p> : null}
+            {!lift && !bare && p.id === 'premier' ? null : multi2 && p.id === 'standard' && !lift && !bare && !plain ? (
+              /* Multi-product 2: what Standard is, between its name and its price (2026-11-11, Eric; under its Purchase first). */
+              <p style={STANDARD_BLURB}>{STANDARD_BLURB_COPY}</p>
             ) : !lift && !bare ? (
               /* Standard keeps the link's line, empty, so the two cards' prices and Purchases stay level (2026-10-30, Eric). */
               <span aria-hidden style={{ ...LINK, fontFamily: 'var(--font-e2e-avenir)', marginBottom: -8, visibility: 'hidden' }}>
@@ -432,7 +444,7 @@ export function TwoPackageProductDetailPage() {
   ))
 
   return (
-    <div ref={pageRef} style={PAGE}>
+    <div ref={pageRef} style={PAGE} data-pdp-page={multi2 ? 'multi-2' : undefined}>
       <StandaloneBrowserChrome />
       {/* THE TOP MINI CARD TRAY (2026-10-28, Eric): full width, sliding down from the top of the browser once the cards on the page have
           scrolled off it, and back up when they return. A zero-height sticky row holds a clip the tray slides out of, so it is
@@ -572,10 +584,14 @@ export function TwoPackageProductDetailPage() {
               capitals and 17 below the last baseline, so it drops 7 to centre the cap-top-to-baseline block. */}
           {/* Multi, in the page's dark text rather than brick (2026-10-30, Eric). */}
           <h2 style={single ? { ...COURSE_HEAD_TITLE, alignSelf: 'center', position: 'relative', top: 7 } : { ...COURSE_HEAD_TITLE, color: 'var(--color-text-primary)' }}>
-            {place} {line} <span style={{ whiteSpace: 'nowrap' }}>Pre-licensing</span> Package
+            {place} {line} <span style={{ whiteSpace: 'nowrap' }}>Pre-licensing</span> Package{multi2 ? 's' : ''}
           </h2>
           {/* The concise intro (2026-10-29, Eric), in place of "Our pre-licensing packages are updated annually and designed with a
               simplified approach…". */}
+          {multi2 ? (
+            // Multi-product 2's intro (2026-11-11, Eric).
+            <p style={BODY}>With simple and proven pre-licensing packages, you can easily pick your training and start your course in a few minutes.</p>
+          ) : (
           <p style={single ? { ...BODY, gridColumn: '1 / -1' } : BODY}>
             Updated every year, our packages make complex insurance concepts simple.{' '}
             <strong style={{ fontWeight: 800 }}>Learn faster</strong> with interactive lessons and quizzes, be exam-ready in as little as 2 weeks,{' '}
@@ -583,6 +599,7 @@ export function TwoPackageProductDetailPage() {
               and{' '}
             <strong style={{ fontWeight: 800 }}>pass the {place} exam the first time.</strong>
           </p>
+          )}
         </div>
         {single ? (
           <div style={{ ...HEAD_PACKAGE, '--cp': compact ? 1 : 0, '--px': compact ? 1 : 0, '--py': compact ? 1 : 0 } as CSSProperties}>
@@ -861,7 +878,7 @@ export function TwoPackageProductDetailPage() {
                 aria-labelledby={single ? undefined : 'choose-package'}
                 aria-label={single ? 'Your package' : undefined}
                 // Single, the one card at the multi card's width, centred in the ground (2026-10-29, Eric; was the left of two columns).
-                style={{ ...PACKAGE_GRID, ...(CARDS_ON_WHITE ? CARDS_FLUSH : null), ...(single ? { gridTemplateColumns: 'minmax(0, 326px)', justifyContent: 'center' } : null), ...(unpinned ? { position: 'relative' } : { top: `calc(${browserTop + CARDS_PIN_GAP}px - 28px * var(--p, 0))` }) }}
+                style={{ ...PACKAGE_GRID, ...(multi2 ? { alignItems: 'stretch' } : null), ...(CARDS_ON_WHITE ? CARDS_FLUSH : null), ...(single ? { gridTemplateColumns: 'minmax(0, 326px)', justifyContent: 'center' } : null), ...(unpinned ? { position: 'relative' } : { top: `calc(${browserTop + CARDS_PIN_GAP}px - 28px * var(--p, 0))` }) }}
               >
                 {/* The cards' piece of the ground, on its own layer so it can go once they pin — the condensed frame is narrower than
                     the column, and this showing either side of it read as a stray edge (2026-10-27, Eric). */}
@@ -934,6 +951,56 @@ export function TwoPackageProductDetailPage() {
                       </tr>
                     </thead>
                   )}
+                  {multi2 ? (
+                    /* MULTI-PRODUCT 2'S COMPARISON — the live staging page's (2026-11-11, Eric: "use the same copy from the link … only
+                       the title of a row is visible with an angle icon off to the right of the title line to allow expanding each
+                       section to the sub copy"): its rows, its three group headings, and each row's description behind its angle. */
+                    <tbody>
+                      {COMPARISON_2.map((row, r) => {
+                        const last = r === COMPARISON_2.length - 1
+                        if ('group' in row) {
+                          return (
+                            <tr key={row.group}>
+                              <th scope="colgroup" colSpan={1 + packages.length} style={COMPARE_GROUP}>
+                                {row.group}
+                              </th>
+                            </tr>
+                          )
+                        }
+                        const open = openRow === row.feature
+                        const descId = `compare-2-desc-${r}`
+                        return (
+                          <tr key={row.feature}>
+                            <th scope="row" style={{ ...COMPARE_FEATURE, paddingLeft: 0, ...(last ? { borderBottom: 'none' } : null) }}>
+                              <button
+                                type="button"
+                                className="cre-e2e-compare-toggle"
+                                aria-expanded={open}
+                                aria-controls={descId}
+                                onClick={() => toggleRow(row.feature)}
+                                style={COMPARE_TOGGLE}
+                              >
+                                <AngleDownRegular aria-hidden style={{ ...COMPARE_TOGGLE_ANGLE, transform: open ? 'rotate(180deg)' : 'none' }} />
+                                <strong style={{ fontWeight: 800 }}>{row.feature}</strong>
+                              </button>
+                              <p id={descId} hidden={!open} style={COMPARE_DESC}>
+                                {row.detail}
+                              </p>
+                            </th>
+                            {packages.map((p) => {
+                              const has = row[p.id]
+                              return (
+                                <td key={p.id} style={{ ...COMPARE_CELL, ...COMPARE_MARK, verticalAlign: 'top', ...(p.id === 'premier' ? PREMIER_SHADE : null), ...(last ? { borderBottom: 'none' } : null), color: has ? 'var(--color-xcel-brick)' : 'var(--color-neutral-500)' }}>
+                                  <span aria-hidden>{has ? '✓' : '—'}</span>
+                                  <span className="cre-visually-hidden">{has ? 'Included' : 'Not included'}</span>
+                                </td>
+                              )
+                            })}
+                          </tr>
+                        )
+                      })}
+                    </tbody>
+                  ) : (
                   <tbody>
                     {comparison.map((row, r) => (
                       <tr key={r}>
@@ -969,6 +1036,7 @@ export function TwoPackageProductDetailPage() {
                       </tr>
                     ))}
                   </tbody>
+                  )}
                 </table>
               </div>
             </section>
@@ -1272,6 +1340,79 @@ const COMPARISON: { feature: ReactNode; detail?: ReactNode; standard: boolean; p
     premier: true,
   },
   { feature: 'Flashcards (Life, Health, and Accident Insurance)', detail: '800+ cards covering fundamentals', standard: false, premier: true, link: 'Learn More' }, // (2026-10-29, Eric)
+]
+
+/* MULTI-PRODUCT 2'S COMPARISON — verbatim from the live staging page, mcstaging.xcelsolutions.com/insurance-license/life-and-health
+   (2026-11-11, Eric): its rows in its order, its three group headings, and the description each row opens to. Which package has
+   which row is read off that page's grid. */
+type Compare2Row = { feature: string; detail: string; standard: boolean; premier: boolean } | { group: string }
+const COMPARISON_2: Compare2Row[] = [
+  {
+    feature: 'Pass Guarantee',
+    detail:
+      'We\u2019re confident our 3-part training program will prepare you to pass \u2014 so confident that if you don\u2019t pass your state exam on the first try, we\u2019ll refund your Premier package price and provide extra support to help you succeed the next time.',
+    standard: false,
+    premier: true,
+  },
+  {
+    feature: 'Rubi, XCEL\u2019s AI-Powered Study Partner',
+    detail:
+      'Rubi is XCEL\u2019s AI-powered study partner, built into every lesson to give you instant answers and 24/7 support. Rubi breaks down complex topics into simple explanations, generates unlimited practice questions on what you find toughest, and can translate into multiple languages so you can study in whichever language you know best.',
+    standard: true,
+    premier: true,
+  },
+  {
+    feature: 'Extended Access',
+    detail:
+      'Extended Access gives you more time to study: 30 days of access to the Pre-licensing Course, then another 30 days for the Prep Review Course and Exam Simulators, so you can move through the 3-part program at your own pace.',
+    standard: false,
+    premier: true,
+  },
+  { group: 'XCEL\u2019s Proven 3-Part Training Program' },
+  {
+    feature: 'Pre-licensing Course',
+    detail:
+      'An online self-study course providing the fundamentals you need and satisfying your state\u2019s education requirements. It includes streamlined content, bite-size videos, review notes, and chapter exams, with Rubi on hand to help concepts click faster.',
+    standard: true,
+    premier: true,
+  },
+  {
+    feature: 'Prep Review Course',
+    detail:
+      'Scaled-down content that focuses on the most important material, weighted to match your state exam outline. This is where students say they get the most value as they narrow in on exactly what the exam will cover.',
+    standard: true,
+    premier: true,
+  },
+  {
+    feature: 'Exam Simulator',
+    detail:
+      'Three exam simulators with unlimited retakes, each weighted by topic to match your state exam. Every simulator unlocks only after you\u2019ve completed the one before it, building your confidence step by step until you\u2019re ready for test day.',
+    standard: true,
+    premier: true,
+  },
+  { group: 'State-Specific Courses' },
+  {
+    feature: 'Code & Ethics (if required by state)',
+    detail:
+      'California requires a separate Code & Ethics course, often including anti-fraud training, before you can get licensed. Where it applies, this course is included in your package so you satisfy the requirement without enrolling separately.',
+    standard: true,
+    premier: true,
+  },
+  { group: 'Study Tools & Reviews' },
+  {
+    feature: 'Recorded Livestream Exam Review',
+    detail:
+      'A recorded version of our Exam Review class, included with Premier. Play, pause, rewind, and fast-forward on your own schedule to revisit key topics as many times as you need before your exam.',
+    standard: false,
+    premier: true,
+  },
+  {
+    feature: 'Flashcards',
+    detail:
+      '800+ flashcards covering the key concepts from your course, included with Premier. Test and reinforce what you\u2019ve learned as you study, helping key terms and concepts stick before exam day.',
+    standard: false,
+    premier: true,
+  },
 ]
 
 /* Florida's reporting fee — DEMO DATA, see the header. */
@@ -2358,6 +2499,12 @@ const SINGLE_BUY: CSSProperties = {
 
 /* The page cards' Purchase under the price, across the card (2026-10-29, Eric). */
 const STACKED_BUY: CSSProperties = { ...SINGLE_BUY, alignSelf: 'stretch' }
+// Multi-product 2's Standard description (2026-11-11, Eric: "just in regular body weight").
+const STANDARD_BLURB: CSSProperties = { ...SIDE_BODY, fontSize: 13, lineHeight: '17px', fontWeight: 400, paddingTop: 8, textAlign: 'center', alignSelf: 'stretch' }
+const PREMIER_BLURB_COPY =
+  'Adds flashcards, a recorded review class, and our Pass Guarantee to the standard package. Ideal for those looking to maximize their studying with various learning formats.'
+const STANDARD_BLURB_COPY =
+  'Includes XCEL\u2019s proven 3-part training system that has been carefully designed to cover every topic of the exam while preparing you to pass in as little as 2 weeks.'
 
 /* Under each card: its description, then what sets it apart. */
 
@@ -2424,6 +2571,25 @@ const COMPARE_FEATURE: CSSProperties = {
   paddingRight: 8,
   borderBottom: `1px solid ${COMPARE_RULE}`,
 }
+/* Multi-product 2's comparison (2026-11-11, Eric): the row's title a button across the feature column, its angle at the right end
+   of the title line, and the description under it when open; the group headings in the header row's eyebrow. */
+const COMPARE_TOGGLE: CSSProperties = {
+  display: 'flex',
+  alignItems: 'flex-start',
+  justifyContent: 'flex-start',
+  gap: 8, // the angle left of the title, 8 from it (2026-11-11, Eric; was at the right end of the line)
+  width: '100%',
+  padding: 0,
+  border: 'none',
+  background: 'none',
+  font: 'inherit',
+  color: 'inherit',
+  textAlign: 'left',
+  cursor: 'pointer',
+}
+const COMPARE_TOGGLE_ANGLE: CSSProperties = { flex: 'none', width: 14, height: 14, marginTop: 3, color: 'var(--color-xcel-brick)', transition: 'transform 200ms ease' }
+const COMPARE_DESC: CSSProperties = { margin: 0, paddingTop: 6, paddingLeft: 22, paddingRight: 8, fontSize: 13, lineHeight: '17px', color: 'var(--color-text-secondary)' }
+const COMPARE_GROUP: CSSProperties = { ...COMPARE_HEAD, paddingLeft: 0, paddingTop: 20, borderTop: 'none' }
 /* Single, with no header row, the rule over the first item stays (2026-10-28, Eric). */
 const COMPARE_FIRST_RULE: CSSProperties = { borderTop: `1px solid ${COMPARE_RULE}` }
 /* California's three included products — Figma 668:1357 (2026-11-06, Eric): three 220 tiles 8 apart across the 676 column, each a
