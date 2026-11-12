@@ -64,6 +64,17 @@ export type RefinedChapter = {
   lockMsg?: string
   /** Whether there is anything behind the chevron. See finding 8. */
   expandable: boolean
+  /**
+   * ⚠ ITS NUMBER AMONG THE CHAPTERS — 1..21 — or undefined for a row that is
+   * not one. The roadmap's chip shows it, so this is where "is this a
+   * chapter?" is decided rather than in the layout.
+   *
+   * ⚠ IT IS NOT THE POSITION IN THE LIST. The Course Introduction is the
+   * first row and is not Chapter 1; numbering by index put "00" on a chip
+   * beside "Life and Health Pre-licensing" and pushed every chapter one out
+   * from the number the course gives it.
+   */
+  number?: number
   exam?: { title: string; done?: boolean; locked?: boolean; note?: string }
   lessons: { label: string; state: string }[]
 }
@@ -112,9 +123,15 @@ function lockNote(n: number): string {
  * progress comes in; everything below is a reading of it.
  */
 function buildChapters(progress: RefinedProgress): RefinedChapter[] {
+  /* ⚠ A ROW IS A CHAPTER IF THE COURSE CALLS IT ONE. Every chapter row's
+     label carries the word — "Chapter 1", "Life & Health Chapter 13 | Health
+     Chapter 4" — and the two that do not are the Course Introduction and the
+     Florida laws row, which the course lists without a number of its own. */
+  let chapterNo = 0
   return LESSON_ROWS.map((s, i) => {
   const next = REFINED_COURSE_SECTIONS.find((x) => x.n === s.n + 1)
   const { label, title } = splitTitle(s.title)
+  const number = /\bchapter\b/i.test(label) ? ++chapterNo : undefined
   /* ⚠ MATCHED BY TITLE, NOT BY POSITION, and the difference is not academic.
      His outline and the course's line up for almost every chapter — but his
      Chapter 2 is "Insurers and Insurance Markets" where the course's is
@@ -194,6 +211,7 @@ function buildChapters(progress: RefinedProgress): RefinedChapter[] {
        Her upload has no lesson-level detail for that row, and until it does
        the honest row is one that does not offer to expand. */
     expandable: lessons.length > 0 || next?.kind === 'exam',
+    number,
     /* ⚠ THE EXAM IS THE COURSE'S NEXT ROW, named as the course names it.
        His nested exam carried its own title ("Chapter 2 exam"); the course
        calls it "Chapter 2 Exam: Nature of Insurance", and that is the string

@@ -398,3 +398,67 @@ export const REFINED_FINISH_COPY = {
     certificate: 'Download',
   } as Record<string, string>,
 } as const
+
+/**
+ * ONE SENTENCE PER CHAPTER — 2026-11-12, for the roadmap card variant.
+ *
+ * ⚠ EVERY ONE OF THESE IS INVENTED. The uploaded course list is titles only:
+ * no blurbs, no objectives, no durations. These were written from the chapter
+ * NAMES and from what a Florida Life & Health pre-licensing syllabus
+ * ordinarily covers — which is a reasonable guess and not the course. Nobody
+ * at XCEL has read them.
+ *
+ * ⚠ SO THEY ARE OFF BY DEFAULT. `compass-course-blurb` is a toggle, not an
+ * arm, and it starts off: "Make a toggle to show the blurb or not, have it
+ * off on default. You can make up the one-sentence blurb." The card draws
+ * without them, which is also the honest state of the data.
+ *
+ * ⚠ AND THIS IS THE LIST TO HAND SOMEBODY. Twenty-one sentences in one
+ * object, keyed by the chapter's own title, the way the invented Texas
+ * figures were kept together so they could be checked in one pass. A key
+ * nothing matches simply draws no blurb.
+ */
+export const REFINED_CHAPTER_BLURBS: Record<string, string> = {
+  'Life and Health Pre-licensing':
+    'How the course runs, what the state requires of you, and how your hours are recorded.',
+  'Basic Principles of Life and Health Insurance':
+    'Risk, insurable interest, indemnity and the vocabulary every later chapter assumes.',
+  'Nature of Insurance':
+    'What an insurer is, how stock, mutual and fraternal companies differ, and who regulates them.',
+  'Legal Concepts of Insurance':
+    'Contract law as it applies to a policy — offer, acceptance, consideration and utmost good faith.',
+  'Life Insurance Policy Types':
+    'Term, whole life, universal and variable policies, and the trade-offs between them.',
+  'Life Insurance Provisions, Options, and Riders':
+    'Standard provisions, nonforfeiture and settlement options, and the riders that change a policy.',
+  'Life Insurance Premiums Proceeds and Beneficiaries':
+    'How premiums are calculated, how proceeds are paid, and how beneficiaries are named and changed.',
+  'Life Insurance Underwriting and Policy Issue':
+    'Applications, field underwriting, risk classification and what happens between signature and issue.',
+  'Group Life Insurance':
+    'Group contracts, eligibility, conversion rights and how employer-sponsored cover differs.',
+  Annuities:
+    'Accumulation and payout, fixed against variable, and the tax treatment of each.',
+  'Uses of Life Insurance':
+    'Personal, business and estate uses — buy-sell agreements, key person cover and liquidity.',
+  'Retirement Plans':
+    'Qualified and non-qualified plans, contribution limits, and how insurance products sit inside them.',
+  'Social Security':
+    'Benefits, eligibility and how Social Security interacts with the cover you sell.',
+  'Health and Accident Insurance':
+    'The structure of a health contract and the perils an accident policy does and does not cover.',
+  'Health Insurance Providers':
+    'Commercial insurers, Blue plans, HMOs and PPOs, and how each pays for care.',
+  'Medical Expense Insurance':
+    'Basic and major medical cover, deductibles, coinsurance and stop-loss.',
+  'Disability Income Insurance':
+    'Definitions of disability, elimination periods, benefit periods and occupational classes.',
+  'Health Insurance Plans for Seniors':
+    'Medicare parts and supplements, Medicaid eligibility, and long-term care cover.',
+  'Health Insurance Policy Provisions':
+    'Required and optional provisions, exclusions, and the claim process end to end.',
+  'Health Insurance Underwriting and Policy Issue':
+    'Health underwriting, pre-existing conditions and what makes a health application different.',
+  'Florida Life and Health Laws, Rules, and Regulations':
+    'Florida statutes, DFS oversight, licensing and appointment, and unfair trade practice rules.',
+}

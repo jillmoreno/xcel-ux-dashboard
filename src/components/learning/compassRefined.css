@@ -1322,6 +1322,207 @@
   cursor: not-allowed;
 }
 
+/* ---------- the roadmap, 2026-11-12 ----------
+   `compass-course-rows: cards`. A card per chapter, from a reference
+   screenshot: a numbered chip, a status pill, the action top right and a
+   Details link bottom right.
+
+   ⚠ IT BORROWS THE PAGE'S OWN TOKENS rather than the reference's palette.
+   The screenshot is black-and-mint on white; this is the Compass card edge,
+   the steel the page already uses for what is open, and the locked greys the
+   rows layout established. A variant that also changed the colours would be
+   two decisions in one arm. */
+.crf-map {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 12px;
+}
+.crf-map__card {
+  border: 1px solid var(--crf-card-edge);
+  border-radius: 14px;
+  background: var(--crf-white);
+}
+/* ⚠ THE OPEN CHAPTER IS THE ONLY TINTED ONE, which is the rows layout's rule
+   too — a card per chapter would otherwise give twenty-one equal rectangles
+   and no answer to "where am I?". */
+.crf-map__card--current {
+  border-color: var(--crf-steel-deep);
+  background: var(--crf-steel-wash);
+}
+.crf-map__card--locked {
+  background: var(--crf-white);
+}
+.crf-map__body {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 18px 20px;
+}
+/* The numbered chip. 44px square so two digits sit comfortably at 15px. */
+.crf-map__chip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 44px;
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: var(--crf-locked-tile);
+  color: var(--crf-locked-ink);
+  font-size: 15px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.crf-map__chip--done {
+  background: var(--crf-steel-pressed);
+  color: var(--crf-ink);
+}
+/* ⚠ THE CURRENT CHIP IS THE REFERENCE'S ONE PIECE OF FULL CONTRAST, and it
+   is the only place on the card that carries it: the chip says which chapter
+   you are in before you have read a word. */
+.crf-map__chip--current {
+  background: var(--crf-steel-deep);
+  color: #fff;
+}
+.crf-map__main {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+/* The pill and the action share the top line — the action hard right, which
+   is the instruction this variant was asked for. */
+.crf-map__top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+.crf-map__pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--crf-locked-tile);
+  color: var(--crf-locked-ink);
+  font-size: 11px;
+  font-weight: 600;
+}
+.crf-map__pill--done {
+  background: var(--crf-steel-pressed);
+  color: var(--crf-ink);
+}
+.crf-map__pill--open {
+  background: var(--crf-white);
+  border: 1px solid var(--crf-steel-deep);
+  color: var(--crf-steel-deep);
+}
+.crf-map__top .crf-btn {
+  margin-left: auto;
+}
+.crf-map__title {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--crf-ink);
+}
+.crf-map__card--locked .crf-map__title {
+  font-weight: 400;
+  color: var(--crf-locked-ink);
+}
+/* ⚠ THE COURSE'S OWN LABEL, UNDER THE TITLE RATHER THAN OVER IT. The rows
+   layout leads with it because the row has no other number; here the chip
+   carries the position, so the label is the double-numbered detail
+   ("Life & Health Chapter 13 | Health Chapter 4") and belongs with the
+   title it qualifies. Same treatment as every other row label — finding 6. */
+.crf-map__label {
+  margin: 3px 0 0;
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--crf-muted);
+}
+/* ⚠ INVENTED COPY, OFF BY DEFAULT — `compass-course-blurb`. */
+.crf-map__blurb {
+  margin: 8px 0 0;
+  max-width: 68ch;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--crf-body);
+}
+.crf-map__foot {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 12px;
+  min-height: 20px;
+}
+/* What opens it, bottom left — finding 2, in the place the reference puts
+   "Unlocks upon completing Module 01 Assessment". */
+.crf-map__opens {
+  font-size: 12px;
+  color: var(--crf-muted);
+}
+/* The Details link, bottom right: the rows layout's chevron with a word on
+   it. */
+.crf-map__details {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--crf-steel-deep);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.crf-map__details svg {
+  transition: transform 120ms ease;
+}
+/* The expanded half sits inside the card, ruled off rather than boxed — a
+   second border inside a card reads as a card inside a card. */
+.crf-map__open {
+  padding: 4px 20px 18px 80px;
+  border-top: 1px solid var(--crf-ch-rule);
+}
+.crf-map__open .crf-lessons {
+  margin-top: 12px;
+}
+/* The fold's control, as a card of its own so the column keeps its rhythm. */
+.crf-map__more {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 14px 20px;
+  border: 1px dashed var(--crf-card-edge);
+  border-radius: 14px;
+  background: none;
+  color: var(--crf-steel-deep);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+.crf-map__more:hover {
+  background: var(--crf-steel-wash);
+}
+/* ⚠ THE BLURB ON THE ROWS LAYOUT TOO, because the toggle is a question about
+   content and the arm is a question about shape — see `compass-course-blurb`.
+   Sized to sit under a 17px row title without competing with it. */
+.crf-ch__blurb {
+  margin: 4px 0 0;
+  max-width: 68ch;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--crf-muted);
+}
+
 /* ============ the Overview ============ */
 
 .crf-ov__course {

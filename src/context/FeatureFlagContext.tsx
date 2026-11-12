@@ -1760,6 +1760,98 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'compass-course-rows',
+    /* THE CHAPTER LIST, AS ROWS OR AS A ROADMAP — 2026-11-12, Jillienne with
+       a reference screenshot: "ON Your Course, lets add a variant that shows
+       this type of styling. CTA should be in the top right. Bottom Right can
+       be a details link with chevron that expands and shows the other parts
+       of the course."
+
+       ⚠ THEY DIFFER IN WHAT A CHAPTER IS. `list` is a row — twenty-one of
+       them in one bordered card, scanned top to bottom, which is the shape
+       his build had and the shape the audit tuned. `cards` makes each chapter
+       its own card with a numbered chip, a status pill, the action top right
+       and a details link bottom right: a roadmap you browse rather than a
+       list you work down.
+
+       ⚠ `list` IS THE DEFAULT because it is the audited one. Findings 1, 2, 3,
+       6, 7 and 8 were measured against it and fixed on it; making the new
+       arm the baseline would retire that work by a flag default rather than
+       by a decision. The arm is the question.
+
+       ⚠ THE ENDING DOES NOT FORK. "Finish Your Course" stays its compact
+       strip on both — her call: a final exam, a survey and a certificate are
+       not chapters, and the contrast is what makes the end of the course read
+       as the end. */
+    surface: 'design',
+    owner: 'anjani',
+    versions: ['hybrid-pacing', 'eric-atlas-e2e'],
+    surfaces: ['compass:refined'],
+    group: 'Widgets',
+    label: 'Course list',
+    description:
+      'How Your Course draws its twenty-one chapters. Rows is the audited list — one bordered card, a row per chapter, the action and the state in a right-hand column. Roadmap gives each chapter a card of its own: a numbered chip, a status pill, the action top right, what opens it bottom left and a Details link bottom right that expands the lessons and the chapter exam. The Course Introduction takes a mark instead of a number, not being a chapter. The ending — Final Exam, Course Survey, Certificate — is the same compact strip either way.',
+    variants: [
+      { value: 'list', label: 'Rows', description: 'The audited list' },
+      { value: 'cards', label: 'Roadmap', description: 'A card per chapter' },
+    ],
+    defaultVariant: 'list',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'compass-course-blurb',
+    /* ⚠ A SENTENCE UNDER EACH CHAPTER TITLE, AND EVERY ONE IS INVENTED. The
+       reference screenshot carries a description per module; the uploaded
+       course list is titles only. The twenty-one sentences in
+       `REFINED_CHAPTER_BLURBS` were written from the chapter names and from
+       what a Florida pre-licensing syllabus ordinarily covers.
+
+       ⚠ WHICH IS WHY IT IS OFF: "Make a toggle to show the blurb or not, have
+       it off on default." A reviewer who turns it on knows they asked for it.
+       A default-on invention is a figure somebody quotes back.
+
+       ⚠ A TOGGLE, NOT A THIRD ARM of `compass-course-rows`. It is a question
+       about CONTENT and the arm is a question about shape; as an arm you
+       could not see the rows with blurbs, which is a combination worth
+       looking at. */
+    surface: 'design',
+    owner: 'anjani',
+    versions: ['hybrid-pacing', 'eric-atlas-e2e'],
+    surfaces: ['compass:refined'],
+    group: 'Widgets',
+    label: 'Chapter blurbs',
+    description:
+      'Draws a one-sentence description under each chapter title, on either course layout. ⚠ The sentences are INVENTED — the uploaded course list has no descriptions, and these were written from the chapter names against a typical Florida Life & Health syllabus. They are in REFINED_CHAPTER_BLURBS as one list, to be replaced with the course’s own copy. Off by default for that reason.',
+    defaultEnabled: false,
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'compass-course-fold',
+    /* WHETHER THE LOCKED RUN FOLDS — 2026-11-12: "2 both behind a toggle so i
+       can compare."
+
+       ⚠ THIS IS AUDIT FINDING 1, MADE COMPARABLE. Nineteen of twenty-one
+       chapters are locked and took 55% of the page; folding them behind a
+       count brought that to 7%. The fix shipped as the behaviour, and the
+       question the roadmap variant reopens is whether a card layout wants it
+       at all — a roadmap you browse may be exactly the thing you want whole.
+
+       ⚠ ON IS THE DEFAULT, because folded is what the audit settled on and
+       what both layouts do today. Off shows every chapter, which is what the
+       reference screenshot shows. */
+    surface: 'design',
+    owner: 'anjani',
+    versions: ['hybrid-pacing', 'eric-atlas-e2e'],
+    surfaces: ['compass:refined'],
+    group: 'Widgets',
+    label: 'Fold locked chapters',
+    description:
+      'Collapses the run of locked chapters behind a count — what is open, two chapters of peek, then “Show all 21 chapters”. This was audit finding 1: nineteen of twenty-one chapters are locked and occupied 55% of the page; folded they occupy 7%. Turn it off to show the whole course at once, which is how the roadmap reference draws it. Applies to both course layouts.',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'compass-overview-focus-swap',
     /* WHICH SIDE EACH HALF SITS ON — 2026-11-11: "make a variant of this
        component, that can be toggled in the design tools, where the 2

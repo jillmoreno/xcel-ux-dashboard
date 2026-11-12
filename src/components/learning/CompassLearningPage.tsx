@@ -30,6 +30,7 @@ import type {
   NextMarkStyle,
   PaceNoteStyle,
 } from './compassRefinedFocusModel'
+import type { CourseOptions, CourseRowStyle } from './compassRefinedCourseModel'
 
 /**
  * COMPASS LEARNING — the top nav's second destination (Figma 765:3471).
@@ -161,6 +162,14 @@ export function CompassLearningPage({
     paceNote: useFeatureFlag('compass-overview-pace-note').variant as PaceNoteStyle,
     nextMark: useFeatureFlag('compass-overview-next-mark').variant as NextMarkStyle,
   }
+  /* ⚠ YOUR COURSE'S OWN THREE — 2026-11-12. Same shape and the same reason:
+     read with the other Compass controls so the pages stay plain functions
+     of their props. See `CourseOptions`. */
+  const courseOptions: CourseOptions = {
+    rows: useFeatureFlag('compass-course-rows').variant as CourseRowStyle,
+    blurb: useFeatureFlag('compass-course-blurb').enabled,
+    fold: useFeatureFlag('compass-course-fold').enabled,
+  }
   useDeclareDesignSurface(
     refined ? 'compass:refined' : jeffMvp ? 'compass:jeff-mvp' : (`compass:${page}` as DesignSurfaceId),
   )
@@ -237,6 +246,7 @@ export function CompassLearningPage({
             onSelectPage={setJeffPage}
             readinessHero={refinedHero}
             stage={readinessStage}
+            course={courseOptions}
             focus={overviewFocus}
           />
         ) : (

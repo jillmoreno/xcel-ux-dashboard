@@ -2,6 +2,7 @@ import { CompassRefinedRail, CompassRefinedPending } from './CompassRefinedChrom
 import { CompassRefinedReadiness } from './CompassRefinedReadiness'
 import { CompassReadinessRefined, type RefinedHeroStyle } from './CompassReadinessRefined'
 import { CompassRefinedLearn } from './CompassRefinedLearn'
+import type { CourseOptions } from './compassRefinedCourseModel'
 import { CompassRefinedStageOverview } from './CompassRefinedStageOverview'
 import { CompassRefinedPractice } from './CompassRefinedPractice'
 import { CompassRefinedPrep } from './CompassRefinedPrep'
@@ -60,6 +61,7 @@ export function CompassRefinedShell({
   onSelectPage,
   readinessHero,
   stage,
+  course,
   focus,
 }: {
   page: JeffMvpPage
@@ -70,6 +72,8 @@ export function CompassRefinedShell({
   /** `compass-readiness-stage` — which of the sixteen learner states the
    *  Overview draws. Read by `CompassLearningPage`, for the same reason. */
   stage?: string
+  /** Your Course's layout, blurbs and fold — see `CourseOptions`. */
+  course?: CourseOptions
   /** The Overview's merged Progress/Next card and every decision open on
    *  it — see `FocusOptions`. */
   focus?: FocusOptions
@@ -102,6 +106,7 @@ export function CompassRefinedShell({
         onSelectPage={onSelectPage}
         readinessHero={readinessHero}
         stage={stage}
+        course={course}
         focus={focus}
       />
     </div>
@@ -121,6 +126,7 @@ function RefinedPage({
   onSelectPage,
   readinessHero,
   stage,
+  course,
   focus,
 }: {
   page: JeffMvpPage
@@ -129,6 +135,7 @@ function RefinedPage({
   /** `compass-readiness-stage` — which of the sixteen learner states the
    *  Overview draws. Read by `CompassLearningPage` and passed down. */
   stage?: string
+  course?: CourseOptions
   focus?: FocusOptions
 }) {
   const source = refinedSourceFor(page)
@@ -154,7 +161,7 @@ function RefinedPage({
          described different learners: the Overview followed the demo bar and
          Your Course showed the course's own typed progress whatever was
          selected. */
-      return <CompassRefinedLearn onSelectPage={onSelectPage} stage={stage} />
+      return <CompassRefinedLearn onSelectPage={onSelectPage} stage={stage} course={course} />
     case 'overview':
       /* ⚠ THE STAGE-AWARE OVERVIEW, NOT THE MVP'S — 2026-11-10, Jillienne:
          "jeffs version has all of this logic built in, will that also be

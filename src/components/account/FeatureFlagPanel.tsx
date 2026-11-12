@@ -121,6 +121,9 @@ const REBRAND_FLAGS = [
   // (2026-11-09). Only bites on the Refined arm of Compass version.
   // The Overview's merged Progress + Next step card (2026-11-11) — three
   // arrangements, flipped from the bar while the shape is being decided.
+  'compass-course-rows',
+  'compass-course-blurb',
+  'compass-course-fold',
   'compass-overview-focus',
   'compass-overview-focus-swap',
   'compass-overview-pace-note',

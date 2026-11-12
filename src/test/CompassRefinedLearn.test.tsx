@@ -5,6 +5,10 @@ import { AccountProvider } from '@/context/AccountContext'
 import { FeatureFlagProvider } from '@/context/FeatureFlagContext'
 import { CompassRefinedLearn } from '@/components/learning/CompassRefinedLearn'
 import { REFINED_DEFAULT_VIEW } from '@/components/learning/compassRefinedLearnCourse'
+import {
+  COURSE_DEFAULTS,
+  type CourseOptions,
+} from '@/components/learning/compassRefinedCourseModel'
 
 /* ⚠ RENDERED WITH NO STAGE, so the page draws the upload's own learner — one
    section done, the second open — and these are that learner's chapters. A
@@ -96,5 +100,89 @@ describe('the exam inside a chapter tells the chapter’s own story', () => {
     expect(current.exam?.done).toBe(false)
     expect(current.exam?.locked).toBe(true)
     expect(current.exam?.note).toBe(`Opens after all ${current.lessons.length} lessons`)
+  })
+})
+
+/**
+ * THE ROADMAP ARM — `compass-course-rows: cards`, 2026-11-12.
+ *
+ * ⚠ WHAT IS WORTH PINNING IS WHAT THE FORK COULD LOSE. The rows layout earns
+ * findings 2 and 8 in its markup; a second layout can draw the same course
+ * and quietly drop the sentence that says what opens a chapter, or offer a
+ * Details link over an empty chapter. Both held here against the arm.
+ */
+function wrapWith(course: Partial<CourseOptions>) {
+  return render(
+    <MemoryRouter>
+      <AccountProvider>
+        <FeatureFlagProvider>
+          <CompassRefinedLearn course={{ ...COURSE_DEFAULTS, ...course }} />
+        </FeatureFlagProvider>
+      </AccountProvider>
+    </MemoryRouter>,
+  )
+}
+
+describe('the roadmap layout', () => {
+  it('numbers the chapters the way the course does, and marks what is not one', () => {
+    const { container } = wrapWith({ rows: 'cards', fold: false })
+    const chips = [...container.querySelectorAll('.crf-map__chip')]
+    /* The Course Introduction is the first row and is NOT Chapter 1 —
+       numbering by position put "00" on it and shifted every chapter. */
+    expect(chips[0].textContent).toBe('')
+    expect(chips[1].textContent).toBe('01')
+    expect(chips[2].textContent).toBe('02')
+    /* The Florida laws row carries no chapter number in the course list. */
+    expect(chips.at(-1)?.textContent).toBe('')
+  })
+
+  it('keeps finding 2 — a locked card says what opens it', () => {
+    const { container } = wrapWith({ rows: 'cards', fold: false })
+    for (const card of container.querySelectorAll('.crf-map__card--locked')) {
+      expect(card.querySelector('.crf-map__opens')?.textContent).toMatch(
+        /^Opens when .+ is complete$/,
+      )
+    }
+  })
+
+  it('keeps finding 8 — no Details link over an empty chapter', () => {
+    const { container } = wrapWith({ rows: 'cards', fold: false })
+    for (const card of container.querySelectorAll('.crf-map__card')) {
+      const title = card.querySelector('.crf-map__title')?.textContent ?? ''
+      const chapter = REFINED_CHAPTERS.find((c) => c.title === title)!
+      expect(!!card.querySelector('.crf-map__details'), title).toBe(chapter.expandable)
+    }
+  })
+
+  it('draws the same course as the rows layout — same chapters, same states', () => {
+    const cards = wrapWith({ rows: 'cards', fold: false })
+    const titles = (sel: string, root: HTMLElement) =>
+      [...root.querySelectorAll(sel)].map((e) => e.textContent)
+    const fromCards = titles('.crf-map__title', cards.container)
+    cards.unmount()
+    const rows = wrapWith({ rows: 'list', fold: false })
+    expect(fromCards).toEqual(titles('.crf-ch__title', rows.container))
+  })
+})
+
+describe('the two toggles', () => {
+  it('draws no blurb by default, because every sentence is invented', () => {
+    const { container } = wrapWith({ rows: 'cards' })
+    expect(container.querySelectorAll('.crf-map__blurb')).toHaveLength(0)
+    expect(COURSE_DEFAULTS.blurb).toBe(false)
+  })
+
+  it('and one per chapter when it is on, on either layout', () => {
+    const cards = wrapWith({ rows: 'cards', blurb: true })
+    expect(cards.container.querySelectorAll('.crf-map__blurb').length).toBeGreaterThan(0)
+    cards.unmount()
+    const rows = wrapWith({ rows: 'list', blurb: true })
+    expect(rows.container.querySelectorAll('.crf-ch__blurb').length).toBeGreaterThan(0)
+  })
+
+  it('shows every chapter with the fold off, and no control', () => {
+    const { container } = wrapWith({ rows: 'cards', fold: false })
+    expect(container.querySelectorAll('.crf-map__card')).toHaveLength(REFINED_CHAPTERS.length)
+    expect(container.querySelector('.crf-map__more')).toBeNull()
   })
 })
