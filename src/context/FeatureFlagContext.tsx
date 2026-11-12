@@ -5477,6 +5477,45 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     ],
     page: 'dashboard-rebrand',
   },
+  /* KEYCLOAK'S CHANGE PASSWORD — 2026-11-12, Afsana. Update Password on the
+     Profile page's Edit Account Details sheet opens Keycloak's Change
+     Password widget as a modal (`ChangePasswordModal`) instead of the sheet's
+     own Update Password step, with the invite flow's strength bar and
+     "Password must:" rules under New Password. ON on
+     feat/keycloak-change-password, per the Contributing guide's rule; off is
+     the sheet step as it stood. Both on the Design bar, the Affidavit
+     controls' versions, so a reviewer can flip between them. */
+  {
+    key: 'account-keycloak-change-password',
+    surface: 'design',
+    versions: ['jill-atlas-main', 'eric-atlas-e2e'],
+    group: 'Widgets',
+    label: 'Keycloak change password',
+    description:
+      'Profile → Edit Account Details → Update Password. On: the sheet closes and Keycloak\'s Change Password modal opens — Current, New and Confirm, each with a show/hide eye, the invite flow\'s strength bar and "Password must:" rules under New Password, then Change Password and Cancel. Off: the sheet\'s own Update Password step.',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
+    /* ⚠ AN OPEN ITEM, NOT A DECISION. Nobody yet knows whether a learner who
+       changes their password stays signed in or is signed out to sign back
+       in. Both arms are drawn so the question can be shown; retire the loser
+       once it is answered. Only reads while the Keycloak modal is on. */
+    key: 'account-password-change-outcome',
+    surface: 'design',
+    versions: ['jill-atlas-main', 'eric-atlas-e2e'],
+    group: 'Widgets',
+    label: 'After password change',
+    description:
+      'What a successful change in the Keycloak Change Password modal does — an open item. Stay signed in: the modal closes and a "Password updated" toast confirms it. Sign out: the modal says the learner has been signed out and asks them to sign in again with the new password.',
+    variants: [
+      { value: 'stay', label: 'Stay signed in' },
+      { value: 'sign-out', label: 'Sign out' },
+    ],
+    defaultVariant: 'stay',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
 ]
 
 /* ─── persistence ──────────────────────────────────────────────────── */

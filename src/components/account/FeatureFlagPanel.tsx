@@ -192,6 +192,8 @@ const REBRAND_FLAGS = [
   'affidavit-v2-pattern',
   'affidavit-v2-middle',
   'affidavit-v2-loa',
+  'account-keycloak-change-password',
+  'account-password-change-outcome',
   'atlas-home-long-title',
   'atlas-v3-progress',
   'atlas-v3-link-tiles',
