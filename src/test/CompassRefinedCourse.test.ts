@@ -20,7 +20,11 @@ import {
   refinedCurrentSection,
   refinedProgressAt,
 } from '@/data/compassRefinedCourse'
-import { REFINED_NEXT_META } from '@/data/compassRefinedCopy'
+import {
+  REFINED_COURSE,
+  REFINED_NEXT_META,
+  refinedAccessDaysLabel,
+} from '@/data/compassRefinedCopy'
 
 /**
  * THE FLORIDA LIFE & HEALTH COURSE — 2026-11-11, transcribed from the live
@@ -394,5 +398,35 @@ describe('lessons finished, out of twenty-one', () => {
   it('is the eyebrow’s own number — one word, one total', () => {
     const view = refinedCourseView(refinedProgressAt(19))
     expect(view.header.eyebrow.startsWith(`${view.header.lessons} Lessons`)).toBe(true)
+  })
+})
+
+/**
+ * ⚠ THE ACCESS DATE IS WRITTEN TWICE AND COUNTED ONCE — 2026-11-12, "add
+ * another data point after this that shows how many days remaining until
+ * access ends."
+ *
+ * The eyebrow's sentence is Jeff's string; the countdown beside it is derived
+ * from `accessEndsOn`. Nothing stops somebody editing one and not the other,
+ * and the failure would be silent — a date on screen that is not the date
+ * being counted to. This is the thread between them.
+ */
+describe('how long is left', () => {
+  it('counts to the date the eyebrow actually names', () => {
+    const iso = REFINED_COURSE.accessEndsOn
+    const named = new Date(`${iso}T00:00:00`)
+    const month = named.toLocaleDateString('en-US', { month: 'short' })
+    expect(REFINED_COURSE.access).toContain(String(named.getDate()))
+    expect(REFINED_COURSE.access).toContain(String(named.getFullYear()))
+    expect(REFINED_COURSE.access).toContain(month)
+  })
+
+  it('says the days left, and says nothing once they have run out', () => {
+    const day = (iso: string) => new Date(`${iso}T12:00:00`)
+    expect(refinedAccessDaysLabel(day('2027-01-10'))).toBe('10 days to complete')
+    expect(refinedAccessDaysLabel(day('2027-01-19'))).toBe('1 day to complete')
+    expect(refinedAccessDaysLabel(day('2027-01-20'))).toBe('Last day to complete')
+    /* ⚠ "-3 days to complete" is worse than no line. */
+    expect(refinedAccessDaysLabel(day('2027-01-21'))).toBeNull()
   })
 })

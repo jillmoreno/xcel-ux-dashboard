@@ -1,4 +1,5 @@
 import { REFINED_COURSE_TOTALS } from './compassRefinedCourse'
+import { daysUntilIso } from './courseExpiry'
 
 /**
  * REFINED'S OWN WORDS — the first fixture Refined forks, 2026-11-10.
@@ -43,6 +44,22 @@ export const REFINED_COURSE = {
    *  divider"). It was a line in the Overview's meta row, beside two pills
    *  that are now gone. */
   access: 'Access ends Jan 20, 2027',
+  /**
+   * ⚠ THE SAME DATE AS AN ISO, AND IT IS THE SOURCE — 2026-11-12: "add
+   * another data point after this that shows how many days remaining until
+   * access ends."
+   *
+   * The line above is his string and stays his; the countdown is DERIVED
+   * from this rather than typed beside it, which is the rule
+   * `MembershipRenewal` already records for exactly this shape: "The Figma
+   * cards each carried their own date AND their own day count, and the two
+   * disagreed by four days — deriving makes that impossible."
+   *
+   * ⚠ WHICH MEANS THE TWO CAN STILL DRIFT, in one direction: edit the
+   * sentence and not this, and the date on screen stops being the date being
+   * counted to. `CompassRefinedShell.test.tsx` holds them to each other.
+   */
+  accessEndsOn: '2027-01-20',
 } as const
 
 /**
@@ -420,6 +437,26 @@ export const REFINED_RING_LABEL = 'Complete'
  * ⚠ THE EXAM'S NOTE COUNTS. It is a function of the chapter count for exactly
  * the reason his was wrong: "19" was true when it was typed.
  */
+/**
+ * HOW LONG IS LEFT, as a phrase — 2026-11-12, from her reference line
+ * ("Course Access Ends: 06/10/2026, 29 days to complete").
+ *
+ * ⚠ IT COUNTS FROM TODAY, so it is right on the day it is read and wrong in
+ * no other way. A typed figure beside a fixed date is the thing that goes
+ * quietly stale; see `REFINED_COURSE.accessEndsOn`.
+ *
+ * ⚠ AND IT SAYS NOTHING ONCE THE DATE HAS PASSED. "-3 days to complete" is
+ * worse than no line; the eyebrow simply ends at the date. What an expired
+ * course should say is its own decision, and the stage fixtures do not carry
+ * one yet.
+ */
+export function refinedAccessDaysLabel(today = new Date()): string | null {
+  const days = daysUntilIso(REFINED_COURSE.accessEndsOn, today)
+  if (days == null || days < 0) return null
+  if (days === 0) return 'Last day to complete'
+  return `${days} ${days === 1 ? 'day' : 'days'} to complete`
+}
+
 export const REFINED_FINISH_COPY = {
   /** The section's own eyebrow and title, in the page's title case. */
   eyebrow: 'Course Completion',

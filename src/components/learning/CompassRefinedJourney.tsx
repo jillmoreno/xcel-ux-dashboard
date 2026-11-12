@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useAccount } from '@/context/AccountContext'
-import { REFINED_COURSE, REFINED_OVERVIEW_TITLE } from '@/data/compassRefinedCopy'
+import { REFINED_COURSE, REFINED_OVERVIEW_TITLE, refinedAccessDaysLabel } from '@/data/compassRefinedCopy'
 import { CompassRefinedFocus } from './CompassRefinedFocus'
 import { FOCUS_DEFAULTS, type FocusOptions } from './compassRefinedFocusModel'
 import { REFINED_RUBI_INTRO } from '@/data/compassRefinedCopy'
@@ -49,6 +49,7 @@ export function CompassRefinedJourney({
   focus?: FocusOptions
 }) {
   const m = journeyStage(stage)
+  const accessDays = refinedAccessDaysLabel()
   /* ⚠ RUBI'S FIRST-RUN TOAST — 2026-11-11. Shown at 0% in the Ask Rubi
      pill's place; dismissing hands the corner back to the pill, which is
      also how a learner finds out where she lives. The gate is the same
@@ -93,6 +94,18 @@ export function CompassRefinedJourney({
             ·
           </span>
           <span className="crf-rd-brow__access">{REFINED_COURSE.access}</span>
+          {/* ⚠ HOW LONG IS LEFT — 2026-11-12: "add another data point
+              after this that shows how many days remaining until access
+              ends." Counted from the date in the line before it, not
+              typed beside it; absent once that date has passed. */}
+          {accessDays ? (
+            <>
+              <span className="crf-rd-brow__dot" aria-hidden>
+                ·
+              </span>
+              <span className="crf-rd-brow__access">{accessDays}</span>
+            </>
+          ) : null}
         </p>
           <h1 className="serif crf-rd-h1">{REFINED_OVERVIEW_TITLE}</h1>
         </header>

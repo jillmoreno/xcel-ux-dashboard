@@ -1,4 +1,4 @@
-import { REFINED_COURSE, REFINED_OVERVIEW_TITLE } from '@/data/compassRefinedCopy'
+import { REFINED_COURSE, REFINED_OVERVIEW_TITLE, refinedAccessDaysLabel } from '@/data/compassRefinedCopy'
 import { RubiLogo } from '@/icons'
 import { Band, PathLine, ReadinessRing, TopicTable } from './CompassRefinedParts'
 import {
@@ -30,6 +30,7 @@ import './compassRefinedJourney.css'
  */
 export function CompassRefinedPrepPage({ stage = 'p2' }: { stage?: string }) {
   const m = prepStage(stage)
+  const accessDays = refinedAccessDaysLabel()
   /* ⚠ NO FIRST-RUN TOAST ON THIS PAGE — 2026-11-11. The toast greets
      somebody at 0%, and this is the EXAM PREP series: the course is already
      complete by p1, so there is no first landing here to greet. The Ask Rubi
@@ -61,6 +62,18 @@ export function CompassRefinedPrepPage({ stage = 'p2' }: { stage?: string }) {
             ·
           </span>
           <span className="crf-rd-brow__access">{REFINED_COURSE.access}</span>
+          {/* ⚠ HOW LONG IS LEFT — 2026-11-12: "add another data point
+              after this that shows how many days remaining until access
+              ends." Counted from the date in the line before it, not
+              typed beside it; absent once that date has passed. */}
+          {accessDays ? (
+            <>
+              <span className="crf-rd-brow__dot" aria-hidden>
+                ·
+              </span>
+              <span className="crf-rd-brow__access">{accessDays}</span>
+            </>
+          ) : null}
         </p>
           <h1 className="serif crf-rd-h1">{REFINED_OVERVIEW_TITLE}</h1>
         </header>

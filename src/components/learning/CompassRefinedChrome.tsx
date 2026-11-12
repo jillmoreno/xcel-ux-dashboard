@@ -19,6 +19,7 @@ import {
   REFINED_COURSE,
   REFINED_RAIL_LABELS,
   REFINED_RAIL_TOP_GROUP,
+  refinedAccessDaysLabel,
 } from '@/data/compassRefinedCopy'
 import './compassRefined.css'
 
@@ -193,6 +194,8 @@ export function CompassRefinedPending({ page }: { page: JeffMvpPage }) {
  * this change is about. Readiness is the page that carries one.
  */
 export function CompassRefinedHead({ title, ruled }: { title: string; ruled?: boolean }) {
+  /* Counted at render, from `REFINED_COURSE.accessEndsOn`. */
+  const accessDays = refinedAccessDaysLabel()
   return (
     <header className={ruled ? 'crf-head crf-head--ruled' : 'crf-head'}>
       <div style={{ minWidth: 0 }}>
@@ -207,6 +210,18 @@ export function CompassRefinedHead({ title, ruled }: { title: string; ruled?: bo
             ·
           </span>
           <span className="crf-head__access">{REFINED_COURSE.access}</span>
+          {/* ⚠ HOW LONG IS LEFT — 2026-11-12: "add another data point
+              after this that shows how many days remaining until access
+              ends." Counted from the date in the line before it, not
+              typed beside it; absent once that date has passed. */}
+          {accessDays ? (
+            <>
+              <span className="crf-head__dot" aria-hidden>
+                ·
+              </span>
+              <span className="crf-head__access">{accessDays}</span>
+            </>
+          ) : null}
         </p>
         <h1 className="crf-h1">{title}</h1>
       </div>
