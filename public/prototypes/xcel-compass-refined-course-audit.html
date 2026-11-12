@@ -95,7 +95,15 @@
   }
   .callout b { color: var(--accent); }
   .decisions-table td:first-child, .decisions-table th:first-child { width: 36px; text-align: center; }
-  .decisions-table td:nth-child(2) { font-weight: 600; width: 28%; }
+  .decisions-table td:nth-child(2) { font-weight: 600; width: 20%; }
+  /* The fourth column is what was done about it — a quieter register than the
+     finding beside it, and tinted so the table reads as resolved at a glance
+     rather than row by row. */
+  .decisions-table td.fixed { width: 34%; background: #f4f8f4; border-left: 2px solid #c6ddc6; }
+  p.note { padding: 10px 14px; background: #faf7ef; border-left: 2px solid #e0d6bd; }
+  /* A figure that was true when written and has since moved. Said in place
+     rather than edited, so the audit stays a record of what was found. */
+  .later { color: #706b63; }
   footer {
     margin-top: 48px;
     padding-top: 20px;
@@ -124,7 +132,7 @@
 
 <h2>1 &middot; What the real course changed</h2>
 
-<p>The page carried 19 chapters. The course has <b>21 chapters and 20 exams &mdash; 41 rows</b>.</p>
+<p>The page carried 19 chapters. The course has <b>21 chapters and 20 exams &mdash; 41 rows</b>. <span class="later">Later the same day it became <b>44</b>: see section&nbsp;4.</span></p>
 
 <table>
   <thead><tr><th>Missing</th><th>Where it belongs</th></tr></thead>
@@ -163,32 +171,37 @@
 <h2>3 &middot; What is not</h2>
 
 <table class="decisions-table">
-  <thead><tr><th>#</th><th>Finding</th><th>Evidence &amp; recommendation</th></tr></thead>
+  <thead><tr><th>#</th><th>Finding</th><th>Evidence &amp; recommendation</th><th>What was done</th></tr></thead>
   <tbody>
     <tr><td>1</td><td>The page is mostly locked</td>
-      <td><b>19 of 21 chapters are locked, and they occupy 1,364px of a 2,495px page &mdash; 55&percnt;.</b> A learner scrolls past a wall of things they cannot do to reach nothing. Collapse the locked run behind a count, or show the next two or three and a &ldquo;Show all chapters&rdquo; control.</td></tr>
+      <td><b>19 of 21 chapters are locked, and they occupy 1,364px of a 2,495px page &mdash; 55&percnt;.</b> A learner scrolls past a wall of things they cannot do to reach nothing. Collapse the locked run behind a count, or show the next two or three and a &ldquo;Show all chapters&rdquo; control.</td><td class="fixed"><b>Folded.</b> What is open, two locked chapters of peek, then <i>Show all 21 chapters &middot; 18 more, locked</i>. Measured after: the locked run is <b>7&percnt;</b> of the page, down from 55. The control goes both ways.</td></tr>
     <tr><td>2</td><td>Locked chapters do not say why</td>
-      <td>The lead promises &ldquo;a locked step tells you exactly what opens it&rdquo;. The exam rows keep that promise; the chapters say only <b>&ldquo;Locked&rdquo;</b>. Either give them the sentence or stop promising it.</td></tr>
+      <td>The lead promises &ldquo;a locked step tells you exactly what opens it&rdquo;. The exam rows keep that promise; the chapters say only <b>&ldquo;Locked&rdquo;</b>. Either give them the sentence or stop promising it.</td><td class="fixed"><b>Each names the row above it</b> &mdash; &ldquo;Opens when Chapter 1 Exam is complete&rdquo; &mdash; derived from the course rather than taken from his fixture, which only reached the ten chapters his outline covers. In the row, not behind the chevron where only somebody who had already opened it would read it.</td></tr>
     <tr><td>3</td><td>Two units for one learner</td>
-      <td>The header counts <b>sections</b> (&ldquo;1 of 41&rdquo;); the chapter rows count <b>lessons</b> (&ldquo;7 lessons&rdquo;). Nothing reconciles 41 with 19&times;7. The course&rsquo;s own instruction &mdash; &ldquo;Complete all lessons in the list below&rdquo; &mdash; counts all 41 rows, so sections is the honest unit.</td></tr>
+      <td>The header counts <b>sections</b> (&ldquo;1 of 41&rdquo;); the chapter rows count <b>lessons</b> (&ldquo;7 lessons&rdquo;). Nothing reconciles 41 with 19&times;7. The course&rsquo;s own instruction &mdash; &ldquo;Complete all lessons in the list below&rdquo; &mdash; counts all 41 rows, so sections is the honest unit.</td><td class="fixed"><b>Sections only.</b> The lesson count leaves the eyebrow, which is now the course&rsquo;s own label. The lessons themselves still list inside an expanded chapter &mdash; what went is counting one course in two units.</td></tr>
     <tr><td>4</td><td>Two rings, two numbers</td>
-      <td>This page reads <b>2&percnt;</b>, the Overview reads <b>0&percnt;</b>, same learner. They derive progress differently: one from sections complete, the other from the stage&rsquo;s own percentage. One derivation, shared.</td></tr>
+      <td>This page reads <b>2&percnt;</b>, the Overview reads <b>0&percnt;</b>, same learner. They derive progress differently: one from sections complete, the other from the stage&rsquo;s own percentage. One derivation, shared.</td><td class="fixed"><b>One function, <code>refinedProgressAt()</code>.</b> The stage is its input and both pages call it; the shell now passes the stage to Your Course, which read none of it, so the page sat still while the Overview moved. At q2 both read <b>8 of 44 &middot; 19&percnt;</b>, and the Overview&rsquo;s next step is the row Your Course marks current.</td></tr>
     <tr><td>5</td><td>The page titles are different inks</td>
-      <td>Your Course is <code>#1f1d18</code>; the Overview is <code>#3a3a3a</code>. The Overview was corrected on 2026&ndash;11&ndash;11 and this page never got it &mdash; the kind of difference nobody sees and everybody feels.</td></tr>
+      <td>Your Course is <code>#1f1d18</code>; the Overview is <code>#3a3a3a</code>. The Overview was corrected on 2026&ndash;11&ndash;11 and this page never got it &mdash; the kind of difference nobody sees and everybody feels.</td><td class="fixed"><b>#3a3a3a</b>, the Overview&rsquo;s &mdash; the ink the Focus card&rsquo;s lesson title was pointed at by name on 2026&ndash;11&ndash;11.</td></tr>
     <tr><td>6</td><td>Row labels are a treatment behind</td>
-      <td>Chapter eyebrows are <b>12px/600 uppercase</b>; the Overview&rsquo;s row labels settled at <b>11px/400</b> the same day, on the finding that the weight &mdash; not the case &mdash; was what made them heavy.</td></tr>
+      <td>Chapter eyebrows are <b>12px/600 uppercase</b>; the Overview&rsquo;s row labels settled at <b>11px/400</b> the same day, on the finding that the weight &mdash; not the case &mdash; was what made them heavy.</td><td class="fixed"><b>11px/400 at 0.08em</b>, chapter and exam rows alike. The case stays: the course&rsquo;s labels are identifiers, not prose.</td></tr>
     <tr><td>7</td><td>Buttons do not match the hierarchy</td>
-      <td>&ldquo;Resume&rdquo; is a small filled button sharing a column with the status word &mdash; two different kinds of thing in one slot. The Overview settled on navy-filled primary and outlined secondary.</td></tr>
+      <td>&ldquo;Resume&rdquo; is a small filled button sharing a column with the status word &mdash; two different kinds of thing in one slot. The Overview settled on navy-filled primary and outlined secondary.</td><td class="fixed"><b>Radius 8 and one line</b> (&ldquo;Review exam&rdquo; wrapped, making one row of twenty-one taller), and the status word demoted to 12/400 muted so the pair reads as state-then-action rather than as two controls. Its inline colour also went: it set <code>var(--cjm-&hellip;)</code>, which is not defined on a Refined page, so every state inherited the page ink.</td></tr>
     <tr><td>8</td><td>The Introduction expands to nothing</td>
-      <td>It carries a Review action and an empty lesson list, because the upload has no lesson-level detail for it.</td></tr>
+      <td>It carries a Review action and an empty lesson list, because the upload has no lesson-level detail for it.</td><td class="fixed"><b>No chevron where there is nothing behind it</b>, and the space is held so the column stays straight.</td></tr>
   </tbody>
 </table>
 
-<h2>4 &middot; Still to build</h2>
-<p>Three sections the course needs and the list does not yet carry: a <b>Final Exam</b>, a <b>Survey</b>, and a <b>Certificate</b>. They are the tail of the regulated sequence the fixtures already name &mdash; lessons, affidavit, final exam, survey and certificate &mdash; and they change the shape of the page&rsquo;s ending, which today simply stops after the last chapter exam.</p>
+<h2>4 &middot; How the course ends &mdash; built 2026&ndash;11&ndash;12</h2>
+<p>Three sections the course needed and the list did not carry: a <b>Final Exam</b>, a <b>Survey</b>, and a <b>Certificate</b> &mdash; the tail of the regulated sequence the fixtures already name (lessons, affidavit, final exam, survey, certificate). They are rows 42&ndash;44 of <code>compassRefinedCourse.ts</code> now, and the page&rsquo;s ending is <b>derived from whatever the chapters do not consume</b> rather than typed: a closing row lists itself, and one inserted mid-course does not fall off the end.</p>
+<p>What they replaced was a hand-written <i>Certification Exam</i> card carried over from Jeff&rsquo;s build &mdash; an exam the course list does not contain, noted &ldquo;Opens after all 19 chapters&rdquo; against twenty-one of them.</p>
+<p class="note">⚠ <b>The three titles are ours and want confirming.</b> &ldquo;Final Exam&rdquo; is what the stage fixtures call it; &ldquo;Course Survey&rdquo; and &ldquo;Certificate&rdquo; are plain descriptions. If the live course names them differently, they are three strings in one file.</p>
+
+<h2>5 &middot; One thing the audit did not catch</h2>
+<p>Chapter 1&rsquo;s exam read <b>&ldquo;Completed &middot; Review exam&rdquo; inside a chapter marked In progress</b> whose seven lessons were all still to do. Its <code>done</code> came from Jeff&rsquo;s fixture, where that chapter was finished. One learner cannot have passed the exam for a chapter they are halfway through &mdash; the exam&rsquo;s state is the course&rsquo;s progress now, like everything else on the page.</p>
 
 <footer>
-  <p>Written against the build at the time of the audit. Findings 1&ndash;8 are open; section&nbsp;1 is fixed and committed.</p>
+  <p>Written against the build of 2026&ndash;11&ndash;12. <b>All eight findings are closed</b>, and so is section&nbsp;4. Pinned by <code>CompassRefinedLearn.test.tsx</code> (findings 1, 2, 8) and <code>CompassRefinedCourse.test.ts</code> (3, 4, and the course&rsquo;s ending) &mdash; three of them are about a row existing rather than a value, which a model assertion would have passed on.</p>
 </footer>
 
 </div>
