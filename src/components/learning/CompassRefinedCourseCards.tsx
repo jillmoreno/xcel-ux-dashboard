@@ -23,10 +23,10 @@
  *     mark rather than an 01 (her call: "Position, Intro gets a mark").
  */
 
-import { ChevronDown, LockRegular } from '@/icons'
+import { BookOpenRegular, ChevronDown, LockRegular } from '@/icons'
 import { JEFF_MVP_LEARN_COPY as COPY } from '@/data/compassJeffMvpFixtures'
 import { REFINED_CHAPTER_BLURBS } from '@/data/compassRefinedCopy'
-import { ChapterMark, ExamRow, LessonMark } from './CompassRefinedCourseParts'
+import { ExamRow, LessonMark } from './CompassRefinedCourseParts'
 import type { CourseListProps } from './compassRefinedCourseModel'
 import type { RefinedChapter } from './compassRefinedLearnCourse'
 
@@ -71,7 +71,20 @@ export function CompassRefinedCourseCards({
                     those rows are. Numbering by index put "00" beside the
                     Introduction and shifted every chapter by one. */}
                 <span className={`crf-map__chip crf-map__chip--${c.state}`} aria-hidden>
-                  {c.number ? String(c.number).padStart(2, '0') : <ChapterMark state={c.state} />}
+                  {/* ⚠ THE OPEN BOOK, SMALL — 2026-11-12: "make these icons
+                      much smaller. and use the open book icon". It drew
+                      `ChapterMark`, which is the rows layout's state glyph: a
+                      tick, a chevron or a padlock at 15px. In a chip whose
+                      other twenty-one members hold a NUMBER, a state glyph
+                      was answering a different question twice — the pill
+                      beside it already says Completed, Ready to begin or
+                      Locked — and a chevron in particular said nothing at
+                      all. A book is what the row IS. */}
+                  {c.number ? (
+                    String(c.number).padStart(2, '0')
+                  ) : (
+                    <BookOpenRegular size={13} />
+                  )}
                 </span>
 
                 <div className="crf-map__main">
