@@ -1925,14 +1925,31 @@
 .crf-map__top .crf-btn {
   margin-left: auto;
 }
+/* ⚠ THE NEXT-STEP CARD'S TITLE, EXACTLY — 2026-11-12: "update courses in
+   the roadmap to match the font and styling". These four declarations are
+   `.crf-step__name`'s: Playfair at 17/600 in the page title's ink. The card
+   at the top of the page names a chapter and so do the twenty-one below it;
+   they had been the same size and weight in two different faces, which is
+   the kind of difference that reads as two components rather than one list.
+
+   ⚠ PLAYFAIR AT 17px IS A NAMED EXCEPTION to the "Open Sans below 32px"
+   rule, and this is the same one the next-step card already carries —
+   2026-11-11, "have this be playfair font, same color as the main title of
+   the page". It is not a new hole in the rule; it is the existing one
+   applied to the rows that say the same kind of thing. */
 .crf-map__title {
   margin: 0;
+  font-family: var(--font-heading-serif), Georgia, serif;
   font-size: 17px;
   font-weight: 600;
-  color: var(--crf-ink);
+  line-height: 1.3;
+  color: var(--color-text-primary);
 }
+/* ⚠ A LOCKED CHAPTER KEEPS ITS LIGHTER INK AND ITS WEIGHT. Playfair at 400
+   on a 17px line goes thin enough to read as a different size; the face and
+   the size match the card above, and what still separates a shut chapter
+   from an open one is the colour. */
 .crf-map__card--locked .crf-map__title {
-  font-weight: 400;
   color: var(--crf-locked-ink);
 }
 /* ⚠ THE COURSE'S OWN LABEL, UNDER THE TITLE RATHER THAN OVER IT. The rows
