@@ -362,3 +362,37 @@ describe('the course counts in lessons', () => {
     expect(REFINED_COURSE_HEADER.eyebrow.startsWith(REFINED_NEXT_META.parts)).toBe(true)
   })
 })
+
+/**
+ * ⚠ THE LESSONS FIGURE IS COUNTED, NOT SCALED — 2026-11-12: "make the
+ * Lessons # match that there is 21 lessons total, based on the design tool
+ * progress indicator selected it should update accordingly."
+ */
+describe('lessons finished, out of twenty-one', () => {
+  it('counts the chapters the page marks done, at every stage', () => {
+    for (const pct of [0, 19, 50, 81, 100]) {
+      const view = refinedCourseView(refinedProgressAt(pct))
+      expect(view.header.lessons).toBe(21)
+      /* The figure and the rows cannot disagree: it IS the rows. */
+      expect(view.header.lessonsDone).toBe(
+        view.chapters.filter((c) => c.state === 'done').length,
+      )
+      expect(view.header.lessonsDone).toBeLessThanOrEqual(21)
+    }
+  })
+
+  it('moves with the stage and never goes backwards', () => {
+    let last = -1
+    for (let pct = 0; pct <= 100; pct += 1) {
+      const n = refinedCourseView(refinedProgressAt(pct)).header.lessonsDone
+      expect(n, `${pct}%`).toBeGreaterThanOrEqual(last)
+      last = n
+    }
+    expect(last).toBe(21)
+  })
+
+  it('is the eyebrow’s own number — one word, one total', () => {
+    const view = refinedCourseView(refinedProgressAt(19))
+    expect(view.header.eyebrow.startsWith(`${view.header.lessons} Lessons`)).toBe(true)
+  })
+})

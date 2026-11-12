@@ -909,6 +909,16 @@
 
 /* The ring behind the course gauge is paler than the Readiness one. */
 .crf {
+  /* ⚠ HER BEIGE RAMP, DECLARED WHERE THIS PAGE CAN SEE IT — 2026-11-12. The
+     same four values are on `.crf-rd .crf-focus` in the journey stylesheet,
+     where they were given with the Overview ask ("have the course progress
+     side be more of a beige color background"); that rule is scoped to a
+     card on another page, so the tokens did not exist here. Same values, not
+     a second ramp. */
+  --crf-beige-50: color-mix(in srgb, #f3f1ed 55%, #fff);
+  --crf-beige-100: #f3f1ed;
+  --crf-beige-200: #e7e3db;
+  --crf-beige-300: #dbd6c9;
   --crf-ring-pale: #eceef0;
   --crf-card-edge: #dcdee1;
   --crf-ch-rule: #e6e6e6;
@@ -1073,22 +1083,40 @@
   color: var(--crf-muted);
   white-space: nowrap;
 }
+/* ⚠ THE OVERVIEW'S RING, AT THIS CARD'S SIZE — 2026-11-12: "make the 19% a
+   small circle chart to match what is on the overview page". The figure sits
+   INSIDE the ring with its label under it, which is what that page settled
+   on; it had been a number floated over a 12px donut. */
 .crf-course__ring {
-  display: flex;
-  justify-content: center;
+  position: relative;
+  display: grid;
+  place-items: center;
   flex: 0 0 120px;
   width: 120px;
 }
-.crf-course__pct {
+.crf-course__ringnum {
   position: absolute;
-  inset: 0;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  font-size: 19px;
-  font-weight: 500;
-  line-height: 1;
+  line-height: 1.1;
+}
+/* ⚠ PLAYFAIR, AND THE SAME NAMED EXCEPTION THE OVERVIEW'S RING CARRIES —
+   2026-11-11 on that figure: "this should be the playfair font." 20px here
+   against its 30, because this ring draws at 88px against its 132; the face,
+   the weight and the ink are the same. */
+.crf-course__ringnum b {
+  font-family: var(--font-heading-serif), Georgia, serif;
+  font-size: 20px;
+  font-weight: 700;
   color: var(--crf-ink);
+}
+.crf-course__ringnum span {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--crf-muted);
 }
 
 /* ---------- a chapter ---------- */
@@ -1366,9 +1394,15 @@
 }
 /* ⚠ THE HEADER KEEPS ITS RULE ONLY WHEN SOMETHING FOLLOWS IT. On the roadmap
    the chapter cards are outside this box, so without the next-step half the
-   header would end on a line with nothing under it. */
+   header would end on a line with nothing under it.
+
+   ⚠ AND IT IS BEIGE — 2026-11-12, "make this light beige background". The
+   same pairing the Overview's first card settled on: the progress half warm,
+   the next-step half the cool steel wash. Two halves of one card saying they
+   are two different kinds of thing, in the same two colours on both pages. */
 .crf-course--head .crf-course__head {
   border-bottom: 1px solid var(--crf-card-edge);
+  background: var(--crf-beige-100);
 }
 
 /* ---------- the next-step card, 2026-11-12 ----------

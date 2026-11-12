@@ -29,7 +29,7 @@ import type {
   RefinedCourseView,
   RefinedFinishStep,
 } from './compassRefinedLearnCourse'
-import { REFINED_COURSE } from '@/data/compassRefinedCopy'
+import { REFINED_COURSE, REFINED_RING_LABEL } from '@/data/compassRefinedCopy'
 import { CompassRefinedNextStep } from './CompassRefinedNextStep'
 import type { NextMarkStyle } from './compassRefinedFocusModel'
 import type { RefinedNextStep } from './compassRefinedNextStepModel'
@@ -151,45 +151,58 @@ export function AwardMark() {
 }
 
 /**
- * The course ring: viewBox 120, drawn at 72px, r=50 stroke 12, rotated so it
- * starts at twelve o'clock.
+ * THE COURSE RING — the Overview's ring, at this card's size.
  *
- * ⚠ THE DASHARRAY IS HIS, AND IT DISAGREES WITH HIS OWN LABEL by about four
- * points — see the fixture note. Carried verbatim on purpose.
+ * ⚠ IT WAS A DONUT — 2026-11-12: "make the 19% a small circle chart to match
+ * what is on the overview page". His was a 12px stroke on a 50 radius with
+ * the percentage beside it; the Overview settled on a 7px stroke at 70, a
+ * hairline track and the figure INSIDE the ring with its label under it. Two
+ * rings of one course drawn two ways was the visual half of audit finding 4,
+ * left standing after the arithmetic was fixed.
+ *
+ * ⚠ THE GEOMETRY IS COPIED, THE SIZE IS NOT. The Overview's draws at 132px
+ * in a half-card; this sits in a header row beside three other things, so it
+ * draws at 88. Same viewBox and the same stroke, so the ring is the same
+ * weight of line at either size.
+ *
+ * ⚠ 88 AND NOT THE 72 IT REPLACED, because the figure moved INSIDE the ring:
+ * at 72 the inner circle is 66px across and "COMPLETE" under an 18px number
+ * had to set at 8px to fit, which is below anything worth reading. Measured
+ * rather than guessed.
+ *
+ * ⚠ `butt`, NOT `round`. A rounded cap at 0% draws a dot of progress on a
+ * course nobody has started — the Overview's own reason.
  */
 export function CourseRing({ header }: { header: RefinedCourseView['header'] }) {
+  const r = 70
+  const c = 2 * Math.PI * r
   return (
     <div className="crf-course__ring">
-      <div style={{ position: 'relative', width: 72, height: 72 }}>
-        {/* ⚠ THE ARC IS COMPUTED — 2026-11-11. It drew his `courseRingDash`,
-            a hard-coded 180/314 for 61%, beside a caption that now counts the
-            real course: a 61% ring over "1 of 41 sections". A figure and its
-            picture disagreeing is the one thing a progress ring must not do. */}
-        <svg
-          viewBox="0 0 120 120"
-          width="72"
-          height="72"
-          role="img"
-          aria-label={`Qualifying Education ${header.pct}% complete, ${header.done} of ${header.sections} lessons`}
-        >
-          <g transform="rotate(-90 60 60)">
-            <circle cx="60" cy="60" r="50" fill="none" stroke="var(--cjm-ring-pale)" strokeWidth="12" />
-            <circle
-              cx="60"
-              cy="60"
-              r="50"
-              fill="none"
-              stroke="var(--cjm-steel)"
-              strokeWidth="12"
-              strokeDasharray={`${((header.pct / 100) * 2 * Math.PI * 50).toFixed(1)} ${(2 * Math.PI * 50).toFixed(1)}`}
-              strokeLinecap="round"
-            />
-          </g>
-        </svg>
-        <span className="crf-course__pct" aria-hidden>
-          {header.pct}%
-        </span>
-      </div>
+      <svg
+        viewBox="0 0 168 168"
+        width="88"
+        height="88"
+        role="img"
+        aria-label={`${REFINED_COURSE.name} ${header.pct}% complete, ${header.lessonsDone} of ${header.lessons} lessons`}
+      >
+        <g transform="rotate(-90 84 84)">
+          <circle cx="84" cy="84" r={r} fill="none" stroke="var(--crf-ring-pale)" strokeWidth="7" />
+          <circle
+            cx="84"
+            cy="84"
+            r={r}
+            fill="none"
+            stroke="var(--crf-steel-deep)"
+            strokeWidth="7"
+            strokeDasharray={`${((header.pct / 100) * c).toFixed(1)} ${c.toFixed(1)}`}
+            strokeLinecap="butt"
+          />
+        </g>
+      </svg>
+      <span className="crf-course__ringnum">
+        <b>{header.pct}%</b>
+        <span>{REFINED_RING_LABEL}</span>
+      </span>
     </div>
   )
 }
@@ -246,8 +259,11 @@ export function CourseHeadCard({
         </div>
         <div className="crf-course__stat">
           <span className="crf-course__done">{header.status}</span>
+          {/* ⚠ OF TWENTY-ONE, THE FIGURE THE EYEBROW NAMES — 2026-11-12.
+              It read "8 of 44 lessons" beside "21 Lessons · …": one word for
+              two numbers on one card. See `lessonsDone`. */}
           <span className="crf-course__of">
-            {header.done} of {header.sections} lessons
+            {header.lessonsDone} of {header.lessons} lessons
           </span>
         </div>
         <CourseRing header={header} />

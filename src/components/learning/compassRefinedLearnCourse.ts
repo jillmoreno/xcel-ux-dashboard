@@ -309,6 +309,23 @@ function buildHeader(
    *  row. Both are sections now, and the ring reads the same fraction. */
   done: progress.done,
   pct: progress.pct,
+  /**
+   * ⚠ LESSONS FINISHED, OUT OF THE TWENTY-ONE — 2026-11-12: "make the
+   * Lessons # match that there is 21 lessons total, based on the design tool
+   * progress indicator selected it should update accordingly."
+   *
+   * The stat read "8 of 44 lessons" — every row of the course, chapter exams
+   * included — against an eyebrow that leads with "21 Lessons". One word, two
+   * numbers, on one line of one card. This is the figure the eyebrow names,
+   * and it is COUNTED off the chapters rather than scaled from a percentage,
+   * so it moves with the stage control and cannot drift from the rows below.
+   *
+   * ⚠ `done` AND `sections` STAY. The ring is the stage's percentage of the
+   * whole course and the chapters' own states are read from `done`; this is
+   * what the learner is told, not what the page is built on.
+   */
+  lessonsDone: chapters.filter((c) => c.state === 'done').length,
+  lessons: chapters.length,
   }
 }
 

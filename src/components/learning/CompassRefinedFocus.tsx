@@ -1,5 +1,6 @@
 import { CompassRefinedNextStep } from './CompassRefinedNextStep'
 import { refinedNextStep } from './compassRefinedNextStepModel'
+import { refinedCourseView } from './compassRefinedLearnCourse'
 import { durationOf } from './compassRefinedFocusDuration'
 import {
   REFINED_PACE,
@@ -8,7 +9,6 @@ import {
 } from '@/data/compassRefinedCopy'
 import {
   REFINED_COURSE_SECTIONS,
-  REFINED_COURSE_TOTALS,
   refinedProgressAt,
   type RefinedProgress,
   type RefinedSection,
@@ -134,8 +134,15 @@ function FocusProgress({
      here and its mirror image on Your Course, which is how one learner came
      to have two percentages. `refinedProgressAt` is the only place this is
      done now, and both pages call it. */
-  const { done } = refinedProgressAt(prog.pct)
-  const lessons = `${done} of ${REFINED_COURSE_TOTALS.sections}`
+  /* ⚠ LESSONS, OUT OF THE TWENTY-ONE — 2026-11-12: "make the Lessons # match
+     that there is 21 lessons total". The row is labelled COMPLETED LESSONS
+     and was counting every ROW of the course, chapter exams included, which
+     is the figure Your Course's header stopped showing the same day. One
+     label, one number, both pages; it is counted off the chapters, so the
+     stage control moves it. */
+  const progress = refinedProgressAt(prog.pct)
+  const header = refinedCourseView(progress).header
+  const lessons = `${header.lessonsDone} of ${header.lessons}`
 
   return (
     <div className="crf-focus__prog">
@@ -176,7 +183,7 @@ function FocusProgress({
                 ⚠ ONLY AT 0%, and the same rule Atlas settled on 2026-10-19:
                 a starting point is a true thing to offer somebody who has not
                 started and a stale one for anybody else. */}
-            {done === 0 ? (
+            {progress.done === 0 ? (
               /* ⚠ TWO ANSWERS TO "HOW DO WE OFFER THE CHANGE?", and they are
                  not two layouts of one thing — 2026-11-11, clarified: "when
                  the link below is on, i mean i want the entire beige
