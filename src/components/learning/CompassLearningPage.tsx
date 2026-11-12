@@ -169,6 +169,9 @@ export function CompassLearningPage({
     rows: useFeatureFlag('compass-course-rows').variant as CourseRowStyle,
     blurb: useFeatureFlag('compass-course-blurb').enabled,
     fold: useFeatureFlag('compass-course-fold').enabled,
+    /* ⚠ THE OVERVIEW'S FLAG, READ FOR BOTH — the next-step card is one
+       component on two pages; see `CourseOptions.nextMark`. */
+    nextMark: useFeatureFlag('compass-overview-next-mark').variant as NextMarkStyle,
   }
   useDeclareDesignSurface(
     refined ? 'compass:refined' : jeffMvp ? 'compass:jeff-mvp' : (`compass:${page}` as DesignSurfaceId),

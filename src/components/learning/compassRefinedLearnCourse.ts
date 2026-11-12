@@ -312,26 +312,17 @@ function buildHeader(
   }
 }
 
-/**
- * WHERE THE LEARNER LEFT OFF — read off the course, not typed.
- *
- * ⚠ THE CARD NAMED A CHAPTER THIS COURSE DOES NOT HAVE. It read "Chapter 2 ·
- * Insurers and Insurance Markets" — his outline's Chapter 2, which the
- * Florida list does not contain — and went on offering "Resume lesson" after
- * the page had nothing in progress at all. Both failures are the same one:
- * the card was a string beside the data rather than a reading of it.
- */
-function buildResume(chapters: RefinedChapter[]) {
-  const current = chapters.find((c) => c.state === 'current')
-  const open = current?.lessons.find((l) => l.state === 'current') ?? current?.lessons[0]
-  return {
-    title: current ? [current.label, current.title].filter(Boolean).join(' · ') : '',
-    /* ⚠ ONLY WHEN THE CHAPTER'S LESSONS ARE PORTED. Chapter 1 has his; the
-       Introduction and Chapter 2 do not, and naming a lesson they do not
-       contain is the mistake this object exists to stop. */
-    lesson: open ? open.label : '',
-  }
-}
+/* ⚠ `buildResume` IS GONE — 2026-11-12. It built the Your Course resume
+   strip: a chapter name and the lesson inside it, assembled from fields the
+   Overview's next-step card did not use. The two were joined into one card
+   that day ("This should be a 1:1"), and what it reads is
+   `refinedNextStep` — one model, both pages. The strip's own history is
+   worth keeping: it named "Chapter 2 · Insurers and Insurance Markets", a
+   chapter this course does not contain, and went on offering "Resume lesson"
+   after the page had nothing in progress. Both failures were the same one —
+   a string beside the data rather than a reading of it — which is the
+   argument for there being one card. */
+
 
 /**
  * THE COURSE'S ENDING — 2026-11-12.
@@ -404,7 +395,6 @@ const VIEWS = new Map<number, RefinedCourseView>()
 export type RefinedCourseView = {
   chapters: RefinedChapter[]
   header: ReturnType<typeof buildHeader>
-  resume: ReturnType<typeof buildResume>
   finish: RefinedFinishStep[]
 }
 
@@ -418,7 +408,6 @@ export function refinedCourseView(progress: RefinedProgress): RefinedCourseView 
   const view: RefinedCourseView = {
     chapters,
     header: buildHeader(progress, chapters, finish),
-    resume: buildResume(chapters),
     finish,
   }
   VIEWS.set(progress.pct, view)
@@ -433,4 +422,6 @@ export function refinedCourseView(progress: RefinedProgress): RefinedCourseView 
 export const REFINED_DEFAULT_VIEW = refinedCourseView({
   ...REFINED_COURSE_PROGRESS,
   pct: Math.round((REFINED_COURSE_PROGRESS.done / REFINED_COURSE_TOTALS.sections) * 100),
+  /* Standing at the start of the second row, not part way into it. */
+  intoCurrent: 0,
 })

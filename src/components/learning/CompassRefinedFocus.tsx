@@ -1,14 +1,7 @@
+import { CompassRefinedNextStep } from './CompassRefinedNextStep'
+import { refinedNextStep } from './compassRefinedNextStepModel'
+import { durationOf } from './compassRefinedFocusDuration'
 import {
-  ArrowRight,
-  BallotCheckRegular,
-  BookOpenRegular,
-  ClipboardList,
-  FileCertificateRegular,
-  PenFieldRegular,
-} from '@/icons'
-import {
-  REFINED_NEXT_EYEBROW,
-  REFINED_NEXT_META,
   REFINED_PACE,
   REFINED_PROGRESS_LINES,
   REFINED_RING_LABEL,
@@ -17,8 +10,8 @@ import {
   REFINED_COURSE_SECTIONS,
   REFINED_COURSE_TOTALS,
   refinedProgressAt,
+  type RefinedProgress,
   type RefinedSection,
-  type RefinedSectionKind,
 } from '@/data/compassRefinedCourse'
 import type { Hero, Prog } from './compassReadinessModel'
 import {
@@ -29,30 +22,9 @@ import {
   type PaceNoteStyle,
 } from './compassRefinedFocusModel'
 
-/**
- * WHAT THE NEXT SECTION IS, DRAWN AS A TILE — 2026-11-11, from the direct
- * ask. The tile itself is `crf-tile`, the badge the Learn page's course
- * header already uses, so the two surfaces mark a thing the same way.
- *
- * ⚠ THE ICONS ARE HERS, mapped onto this registry: an open book for a
- * lesson; `ballot-check` for an exam, which is the page-with-checkmarks in
- * this set and the nearest thing to "a document style icon with a
- * checkmark"; `pen-field` for an affidavit, a signature line with a pen;
- * `clipboard-list` for a survey.
- *
- * ⚠ TWO OF THE FOUR ARE UNREACHABLE TODAY and that is deliberate — see
- * `RefinedSectionKind`. An unknown kind falls back to the lesson book rather
- * than rendering an empty tile.
- */
-const SECTION_ICON: Record<RefinedSectionKind, typeof BookOpenRegular> = {
-  lesson: BookOpenRegular,
-  exam: BallotCheckRegular,
-  affidavit: PenFieldRegular,
-  survey: ClipboardList,
-  /* ⚠ `file-certificate` — a document with a seal, which is the one glyph in
-     this registry that means "you have finished and here is the proof". */
-  certificate: FileCertificateRegular,
-}
+/* The icon map moved to `compassRefinedSectionIcons.ts` on 2026-11-12 —
+   the next-step card is one component on two pages now, and a map exported
+   beside a component drops the file out of fast refresh. */
 
 /**
  * COURSE PROGRESS AND YOUR NEXT STEP, AS ONE COMPONENT — 2026-11-11,
@@ -106,7 +78,14 @@ export function CompassRefinedFocus({
       aria-label="Where you are and what to do next"
     >
       {prog ? <FocusProgress prog={prog} layout={layout} paceNote={options.paceNote} /> : null}
-      {hero ? <FocusNext hero={hero} next={nextSection(prog)} mark={options.nextMark} /> : null}
+      {hero ? (
+        <FocusNext
+          hero={hero}
+          next={nextSection(prog)}
+          mark={options.nextMark}
+          progress={refinedProgressAt(prog?.pct)}
+        />
+      ) : null}
     </section>
   )
 }
@@ -243,6 +222,13 @@ function FocusProgress({
 /**
  * THE RIGHT HALF — the one thing to do next.
  *
+ * ⚠ `hero.cta` IS GONE — 2026-11-12. The button said whatever the stage
+ * fixture said ("Start practice", "Review your plan"), which is sixteen
+ * different words for one control and, worse, a different word from the same
+ * card on Your Course. Her rule decides it instead, on both pages: "the CTA
+ * should be Start Lesson … the CTA is Resume lesson". That is what makes the
+ * two cards 1:1 rather than merely similar.
+ *
  * ⚠ IT IS THE LESSON CARD AND NOTHING ELSE — 2026-11-11, "the right side of
  * the component should better match this UI", with a mock of four lines: the
  * eyebrow, the lesson, its meta, and the two actions on one row.
@@ -259,74 +245,30 @@ function FocusNext({
   hero,
   next,
   mark = 'stacked',
+  progress,
 }: {
   hero: Hero
   next?: RefinedSection
   mark?: NextMarkStyle
+  progress: RefinedProgress
 }) {
+  /* ⚠ THE CARD IS `CompassRefinedNextStep` NOW — 2026-11-12, "This should be
+     a 1:1". Its markup was here; Your Course needed the same card, and two
+     copies of it is the shape that produced two rings disagreeing about one
+     learner. The bay stays — the blue half, its padding and its divider are
+     this page's layout, not the card's. */
   return (
     <div className="crf-focus__next">
-      <div className={`crf-focus__card crf-focus__card--${mark}`}>
-        {/* ⚠ NO DATE, AND NOT HIS LABEL — 2026-11-11. His carried the day
-            ("Your next step · Tonight, Tue Jun 16") and the lead-in itself
-            varied by state ("Recommended next" on some). One eyebrow on all
-            sixteen; see `REFINED_NEXT_EYEBROW`. */}
-        <p className="crf-focus__label">{REFINED_NEXT_EYEBROW}</p>
-        {/* ⚠ UNDER THE EYEBROW, OVER THE TITLE, AND ON NO GROUND OF ITS OWN —
-            2026-11-11: "icon should be below the eyebrow. above the course
-            title section, not white background". It was a white tile beside
-            the title, which on this blue half read as a second card edge. A
-            bare glyph in its own line is a mark on the section rather than a
-            box in it. `aria-hidden`, because the title says the word. */}
-        {/* ⚠ ONE GROUP, CENTRED IN WHAT IS LEFT — 2026-11-11: "have these
-            items be grouped together and centered vertically within this
-            space". The mark, the title and the meta are one statement about
-            the next section; they had been three loose children of a column
-            with the eyebrow above and the actions below, so they sat hard
-            under the eyebrow with all the slack beneath them. */}
-        <div className="crf-focus__body">
-          {/* ⚠ TWO SHAPES, ONE QUESTION: how tall this card is. `stacked`
-              gives the glyph its own line; `tile` sets a 40px badge beside
-              the title and its figures so they occupy one block instead of
-              two. The other half of the card is three ruled rows, and the two
-              halves have to end up a similar height. */}
-          <span className="crf-focus__mark" aria-hidden>
-            <SectionIcon kind={next?.kind} size={mark === 'tile' ? 19 : 17} />
-          </span>
-          {/* ⚠ THE NAME AND ITS FIGURES ARE ONE COLUMN — 2026-11-11: "wrap
-              the text so its course title and then the other text on the 2nd
-              line." Beside the tile they had been two more items on the
-              mark's flex row, so a long course name and its figures competed
-              for one line. The wrapper is inert on `stacked`, where the body
-              is a plain block. */}
-          <div className="crf-focus__bodytext">
-            <p className="crf-focus__lessonname">{next?.title ?? hero.next ?? hero.title}</p>
-            {/* ⚠ HOW LONG AND HOW FAR, NOT WHAT IT COVERS — 2026-11-11. His
-                line ran "1h 40m · insurable interest · how a policy pays": a
-                duration and two topics, and the topics are what the TITLE
-                above already says. The dot is the drawn one the progress rows
-                use, so the two halves separate things the same way. */}
-            <p className="crf-focus__note">
-              {REFINED_NEXT_META.parts}
-              <span aria-hidden className="crf-focus__sep" />
-              {REFINED_NEXT_META.approx} {durationOf(hero.meta)}
-            </p>
-          </div>
-        </div>
-        {/* ⚠ ONE ACTION — 2026-11-11, on "Set my study pace": "remove this."
-            `hero.alt` is the stage's secondary, and on this card it competed
-            with the primary for a decision the card is not asking: the half
-            opposite already offers the pace change, in the day-one note. A
-            next-step card with two actions makes the next step a choice. */}
-        <div className="crf-focus__cta">
-          {hero.cta ? (
-            <button type="button" className="crf-focus__go">
-              {hero.cta}
-              <ArrowRight size={13} aria-hidden />
-            </button>
-          ) : null}
-        </div>
-      </div>
+      <CompassRefinedNextStep
+        step={{
+          ...refinedNextStep(progress, durationOf(hero.meta)),
+          /* ⚠ THE STAGE'S OWN NEXT STILL WINS WHERE THE COURSE HAS NOTHING
+             TO SAY — a finished course has no row after the last, and the
+             hero's copy is the honest thing to show there. */
+          title: next?.title || hero.next || hero.title,
+        }}
+        mark={mark}
+      />
     </div>
   )
 }
@@ -383,25 +325,4 @@ function nextSection(prog?: Prog): RefinedSection | undefined {
   return REFINED_COURSE_SECTIONS[refinedProgressAt(prog.pct).done]
 }
 
-/** The tile's glyph, by what the next section is. Unknown falls back to the
- *  lesson book rather than an empty tile. */
-function SectionIcon({ kind, size = 17 }: { kind?: RefinedSectionKind; size?: number }) {
-  const Icon = SECTION_ICON[kind ?? 'lesson'] ?? BookOpenRegular
-  return <Icon size={size} aria-hidden />
-}
 
-/**
- * THE DURATION OUT OF HIS META LINE.
- *
- * ⚠ THE FIRST SEGMENT, BY CONSTRUCTION. Every state writes it the same way —
- * "1h 40m · insurable interest · how a policy pays", "25 min · on pace for
- * Jul 15" — so the time is whatever precedes the first separator. Reusing it
- * keeps the figure his; retyping it would have been a third invented number
- * on a card that already carries two.
- */
-function durationOf(meta?: string): string {
-  const first = meta?.split('·')[0]?.trim()
-  /* No meta, or a line that does not start with a time: say nothing rather
-     than printing "about undefined". */
-  return first && /\d/.test(first) ? first : ''
-}

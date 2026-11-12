@@ -3,7 +3,7 @@ import { refinedProgressAt } from '@/data/compassRefinedCourse'
 import { journeyStage } from './compassReadinessModel'
 import { REFINED_FINISH_COPY as FINISH, REFINED_PAGE_TITLES } from '@/data/compassRefinedCopy'
 import { useState } from 'react'
-import { ChevronRight, RubiLogo } from '@/icons'
+import { RubiLogo } from '@/icons'
 import {
   JEFF_MVP_LEARN_COPY as COPY,
   type JeffMvpPage,
@@ -11,7 +11,9 @@ import {
 import { CompassRefinedColumn, CompassRefinedHead } from './CompassRefinedChrome'
 import { CompassRefinedCourseCards } from './CompassRefinedCourseCards'
 import { CompassRefinedCourseRows } from './CompassRefinedCourseRows'
-import { AwardMark, FinishRow } from './CompassRefinedCourseParts'
+import { AwardMark, CourseHeadCard, FinishRow } from './CompassRefinedCourseParts'
+import { refinedNextStep } from './compassRefinedNextStepModel'
+import { durationOf } from './compassRefinedFocusDuration'
 import { COURSE_DEFAULTS, type CourseListProps, type CourseOptions } from './compassRefinedCourseModel'
 import './compassRefined.css'
 
@@ -59,8 +61,14 @@ export function CompassRefinedLearn({
   const options = course ?? COURSE_DEFAULTS
   /* One reading of the stage, shared with the Overview — see
      `refinedProgressAt`. */
-  const view = refinedCourseView(refinedProgressAt(journeyStage(stage ?? '').prog?.pct))
-  const { chapters, header, resume: RESUME, finish } = view
+  const progress = refinedProgressAt(journeyStage(stage ?? '').prog?.pct)
+  const view = refinedCourseView(progress)
+  const { chapters, header, finish } = view
+  /* ⚠ THE SAME CARD THE OVERVIEW DRAWS, from the same model — "This should
+     be a 1:1". The stage supplies the duration, as it does there; the words
+     and the bar follow `intoCurrent`. */
+  const m = journeyStage(stage ?? '')
+  const step = refinedNextStep(progress, durationOf(m.hero?.meta))
   /* ⚠ RESUME OPENS THE LESSON — `CompassJeffCourse`, which is this same
      designer's lesson ported from his earlier file. See the shell's note on
      why there is one component for it rather than two. */
@@ -103,7 +111,6 @@ export function CompassRefinedLearn({
   /* Everything both layouts draw from, computed once — see
      `CourseListProps`. */
   const listProps: CourseListProps = {
-    header,
     chapters,
     shown,
     folded,
@@ -128,33 +135,23 @@ export function CompassRefinedLearn({
             the title; a lead is page content and renders as page content. */}
         <p className="crf-lead">{COPY.lead}</p>
 
-        {/* ---------- where you left off ---------- */}
-        <section className="crf-resume" aria-label={COPY.resumeEyebrow}>
-          <span className="crf-resume__thumb" aria-hidden>
-            <span className="crf-resume__play">
-              <ChevronRight size={14} />
-            </span>
-          </span>
-          <div className="crf-resume__text">
-            <p className="crf-eyebrow">{COPY.resumeEyebrow}</p>
-            {/* ⚠ THE CHAPTER THE LEARNER IS IN, not a typed one — 2026-11-11. It read
-                "Chapter 2 · Insurers and Insurance Markets", which is not a
-                chapter of this course at all, and it kept saying "Resume
-                lesson" after the page stopped having anything in progress. */}
-            <p className="crf-resume__title">{RESUME.title}</p>
-            {/* The lesson inside it, where the chapter's lessons are ported; the
-                chapter's own name otherwise, rather than a lesson from
-                somewhere else. */}
-            {RESUME.lesson ? <p className="crf-resume__lesson">{RESUME.lesson}</p> : null}
-            <span className="crf-bar" role="img" aria-label={chapters[2]?.progAria}>
-              <span className="crf-bar__fill" style={{ width: `${header.pct}%` }} />
-            </span>
-          </div>
-          <button type="button" className="crf-cta" onClick={openLesson}>
-            {COPY.resumeCta}
-            <ChevronRight size={13} aria-hidden />
-          </button>
-        </section>
+        {/* ⚠ THE COURSE AND THE NEXT STEP, AS ONE CARD — 2026-11-12: "Have
+            the Course one be at the top, and the where you left off should be
+            below it, attached in 1 component with a divider line in between."
+
+            What this replaces is a `crf-resume` strip that sat ABOVE the
+            course header: the page opened on a lesson name and then
+            re-introduced the course it belongs to. It also carried its own
+            thumbnail, title and bar, built from different fields from the
+            Overview's next-step card — which is how it came to name a chapter
+            this course does not contain. There is one card now, and the
+            Overview draws its lower half too. */}
+        <CourseHeadCard
+          header={header}
+          step={step}
+          mark={options.nextMark}
+          onAct={openLesson}
+        />
 
         {/* ---------- the chapter list, in one of two layouts ----------
             ⚠ TWO COMPONENTS, NOT A CONDITIONAL THREADED THROUGH ONE —

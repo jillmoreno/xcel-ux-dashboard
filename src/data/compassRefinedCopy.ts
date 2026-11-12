@@ -246,6 +246,35 @@ export const REFINED_PROGRESS_LINES = {
 export const REFINED_NEXT_EYEBROW = 'Your next step'
 
 /**
+ * THE TWO STATES OF THE NEXT-STEP CARD — 2026-11-12, Jillienne: "If the user
+ * has not started anything, or has just finished a section, the Eyebrow
+ * should be Your Next Step, and the CTA should be Start Lesson. If the user
+ * is in the middle of a lesson and the progress of that lesson is being
+ * shown, the eyebrow is Where you left off, and the CTA is Resume lesson."
+ *
+ * ⚠ ONE CARD, TWO READINGS OF THE SAME LEARNER, and the words follow the
+ * data rather than the page: the Overview and Your Course both draw this
+ * card, so a card that said "Your next step" on one page and "Where you left
+ * off" on the other for one learner would be the two-pages-disagreeing
+ * problem audit finding 4 was about, in copy.
+ *
+ * ⚠ WHAT DECIDES IT IS `intoCurrent` — the remainder the section count
+ * throws away. Standing between rows (0) is a next step; part way through one
+ * is where you left off. There is no third source for it: the course list has
+ * no sub-structure, so nothing else on the page knows a lesson is half read.
+ *
+ * ⚠ "Where you left off" IS HIS PHRASE, carried from `JEFF_MVP_LEARN_COPY.
+ * resumeEyebrow` rather than re-worded, because it is the one already on the
+ * page this card is replacing.
+ */
+export const REFINED_NEXT_STEP = {
+  /** Between sections — nothing started, or a section just finished. */
+  fresh: { eyebrow: 'Your next step', cta: 'Start lesson' },
+  /** Part way through a section, with that section's own progress drawn. */
+  resuming: { eyebrow: 'Where you left off', cta: 'Resume lesson' },
+} as const
+
+/**
  * RUBI'S INTRODUCTION — 2026-11-11, "update the Rubi section to match the
  * screenshot."
  *

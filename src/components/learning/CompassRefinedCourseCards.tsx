@@ -25,9 +25,8 @@
 
 import { ChevronDown, LockRegular } from '@/icons'
 import { JEFF_MVP_LEARN_COPY as COPY } from '@/data/compassJeffMvpFixtures'
-import { REFINED_CHAPTER_BLURBS, REFINED_COURSE } from '@/data/compassRefinedCopy'
-import { ChapterMark, CourseRing, ExamRow, LessonMark } from './CompassRefinedCourseParts'
-import { GraduationCap } from '@/icons'
+import { REFINED_CHAPTER_BLURBS } from '@/data/compassRefinedCopy'
+import { ChapterMark, ExamRow, LessonMark } from './CompassRefinedCourseParts'
 import type { CourseListProps } from './compassRefinedCourseModel'
 import type { RefinedChapter } from './compassRefinedLearnCourse'
 
@@ -40,7 +39,6 @@ function statusPill(c: RefinedChapter) {
 }
 
 export function CompassRefinedCourseCards({
-  header,
   chapters,
   shown,
   folded,
@@ -54,30 +52,9 @@ export function CompassRefinedCourseCards({
 }: CourseListProps) {
   return (
     <>
-      {/* ⚠ THE HEADER CARD IS THE ROWS LAYOUT'S, UNCHANGED. The ring, the
-          counts and the course's name are the page's summary, not a property
-          of how the chapters below are drawn — forking it would make the two
-          arms differ in two things at once. */}
-      <section className="crf-course crf-course--head" aria-label={REFINED_COURSE.name}>
-        <header className="crf-course__head">
-          <span className="crf-tile" aria-hidden>
-            <GraduationCap size={16} />
-          </span>
-          <div className="crf-course__name">
-            <p className="crf-eyebrow">{header.eyebrow}</p>
-            {/* ⚠ THE COURSE'S NAME LEADS — see the rows layout's note. */}
-            <h2 className="crf-h2">{REFINED_COURSE.name}</h2>
-            <p className="crf-course__sub">{REFINED_COURSE.kind}</p>
-          </div>
-          <div className="crf-course__stat">
-            <span className="crf-course__done">{header.status}</span>
-            <span className="crf-course__of">
-              {header.done} of {header.sections} lessons
-            </span>
-          </div>
-          <CourseRing header={header} />
-        </header>
-      </section>
+      {/* ⚠ THE COURSE HEADER IS THE PAGE'S NOW — 2026-11-12. It moved up
+          into `CourseHeadCard`, joined to the next-step card, so both chapter
+          layouts draw only the chapters. */}
 
       <div className="crf-map">
         {shown.map((c) => {

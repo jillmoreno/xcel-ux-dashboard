@@ -9,6 +9,14 @@ import {
   COURSE_DEFAULTS,
   type CourseOptions,
 } from '@/components/learning/compassRefinedCourseModel'
+import {
+  isResuming,
+  refinedNextStep,
+} from '@/components/learning/compassRefinedNextStepModel'
+import {
+  REFINED_COURSE_SECTIONS,
+  refinedProgressAt,
+} from '@/data/compassRefinedCourse'
 
 /* ⚠ RENDERED WITH NO STAGE, so the page draws the upload's own learner — one
    section done, the second open — and these are that learner's chapters. A
@@ -194,5 +202,83 @@ describe('the two toggles', () => {
     const { container } = wrapWith({ rows: 'cards', fold: false })
     expect(container.querySelectorAll('.crf-map__card')).toHaveLength(REFINED_CHAPTERS.length)
     expect(container.querySelector('.crf-map__more')).toBeNull()
+  })
+})
+
+/**
+ * THE NEXT-STEP CARD — one component on two pages, 2026-11-12.
+ *
+ * "The Where you left off component should have all the same details as the
+ * Your Next Step section on the Overview. This should be a 1:1."
+ *
+ * ⚠ 1:1 IS THE THING A TEST CAN HOLD AND AN EYE CANNOT. The two cards agree
+ * today because they are one component; what this pins is that they keep
+ * agreeing — a prop added to one page, a word taken from a stage fixture, and
+ * they are two cards again.
+ */
+describe('the course card', () => {
+  it('puts the course above the next step, in one card, with the chapters after', () => {
+    const { container } = wrapWith({ rows: 'cards' })
+    const card = container.querySelector('.crf-course--head')!
+    const head = card.querySelector('.crf-course__head')!
+    const step = card.querySelector('.crf-step')!
+    expect(head.compareDocumentPosition(step) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    /* ⚠ THE OLD STRIP IS GONE, not hidden — it sat ABOVE the course header
+       and carried its own copy of the lesson. */
+    expect(container.querySelector('.crf-resume')).toBeNull()
+  })
+
+  it('draws the eyebrow, the button and the bar as one state', () => {
+    /* ⚠ RENDERED WITHOUT A STAGE, so which of the two states draws is the
+       default stage's business and not this test's. What must hold either
+       way is that the three parts agree: a 0% bar under "Your next step"
+       would say the learner has started something they have not, and
+       "Resume lesson" with no bar is a resume with nothing to resume. */
+    const { container } = wrapWith({ rows: 'list' })
+    const eyebrow = container.querySelector('.crf-step__label')?.textContent
+    const cta = container.querySelector('.crf-step__go')?.textContent ?? ''
+    const bar = container.querySelector('.crf-step__bar')
+    if (eyebrow === 'Where you left off') {
+      expect(cta).toContain('Resume lesson')
+      expect(bar).not.toBeNull()
+    } else {
+      expect(eyebrow).toBe('Your next step')
+      expect(cta).toContain('Start lesson')
+      expect(bar).toBeNull()
+    }
+  })
+})
+
+describe('the next step’s two states follow the data, not the page', () => {
+  it('is a next step between rows and a resume part way through one', () => {
+    const between = refinedProgressAt(50) // 22 of 44 exactly
+    expect(isResuming(between)).toBe(false)
+    expect(refinedNextStep(between, '1h').eyebrow).toBe('Your next step')
+    expect(refinedNextStep(between, '1h').cta).toBe('Start lesson')
+    expect(refinedNextStep(between, '1h').lessonPct).toBeUndefined()
+
+    const partway = refinedProgressAt(19) // 8.36 — most of a ninth row to go
+    expect(isResuming(partway)).toBe(true)
+    expect(refinedNextStep(partway, '1h').eyebrow).toBe('Where you left off')
+    expect(refinedNextStep(partway, '1h').cta).toBe('Resume lesson')
+    expect(refinedNextStep(partway, '1h').lessonPct).toBe(36)
+  })
+
+  it('never draws a bar without the resuming words, or the reverse', () => {
+    for (let pct = 0; pct <= 100; pct += 0.5) {
+      const step = refinedNextStep(refinedProgressAt(pct), '1h')
+      const hasBar = step.lessonPct !== undefined
+      expect(hasBar, `${pct}%`).toBe(step.eyebrow === 'Where you left off')
+      expect(hasBar, `${pct}%`).toBe(step.cta === 'Resume lesson')
+    }
+  })
+
+  it('names the row the learner is in, which is the one the page marks current', () => {
+    for (const pct of [0, 19, 50, 81]) {
+      const p = refinedProgressAt(pct)
+      expect(refinedNextStep(p, '1h').title).toBe(
+        REFINED_COURSE_SECTIONS.find((s) => s.n === p.currentN)?.title,
+      )
+    }
   })
 })

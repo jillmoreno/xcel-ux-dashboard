@@ -158,7 +158,24 @@ export const REFINED_COURSE_PROGRESS = {
   currentN: 2,
 }
 
-export type RefinedProgress = { done: number; currentN: number; pct: number }
+export type RefinedProgress = {
+  done: number
+  currentN: number
+  pct: number
+  /**
+   * ⚠ HOW FAR INTO THE CURRENT ROW THE LEARNER IS — 0 at its start, 0.64
+   * two-thirds of the way through it. 2026-11-12, for the next-step card:
+   * "If the user is in the middle of a lesson and the progress of that lesson
+   * is being shown, the eyebrow is Where you left off."
+   *
+   * ⚠ IT IS THE REMAINDER THE SECTION COUNT THROWS AWAY. 81% of forty-four
+   * rows is 35.64 — thirty-five rows finished and most of a thirty-sixth. The
+   * page had been rounding that to 36 and calling the learner done with it,
+   * which is also why there was no way to tell "between sections" from "part
+   * way through one".
+   */
+  intoCurrent: number
+}
 
 /**
  * ONE DERIVATION OF HOW FAR THROUGH THE COURSE A LEARNER IS — 2026-11-12,
@@ -186,11 +203,17 @@ export type RefinedProgress = { done: number; currentN: number; pct: number }
 export function refinedProgressAt(pct: string | number | undefined): RefinedProgress {
   const n = typeof pct === 'number' ? pct : Number.parseFloat(pct ?? '') || 0
   const clamped = Math.min(100, Math.max(0, n))
-  const done = Math.round((clamped / 100) * REFINED_COURSE_TOTALS.sections)
+  const exact = (clamped / 100) * REFINED_COURSE_TOTALS.sections
+  /* ⚠ FLOOR, NOT ROUND — 2026-11-12. Rounding 35.64 to 36 says the learner
+     has FINISHED thirty-six rows when they are two-thirds through the
+     thirty-sixth, and it threw away the only signal the data has for "part
+     way through a lesson". A row is done when it is done. */
+  const done = Math.floor(exact + 1e-9)
   return {
     done,
     currentN: Math.min(done + 1, REFINED_COURSE_TOTALS.sections),
     pct: clamped,
+    intoCurrent: Math.max(0, exact - done),
   }
 }
 

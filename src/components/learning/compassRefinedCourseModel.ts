@@ -7,7 +7,8 @@
  * instead of swapping the component.
  */
 
-import type { RefinedChapter, RefinedCourseView } from './compassRefinedLearnCourse'
+import type { RefinedChapter } from './compassRefinedLearnCourse'
+import type { NextMarkStyle } from './compassRefinedFocusModel'
 
 /** Rows or roadmap. `compass-course-rows`. */
 export type CourseRowStyle = 'list' | 'cards'
@@ -26,6 +27,14 @@ export type CourseOptions = {
   blurb: boolean
   /** Whether the locked run folds behind a count. Audit finding 1. */
   fold: boolean
+  /**
+   * ⚠ `compass-overview-next-mark`, READ BY THIS PAGE TOO — 2026-11-12. The
+   * next-step card is one component on two pages ("This should be a 1:1"),
+   * so a shape flag that reached only one of them would be the first thing
+   * to break the 1:1. It is the Overview's flag by name and history; Your
+   * Course follows it rather than getting a second one.
+   */
+  nextMark: NextMarkStyle
 }
 
 export const COURSE_DEFAULTS: CourseOptions = {
@@ -37,6 +46,9 @@ export const COURSE_DEFAULTS: CourseOptions = {
      something the bar never shows. */
   blurb: false,
   fold: true,
+  /* Agrees with `FOCUS_DEFAULTS.nextMark`, or a card rendered without
+     options draws a shape the bar never shows. */
+  nextMark: 'stacked',
 }
 
 /**
@@ -52,7 +64,6 @@ export const COURSE_DEFAULTS: CourseOptions = {
  * arrangements should be comparing the same screen.
  */
 export type CourseListProps = {
-  header: RefinedCourseView['header']
   /** Every chapter, for the counts on the control. */
   chapters: RefinedChapter[]
   /** The ones that draw — all of them when the fold is off or opened. */

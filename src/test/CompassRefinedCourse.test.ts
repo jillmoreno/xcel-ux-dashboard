@@ -302,7 +302,15 @@ describe('one derivation of where the learner is', () => {
     for (const pct of ['0%', '19%', '50%', '81%', '100%']) {
       const p = refinedProgressAt(pct)
       expect(p.pct).toBe(Number.parseFloat(pct))
-      expect(p.done).toBe(Math.round((p.pct / 100) * REFINED_COURSE_TOTALS.sections))
+      /* ⚠ FLOOR, NOT ROUND — 2026-11-12. 81% of forty-four rows is 35.64:
+         thirty-five finished and most of a thirty-sixth. Rounding said
+         thirty-six were done, and threw away the remainder that is now the
+         only signal for "part way through a lesson". */
+      expect(p.done).toBe(Math.floor((p.pct / 100) * REFINED_COURSE_TOTALS.sections + 1e-9))
+      expect(p.done + p.intoCurrent).toBeCloseTo(
+        (p.pct / 100) * REFINED_COURSE_TOTALS.sections,
+        6,
+      )
       /* The ring and the caption are one fact: the header's percentage is
          the stage's, not a second rounding of the done figure. */
       expect(refinedCourseView(p).header.pct).toBe(p.pct)

@@ -12,13 +12,12 @@
  * lost in a port, because every instinct says a locked row should not expand.
  */
 
-import { ChevronDown, GraduationCap } from '@/icons'
+import { ChevronDown } from '@/icons'
 import { REFINED_CHAPTER_BLURBS, REFINED_COURSE } from '@/data/compassRefinedCopy'
-import { ChapterMark, CourseRing, ExamRow, LessonMark } from './CompassRefinedCourseParts'
+import { ChapterMark, ExamRow, LessonMark } from './CompassRefinedCourseParts'
 import type { CourseListProps } from './compassRefinedCourseModel'
 
 export function CompassRefinedCourseRows({
-  header,
   chapters,
   shown,
   folded,
@@ -31,35 +30,8 @@ export function CompassRefinedCourseRows({
   blurb,
 }: CourseListProps) {
   return (
-    <section className="crf-course" aria-label={REFINED_COURSE.name}>
-        <header className="crf-course__head">
-          <span className="crf-tile" aria-hidden>
-            <GraduationCap size={16} />
-          </span>
-          <div className="crf-course__name">
-            {/* ⚠ COUNTED, NOT TYPED — his read "19 chapters · 28 of 40 hours", a
-                chapter count that was wrong by two and an hours figure
-                nothing produces. */}
-            <p className="crf-eyebrow">{header.eyebrow}</p>
-            {/* ⚠ THE COURSE'S NAME LEADS — 2026-11-12: "This should be the
-                course name in the Playfair font style. Below in smaller text
-                should be Qualifying Education - Florida." The card led with
-                "Qualifying Education", which is the regulatory CATEGORY and
-                is true of every XCEL course; the one this platform is about
-                was the smaller line under it. */}
-            <h2 className="crf-h2">{REFINED_COURSE.name}</h2>
-            <p className="crf-course__sub">{REFINED_COURSE.kind}</p>
-          </div>
-          <div className="crf-course__stat">
-            <span className="crf-course__done">{header.status}</span>
-            <span className="crf-course__of">
-              {header.done} of {header.sections} lessons
-            </span>
-          </div>
-          <CourseRing header={header} />
-        </header>
-
-        {/* ⚠ THE REAL COURSE, NOT A SECOND LIST OF IT — 2026-11-11. These were
+    <section className="crf-course crf-course--list" aria-label={REFINED_COURSE.name}>
+{/* ⚠ THE REAL COURSE, NOT A SECOND LIST OF IT — 2026-11-11. These were
             nineteen chapters typed into his fixture while the Overview
             counted forty-one rows of `compassRefinedCourse.ts`; two
             hand-kept lists of one course is how "22 of 36 lessons" ended up

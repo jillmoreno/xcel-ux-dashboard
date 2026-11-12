@@ -1349,6 +1349,173 @@
   cursor: not-allowed;
 }
 
+/* ⚠ THE COURSE CARD'S LOWER HALF — 2026-11-12: "attached in 1 component with
+   a divider line in between". The divider is the header's OWN bottom rule,
+   which it already carried as the line between itself and the chapter rows;
+   nothing was added for the join. What this block supplies is the padding
+   that makes the two halves read as one card rather than a card with
+   something stuck underneath.
+
+   ⚠ AND THE GROUND IS THE STEEL WASH, which is what the Overview's next-step
+   bay sits on. The 1:1 is the CARD; the bay under it is each page's own, and
+   matching the other page's ground is what stops the same card reading as
+   two different components. */
+.crf-course__step {
+  padding: 22px 20px;
+  background: var(--crf-steel-wash);
+}
+/* ⚠ THE HEADER KEEPS ITS RULE ONLY WHEN SOMETHING FOLLOWS IT. On the roadmap
+   the chapter cards are outside this box, so without the next-step half the
+   header would end on a line with nothing under it. */
+.crf-course--head .crf-course__head {
+  border-bottom: 1px solid var(--crf-card-edge);
+}
+
+/* ---------- the next-step card, 2026-11-12 ----------
+   ⚠ `crf-step`, NOT `crf-next`. That prefix is taken: `.crf-next` at the top
+   of this file is the unported Overview's own next block, and Readiness
+   draws it too — the first pass used it, and the shared card arrived with a
+   26px margin, a steel-wash ground and a 16px radius it never asked for.
+   Caught by comparing computed styles against the card before the move,
+   which is the only thing that would have caught it.
+   One card, drawn on the Overview and on Your Course — "The Where you left
+   off component should have all the same details as the Your Next Step
+   section on the Overview. This should be a 1:1."
+
+   ⚠ EVERY DECLARATION BELOW IS THE OVERVIEW CARD'S, AT ITS OWN VALUE. It
+   could not simply keep the `crf-focus__*` classes: those rules are scoped
+   under `.crf-rd`, the Overview's page wrapper, which also carries that
+   page's padding, max-width and flex — Your Course could only have borrowed
+   them by wearing a layout that is not its own. So the rules are restated
+   here, unscoped, and the Overview's card now draws through them too. One
+   stylesheet for one component; nothing is kept in step by hand.
+
+   ⚠ THE TOKENS CHANGE NAME AND NOT VALUE. `--rd-muted` and `--crf-muted`
+   both resolve to --color-compass-page-muted, `--rd-steel-deep` and
+   `--crf-steel-deep` both to --color-primary-600. Checked in the browser
+   against the computed styles of the live card, before and after. */
+.crf-step {
+  display: flex;
+  flex-direction: column;
+  /* The minimum between the three blocks, applied equally. */
+  gap: 10px;
+  width: 100%;
+  box-sizing: border-box;
+}
+.crf-step__label {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--crf-muted);
+}
+/* The mark, the title and the meta as one block, centred between the eyebrow
+   at the top and the action at the bottom — 2026-11-11: "have these items be
+   grouped together and centered vertically within this space". `margin: auto
+   0` takes the free space at BOTH ends, so the group centres and the action
+   lands on the floor without a rule of its own. */
+.crf-step__body {
+  margin: auto 0;
+  min-width: 0;
+}
+.crf-step__mark {
+  display: inline-flex;
+  margin-bottom: 8px;
+  color: var(--crf-steel-deep);
+}
+.crf-step__text {
+  min-width: 0;
+}
+/* ⚠ PLAYFAIR AT 17px — a named exception to the "Open Sans below 32px" rule,
+   2026-11-11: "have this be playfair font, same color as the main title of
+   the page." The ink is the page title's (#3a3a3a), not the block's, which
+   is the half of that ask the first pass missed. */
+.crf-step__name {
+  margin: 0 0 3px;
+  font-family: var(--font-heading-serif), Georgia, serif;
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--color-text-primary);
+}
+.crf-step__note {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--crf-muted);
+}
+/* The small circle. Drawn rather than typed: a "·" at this size reads as
+   punctuation inside the phrase, and these are two phrases. */
+.crf-step__sep {
+  display: inline-block;
+  width: 3px;
+  height: 3px;
+  margin: 0 7px;
+  border-radius: 50%;
+  background: var(--crf-muted);
+  vertical-align: middle;
+}
+/* ⚠ THE LESSON'S OWN PROGRESS, AND ONLY WHEN RESUMING — 2026-11-12. It is
+   the bar the old resume strip carried, kept because it is the thing that
+   makes "where you left off" true rather than a label. */
+.crf-step__bar {
+  display: block;
+  width: 100%;
+  max-width: 220px;
+  height: 4px;
+  margin-top: 10px;
+  border-radius: 999px;
+  background: var(--crf-steel-pressed);
+  overflow: hidden;
+}
+.crf-step__barfill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--crf-steel-deep);
+}
+.crf-step__cta {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.crf-step__go {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 16px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--crf-steel-deep);
+  color: #fff;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+/* ⚠ THE `tile` ARM — `compass-overview-next-mark`. A 40px rounded square
+   beside the title instead of a glyph on its own line: "make the icon a
+   square version like used on the Your Course Page." Both pages take the
+   flag, so the two cards cannot diverge on it. */
+.crf-step--tile .crf-step__body {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+.crf-step--tile .crf-step__mark {
+  flex: 0 0 40px;
+  width: 40px;
+  height: 40px;
+  margin: 2px 0 0;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  background: var(--crf-white);
+  border: 1px solid var(--crf-steel-edge);
+}
+
 /* ---------- the roadmap, 2026-11-12 ----------
    `compass-course-rows: cards`. A card per chapter, from a reference
    screenshot: a numbered chip, a status pill, the action top right and a

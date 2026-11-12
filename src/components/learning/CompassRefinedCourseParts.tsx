@@ -14,6 +14,7 @@
 
 import {
   Award,
+  GraduationCap,
   BallotCheckRegular,
   Check,
   ChevronRight,
@@ -28,6 +29,10 @@ import type {
   RefinedCourseView,
   RefinedFinishStep,
 } from './compassRefinedLearnCourse'
+import { REFINED_COURSE } from '@/data/compassRefinedCopy'
+import { CompassRefinedNextStep } from './CompassRefinedNextStep'
+import type { NextMarkStyle } from './compassRefinedFocusModel'
+import type { RefinedNextStep } from './compassRefinedNextStepModel'
 
 /**
  * The exam strip, used by a chapter and by the certification card.
@@ -186,5 +191,74 @@ export function CourseRing({ header }: { header: RefinedCourseView['header'] }) 
         </span>
       </div>
     </div>
+  )
+}
+
+/**
+ * THE COURSE CARD — what the course is, and the one thing to do in it.
+ *
+ * ⚠ TWO CARDS JOINED INTO ONE — 2026-11-12: "Have the Course one be at the
+ * top, and the where you left off should be below it, attached in 1
+ * component with a divider line in between."
+ *
+ * They were a resume strip ABOVE the course header and a course header
+ * below it: the page opened on a lesson name, then re-introduced the course
+ * it belongs to. One card states the course and then what to do in it, in
+ * that order, and the divider is what says they are two facts rather than
+ * one paragraph.
+ *
+ * ⚠ THE LOWER HALF IS THE OVERVIEW'S CARD, NOT A COPY OF IT — her "1:1".
+ * `CompassRefinedNextStep` is the same component that page draws, so the two
+ * cannot drift; what Your Course adds around it is the ground it sits on.
+ *
+ * ⚠ IT BELONGS TO NEITHER CHAPTER LAYOUT. Rows and roadmap each used to draw
+ * this header inside their own markup; it is the page's summary, so it is
+ * drawn once above whichever list follows.
+ */
+export function CourseHeadCard({
+  header,
+  step,
+  mark,
+  onAct,
+}: {
+  header: RefinedCourseView['header']
+  step: RefinedNextStep
+  mark?: NextMarkStyle
+  onAct?: () => void
+}) {
+  return (
+    <section className="crf-course crf-course--head" aria-label={REFINED_COURSE.name}>
+      <header className="crf-course__head">
+        <span className="crf-tile" aria-hidden>
+          <GraduationCap size={16} />
+        </span>
+        <div className="crf-course__name">
+          {/* ⚠ COUNTED, NOT TYPED — his read "19 chapters · 28 of 40 hours", a
+              chapter count wrong by two and an hours figure nothing
+              produces. */}
+          <p className="crf-eyebrow">{header.eyebrow}</p>
+          {/* ⚠ THE COURSE'S NAME LEADS — 2026-11-12: "This should be the
+              course name in the Playfair font style. Below in smaller text
+              should be Qualifying Education - Florida." The card led with the
+              regulatory CATEGORY, which is true of every XCEL course. */}
+          <h2 className="crf-h2">{REFINED_COURSE.name}</h2>
+          <p className="crf-course__sub">{REFINED_COURSE.kind}</p>
+        </div>
+        <div className="crf-course__stat">
+          <span className="crf-course__done">{header.status}</span>
+          <span className="crf-course__of">
+            {header.done} of {header.sections} lessons
+          </span>
+        </div>
+        <CourseRing header={header} />
+      </header>
+      {/* ⚠ THE DIVIDER IS THE HEADER'S OWN BOTTOM RULE, which it already
+          carried as the line between itself and the chapter rows. Nothing is
+          added for the join; the half below simply sits under the line that
+          was already there. */}
+      <div className="crf-course__step">
+        <CompassRefinedNextStep step={step} mark={mark} onAct={onAct} />
+      </div>
+    </section>
   )
 }
