@@ -1581,9 +1581,12 @@ function StopLink({ label, onOpen, href }: { label: string; onOpen?: () => void;
         <span style={MARK_CURRENT} />
       </span>
       {/* A link to the state's requirements page on xcelsolutions.com while
-          `atlas-state-licensing-links` is on (2026-11-12); the sheet off. */}
+          `atlas-state-licensing-links` is on (2026-11-12); the sheet off.
+          ⚠ CENTRED BY HAND: the row stretches its children to 36, and a
+          button centres its own label in that height where a link does not —
+          without the flex the label sat at the top, off the circle's line. */}
       {href ? (
-        <a href={href} target="_blank" rel="noopener noreferrer" className="cre-atlas-journey-link" style={EXAM_INFO_LINK}>
+        <a href={href} target="_blank" rel="noopener noreferrer" className="cre-atlas-journey-link" style={{ ...EXAM_INFO_LINK, display: 'flex', alignItems: 'center' }}>
           {label}
         </a>
       ) : (

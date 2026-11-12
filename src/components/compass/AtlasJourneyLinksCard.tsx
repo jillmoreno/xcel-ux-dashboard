@@ -152,6 +152,7 @@ export function AtlasJourneyLinksCard({ onOpenStep, onOpenRequirements, style, w
             icon={<ClipboardListCheckRegular size={13} aria-hidden />}
             label="State Licensing Requirements"
             href={licensingUrl}
+            wrap
           />
         ) : (
         <>
@@ -183,6 +184,7 @@ function SideLink({
   active = false,
   onClick,
   href,
+  wrap = false,
 }: {
   icon: ReactNode
   label: string
@@ -191,6 +193,10 @@ function SideLink({
   onClick?: () => void
   /** A row that leaves the product — drawn as a link, opened in a new tab. */
   href?: string
+  /** Let the label take a second line instead of running past the card's
+   *  right padding — the one row too long for the rail (2026-11-12). The icon
+   *  stays on the first line. */
+  wrap?: boolean
 }) {
   const content = (
     <>
@@ -200,7 +206,7 @@ function SideLink({
         {/* `data-label` feeds a hidden Medium copy (`.cre-quick-link-label`,
             tokens.css) that holds the hover weight's width, so a card sized to
             its content does not grow on hover (2026-10-13). */}
-        <span className="cre-quick-link-label" data-label={label} style={{ flex: '1 1 0', minWidth: 0, textAlign: 'left' }}>
+        <span className="cre-quick-link-label" data-label={label} style={{ flex: '1 1 0', minWidth: 0, textAlign: 'left', ...(wrap ? { whiteSpace: 'normal' } : null) }}>
           {label}
         </span>
         {/* Shown on hover / focus only (2026-10-13, Eric's request) —
@@ -211,7 +217,7 @@ function SideLink({
         </span>
     </>
   )
-  const style = active ? { ...SIDE_ROW, ...SIDE_ROW_ACTIVE } : SIDE_ROW
+  const style = { ...SIDE_ROW, ...(active ? SIDE_ROW_ACTIVE : null), ...(wrap ? { alignItems: 'flex-start' } : null) }
   return (
     <li>
       {href ? (
