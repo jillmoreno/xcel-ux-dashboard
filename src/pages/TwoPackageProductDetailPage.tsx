@@ -126,7 +126,8 @@ export function TwoPackageProductDetailPage() {
   // Standard's own list, in its own words (2026-11-12, Eric).
   // …and Premier's (same day, Eric) — not California's, which keeps the shared rows.
   const premierOnly = soloId === 'premier' && !california
-  const comparison = standardOnly ? STANDARD_INCLUDES : premierOnly ? PREMIER_INCLUDES : soloId ? COMPARISON.filter((row) => row[soloId]) : COMPARISON
+  // California's rows are Standard's five too (2026-11-12, Eric).
+  const comparison = standardOnly || california ? STANDARD_INCLUDES : premierOnly ? PREMIER_INCLUDES : soloId ? COMPARISON.filter((row) => row[soloId]) : COMPARISON
   /* THE TRAINING STEPS (2026-11-05, Eric: everything the live product pages say that this one did not — "but try to keep them worded
      more concisely"): what each part holds, the score to aim for, the 24-hour tip, what Part 1 unlocks, and the fourth step, Pass
      Your Exam! On the Standard page first, then on Premier and the multi-product page too (same day). */
@@ -808,6 +809,17 @@ export function TwoPackageProductDetailPage() {
                 <section style={SIDE_SECTION}>
                   <h2 style={SIDE_TITLE}>What to Expect</h2>
                   {/* 14 between the groups (2026-10-28, Eric; was 18). */}
+                  {/* One paragraph now (2026-11-12, Eric). The three points are kept below behind
+                      EXPECT_AS_POINTS — "keep the existing content and layout for later use". */}
+                  {EXPECT_AS_POINTS ? null : (
+                    <p style={SIDE_BODY}>
+                      This online self-paced course allows you to study independently, whenever it is convenient for you. All you need is a
+                      device (computer, tablet, or smartphone) with internet access. Our 3-Part Training Program prepares you to pass the
+                      insurance exam in less than 2 weeks!
+                      {/* No "Read our recommended study plan." link after it (same day, Eric). */}
+                    </p>
+                  )}
+                  {EXPECT_AS_POINTS ? (
                   <div style={{ ...SIDE_BODY, display: 'flex', flexDirection: 'column', gap: 14 }}>
                     {WHAT_TO_EXPECT.map(([head, line]) => (
                       <div key={head} style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
@@ -817,6 +829,7 @@ export function TwoPackageProductDetailPage() {
                     ))}
                     {/* No "Recommended study plan" link now (2026-11-09, Eric). */}
                   </div>
+                  ) : null}
                 </section>
               </div>
             </div>
@@ -942,6 +955,18 @@ export function TwoPackageProductDetailPage() {
                         What&rsquo;s Included
                         <span style={COMPARE_SUBHEAD}>XCEL&rsquo;s Proven 3-Part Training Program:</span>
                       </>
+                    ) : california ? (
+                      /* California: "What's Included", then the course and what it is, over the three tiles (2026-11-12, Eric; "Package
+                         includes:" before). */
+                      <>
+                        What&rsquo;s Included
+                        <span style={{ ...COMPARE_SUBHEAD, marginTop: 12, fontWeight: 800 }}>California Life and Health Pre-licensing</span>
+                        <span style={{ ...COMPARE_SUBHEAD, marginTop: 4 }}>
+                          Our standard Life &amp; Health Pre-licensing course combines XCEL&rsquo;s proven 3-part training program with an
+                          AI-powered study partner that helps you learn, practice, and prepare for your exam with confidence in as little as 2
+                          weeks.
+                        </span>
+                      </>
                     ) : single ? 'Package includes:' : 'Compare packages:'}
                     {/* THE CALIFORNIA PACKAGE'S THREE PRODUCTS — Figma 668:1357 (2026-11-06, Eric: "add this below package includes" and
                         retitle it "Included in this package:"). Three tiles across the column: the course itself, then the Code and
@@ -967,6 +992,13 @@ export function TwoPackageProductDetailPage() {
                             </span>
                           </Fragment>
                         ))}
+                      </span>
+                    ) : null}
+                    {/* California: the rows' heading under the tiles, in the course name's size and weight (2026-11-12, Eric). */}
+                    {california ? (
+                      // A rule over it, the tiles' own (same day, Eric), 20 clear either side.
+                      <span style={{ ...COMPARE_SUBHEAD, marginTop: 20, paddingTop: 20, borderTop: `1px solid ${COMPARE_RULE}`, fontWeight: 800 }}>
+                        XCEL&rsquo;s Proven 3-Part Training Program:
                       </span>
                     ) : null}
                   </caption>
@@ -1818,6 +1850,8 @@ const TRAINING_SPECS: [string, string][] = [
   ['Credit Hours:', '60'],
 ]
 
+/* What to Expect as the three points below (true), or as one paragraph (false, 2026-11-12, Eric). The points are kept for later. */
+const EXPECT_AS_POINTS = false
 /* What to Expect, as three points (Figma 432:3165). */
 const WHAT_TO_EXPECT: [string, string][] = [
   ['Online and Self-paced', "Study when and where you'd like."],
@@ -2721,7 +2755,7 @@ const COMPARE_TOGGLE: CSSProperties = {
   cursor: 'pointer',
 }
 const COMPARE_TOGGLE_ANGLE: CSSProperties = { flex: 'none', width: 14, height: 14, marginTop: 3, color: 'var(--color-xcel-brick)', transition: 'transform 200ms ease' }
-const COMPARE_DESC: CSSProperties = { margin: 0, paddingTop: 6, paddingLeft: 22, paddingRight: 8, fontSize: 13, lineHeight: '17px', color: 'var(--color-text-secondary)' }
+const COMPARE_DESC: CSSProperties = { margin: 0, paddingTop: 6, paddingLeft: 22, paddingRight: 8, fontWeight: 500 /* one up from 400 (2026-11-12, Eric) */, fontSize: 13, lineHeight: '19px' /* 2 more (2026-11-12, Eric; was 17) */, color: 'var(--color-text-secondary)' }
 const COMPARE_SUBHEAD: CSSProperties = { ...SIDE_BODY, display: 'block', marginTop: 8, fontWeight: 400 }
 const COMPARE_GROUP: CSSProperties = { ...COMPARE_HEAD, paddingLeft: 0, paddingTop: 20, borderTop: 'none' }
 /* Single, with no header row, the rule over the first item stays (2026-10-28, Eric). */

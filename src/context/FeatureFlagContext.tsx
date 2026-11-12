@@ -2865,16 +2865,17 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     defaultEnabled: true,
     defaultVariant: 'multi',
     variants: [
-      { value: 'multi', label: 'Multi-product', description: 'Standard and Premier side by side, with the comparison grid. The default.' },
       /* MULTI-PRODUCT 2 (2026-11-11, Eric: "duplicate this multi product page and add it to the products drop down as Multi-product
          2") — the multi page as it stands today, a second copy to change without touching the first. The page reads it as `multi2`. */
-      { value: 'multi-2', label: 'Multi-product 2', description: 'A second multi-product page \u2014 a copy of Multi-product to try changes on.' },
+      { value: 'multi-2', label: 'Multi-product' /* the 2 dropped (2026-11-12, Eric) */, description: 'A second multi-product page \u2014 a copy of Multi-product to try changes on.' },
       /* `single` is the Premier page — its value kept so links pinned to it still open it; labelled Premier since 2026-11-05. */
       { value: 'single', label: 'Premier', description: 'Premier alone, the grid captioned \u201cPackage includes:\u201d as a list of what it includes.' },
       /* STANDARD (2026-11-05, Eric: "Duplicate this page and make it a Standard Product page in the product dropdown"). */
       { value: 'standard', label: 'Standard', description: 'Standard alone — its card, the rows it includes, no crown and no Pass Guarantee.' },
       /* CALIFORNIA (2026-11-06, Eric) — the Premier page, written for California. */
       { value: 'california', label: 'California', description: 'The Premier page for California \u2014 Premier alone, the state California.' },
+      /* The first multi-product page, last in the list and marked Old (2026-11-12, Eric) — Multi-product 2 is the one being worked on. */
+      { value: 'multi', label: 'Multi-product (Old)', description: 'Standard and Premier side by side, with the comparison grid. The default.' },
     ],
     page: 'dashboard-rebrand',
   },
