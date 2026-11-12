@@ -131,7 +131,34 @@ export function CompassRefinedCourseCards({
           const expanded = isOpen(c)
           const pill = statusPill(c)
           return (
-            <article key={c.n} className={`crf-map__card crf-map__card--${c.state}`}>
+            <article
+              key={c.n}
+              className={`crf-map__card crf-map__card--${c.state}${
+                c.expandable ? ' is-clickable' : ''
+              }`}
+              /* ⚠ THE CARD TOGGLES, THE BUTTON IS STILL THE CONTROL —
+                 2026-11-12: "clicking will be the same as expanding the
+                 details". The handler sits on the `article`, which is not
+                 focusable and takes no role: the Details button below is the
+                 real control and already carries `aria-expanded`, so a
+                 keyboard or screen-reader user has one way in and sees one
+                 state. Making the card itself a button would nest the Review
+                 and Details buttons inside another button, which is invalid
+                 markup and gives the row three tab stops that do two things.
+
+                 ⚠ A CLICK THAT LANDS ON A BUTTON IS THAT BUTTON'S. Without
+                 the guard, Review would open the chapter AND expand the card
+                 under it, and Details would toggle twice and land back where
+                 it started. */
+              onClick={
+                c.expandable
+                  ? (e) => {
+                      if ((e.target as HTMLElement).closest('button')) return
+                      toggle(c.n, expanded)
+                    }
+                  : undefined
+              }
+            >
               <div className="crf-map__body">
                 {/* ⚠ THE NUMBER IS THE COURSE'S, NOT THE ROW'S POSITION —
                     her call, "Position, Intro gets a mark". The Course

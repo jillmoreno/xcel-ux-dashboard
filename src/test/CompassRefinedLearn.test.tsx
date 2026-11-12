@@ -411,3 +411,53 @@ describe('the open chapter’s badge says whether it has been started', () => {
     expect(['Up Next', 'In Progress']).toContain(word)
   })
 })
+
+describe('clicking a roadmap card expands it', () => {
+  it('toggles from anywhere on the card, and only where there is something to open', () => {
+    const { container } = wrapWith({ rows: 'cards', fold: false })
+    const card = container.querySelector('.crf-map__card.is-clickable')!
+    const details = card.querySelector('.crf-map__details')!
+    expect(details.getAttribute('aria-expanded')).toBe('false')
+
+    fireEvent.click(card.querySelector('.crf-map__title')!)
+    expect(details.getAttribute('aria-expanded')).toBe('true')
+    fireEvent.click(card.querySelector('.crf-map__title')!)
+    expect(details.getAttribute('aria-expanded')).toBe('false')
+
+    /* ⚠ A CARD WITH NOTHING BEHIND ITS CHEVRON IS NOT CLICKABLE — it would
+       be promising a click that does nothing. Finding 8, kept. */
+    for (const c of container.querySelectorAll('.crf-map__card')) {
+      const title = c.querySelector('.crf-map__title')?.textContent ?? ''
+      const chapter = REFINED_CHAPTERS.find((x) => x.title === title)!
+      expect(c.classList.contains('is-clickable'), title).toBe(chapter.expandable)
+    }
+  })
+
+  it('leaves a click that lands on a button to that button', () => {
+    /* ⚠ WITHOUT THE GUARD, Review would open the chapter AND expand the card
+       under it, and Details would toggle twice and land back where it
+       started. */
+    const opened: string[] = []
+    const { container } = render(
+      <MemoryRouter>
+        <AccountProvider>
+          <FeatureFlagProvider>
+            <CompassRefinedLearn
+              course={{ ...COURSE_DEFAULTS, rows: 'cards', fold: false }}
+              onSelectPage={(p) => opened.push(p)}
+            />
+          </FeatureFlagProvider>
+        </AccountProvider>
+      </MemoryRouter>,
+    )
+    const card = container.querySelector('.crf-map__card.is-clickable')!
+    const details = card.querySelector('.crf-map__details')!
+
+    fireEvent.click(card.querySelector('.crf-btn')!)
+    expect(opened).toEqual(['course'])
+    expect(details.getAttribute('aria-expanded')).toBe('false')
+
+    fireEvent.click(details)
+    expect(details.getAttribute('aria-expanded')).toBe('true')
+  })
+})

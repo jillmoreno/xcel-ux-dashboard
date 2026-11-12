@@ -1788,6 +1788,30 @@
 .crf-map__card--locked {
   background: var(--crf-white);
 }
+/* ⚠ HOVER, ON THE CARDS THAT DO SOMETHING — 2026-11-12: "need to show a
+   hover effect on the card". Only the expandable ones get it; a card with
+   nothing behind its chevron (the Introduction, the Florida laws row) would
+   be promising a click that does nothing.
+
+   ⚠ THE EDGE AND A LIFT, NOT A GROUND. A background change would fight the
+   current card's own tint and the locked cards' white, and would have to be
+   written three times; the border and a soft shadow read the same on all
+   three states.
+
+   ⚠ NO TRANSITION ON `box-shadow` ALONE — both properties move, so both are
+   named, or the border snaps while the shadow fades. */
+.crf-map__card.is-clickable {
+  cursor: pointer;
+  transition:
+    border-color 120ms ease,
+    box-shadow 120ms ease;
+}
+.crf-map__card.is-clickable:hover {
+  border-color: var(--crf-steel);
+  box-shadow: 0 2px 10px rgb(31 29 24 / 0.07);
+}
+/* The keyboard route is the Details button, which is focusable; its focus
+   ring is the browser's. The card is not a tab stop — see the component. */
 .crf-map__body {
   display: flex;
   align-items: flex-start;
