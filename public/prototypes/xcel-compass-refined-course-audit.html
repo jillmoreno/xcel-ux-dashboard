@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Compass Refined — Your Course UX Audit</title>
+<style>
+  :root {
+    --ink: #1f2430;
+    --muted: #5b6372;
+    --faint: #8890a0;
+    --line: #e4e2db;
+    --bg: #fcfbf8;
+    --card: #ffffff;
+    --accent: #3d5a73;
+    --accent-soft: #eceef0;
+    --good: #2f7a5a;
+    --warn: #835b16;
+    --bad: #b23b2e;
+    font-family: Georgia, 'Source Serif 4', serif;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+    line-height: 1.6;
+  }
+  .wrap { max-width: 880px; margin: 0 auto; padding: 56px 28px 120px; }
+  header.doc-head { border-bottom: 1px solid var(--line); padding-bottom: 24px; margin-bottom: 36px; }
+  h1 {
+    font-family: Georgia, 'Source Serif 4', serif;
+    font-size: 32px;
+    font-weight: 600;
+    margin: 0 0 10px;
+    letter-spacing: -0.01em;
+  }
+  .byline { color: var(--muted); font-size: 14px; }
+  h2 {
+    font-family: Georgia, 'Source Serif 4', serif;
+    font-size: 22px;
+    font-weight: 600;
+    margin: 44px 0 14px;
+    padding-top: 8px;
+  }
+  h3 {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--ink);
+    margin: 28px 0 10px;
+  }
+  p { margin: 0 0 12px; }
+  ul, ol { margin: 0 0 16px; padding-left: 22px; }
+  li { margin-bottom: 10px; }
+  code {
+    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+    font-size: 0.9em;
+    background: var(--accent-soft);
+    padding: 1px 5px;
+    border-radius: 4px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 12px 0 20px;
+    font-size: 14.5px;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  th, td {
+    text-align: left;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--line);
+    vertical-align: top;
+  }
+  th {
+    background: #f5f3ed;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    font-weight: 700;
+  }
+  tr:last-child td { border-bottom: none; }
+  .match { color: var(--good); font-weight: 600; }
+  .callout {
+    background: var(--accent-soft);
+    border: 1px solid #d8dee4;
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin: 16px 0;
+  }
+  .callout b { color: var(--accent); }
+  .decisions-table td:first-child, .decisions-table th:first-child { width: 36px; text-align: center; }
+  .decisions-table td:nth-child(2) { font-weight: 600; width: 28%; }
+  footer {
+    margin-top: 48px;
+    padding-top: 20px;
+    border-top: 1px solid var(--line);
+    color: var(--faint);
+    font-size: 13px;
+  }
+  @media print {
+    body { background: #fff; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="doc-head">
+  <h1>Compass Refined — Your Course</h1>
+  <p class="byline">A UX audit of the Refined version&rsquo;s course page, 2026&ndash;11&ndash;12 &middot; read against the actual Florida Life &amp; Health section list</p>
+</header>
+
+<p>The page was audited straight after the real course list replaced the demo one. That order matters: most of what follows was <em>invisible</em> while the page carried its own nineteen hand-typed chapters, and became obvious the moment it had to describe a course that exists.</p>
+
+<div class="callout">
+  <p><b>The finding behind most of the others.</b> Every problem below is one shape: a string sitting <em>beside</em> the data instead of reading it. A status word, a ring&rsquo;s arc, a resume card, a chapter count &mdash; each was typed once against a course that has since changed, and none of them had any way to notice.</p>
+</div>
+
+<h2>1 &middot; What the real course changed</h2>
+
+<p>The page carried 19 chapters. The course has <b>21 chapters and 20 exams &mdash; 41 rows</b>.</p>
+
+<table>
+  <thead><tr><th>Missing</th><th>Where it belongs</th></tr></thead>
+  <tbody>
+    <tr><td>Course Introduction &mdash; Life and Health Pre-licensing</td><td>The <em>first</em> row a learner sees, before Chapter 1</td></tr>
+    <tr><td>Florida Life and Health Laws, Rules, and Regulations</td><td>After Chapter 19, with its own chapter exam</td></tr>
+    <tr><td>The double-numbered titles from thirteen on</td><td>&ldquo;Life &amp; Health Chapter 13 | Health Chapter 4&rdquo; &mdash; the page had only the short names</td></tr>
+  </tbody>
+</table>
+
+<p>And one thing the page had that the upload does not: a final <b>Certification Exam</b>. The uploaded list ends at &ldquo;Chapter Exam: Florida Life and Health Laws and Rules&rdquo; with no separate certification step. It has not been rebuilt on a guess &mdash; if the real course has one, it is a row in the course list and the page picks it up unchanged.</p>
+
+<h3>Three contradictions it exposed</h3>
+<ol>
+  <li><b>No chapter was in progress, yet the page offered &ldquo;Resume lesson&rdquo;.</b> The chapter state came from the ported fixture, whose current chapter &mdash; &ldquo;Insurers and Insurance Markets&rdquo; &mdash; is not a chapter of this course.</li>
+  <li><b>The resume card named that chapter</b>, and a lesson inside it.</li>
+  <li><b>The header read &ldquo;Completed&rdquo; beside &ldquo;1 of 41 sections&rdquo;</b>, over a hard-coded 61&percnt; ring.</li>
+</ol>
+<p>All three are fixed, and the page now derives state, figures and the resume point from the same object the Overview counts against.</p>
+
+<div class="callout">
+  <p><b>One that could have shipped silently.</b> The ported outline and the real course agree on almost every chapter and diverge on one: its Chapter 2 is &ldquo;Insurers and Insurance Markets&rdquo;, the course&rsquo;s is &ldquo;Nature of Insurance&rdquo;. Mapping lessons by <em>position</em> put lessons about stock and mutual insurers under a chapter about the nature of insurance &mdash; the right heading over the wrong contents, with nothing on screen to correct it. Lessons are matched by title now, and a chapter whose contents are not known shows none.</p>
+</div>
+
+<h2>2 &middot; What is working</h2>
+
+<h3>The three-level structure survives 41 rows</h3>
+<p>Chapter &rarr; lessons &rarr; exam, with collapse, is the right shape for a course this long. No flat list would be navigable at this length, and the expanded chapter is the only place lesson-level detail belongs.</p>
+
+<h3>The locked exam row explains itself</h3>
+<p>&ldquo;Opens after all 7 lessons&rdquo; is the page&rsquo;s own promise kept &mdash; the lead says a locked step tells you exactly what opens it, and the exam rows do.</p>
+
+<h3>The eyebrow / title split absorbed the double-numbering for free</h3>
+<p>&ldquo;Life &amp; Health Chapter 13 | Health Chapter 4&rdquo; sits in the eyebrow where a chapter number belongs; the title stays &ldquo;Health and Accident Insurance&rdquo;. A single-line title would have been unreadable.</p>
+
+<h2>3 &middot; What is not</h2>
+
+<table class="decisions-table">
+  <thead><tr><th>#</th><th>Finding</th><th>Evidence &amp; recommendation</th></tr></thead>
+  <tbody>
+    <tr><td>1</td><td>The page is mostly locked</td>
+      <td><b>19 of 21 chapters are locked, and they occupy 1,364px of a 2,495px page &mdash; 55&percnt;.</b> A learner scrolls past a wall of things they cannot do to reach nothing. Collapse the locked run behind a count, or show the next two or three and a &ldquo;Show all chapters&rdquo; control.</td></tr>
+    <tr><td>2</td><td>Locked chapters do not say why</td>
+      <td>The lead promises &ldquo;a locked step tells you exactly what opens it&rdquo;. The exam rows keep that promise; the chapters say only <b>&ldquo;Locked&rdquo;</b>. Either give them the sentence or stop promising it.</td></tr>
+    <tr><td>3</td><td>Two units for one learner</td>
+      <td>The header counts <b>sections</b> (&ldquo;1 of 41&rdquo;); the chapter rows count <b>lessons</b> (&ldquo;7 lessons&rdquo;). Nothing reconciles 41 with 19&times;7. The course&rsquo;s own instruction &mdash; &ldquo;Complete all lessons in the list below&rdquo; &mdash; counts all 41 rows, so sections is the honest unit.</td></tr>
+    <tr><td>4</td><td>Two rings, two numbers</td>
+      <td>This page reads <b>2&percnt;</b>, the Overview reads <b>0&percnt;</b>, same learner. They derive progress differently: one from sections complete, the other from the stage&rsquo;s own percentage. One derivation, shared.</td></tr>
+    <tr><td>5</td><td>The page titles are different inks</td>
+      <td>Your Course is <code>#1f1d18</code>; the Overview is <code>#3a3a3a</code>. The Overview was corrected on 2026&ndash;11&ndash;11 and this page never got it &mdash; the kind of difference nobody sees and everybody feels.</td></tr>
+    <tr><td>6</td><td>Row labels are a treatment behind</td>
+      <td>Chapter eyebrows are <b>12px/600 uppercase</b>; the Overview&rsquo;s row labels settled at <b>11px/400</b> the same day, on the finding that the weight &mdash; not the case &mdash; was what made them heavy.</td></tr>
+    <tr><td>7</td><td>Buttons do not match the hierarchy</td>
+      <td>&ldquo;Resume&rdquo; is a small filled button sharing a column with the status word &mdash; two different kinds of thing in one slot. The Overview settled on navy-filled primary and outlined secondary.</td></tr>
+    <tr><td>8</td><td>The Introduction expands to nothing</td>
+      <td>It carries a Review action and an empty lesson list, because the upload has no lesson-level detail for it.</td></tr>
+  </tbody>
+</table>
+
+<h2>4 &middot; Still to build</h2>
+<p>Three sections the course needs and the list does not yet carry: a <b>Final Exam</b>, a <b>Survey</b>, and a <b>Certificate</b>. They are the tail of the regulated sequence the fixtures already name &mdash; lessons, affidavit, final exam, survey and certificate &mdash; and they change the shape of the page&rsquo;s ending, which today simply stops after the last chapter exam.</p>
+
+<footer>
+  <p>Written against the build at the time of the audit. Findings 1&ndash;8 are open; section&nbsp;1 is fixed and committed.</p>
+</footer>
+
+</div>
+</body>
+</html>

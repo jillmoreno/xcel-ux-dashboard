@@ -198,6 +198,9 @@ describe('section routing (sectionOf)', () => {
        refuses a second row for the `compass` scope and refuses `?ff=` on any
        Prototypes row, which is exactly what three pinned versions would be.
        See the rows' own note in `prototypeFeatures.ts`. */
+    /* The first page audit of Refined (2026-11-12) — an exploration, not a
+       handoff: its eight findings are open design decisions. */
+    'xcel-compass-refined-course-audit': 'exploration',
     'xcel-compass-v-anjani': 'exploration',
     'xcel-compass-v-jeff': 'exploration',
     'xcel-compass-v-refined': 'exploration',

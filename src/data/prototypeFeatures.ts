@@ -1330,6 +1330,44 @@ const AUTHORED_FEATURES: PrototypeFeature[] = [
    * somebody else's. The pin is what keeps the title true.
    */
   {
+    /*
+     * THE FIRST PAGE AUDIT OF REFINED — 2026-11-12. Jillienne, after the real
+     * Florida course list landed on the Your Course page: "lets do a full ux
+     * audit on the Your Course page", and then "publish".
+     *
+     * ⚠ IT IS AN EXPLORATION, NOT A HANDOFF. Nothing here is ready for a
+     * developer: findings 1-8 are open design decisions, and the page they
+     * are about is a version still being composed. A `devStatus` would put it
+     * on the Development board, which `sectionOf` reads before the category.
+     *
+     * ⚠ THE AUDIT ORDER IS THE POINT, and the document says so: most of these
+     * were invisible while the page carried its own nineteen typed chapters
+     * and became obvious the moment it had to describe a course that exists.
+     * The next page's audit should follow the same order — real data first,
+     * then the eye.
+     */
+    id: 'xcel-compass-refined-course-audit',
+    title: 'Compass Refined — Your Course UX Audit',
+    accent: 'gold',
+    icon: 'grid',
+    blurb:
+      'A UX audit of the Refined version\u2019s Your Course page, read against the actual Florida Life & Health section list. Covers what the real course changed (three missing rows, three contradictions it exposed), what the page gets right at forty-one rows, and eight open findings \u2014 55% of the page locked, two units of progress, two rings disagreeing, and three styling decisions from the Overview that never reached this page.',
+    tileBlurb:
+      'The first page-by-page audit of Refined: what the real course list changed, what works at forty-one rows, and eight open findings.',
+    /* ⚠ `explore`, NOT `guided`. A guided row opens its own gateway page and
+       the smoke test refuses an `externalUrl` on one — it would hijack the
+       row. This is a document to read, like the other Explorations, so it
+       opens the document. `kindLabel` keeps the tag honest about which
+       kind. */
+    kind: 'explore',
+    kindLabel: 'Audit',
+    status: 'ready',
+    category: 'exploration',
+    externalUrl: `${PROTOTYPE_BASE}/xcel-compass-refined-course-audit.html`,
+    livePreviewUrl: `${PROTOTYPE_BASE}/xcel-compass-refined-course-audit.html`,
+    brands: ['xcel'],
+  },
+  {
     id: 'xcel-compass-v-anjani',
     title: "Compass — Anjani's version",
     accent: 'teal',
