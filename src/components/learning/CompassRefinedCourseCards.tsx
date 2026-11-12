@@ -30,11 +30,21 @@ import { ExamRow, LessonMark } from './CompassRefinedCourseParts'
 import type { CourseListProps } from './compassRefinedCourseModel'
 import type { RefinedChapter } from './compassRefinedLearnCourse'
 
-/** The pill over the title. The word follows the state, as everywhere else on
- *  this page — a chapter cannot be styled as two things at once. */
+/**
+ * The pill over the title. The word follows the state, as everywhere else on
+ * this page — a chapter cannot be styled as two things at once.
+ *
+ * ⚠ THE OPEN CHAPTER HAS NO PILL — 2026-11-12, "remove this tag", on "Ready
+ * to begin". It is the one card where three things said the same thing: the
+ * navy chip, the tinted ground and border, and a filled Resume button in the
+ * corner. The other two states keep theirs, and `Locked` earns its place —
+ * those cards have no button at all, and the "opens when…" line was removed
+ * from this layout earlier the same day, so the pill is the only thing left
+ * that says the chapter is shut.
+ */
 function statusPill(c: RefinedChapter) {
   if (c.state === 'done') return { word: 'Completed', tone: 'done' }
-  if (c.state === 'current') return { word: 'Ready to begin', tone: 'open' }
+  if (c.state === 'current') return null
   return { word: COPY.lockedWord, tone: 'locked' }
 }
 
@@ -89,10 +99,12 @@ export function CompassRefinedCourseCards({
 
                 <div className="crf-map__main">
                   <div className="crf-map__top">
-                    <span className={`crf-map__pill crf-map__pill--${pill.tone}`}>
-                      {c.state === 'locked' ? <LockRegular size={11} aria-hidden /> : null}
-                      {pill.word}
-                    </span>
+                    {pill ? (
+                      <span className={`crf-map__pill crf-map__pill--${pill.tone}`}>
+                        {c.state === 'locked' ? <LockRegular size={11} aria-hidden /> : null}
+                        {pill.word}
+                      </span>
+                    ) : null}
                     {/* ⚠ THE ACTION, TOP RIGHT — her instruction. In the
                         reference this corner carries "8 Lessons · Est. 3h
                         15m"; this course has neither figure, and the one it
