@@ -1,12 +1,21 @@
-import { REFINED_CHAPTERS, REFINED_COURSE_HEADER, REFINED_RESUME as RESUME } from './compassRefinedLearnCourse'
-import { REFINED_PAGE_TITLES } from '@/data/compassRefinedCopy'
+import {
+  REFINED_CHAPTERS,
+  REFINED_COURSE_HEADER,
+  REFINED_FINISH_STEPS,
+  REFINED_RESUME as RESUME,
+  type RefinedFinishStep,
+} from './compassRefinedLearnCourse'
+import { REFINED_FINISH_COPY as FINISH, REFINED_PAGE_TITLES } from '@/data/compassRefinedCopy'
 import { useState } from 'react'
 import {
   Award,
+  BallotCheckRegular,
   Check,
   ChevronDown,
   ChevronRight,
   CircleSolid,
+  ClipboardList,
+  FileCertificateRegular,
   FileText,
   GraduationCap,
   LockRegular,
@@ -221,19 +230,32 @@ export function CompassRefinedLearn({
           })}
         </section>
 
-        {/* ---------- the certification exam ---------- */}
-        <section className="crf-course" aria-label={`${COPY.finalEyebrow}: ${COPY.finalTitle}`}>
+        {/* ---------- how the course ends ----------
+            ⚠ THREE ROWS OF THE COURSE, NOT A TYPED CARD — 2026-11-12. This
+            was his "Certification Exam" card: an exam the course list does
+            not contain, noted "Opens after all 19 chapters" against
+            twenty-one of them. The rows are
+            `REFINED_FINISH_STEPS` — whatever the chapters above do not
+            consume — so the page ends where the course does. */}
+        <section
+          className="crf-course"
+          aria-label={`${FINISH.eyebrow}: ${FINISH.title}`}
+        >
           <header className="crf-course__head">
             <span className="crf-tile" aria-hidden>
               <AwardMark />
             </span>
             <div className="crf-course__name">
-              <p className="crf-eyebrow">{COPY.finalEyebrow}</p>
-              <h2 className="crf-h2">{COPY.finalTitle}</h2>
+              <p className="crf-eyebrow">{FINISH.eyebrow}</p>
+              <h2 className="crf-h2">{FINISH.title}</h2>
             </div>
-            <span className="crf-ch__status">{COPY.finalStatus}</span>
+            <span className="crf-ch__status">
+              {REFINED_FINISH_STEPS.every((f) => f.state === 'locked') ? COPY.lockedWord : ''}
+            </span>
           </header>
-          <ExamRow title={COPY.finalExamTitle} note={COPY.finalNote} locked done={false} />
+          {REFINED_FINISH_STEPS.map((f) => (
+            <FinishRow key={f.n} step={f} />
+          ))}
         </section>
       </CompassRefinedColumn>
     </div>
@@ -279,6 +301,54 @@ function ExamRow({
           {COPY.examReviewCta}
         </button>
       )}
+    </div>
+  )
+}
+
+/**
+ * A closing step — the Final Exam, the Course Survey, the Certificate.
+ *
+ * ⚠ IT WEARS THE EXAM STRIP'S CLOTHES ON PURPOSE. These sit in the same
+ * column as the chapter exams and are the same kind of object to a learner —
+ * one thing to do, locked until something opens it — so they take
+ * `crf-exam`'s layout rather than a fourth row design.
+ *
+ * ⚠ THE ICON FOLLOWS THE KIND, the mapping Jillienne set for the Next Step
+ * card on 2026-11-11: an exam is a document with a checkmark, a survey a
+ * checkbox list, and a certificate the one glyph that means "you finished".
+ * `ExamRow` above keeps his `FileText` — that is his markup, carried.
+ */
+function FinishMark({ kind }: { kind: RefinedFinishStep['kind'] }) {
+  if (kind === 'survey') return <ClipboardList size={15} />
+  if (kind === 'certificate') return <FileCertificateRegular size={15} />
+  return <BallotCheckRegular size={15} />
+}
+
+function FinishRow({ step }: { step: RefinedFinishStep }) {
+  const locked = step.state === 'locked'
+  return (
+    <div className={step.state === 'done' ? 'crf-exam crf-exam--done' : 'crf-exam'}>
+      <span className="crf-tile crf-tile--exam" aria-hidden>
+        <FinishMark kind={step.kind} />
+      </span>
+      <div className="crf-exam__name">
+        <p className="crf-exam__eyebrow">{step.eyebrow}</p>
+        <p className="crf-exam__title">{step.title}</p>
+      </div>
+      <span className="crf-exam__note">{step.note}</span>
+      {/* ⚠ VISIBLE AND INERT, like his locked exam: the control says the step
+          exists, the padlock says it is not yours yet, and the note beside it
+          says what opens it. */}
+      <button
+        type="button"
+        className={locked ? 'crf-btn crf-btn--locked' : 'crf-btn'}
+        disabled={locked}
+        aria-disabled={locked || undefined}
+        aria-label={`${step.cta} ${step.title}`}
+      >
+        {locked ? <LockRegular size={13} aria-hidden /> : null}
+        {step.cta}
+      </button>
     </div>
   )
 }

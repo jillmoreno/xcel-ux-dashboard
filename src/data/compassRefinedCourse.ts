@@ -37,13 +37,23 @@
  * assign an icon. affidavit = document with signature, survey = checkbox list
  * icon."
  *
- * ⚠ ONLY `lesson` AND `exam` OCCUR IN THE COURSE LIST TODAY. All forty-one
- * rows are one or the other. `affidavit` and `survey` are here because she
- * named them and because the regulated four steps — lessons, affidavit, final
- * exam, survey and certificate — say they are coming; they have their icons
- * waiting rather than being decided in a hurry when a row needs one.
+ * ⚠ `survey` AND `certificate` OCCUR NOW — 2026-11-12: "we will need the
+ * Final Exam Section, as well as a survey section, and a certificate
+ * section". They are the tail of the regulated sequence the fixtures already
+ * name (lessons, affidavit, final exam, survey and certificate), and they
+ * change the shape of the page's ending, which until now simply stopped
+ * after the last chapter exam.
+ *
+ * ⚠ `affidavit` IS STILL UNREACHABLE. It belongs to the same sequence and is
+ * not in the uploaded list; the kind and its icon wait rather than being
+ * decided in a hurry when a row needs one.
  */
-export type RefinedSectionKind = 'lesson' | 'exam' | 'affidavit' | 'survey'
+export type RefinedSectionKind =
+  | 'lesson'
+  | 'exam'
+  | 'affidavit'
+  | 'survey'
+  | 'certificate'
 
 export type RefinedSection = {
   /** Position in the list the learner walks, 1-based. */
@@ -105,6 +115,19 @@ export const REFINED_COURSE_SECTIONS: readonly RefinedSection[] = [
   },
   { n: 40, title: 'Florida Life and Health Laws, Rules, and Regulations', kind: 'lesson' },
   { n: 41, title: 'Chapter Exam: Florida Life and Health Laws and Rules', kind: 'exam' },
+  /* ⚠ THE COURSE'S ENDING — 2026-11-12, added on the direct ask. These three
+     are not in the uploaded screenshots: that list is the CHAPTER list, and
+     it stops at the last chapter exam. What follows a completed course is
+     the regulated tail, and the fixtures have named it all along.
+
+     ⚠ THE TITLES ARE MINE AND SHOULD BE CONFIRMED. "Final Exam" is what the
+     stage fixtures call it ("Final course exam open" on q6); Course Survey
+     and Certificate follow the same sequence's wording. If the real course
+     names them differently — and a regulated course usually does, precisely —
+     these three strings are the only place to change. */
+  { n: 42, title: 'Final Exam', kind: 'exam' },
+  { n: 43, title: 'Course Survey', kind: 'survey' },
+  { n: 44, title: 'Certificate', kind: 'certificate' },
 ]
 
 export const REFINED_COURSE_TOTALS = {

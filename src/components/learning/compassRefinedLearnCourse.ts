@@ -3,7 +3,9 @@ import {
   REFINED_COURSE_PROGRESS,
   REFINED_COURSE_SECTIONS,
   REFINED_COURSE_TOTALS,
+  type RefinedSectionKind,
 } from '@/data/compassRefinedCourse'
+import { REFINED_FINISH_COPY } from '@/data/compassRefinedCopy'
 
 /**
  * THE YOUR COURSE PAGE, BUILT FROM THE REAL COURSE — 2026-11-11: "update
@@ -22,11 +24,14 @@ import {
  *   • the double-numbered titles from thirteen on ("Life & Health Chapter 13
  *     | Health Chapter 4") — the page had only the short names
  *
- * ⚠ AND ONE THING IT HAD THAT THE UPLOAD DOES NOT: a final "Certification
- * Exam". Her list ends at "Chapter Exam: Florida Life and Health Laws and
- * Rules" with no separate certification step, so it is not built here. If the
- * real course does have one, it is a row in `REFINED_COURSE_SECTIONS` and
- * this picks it up with no change.
+ * ⚠ AND HOW IT ENDS — 2026-11-12. Her upload stopped at "Chapter Exam:
+ * Florida Life and Health Laws and Rules", so for a day this file said a
+ * certification step was not built and would be picked up "with no change" if
+ * the course gained one. That second half was not true: the chapters are
+ * built from the LESSON rows, so a closing row of any other kind was dropped
+ * on the floor. The course now carries three ("we will need the Final Exam
+ * Section, as well as a survey section, and a certificate section") and
+ * `REFINED_FINISH_STEPS` at the foot of this file is what renders them.
  *
  * ⚠ LESSON-LEVEL CONTENT IS STILL HIS, by the standing instruction ("do not
  * worry about the course content right now"). His lessons are matched to the
@@ -208,3 +213,55 @@ export const REFINED_RESUME = (() => {
     lesson: open ? open.label : '',
   }
 })()
+
+/**
+ * THE COURSE'S ENDING — 2026-11-12.
+ *
+ * ⚠ WHAT THE CHAPTERS DO NOT CONSUME. A chapter above takes a lesson row and,
+ * when the next row is its exam, that too. Everything left over is the
+ * ending: today rows 42-44, the Final Exam, the Course Survey and the
+ * Certificate. Deriving it as the REMAINDER rather than as "the last three"
+ * is what makes the comment at the top of this file true at last — a new
+ * closing row lists itself, and a row inserted mid-course does not fall off
+ * the end of the page.
+ */
+const CONSUMED = new Set<number>()
+for (const s of LESSON_ROWS) {
+  CONSUMED.add(s.n)
+  const next = REFINED_COURSE_SECTIONS.find((x) => x.n === s.n + 1)
+  if (next?.kind === 'exam') CONSUMED.add(next.n)
+}
+
+export type RefinedFinishStep = {
+  n: number
+  kind: RefinedSectionKind
+  title: string
+  /** The kind, as a word — "Final Exam", "Survey", "Certificate". */
+  eyebrow: string
+  /** What opens it. */
+  note: string
+  /** The disabled button's verb. */
+  cta: string
+  state: 'done' | 'current' | 'locked'
+}
+
+export const REFINED_FINISH_STEPS: RefinedFinishStep[] = REFINED_COURSE_SECTIONS.filter(
+  (s) => !CONSUMED.has(s.n),
+).map((s) => ({
+  n: s.n,
+  kind: s.kind,
+  title: s.title,
+  eyebrow: REFINED_FINISH_COPY.kindLabel[s.kind] ?? '',
+  /* ⚠ COUNTED, LIKE EVERY OTHER FIGURE ON THIS PAGE. His note said "all 19
+     chapters" beside twenty-one of them. */
+  note: (REFINED_FINISH_COPY.stepNote[s.kind] ?? (() => ''))(REFINED_CHAPTERS.length),
+  cta: REFINED_FINISH_COPY.cta[s.kind] ?? '',
+  /* The same reading of `REFINED_COURSE_PROGRESS` the chapters use, so the
+     ending cannot claim a state the course list disagrees with. */
+  state:
+    s.n < REFINED_COURSE_PROGRESS.currentN
+      ? 'done'
+      : s.n === REFINED_COURSE_PROGRESS.currentN
+        ? 'current'
+        : 'locked',
+}))

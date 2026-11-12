@@ -3,6 +3,7 @@ import {
   BallotCheckRegular,
   BookOpenRegular,
   ClipboardList,
+  FileCertificateRegular,
   PenFieldRegular,
 } from '@/icons'
 import {
@@ -47,6 +48,9 @@ const SECTION_ICON: Record<RefinedSectionKind, typeof BookOpenRegular> = {
   exam: BallotCheckRegular,
   affidavit: PenFieldRegular,
   survey: ClipboardList,
+  /* ⚠ `file-certificate` — a document with a seal, which is the one glyph in
+     this registry that means "you have finished and here is the proof". */
+  certificate: FileCertificateRegular,
 }
 
 /**

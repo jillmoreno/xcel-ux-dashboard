@@ -3,6 +3,7 @@ import { JEFF_MVP_LEARN } from '@/data/compassJeffMvpFixtures'
 import {
   REFINED_CHAPTERS,
   REFINED_COURSE_HEADER,
+  REFINED_FINISH_STEPS,
 } from '@/components/learning/compassRefinedLearnCourse'
 import {
   REFINED_COURSE_PROGRESS,
@@ -22,15 +23,27 @@ import {
  * anything else in this suite. They would just quietly become the course.
  */
 describe('the course list', () => {
-  it('is forty-one sections: twenty-one lessons and twenty exams', () => {
-    expect(REFINED_COURSE_SECTIONS).toHaveLength(41)
-    expect(REFINED_COURSE_TOTALS).toEqual({ sections: 41, lessons: 21, exams: 20 })
+  it('is forty-four sections: the chapter list, then the course’s ending', () => {
+    /* ⚠ FORTY-ONE WAS THE CHAPTER LIST. The uploaded screenshots stop at the
+       last chapter exam; the Final Exam, the Survey and the Certificate were
+       added on 2026-11-12 as the regulated tail that follows a completed
+       course. */
+    expect(REFINED_COURSE_SECTIONS).toHaveLength(44)
+    expect(REFINED_COURSE_TOTALS).toEqual({ sections: 44, lessons: 21, exams: 21 })
   })
 
-  it('numbers them 1..41 with no gap and no repeat', () => {
+  it('numbers them 1..44 with no gap and no repeat', () => {
     expect(REFINED_COURSE_SECTIONS.map((s) => s.n)).toEqual(
-      Array.from({ length: 41 }, (_, i) => i + 1),
+      Array.from({ length: 44 }, (_, i) => i + 1),
     )
+  })
+
+  it('ends on the Final Exam, the Survey and the Certificate', () => {
+    expect(REFINED_COURSE_SECTIONS.slice(-3).map((s) => [s.title, s.kind])).toEqual([
+      ['Final Exam', 'exam'],
+      ['Course Survey', 'survey'],
+      ['Certificate', 'certificate'],
+    ])
   })
 
   it('has no duplicate titles', () => {
@@ -51,9 +64,14 @@ describe('the course list', () => {
     expect(intro.kind).toBe('lesson')
     expect(intro.title).toContain('Course Introduction')
 
-    for (let i = 1; i < REFINED_COURSE_SECTIONS.length; i += 2) {
-      const lesson = REFINED_COURSE_SECTIONS[i]
-      const exam = REFINED_COURSE_SECTIONS[i + 1]
+    /* ⚠ THE ALTERNATION IS THE CHAPTER LIST'S, and stops where it does. The
+       three closing rows are not a chapter-and-exam pair — the Final Exam
+       follows no chapter of its own, and the Survey and Certificate are not
+       exams at all. */
+    const chapterList = REFINED_COURSE_SECTIONS.slice(0, 41)
+    for (let i = 1; i < chapterList.length; i += 2) {
+      const lesson = chapterList[i]
+      const exam = chapterList[i + 1]
       expect(lesson.kind, `${lesson.title} should be a lesson`).toBe('lesson')
       expect(exam.kind, `${exam?.title} should be an exam`).toBe('exam')
       expect(exam.title).toMatch(/Exam/)
@@ -72,8 +90,8 @@ describe('the course list', () => {
     )
   })
 
-  it('ends on the Florida laws chapter and its exam', () => {
-    const last = REFINED_COURSE_SECTIONS.slice(-2)
+  it('closes the chapter list on the Florida laws chapter and its exam', () => {
+    const last = REFINED_COURSE_SECTIONS.slice(0, 41).slice(-2)
     expect(last[0].title).toBe('Florida Life and Health Laws, Rules, and Regulations')
     expect(last[0].kind).toBe('lesson')
     expect(last[1].title).toBe('Chapter Exam: Florida Life and Health Laws and Rules')
@@ -102,7 +120,7 @@ describe('the course list', () => {
 describe('every section has a kind an icon can be chosen from', () => {
   it('types every row, and uses only the four kinds', () => {
     const kinds = new Set(REFINED_COURSE_SECTIONS.map((s) => s.kind))
-    expect([...kinds].sort()).toEqual(['exam', 'lesson'])
+    expect([...kinds].sort()).toEqual(['certificate', 'exam', 'lesson', 'survey'])
   })
 
   it('types a row as an exam when and only when its title says Exam', () => {
@@ -111,6 +129,7 @@ describe('every section has a kind an icon can be chosen from', () => {
        is a transcription slip, and it would show as the wrong icon on the
        Overview rather than as a failure anywhere else. */
     for (const s of REFINED_COURSE_SECTIONS) {
+      if (s.kind === 'survey' || s.kind === 'certificate') continue
       const says = /\bExam\b/.test(s.title)
       expect(s.kind === 'exam', `${s.title} is typed ${s.kind}`).toBe(says)
     }
@@ -158,9 +177,9 @@ describe('the Your Course page is built from the course list', () => {
   })
 
   it('counts its header off the course, not off a typed figure', () => {
-    expect(REFINED_COURSE_HEADER.sections).toBe(41)
+    expect(REFINED_COURSE_HEADER.sections).toBe(44)
     expect(REFINED_COURSE_HEADER.chapters).toBe(REFINED_CHAPTERS.length)
-    expect(REFINED_COURSE_HEADER.eyebrow).toBe('21 chapters · 20 exams')
+    expect(REFINED_COURSE_HEADER.eyebrow).toBe('21 chapters · 21 exams')
   })
 })
 
@@ -192,5 +211,60 @@ describe('a chapter only carries lessons that are its own', () => {
       expect(his, `${c.title} has lessons but no chapter of his by that name`).toBeTruthy()
       expect(his?.lessons.length).toBe(c.lessons.length)
     }
+  })
+})
+
+/**
+ * ⚠ NOTHING FALLS OFF THE END OF THE PAGE — 2026-11-12.
+ *
+ * The chapters are built from the LESSON rows and take the exam that follows
+ * each. For a day that meant a closing row of any other kind — the Final
+ * Exam, the Survey, the Certificate — was simply not rendered anywhere, with
+ * no error and nothing on screen to notice. This is the arithmetic that says
+ * every row of the course reaches the page.
+ */
+describe('the course\u2019s ending', () => {
+  it('lists every row the chapters do not', () => {
+    const inChapters = new Set<number>()
+    for (const c of REFINED_CHAPTERS) {
+      inChapters.add(c.n)
+      if (c.exam) inChapters.add(c.n)
+    }
+    /* Counted rather than matched by id: each chapter consumes its lesson row
+       and, where it has one, its exam. */
+    const consumed =
+      REFINED_CHAPTERS.length + REFINED_CHAPTERS.filter((c) => c.exam).length
+    expect(consumed + REFINED_FINISH_STEPS.length).toBe(REFINED_COURSE_TOTALS.sections)
+  })
+
+  it('is the Final Exam, the Survey and the Certificate, in that order', () => {
+    expect(REFINED_FINISH_STEPS.map((f) => f.kind)).toEqual([
+      'exam',
+      'survey',
+      'certificate',
+    ])
+    expect(REFINED_FINISH_STEPS.map((f) => f.title)).toEqual([
+      'Final Exam',
+      'Course Survey',
+      'Certificate',
+    ])
+  })
+
+  it('counts the chapters in the exam\u2019s note rather than typing them', () => {
+    /* His card read "Opens after all 19 chapters" against twenty-one. */
+    expect(REFINED_FINISH_STEPS[0].note).toBe(`Opens after all ${REFINED_CHAPTERS.length} chapters`)
+    expect(REFINED_FINISH_STEPS[0].note).not.toMatch(/19/)
+  })
+
+  it('gives every step a word, a note and a verb', () => {
+    for (const f of REFINED_FINISH_STEPS) {
+      expect(f.eyebrow, `${f.title} has no kind label`).toBeTruthy()
+      expect(f.note, `${f.title} does not say what opens it`).toBeTruthy()
+      expect(f.cta, `${f.title} has no button`).toBeTruthy()
+    }
+  })
+
+  it('is locked while the learner is on section two', () => {
+    expect(REFINED_FINISH_STEPS.every((f) => f.state === 'locked')).toBe(true)
   })
 })

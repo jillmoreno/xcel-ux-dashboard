@@ -345,3 +345,56 @@ export const REFINED_RAIL_TOP_GROUP = 'Your learning'
  * nothing varies that this replaces.
  */
 export const REFINED_RING_LABEL = 'Complete'
+
+/**
+ * HOW THE COURSE ENDS — 2026-11-12, Jillienne: "we will need the Final Exam
+ * Section, as well as a survey section, and a certificate section."
+ *
+ * ⚠ JEFF'S PAGE ENDED ON ONE CARD AND IT WAS WRONG IN THREE WAYS. His
+ * "Certification Exam" card is typed copy: it names an exam the course list
+ * does not contain, notes "Opens after all 19 chapters" against a course with
+ * twenty-one, and stops there — no survey, no certificate, so the page's last
+ * word to a learner is an exam rather than the thing they are studying for.
+ *
+ * ⚠ SO THE ENDING IS NOW THREE ROWS OF THE COURSE, not a card beside it.
+ * `REFINED_FINISH_STEPS` reads whatever follows the last chapter in
+ * `REFINED_COURSE_SECTIONS` — today the Final Exam, the Course Survey and the
+ * Certificate — and these are the words it renders them with. Add a fourth
+ * row to the course and it lists, with a note from `stepNote` and nothing
+ * here to edit unless it is a kind the course has never had.
+ *
+ * ⚠ THE EXAM'S NOTE COUNTS. It is a function of the chapter count for exactly
+ * the reason his was wrong: "19" was true when it was typed.
+ */
+export const REFINED_FINISH_COPY = {
+  /** The section's own eyebrow and title, in the page's title case. */
+  eyebrow: 'Course Completion',
+  title: 'Finish Your Course',
+  /** The word over each row — what KIND of step this is.
+   *  ⚠ "Exam", NOT "Final Exam": the row below it is already titled Final
+   *  Exam, and every chapter exam on this page wears the same word
+   *  (`examEyebrow`). An eyebrow that repeats its own title is a line of
+   *  noise, and one that differs from the twenty above it is worse. */
+  kindLabel: {
+    exam: 'Exam',
+    survey: 'Survey',
+    certificate: 'Certificate',
+  } as Record<string, string>,
+  /** What opens it, which is the half of a locked row that his page left out
+   *  everywhere except the chapters ("a locked step tells you exactly what
+   *  opens it" is the page's own lead). */
+  stepNote: {
+    exam: (chapters: number) => `Opens after all ${chapters} chapters`,
+    survey: () => 'Opens after the final exam',
+    certificate: () => 'Issued when the survey is complete',
+  } as Record<string, (chapters: number) => string>,
+  /** The button's words. A certificate is downloaded, not taken — so the
+   *  verb follows the kind rather than being one word for all three.
+   *  ⚠ "Take exam" IS THE CHAPTER EXAMS' OWN CTA (`examCta`), carried here so
+   *  the last exam on the page is not the one worded differently. */
+  cta: {
+    exam: 'Take exam',
+    survey: 'Take survey',
+    certificate: 'Download',
+  } as Record<string, string>,
+} as const
