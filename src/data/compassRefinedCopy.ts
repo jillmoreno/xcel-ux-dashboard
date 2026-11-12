@@ -153,10 +153,15 @@ export const REFINED_PAGE_TITLES = {
  */
 export const REFINED_RAIL_LABELS: Record<string, string> = {
   overview: 'Overview',
-  /* ⚠ "Your Course", NOT "Learn" — 2026-11-11. The row opened a page titled
-     "Your Course" and called itself something else; this is the same row/page
-     agreement the title-case pass made for Study Planner. */
-  learn: 'Your Course',
+  /* ⚠ "Course" — 2026-11-12, "Change to Course". It was "Your Course" from
+     2026-11-11, set so the row and the page it opens would not call
+     themselves different things ("Learn" opening "Your Course" was the
+     mismatch being fixed). "Course" keeps that agreement — the page is still
+     titled Your Course and nobody reads the two as different places — and
+     drops a word the rail does not need: every row on it is this learner's.
+     The group above it went the same way the same minute ("Your learning" →
+     "Learn"). */
+  learn: 'Course',
   'study-planner': 'Study Planner',
   'prep-review': 'Prep Review',
   practice: 'Practice',
@@ -408,12 +413,16 @@ export const REFINED_NEXT_META = {
  * what sits under EXAM PREP is what you do once the course is behind you")
  * visible instead of implied.
  *
+ * ⚠ "Learn", NOT "Your learning" — 2026-11-12, "Change to Learn". Two words
+ * against the one over the group below it (EXAM PREP) made the pair read as
+ * a sentence and a label rather than as two labels, and "your" is doing no
+ * work on a rail that belongs to one learner.
+ *
  * ⚠ SENTENCE CASE HERE, CAPITALS ON SCREEN — the same trap `JEFF_MVP_RAIL.
- * groupLabel` carries: the stylesheet uppercases it, so typing "YOUR
- * LEARNING" would double-transform nowhere and break a parity check reading
- * `innerText`.
+ * groupLabel` carries: the stylesheet uppercases it, so typing "LEARN" would
+ * double-transform nowhere and break a parity check reading `innerText`.
  */
-export const REFINED_RAIL_TOP_GROUP = 'Your learning'
+export const REFINED_RAIL_TOP_GROUP = 'Learn'
 
 /**
  * THE RING'S SUB-LABEL — 2026-11-11, on "Lessons": "Complete".
