@@ -1689,9 +1689,42 @@
   margin-top: 12px;
 }
 .crf-map__card {
+  position: relative;
   border: 1px solid var(--crf-card-edge);
   border-radius: 14px;
   background: var(--crf-white);
+}
+/* ⚠ THE SPINE — 2026-11-12: "show a line behind the cards to help indicate a
+   roadmap". A 2px rule dropped into the gap under each card, aligned to the
+   centre of the numbered chip, so the twenty-one chips read as stops on one
+   line rather than as twenty-one separate cards.
+
+   ⚠ IT IS DRAWN PER GAP, NOT ONCE DOWN THE COLUMN. A single rule on
+   `.crf-map` would run the full height — behind the fold control at the
+   bottom and past the last card — and would have to be clipped back. One
+   segment per card ends where the cards do, by construction.
+
+   ⚠ 43px FROM THE CARD'S LEFT EDGE: the card's 1px border, the body's 20px
+   padding, and half the 44px chip. Those four numbers are a set — move any
+   of them and this moves with them. The first pass said 42 and was a pixel
+   off, because the border is easy to forget and impossible to see; measured
+   against the chip's own box in the browser rather than taken on trust.
+
+   ⚠ NOT AFTER THE LAST ONE. `:last-of-type` is the last `article`; the fold
+   control is a `button`, so a dangling segment below the final card cannot
+   happen whether the run is folded or open. */
+.crf-map__card::after {
+  content: '';
+  position: absolute;
+  left: 43px;
+  top: 100%;
+  width: 2px;
+  height: 12px;
+  margin-left: -1px;
+  background: var(--crf-card-edge);
+}
+.crf-map__card:last-of-type::after {
+  content: none;
 }
 /* ⚠ THE OPEN CHAPTER IS THE ONLY TINTED ONE, which is the rows layout's rule
    too — a card per chapter would otherwise give twenty-one equal rectangles
