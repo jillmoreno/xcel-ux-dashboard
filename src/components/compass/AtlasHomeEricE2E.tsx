@@ -24,6 +24,7 @@ import { courseExpiryTier, usableDaysLeft } from '@/data/courseExpiry'
 import type { CourseExpiryTier } from '@/data/courseExpiry'
 import { AtlasExamDateCard } from './AtlasExamDateCard'
 import { AtlasJourneyLinksCard } from './AtlasJourneyLinksCard'
+import { useStateLicensingUrl } from './stateLicensingLink'
 import { ATLAS_HOME_REFRESH } from '@/components/layout/atlasHomeRefresh'
 import { CircleCheckSolid } from '@/icons'
 import { AtlasCourseProgressStates, type ProgressStage } from './AtlasCourseProgressStates'
@@ -640,6 +641,9 @@ export function AtlasHomeEricE2E({
   /* …and Step 3's, the same sheet Quick Links' "Applying for a License"
      opens, by the step's own id rather than a second copy of it. */
   const applyInfo = onOpenStep ? () => onOpenStep(apply.id) : undefined
+  /* Steps 2 and 3 and Quick Links leave for the state's requirements page
+     on xcelsolutions.com while `atlas-state-licensing-links` is on. */
+  const licensingUrl = useStateLicensingUrl(path.state)
   /* ⚠ "REVIEW COURSE" AT 100%, NOT "VIEW CERTIFICATE" (2026-10-21, Jillienne:
      "the cta should actually change to Review course if the course is complete
      and the access is still available"). A learner who has finished but still
@@ -1168,7 +1172,7 @@ export function AtlasHomeEricE2E({
                  the same question on screen twice. Replacing the sentence is
                  also what makes the step ask something instead of reciting
                  figures the learner cannot act on yet. */
-              detail={walkSteps ? <ExamDatePrompt onExamInfo={examInfo} card={examPromptCard} /> : pass.detail}
+              detail={walkSteps ? <ExamDatePrompt onExamInfo={examInfo} examInfoHref={licensingUrl} card={examPromptCard} /> : pass.detail}
               link={pass.detailLabel ?? 'What to expect'}
               onLink={onOpenStep && !onWhite ? () => onOpenStep(pass.id) : undefined}
             />
@@ -1182,7 +1186,7 @@ export function AtlasHomeEricE2E({
                  link option, blue style, under this that is: Applying for a
                  License". A step that names nothing a learner can do is a
                  heading, not a step. */
-              detail={walkSteps ? <StopLink label="Applying for a License" onOpen={applyInfo} /> : apply.detail}
+              detail={walkSteps ? <StopLink label="Applying for a License" onOpen={applyInfo} href={licensingUrl} /> : apply.detail}
               link={apply.detailLabel ?? 'How to apply'}
               onLink={onOpenStep && !onWhite ? () => onOpenStep(apply.id) : undefined}
             />
@@ -1229,6 +1233,7 @@ export function AtlasHomeEricE2E({
             own Flashcards and Exam Simulator. The sheets open here, in place. */}
         <AtlasJourneyLinksCard
           withoutCoursePages
+          stateCode={path.state}
           linksOff={LINKS_OFF}
           /* …except the two learning-page rows, which are real pages now
              (2026-11-02). `LINKS_OFF` was silencing the only way to click into
@@ -1459,7 +1464,7 @@ function ExamDateQuestionPill() {
   )
 }
 
-function ExamDatePrompt({ onExamInfo, card = false }: { onExamInfo?: () => void; card?: boolean }) {
+function ExamDatePrompt({ onExamInfo, examInfoHref, card = false }: { onExamInfo?: () => void; examInfoHref?: string; card?: boolean }) {
   return (
     /* ⚠ SPANS, NOT DIVS. `Step` renders its detail inside a `<p>`, and the
        pill this replaces was a `<div>` in there — invalid nesting that
@@ -1549,7 +1554,7 @@ function ExamDatePrompt({ onExamInfo, card = false }: { onExamInfo?: () => void;
           of the three sheet handlers exempt from `LINKS_OFF` (see the note
           there) — the same handler Quick Links' own Exam Information uses,
           with the same id, so the two cannot open different sheets. */}
-      <StopLink label="Exam Information" onOpen={onExamInfo} />
+      <StopLink label="Exam Information" onOpen={onExamInfo} href={examInfoHref} />
     </span>
   )
 }
@@ -1569,12 +1574,19 @@ function ExamDatePrompt({ onExamInfo, card = false }: { onExamInfo?: () => void;
  * callers pass the same ids Quick Links' own links use, so a sheet cannot be
  * reached two ways and show two things.
  */
-function StopLink({ label, onOpen }: { label: string; onOpen?: () => void }) {
+function StopLink({ label, onOpen, href }: { label: string; onOpen?: () => void; href?: string }) {
   return (
     <span style={EXAM_ROW}>
       <span aria-hidden style={EXAM_MARK_COL}>
         <span style={MARK_CURRENT} />
       </span>
+      {/* A link to the state's requirements page on xcelsolutions.com while
+          `atlas-state-licensing-links` is on (2026-11-12); the sheet off. */}
+      {href ? (
+        <a href={href} target="_blank" rel="noopener noreferrer" className="cre-atlas-journey-link" style={EXAM_INFO_LINK}>
+          {label}
+        </a>
+      ) : (
       <button
         type="button"
         className="cre-atlas-journey-link"
@@ -1584,6 +1596,7 @@ function StopLink({ label, onOpen }: { label: string; onOpen?: () => void }) {
       >
         {label}
       </button>
+      )}
     </span>
   )
 }

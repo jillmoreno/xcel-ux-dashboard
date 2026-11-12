@@ -298,14 +298,16 @@ describe('the walk’s Study Journey steps', () => {
     // The question's two answers went with the question.
     expect(page.queryByText('Do you know your state exam date?')).toBeNull()
     expect(page.queryByRole('button', { name: /Not Yet/ })).toBeNull()
-    /* The second stop opens the SAME sheet Quick Links' own Exam Information
-       opens — hence two of them on the page, not one. If this ever reads 1,
-       either the row went or the rail's link did. */
-    expect(page.getAllByRole('button', { name: 'Exam Information' })).toHaveLength(2)
-    /* Step 3 gained the same shape on 2026-10-19 — "add a circle link
-       option, blue style, under this that is: Applying for a License" — and
-       it opens the rail's sheet, hence two of these as well. */
-    expect(page.getAllByRole('button', { name: 'Applying for a License' })).toHaveLength(2)
+    /* The second stop — and Step 3's "Applying for a License" stop, added
+       2026-10-19 — link to Florida's requirements page on xcelsolutions.com
+       since 2026-11-12 (`atlas-state-licensing-links`), and Quick Links
+       carries neither any more: one of each, both links, no sheet buttons. */
+    for (const name of ['Exam Information', 'Applying for a License']) {
+      const links = page.getAllByRole('link', { name })
+      expect(links).toHaveLength(1)
+      expect(links[0].getAttribute('href')).toBe('https://www.xcelsolutions.com/florida/insurance-license/requirements')
+      expect(page.queryByRole('button', { name })).toBeNull()
+    }
     expect(document.querySelector('[data-cta-id="home.state-requirements"]')).toBeNull()
     /* ⚠ THE JOURNEY'S ORDER AND NAMES ARE SHARED, AND DELIBERATELY SO
        (2026-10-19, Jillienne: "Order should be: Pre-Licensing Education >

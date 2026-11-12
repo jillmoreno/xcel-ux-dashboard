@@ -13,6 +13,7 @@ import {
 } from '@/icons'
 import { GET_LICENSED_STEPS } from '@/data/nyProducerRequirements'
 import { EXAM_DETAILS_STEP_ID } from '@/data/examDetails'
+import { useStateLicensingUrl } from './stateLicensingLink'
 
 /**
  * "QUICK LINKS" (was "More Information for Your Journey") — the link card from Home V2's right
@@ -87,9 +88,15 @@ export type AtlasJourneyLinksCardProps = {
    * in the product does. Only the handoff passes it.
    */
   activeSection?: string | null
+  /** The learner's state ('FL'), for the State Licensing Requirements row's
+   *  address (2026-11-12). Absent means Florida — see `stateLicensingLink.ts`. */
+  stateCode?: string
 }
 
-export function AtlasJourneyLinksCard({ onOpenStep, onOpenRequirements, style, withoutCoursePages = false, titleRule = false, linksOff = false, learningPagesLive = false, activeSection }: AtlasJourneyLinksCardProps) {
+export function AtlasJourneyLinksCard({ onOpenStep, onOpenRequirements, style, withoutCoursePages = false, titleRule = false, linksOff = false, learningPagesLive = false, activeSection, stateCode }: AtlasJourneyLinksCardProps) {
+  /* Set while `atlas-state-licensing-links` is on: the three sheet rows give
+     way to one row that leaves for the state's page on xcelsolutions.com. */
+  const licensingUrl = useStateLicensingUrl(stateCode)
   const [params, setParams] = useSearchParams()
   /* Which link is the page you are on — the four that are pages; the three
      sheet links never are.
@@ -140,6 +147,14 @@ export function AtlasJourneyLinksCard({ onOpenStep, onOpenRequirements, style, w
         <SideLink icon={<BallotCheckRegular size={13} aria-hidden />} label="Exam Simulator" active={here('course', 'exam-simulator')} onClick={() => go('course', { coursePage: 'exam-simulator' })} />
         </>
         )}
+        {licensingUrl ? (
+          <SideLink
+            icon={<ClipboardListCheckRegular size={13} aria-hidden />}
+            label="State Licensing Requirements"
+            href={licensingUrl}
+          />
+        ) : (
+        <>
         <SideLink
           icon={<CircleInfoRegular size={13} aria-hidden />}
           label="Exam Information"
@@ -155,6 +170,8 @@ export function AtlasJourneyLinksCard({ onOpenStep, onOpenRequirements, style, w
           label="State Requirements"
           onClick={onOpenRequirements ?? homeAndOpen('requirements')}
         />
+        </>
+        )}
       </ul>
     </nav>
   )
@@ -165,23 +182,18 @@ function SideLink({
   label,
   active = false,
   onClick,
+  href,
 }: {
   icon: ReactNode
   label: string
   /** The page you are on — a white capsule behind the row. */
   active?: boolean
   onClick?: () => void
+  /** A row that leaves the product — drawn as a link, opened in a new tab. */
+  href?: string
 }) {
-  return (
-    <li>
-      <button
-        type="button"
-        className="cre-compass-v2-row"
-        aria-current={active ? 'page' : undefined}
-        onClick={onClick}
-        disabled={!onClick}
-        style={active ? { ...SIDE_ROW, ...SIDE_ROW_ACTIVE } : SIDE_ROW}
-      >
+  const content = (
+    <>
         <span aria-hidden style={{ width: 18, flex: 'none', display: 'inline-flex', justifyContent: 'center', color: 'var(--color-atlas-home-icon, var(--color-compass-page-button))' }}>
           {icon}
         </span>
@@ -197,7 +209,27 @@ function SideLink({
         <span aria-hidden className="cre-quick-link-chevron" style={{ display: 'inline-flex', color: 'var(--color-atlas-home-icon, var(--color-compass-page-button))' }}>
           <AngleRightRegular size={13} aria-hidden />
         </span>
-      </button>
+    </>
+  )
+  const style = active ? { ...SIDE_ROW, ...SIDE_ROW_ACTIVE } : SIDE_ROW
+  return (
+    <li>
+      {href ? (
+        <a href={href} target="_blank" rel="noopener noreferrer" className="cre-compass-v2-row" style={{ ...style, textDecoration: 'none' }}>
+          {content}
+        </a>
+      ) : (
+        <button
+          type="button"
+          className="cre-compass-v2-row"
+          aria-current={active ? 'page' : undefined}
+          onClick={onClick}
+          disabled={!onClick}
+          style={style}
+        >
+          {content}
+        </button>
+      )}
     </li>
   )
 }

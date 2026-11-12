@@ -190,6 +190,7 @@ const REBRAND_FLAGS = [
      `FlagPanelScope.test.ts` enforces: a flag claiming `dashboard-rebrand` and
      missing from this list is reachable only by hand-editing `?ff=`. */
   'atlas-home-opens-learning-pages',
+  'atlas-state-licensing-links',
   'atlas-pages-quick-links',
   'atlas-courses-card-style',
   'atlas-courses-from-library',

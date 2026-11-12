@@ -439,8 +439,14 @@ describe('Atlas/Compass Global Navigation — the Testing home under the Figma r
     expect(within(card).getByRole('region', { name: 'Pass State Exam' })).toBeTruthy()
     expect(screen.getByRole('region', { name: 'Do you know your state exam date?' })).toBeTruthy()
     const links = screen.getByRole('navigation', { name: 'Quick links' })
-    for (const name of ['My Courses', 'My Certificates', 'Flashcards', 'Exam Simulator', 'Exam Information', 'Applying for a License', 'State Requirements']) {
+    for (const name of ['My Courses', 'My Certificates', 'Flashcards', 'Exam Simulator']) {
       expect(within(links).getByRole('button', { name })).toBeTruthy()
+    }
+    /* The three information rows are one link since 2026-11-12
+       (`atlas-state-licensing-links`). */
+    expect(within(links).getByRole('link', { name: 'State Licensing Requirements' }).getAttribute('href')).toBe('https://www.xcelsolutions.com/florida/insurance-license/requirements')
+    for (const name of ['Exam Information', 'Applying for a License', 'State Requirements']) {
+      expect(within(links).queryByRole('button', { name })).toBeNull()
     }
     // V1's pieces are gone.
     expect(screen.queryByRole('region', { name: 'Do you have your State Exam scheduled?' })).toBeNull()

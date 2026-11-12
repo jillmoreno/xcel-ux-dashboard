@@ -18,12 +18,12 @@ import { atlasHandoffVariantRender } from '@/components/prototype/atlasHandoffPr
  * handoff keeps needing — the same class as `bare`, `onCustomize` and `card`
  * before it.
  */
+/* Three rows since 2026-11-12: the three information rows became one,
+   "State Licensing Requirements" (`atlas-state-licensing-links`). */
 const HOME_ROWS = [
   'My Courses',
   'My Certificates',
-  'Exam Information',
-  'Applying for a License',
-  'State Requirements',
+  'State Licensing Requirements',
 ]
 /* The course's own pages. `withoutCoursePages` is what keeps them off this
    rail, and it is the prop the previews dropped. */
@@ -34,7 +34,7 @@ describe('the Quick Links previews match the Home', () => {
      render a cropped iframe of the page rather than the card, so there are no
      rows of ours to count in them. */
   for (const variant of ['Default', 'Hover / focus']) {
-    it(`"${variant}" draws the Home's five rows and no others`, () => {
+    it(`"${variant}" draws the Home's rows and no others`, () => {
       const node = atlasHandoffVariantRender('atlas-home-quick-links', variant)
       expect(node, `no render registered for "${variant}"`).toBeTruthy()
       /* The handoff page sits inside the app's Router, so the preview has to

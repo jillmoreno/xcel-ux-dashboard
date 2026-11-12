@@ -3040,6 +3040,22 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'atlas-state-licensing-links',
+    /* STATE LICENSING REQUIREMENTS (2026-11-12, Afsana). Quick Links' three
+       information rows become one, "State Licensing Requirements", and
+       Step 2's Exam Information and Step 3's Applying for a License link to
+       the same page — the state's requirements page on xcelsolutions.com,
+       in a new tab. `stateLicensingLink.ts` builds the address.
+
+       Off: the three rows and both stops open their sheets, as before. */
+    group: 'Navigation',
+    label: 'State Licensing Requirements links',
+    description:
+      'Quick Links shows one “State Licensing Requirements” row in place of Exam Information, Applying for a License and State Requirements, and Steps 2 and 3 link to the state’s requirements page on xcelsolutions.com. Off, all of them open their sheets.',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'atlas-pages-quick-links',
     /* QUICK LINKS OFF THE LEARNING PAGES (2026-11-02, Jillienne: "they don't
        need to be here, so on default, hide that side, this will shift over the
