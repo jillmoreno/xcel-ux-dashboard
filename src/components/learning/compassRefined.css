@@ -1997,41 +1997,20 @@
   line-height: 1.5;
   color: var(--crf-body);
 }
-/* ⚠ ONLY THE DETAILS LINK LIVES HERE NOW — the "Opens when …" line was
-   removed on 2026-11-12 ("remove this line from all the sections"). The row
-   is kept rather than collapsed into the link: it holds the card's bottom
-   edge at one height whether or not a chapter has anything to expand. */
-.crf-map__foot {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 12px;
-  margin-top: 12px;
-  min-height: 20px;
-}
-/* The Details link, bottom right: the rows layout's chevron with a word on
-   it. */
-.crf-map__details {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  margin-left: auto;
-  padding: 0;
-  border: 0;
-  background: none;
-  color: var(--crf-steel-deep);
-  font: inherit;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-}
-.crf-map__details svg {
-  transition: transform 120ms ease;
-}
+/* ⚠ `crf-map__foot` AND `crf-map__details` ARE GONE — 2026-11-12. The foot
+   held the "opens when…" line until it was removed from this layout that
+   morning, and then only the Details link; the link became the rows
+   layout's own chevron, which sits in the top row beside the action ("use
+   the same chevron logic used in the other variant"). A card is two rows
+   again rather than three. */
 /* The expanded half sits inside the card, ruled off rather than boxed — a
    second border inside a card reads as a card inside a card. */
+/* ⚠ THE TEXT COLUMN'S LEFT EDGE: 20px padding + the 30px chip + the body's
+   16px gap = 66. It was 80, set against the 44px chip this layout started
+   with; the lessons under an open chapter had been hanging 14px to the right
+   of the title above them. */
 .crf-map__open {
-  padding: 4px 20px 18px 80px;
+  padding: 4px 20px 18px 66px;
   border-top: 1px solid var(--crf-ch-rule);
 }
 .crf-map__open .crf-lessons {

@@ -167,12 +167,18 @@ describe('the roadmap layout', () => {
     }
   })
 
-  it('keeps finding 8 — no Details link over an empty chapter', () => {
+  it('keeps finding 8 — no chevron over an empty chapter, and its space held', () => {
+    /* ⚠ THE CONTROL IS THE ROWS LAYOUT'S CHEVRON since 2026-11-12 ("use the
+       same chevron logic used in the other variant"), where it was a
+       "Details" link. Same rule either way: nothing to open, no control. */
     const { container } = wrapWith({ rows: 'cards', fold: false })
     for (const card of container.querySelectorAll('.crf-map__card')) {
       const title = card.querySelector('.crf-map__title')?.textContent ?? ''
       const chapter = REFINED_CHAPTERS.find((c) => c.title === title)!
-      expect(!!card.querySelector('.crf-map__details'), title).toBe(chapter.expandable)
+      const chev = card.querySelector('.crf-chev:not(.crf-chev--none)')
+      expect(!!chev, title).toBe(chapter.expandable)
+      /* The space is held so the actions line up down the column. */
+      expect(!!card.querySelector('.crf-chev'), title).toBe(true)
     }
   })
 
@@ -416,7 +422,7 @@ describe('clicking a roadmap card expands it', () => {
   it('toggles from anywhere on the card, and only where there is something to open', () => {
     const { container } = wrapWith({ rows: 'cards', fold: false })
     const card = container.querySelector('.crf-map__card.is-clickable')!
-    const details = card.querySelector('.crf-map__details')!
+    const details = card.querySelector('.crf-chev')!
     expect(details.getAttribute('aria-expanded')).toBe('false')
 
     fireEvent.click(card.querySelector('.crf-map__title')!)
@@ -451,7 +457,7 @@ describe('clicking a roadmap card expands it', () => {
       </MemoryRouter>,
     )
     const card = container.querySelector('.crf-map__card.is-clickable')!
-    const details = card.querySelector('.crf-map__details')!
+    const details = card.querySelector('.crf-chev')!
 
     fireEvent.click(card.querySelector('.crf-btn')!)
     expect(opened).toEqual(['course'])

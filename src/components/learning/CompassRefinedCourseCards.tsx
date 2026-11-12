@@ -139,17 +139,17 @@ export function CompassRefinedCourseCards({
               /* ⚠ THE CARD TOGGLES, THE BUTTON IS STILL THE CONTROL —
                  2026-11-12: "clicking will be the same as expanding the
                  details". The handler sits on the `article`, which is not
-                 focusable and takes no role: the Details button below is the
-                 real control and already carries `aria-expanded`, so a
-                 keyboard or screen-reader user has one way in and sees one
-                 state. Making the card itself a button would nest the Review
-                 and Details buttons inside another button, which is invalid
-                 markup and gives the row three tab stops that do two things.
+                 focusable and takes no role: the CHEVRON is the real control
+                 and carries `aria-expanded`, so a keyboard or screen-reader
+                 user has one way in and sees one state. Making the card
+                 itself a button would nest the action and the chevron inside
+                 another button — invalid markup, and three tab stops doing
+                 two things.
 
                  ⚠ A CLICK THAT LANDS ON A BUTTON IS THAT BUTTON'S. Without
                  the guard, Review would open the chapter AND expand the card
-                 under it, and Details would toggle twice and land back where
-                 it started. */
+                 under it, and the chevron would toggle twice and land back
+                 where it started. */
               onClick={
                 c.expandable
                   ? (e) => {
@@ -215,6 +215,35 @@ export function CompassRefinedCourseCards({
                         {c.action}
                       </button>
                     ) : null}
+                    {/* ⚠ THE ROWS LAYOUT'S CHEVRON, NOT A "DETAILS" LINK —
+                        2026-11-12: "instead of 'details' link, use the same
+                        chevron logic used in the other variant to show the
+                        module being expanded and collapsed". Same class,
+                        same rotation, same `aria-expanded`, beside the
+                        action where that layout puts it. The word was doing
+                        no work a rotating chevron does not: the card itself
+                        has been clickable since the hour before.
+
+                        ⚠ THE SPACE IS HELD WHEN THERE IS NOTHING TO OPEN, so
+                        the actions line up down the column — finding 8 on
+                        this layout, exactly as the rows layout keeps it. */}
+                    {c.expandable ? (
+                      <button
+                        type="button"
+                        className="crf-chev"
+                        aria-expanded={expanded}
+                        aria-label={c.chevLabel}
+                        onClick={() => toggle(c.n, expanded)}
+                      >
+                        <ChevronDown
+                          size={14}
+                          aria-hidden
+                          style={{ transform: expanded ? 'rotate(180deg)' : undefined }}
+                        />
+                      </button>
+                    ) : (
+                      <span className="crf-chev crf-chev--none" aria-hidden />
+                    )}
                   </div>
 
                   <p className="crf-map__title">{c.title}</p>
@@ -236,29 +265,6 @@ export function CompassRefinedCourseCards({
                       ⚠ THE ROWS LAYOUT KEEPS IT. That is where finding 2 was
                       raised and fixed, and the row has no pill — "Locked" on
                       its own was the thing the finding objected to. */}
-                  <div className="crf-map__foot">
-                    {/* ⚠ THE DETAILS LINK, BOTTOM RIGHT — her instruction, and
-                        it is the rows layout's chevron wearing a word. A
-                        chapter with no lessons and no exam has nothing behind
-                        it and shows no link; finding 8, kept across the
-                        fork. */}
-                    {c.expandable ? (
-                      <button
-                        type="button"
-                        className="crf-map__details"
-                        aria-expanded={expanded}
-                        aria-label={c.chevLabel}
-                        onClick={() => toggle(c.n, expanded)}
-                      >
-                        Details
-                        <ChevronDown
-                          size={12}
-                          aria-hidden
-                          style={{ transform: expanded ? 'rotate(180deg)' : undefined }}
-                        />
-                      </button>
-                    ) : null}
-                  </div>
                 </div>
               </div>
 
