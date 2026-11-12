@@ -703,6 +703,14 @@
   align-items: center;
   gap: 10px;
 }
+/* ⚠ RADIUS 8 AND ONE LINE — 2026-11-12, finding 7. The Overview's pair is
+   navy-filled primary / outlined secondary at `border-radius: 8px`; this was
+   7, which is not a difference anyone can name and is exactly the sort that
+   makes two pages feel unrelated.
+
+   ⚠ `white-space: nowrap` IS THE OTHER HALF. "Review exam" wrapped onto two
+   lines inside a 96px slot, which made one row of the twenty-one taller than
+   its neighbours — the button, not the content, setting the row height. */
 .crf-btn {
   display: inline-flex;
   align-items: center;
@@ -711,12 +719,13 @@
   min-height: 34px;
   padding: 0 16px;
   border: 1px solid var(--crf-control-edge);
-  border-radius: 7px;
+  border-radius: 8px;
   background: var(--crf-white);
   color: var(--crf-ink);
   font: inherit;
   font-size: 13px;
   font-weight: 600;
+  white-space: nowrap;
   cursor: pointer;
 }
 .crf-btn--primary {
@@ -1078,11 +1087,21 @@
   flex: 1 1 auto;
   min-width: 0;
 }
+/* ⚠ 11px/400/0.08em — 2026-11-12, finding 6. These were 12px/600 at 0.14em:
+   the treatment the Overview's row labels had until 2026-11-11, when they
+   settled at 11/400 on the finding that the WEIGHT, not the case, was what
+   made a capitalised label read heavy. Twenty-one of these stacked down the
+   page is the place that finding matters most, and it is the page that did
+   not get it.
+
+   ⚠ THE CASE STAYS. Dropping to sentence case as well would be a second
+   change nobody asked for, and the course's own labels ("LIFE & HEALTH
+   CHAPTER 13 | HEALTH CHAPTER 4") are identifiers rather than prose. */
 .crf-ch__eyebrow {
   margin: 0;
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.14em;
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--crf-muted);
 }
@@ -1099,10 +1118,15 @@
   font-weight: 400;
   color: var(--crf-locked-ink);
 }
+/* ⚠ A LABEL, NOT A SECOND BUTTON — 2026-11-12, the rest of finding 7: "two
+   different kinds of thing in one slot". At 13px/600 this was the button's
+   own size and weight, sitting against it, so "Completed · Review" read as a
+   pair of controls and the eye had to work out which half was clickable. The
+   state is context for the action beside it; 12/400 muted says so. */
 .crf-ch__status {
   flex: 0 0 auto;
-  font-size: 13px;
-  font-weight: 600;
+  font-size: 12px;
+  font-weight: 400;
   color: var(--crf-muted);
   white-space: nowrap;
 }
@@ -1206,11 +1230,13 @@
   flex: 1 1 auto;
   min-width: 0;
 }
+/* The exam rows take the same treatment, for the same reason — they are row
+   labels in the same column. See `.crf-ch__eyebrow`. */
 .crf-exam__eyebrow {
   margin: 0;
   font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.14em;
+  font-weight: 400;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--crf-muted);
 }
@@ -3807,12 +3833,25 @@
    ⚠ THE TRACKING GOES. His -0.02em was part of a 34px setting; keeping it on
    one of three titles would be the inconsistency this rule exists to remove.
    Matching means matching. */
+/* ⚠ AND ONE INK — 2026-11-12, finding 5 of the Your Course audit. The set
+   matched in size and weight from 2026-11-10 and still came out in two
+   colours: this rule left `color` alone, so these took `--crf-ink` (#1f1d18)
+   from the rule above while the Overview's own title (`.crf-rd-h1`, which
+   declares no colour at all) inherited `--color-text-primary` (#3a3a3a) from
+   the page. A shade apart on two pages of one product — "the kind of
+   difference nobody sees and everybody feels".
+
+   ⚠ #3a3a3a IS THE ONE THAT WINS, and that is not arbitrary: it is the ink
+   the Overview was corrected to on 2026-11-11, and the ink the Focus card's
+   lesson title was pointed at by name the same day ("same color as the main
+   title of the page"). Moving the Overview instead would un-do both. */
 .crf .crf-h1,
 .crf .crf-qs__title {
   font-size: 32px;
   line-height: 40px;
   font-weight: 600;
   letter-spacing: normal;
+  color: var(--color-text-primary);
 }
 /* The session titles come up from 28px, so they also cross into the display
    face — a page title is a page title whichever screen it is on. */

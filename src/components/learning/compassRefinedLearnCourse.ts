@@ -53,7 +53,6 @@ export type RefinedChapter = {
   label: string
   state: string
   status: string
-  statusTone: string
   progPct?: string
   progAria?: string
   hasAction?: boolean
@@ -130,7 +129,6 @@ export const REFINED_CHAPTERS: RefinedChapter[] = LESSON_ROWS.map((s, i) => {
     /* The word follows the state, not his fixture — a chapter cannot read
        "Completed" because his copy of it was. */
     status: state === 'done' ? 'Completed' : state === 'current' ? 'In progress' : '',
-    statusTone: state === 'done' ? 'green' : state === 'current' ? 'steel' : 'muted',
     progPct: his?.progPct,
     progAria: his?.progAria,
     /* ⚠ THE ACTION FOLLOWS THE STATE, NOT HIS FIXTURE. His Chapter 1 was

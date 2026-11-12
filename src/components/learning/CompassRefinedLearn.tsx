@@ -154,7 +154,17 @@ export function CompassRefinedLearn({
                       </span>
                     ) : null}
                   </div>
-                  <span className="crf-ch__status" style={{ color: `var(--cjm-${c.statusTone})` }}>
+                  {/* ⚠ NO INLINE COLOUR — 2026-11-12, with finding 7. It set
+                      `color: var(--cjm-green | --cjm-steel | --cjm-muted)`,
+                      and NONE of those three variables is defined on a
+                      Refined page: they are Jeff's, carried through the port
+                      with his markup. Every value was invalid at computed
+                      time, so all three states inherited the page's ink —
+                      which is also what defeated the muted colour this label
+                      is meant to have. The state is told by the mark and the
+                      row's ground; the word beside the button is context, in
+                      one colour. */}
+                  <span className="crf-ch__status">
                     {/* His `status` is '' on a locked chapter; the word is the
                         template's, keyed off the state. */}
                     {c.state === 'locked' ? COPY.lockedWord : c.status}
