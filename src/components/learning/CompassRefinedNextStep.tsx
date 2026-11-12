@@ -35,17 +35,34 @@ import type { RefinedNextStep } from './compassRefinedNextStepModel'
 export function CompassRefinedNextStep({
   step,
   mark = 'stacked',
+  layout = 'stack',
   onAct,
 }: {
   step: RefinedNextStep
   /** `compass-overview-next-mark` — the glyph on its own line, or a 40px
    *  badge beside the title. Both pages take it so the two stay identical. */
   mark?: NextMarkStyle
+  /**
+   * ⚠ HOW THE SAME CONTENT IS ARRANGED — 2026-11-12: "have the Your next
+   * step section be layed out similar to the screenshot", which is the row
+   * the old resume strip drew: a thumbnail, the text, the bar, the action
+   * hard right.
+   *
+   * `stack` is the Overview's column, because that card sits in a 394px bay
+   * beside the progress half — a row cannot fit there. `row` is Your
+   * Course's, where the card has the full width of the page.
+   *
+   * ⚠ IT IS AN ARRANGEMENT, NOT A FORK. Same component, same model, same
+   * markup — the CSS places it. Her 1:1 was about the DETAILS ("all the same
+   * details as the Your Next Step section"), and every one of them is in
+   * both; what differs is the space each has.
+   */
+  layout?: 'stack' | 'row'
   onAct?: () => void
 }) {
   const Icon = SECTION_ICON[step.kind ?? 'lesson'] ?? BookOpenRegular
   return (
-    <div className={`crf-step crf-step--${mark}`}>
+    <div className={`crf-step crf-step--${layout} crf-step--${mark}`}>
       {/* ⚠ THE EYEBROW IS THE STATE — "Your next step" between rows, "Where
           you left off" part way through one. See `REFINED_NEXT_STEP`. */}
       <p className="crf-step__label">{step.eyebrow}</p>
@@ -60,19 +77,18 @@ export function CompassRefinedNextStep({
             <span aria-hidden className="crf-step__sep" />
             about {step.duration}
           </p>
-          {/* ⚠ THE BAR ONLY WHEN THERE IS SOMETHING TO SHOW — her condition:
-              "if the user is in the middle of a lesson and the progress of
-              that lesson is being shown". A 0% bar under "Your next step"
-              would say the learner has started something they have not. */}
-          {step.lessonPct !== undefined ? (
-            <span
-              className="crf-step__bar"
-              role="img"
-              aria-label={`${step.title} ${step.lessonPct}% complete`}
-            >
-              <span className="crf-step__barfill" style={{ width: `${step.lessonPct}%` }} />
-            </span>
-          ) : null}
+          {/* ⚠ ALWAYS, INCLUDING AT 0% — 2026-11-12: "include a progress
+              bar, even if this section is Not Started at 0%." It had been
+              drawn only while resuming; an empty track is a truer picture of
+              a lesson not started than no track at all, and it keeps the
+              card one height. */}
+          <span
+            className="crf-step__bar"
+            role="img"
+            aria-label={`${step.title} ${step.lessonPct}% complete`}
+          >
+            <span className="crf-step__barfill" style={{ width: `${step.lessonPct}%` }} />
+          </span>
         </div>
       </div>
       <div className="crf-step__cta">

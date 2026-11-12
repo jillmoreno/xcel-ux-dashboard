@@ -273,7 +273,10 @@ export function CourseHeadCard({
           added for the join; the half below simply sits under the line that
           was already there. */}
       <div className="crf-course__step">
-        <CompassRefinedNextStep step={step} mark={mark} onAct={onAct} />
+        {/* ⚠ THE ROW ARRANGEMENT — this card has the page's full width; the
+            Overview's sits in a 394px bay and stays a column. Same component
+            and the same model either way. */}
+        <CompassRefinedNextStep step={step} mark={mark} layout="row" onAct={onAct} />
       </div>
     </section>
   )

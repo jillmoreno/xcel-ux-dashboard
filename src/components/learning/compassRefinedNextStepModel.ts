@@ -33,11 +33,16 @@ export type RefinedNextStep = {
   /** The duration, already read off the stage's own meta line. */
   duration: string
   /**
-   * The CURRENT row's own progress, 0–100, drawn only when resuming. Absent
-   * between rows — a bar at 0% under "Your next step" says the learner has
-   * started something they have not.
+   * The CURRENT row's own progress, 0–100.
+   *
+   * ⚠ ALWAYS DRAWN SINCE 2026-11-12: "include a progress bar, even if this
+   * section is Not Started at 0%." It had been absent between rows, on the
+   * argument that a 0% bar says the learner has started something they have
+   * not. Her call, and it is the better one for the row layout: the bar is
+   * part of the shape, and a track that appears and disappears makes the
+   * card two different heights for one learner.
    */
-  lessonPct?: number
+  lessonPct: number
 }
 
 /** Part way through a row rather than standing between two of them. A hair
@@ -57,6 +62,6 @@ export function refinedNextStep(p: RefinedProgress, duration: string): RefinedNe
     title: section?.title ?? '',
     parts: REFINED_NEXT_META.parts,
     duration,
-    lessonPct: resuming ? Math.round(p.intoCurrent * 100) : undefined,
+    lessonPct: Math.round(p.intoCurrent * 100),
   }
 }

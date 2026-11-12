@@ -240,12 +240,13 @@ describe('the course card', () => {
     const bar = container.querySelector('.crf-step__bar')
     if (eyebrow === 'Where you left off') {
       expect(cta).toContain('Resume lesson')
-      expect(bar).not.toBeNull()
     } else {
       expect(eyebrow).toBe('Your next step')
       expect(cta).toContain('Start lesson')
-      expect(bar).toBeNull()
     }
+    /* ⚠ THE TRACK IS ALWAYS THERE NOW — "include a progress bar, even if
+       this section is Not Started at 0%". */
+    expect(bar).not.toBeNull()
   })
 })
 
@@ -255,7 +256,9 @@ describe('the next step’s two states follow the data, not the page', () => {
     expect(isResuming(between)).toBe(false)
     expect(refinedNextStep(between, '1h').eyebrow).toBe('Your next step')
     expect(refinedNextStep(between, '1h').cta).toBe('Start lesson')
-    expect(refinedNextStep(between, '1h').lessonPct).toBeUndefined()
+    /* ⚠ A TRACK AT ZERO, NOT NO TRACK — 2026-11-12: "include a progress
+       bar, even if this section is Not Started at 0%." */
+    expect(refinedNextStep(between, '1h').lessonPct).toBe(0)
 
     const partway = refinedProgressAt(19) // 8.36 — most of a ninth row to go
     expect(isResuming(partway)).toBe(true)
@@ -264,12 +267,15 @@ describe('the next step’s two states follow the data, not the page', () => {
     expect(refinedNextStep(partway, '1h').lessonPct).toBe(36)
   })
 
-  it('never draws a bar without the resuming words, or the reverse', () => {
+  it('always has a bar, and it is only filled when there is something to resume', () => {
     for (let pct = 0; pct <= 100; pct += 0.5) {
       const step = refinedNextStep(refinedProgressAt(pct), '1h')
-      const hasBar = step.lessonPct !== undefined
-      expect(hasBar, `${pct}%`).toBe(step.eyebrow === 'Where you left off')
-      expect(hasBar, `${pct}%`).toBe(step.cta === 'Resume lesson')
+      /* The track is always drawn; what varies is whether it has anything in
+         it, and the words follow the same fact. */
+      expect(step.lessonPct, `${pct}%`).toBeGreaterThanOrEqual(0)
+      const started = step.lessonPct > 0
+      expect(started, `${pct}%`).toBe(step.eyebrow === 'Where you left off')
+      expect(started, `${pct}%`).toBe(step.cta === 'Resume lesson')
     }
   })
 

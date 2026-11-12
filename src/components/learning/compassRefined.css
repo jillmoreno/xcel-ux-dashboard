@@ -1046,24 +1046,43 @@
    title records: `--crf-ink` (#1f1d18) and `--color-text-primary` (#3a3a3a)
    are a shade apart, and the one the display face wears on this page is the
    title's. Audit finding 5. */
+/* ⚠ SMALLER, AND IN THE PRIMARY BLUE — 2026-11-12: "this should be smaller
+   font, but the primary blue color." It was 28px in the page title's ink,
+   which made it a second page title inside a card; the page's own title is
+   32px four lines above it. 22 keeps it the card's heading and stops the two
+   competing.
+
+   ⚠ `--crf-steel` IS PRIMARY 500 — #3d5a73, the swatch she sent with the
+   ask. Not `--crf-steel-deep`, which is 600 (#30485c) and is the button
+   blue; the first pass used it and the two are a shade apart. Measured in
+   the running build against the ramp rather than read off a name.
+
+   ⚠ AND THE LINE UNDER IT MOVES WITH IT. "Qualifying Education - Florida"
+   was already this exact blue; two lines in one colour with the lower one
+   nearly the upper one's size is a heading and its sub reading as one block,
+   so that line is the muted ink now — see `.crf-course__sub`. */
 .crf-course__name .crf-h2 {
   margin: 0;
   font-family: var(--font-heading-serif), Georgia, serif;
-  font-size: 28px;
-  font-weight: 600;
-  line-height: 1.2;
-  color: var(--color-text-primary);
-}
-/* ⚠ THE SMALLER LINE IS THE COURSE'S KIND NOW — "Qualifying Education -
-   Florida" — and the two swapped on 2026-11-12. It keeps its size and its
-   steel, which is what made it legible as a second line; what changed is
-   which of the two facts is the heading. */
-.crf-course__sub {
-  margin: 2px 0 0;
-  font-size: 17px;
+  font-size: 22px;
   font-weight: 600;
   line-height: 1.25;
-  color: var(--crf-steel-deep);
+  color: var(--crf-steel);
+}
+/* ⚠ THE SMALLER LINE IS THE COURSE'S KIND — "Qualifying Education -
+   Florida" — the two having swapped on 2026-11-12.
+
+   ⚠ IT GAVE THE BLUE UP THE SAME DAY, when the title above it took Primary
+   500. It had been Primary 600 at 17/600 while the title was ink at 28; with
+   the title at 22 in a neighbouring blue, keeping it here would have been
+   two near-identical blues five pixels apart in size. The ink and the weight carry the
+   difference instead. */
+.crf-course__sub {
+  margin: 3px 0 0;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.3;
+  color: var(--crf-body);
 }
 .crf-course__stat {
   display: flex;
@@ -1529,6 +1548,69 @@
   font-weight: 600;
   cursor: pointer;
 }
+/* ---------- the row arrangement, 2026-11-12 ----------
+   "have the Your next step section be layed out similar to the screenshot" —
+   a thumbnail, the text and its bar, and the action hard right. It is the
+   shape the old resume strip drew, which is what the screenshot is of.
+
+   ⚠ ONE DOM, PLACED TWO WAYS. The markup is the Overview's; `display:
+   contents` on the body dissolves its wrapper so the mark and the text
+   become items of this grid. Rewriting the component for the second
+   arrangement would have given two cards to keep in step, which is the thing
+   the shared component exists to prevent.
+
+   ⚠ THE ROWS ARE `auto auto` AND THE CTA SPANS BOTH, so the button centres
+   against the whole block rather than sitting on the eyebrow's line. */
+.crf-step--row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: 18px;
+  row-gap: 2px;
+}
+.crf-step--row .crf-step__body {
+  display: contents;
+}
+.crf-step--row .crf-step__label {
+  grid-column: 2;
+  grid-row: 1;
+  align-self: end;
+}
+/* ⚠ THE MARK BECOMES THE THUMBNAIL — 96×60 at 8px radius with the glyph in a
+   28px disc, which is `crf-resume__thumb` and `__play`, the strip this
+   replaces. The glyph stays the SECTION's, not the strip's play arrow: "this
+   style icon, should be included in the your next step section based on what
+   the next step actually is" (2026-11-11). */
+.crf-step--row .crf-step__mark {
+  grid-column: 1;
+  grid-row: 1 / span 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 96px;
+  height: 60px;
+  margin: 0;
+  border-radius: 8px;
+  background: var(--crf-white);
+  color: var(--crf-body);
+}
+.crf-step--row .crf-step__text {
+  grid-column: 2;
+  grid-row: 2;
+  align-self: start;
+}
+.crf-step--row .crf-step__cta {
+  grid-column: 3;
+  grid-row: 1 / span 2;
+}
+/* ⚠ A LONGER TRACK, NOT AN UNCAPPED ONE. Left to fill the text column it
+   ran 628px — a hairline the width of the card, which reads as a rule under
+   the content rather than as a measure of anything. 360 is about the
+   proportion the reference draws it at. */
+.crf-step--row .crf-step__bar {
+  max-width: 360px;
+}
+
 /* ⚠ THE `tile` ARM — `compass-overview-next-mark`. A 40px rounded square
    beside the title instead of a glyph on its own line: "make the icon a
    square version like used on the Your Course Page." Both pages take the
