@@ -101,6 +101,7 @@ function ChangePasswordDialog({ onClose, email, outcome, onChanged }: Omit<Props
 
         {signedOut ? (
           <div style={BODY}>
+            <img src="/brand/xcel-logo.webp" alt="XCEL Insurance Training by Colibri" style={LOGO} />
             <span aria-hidden style={DONE_GLYPH}>
               <CircleCheckSolid size={40} />
             </span>
@@ -108,6 +109,7 @@ function ChangePasswordDialog({ onClose, email, outcome, onChanged }: Omit<Props
               <h2 id={`${id}-title`} style={TITLE}>
                 Password changed
               </h2>
+              <div aria-hidden style={RULE} />
               <p style={LEAD}>
                 For your security, we've signed you out. Sign in again with your new password.
               </p>
@@ -124,10 +126,12 @@ function ChangePasswordDialog({ onClose, email, outcome, onChanged }: Omit<Props
               submit()
             }}
           >
+            <img src="/brand/xcel-logo.webp" alt="XCEL Insurance Training by Colibri" style={LOGO} />
             <div style={HEAD}>
               <h2 id={`${id}-title`} style={TITLE}>
                 Change Password
               </h2>
+              <div aria-hidden style={RULE} />
               <p style={LEAD}>Enter your current password and choose a new one.</p>
             </div>
 
@@ -302,15 +306,27 @@ const CLOSE: CSSProperties = {
 
 const BODY: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 20, width: '100%', margin: 0 }
 
-const HEAD: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 6 }
+/* The XCEL mark centred over the heading and the short rule under it, as on
+   every V3 dialog (`CODE_LOGO` and `RULE` in `VerifyEmailModalV3`). */
+const LOGO: CSSProperties = { display: 'block', width: 132, height: 42, objectFit: 'contain', alignSelf: 'center' }
+
+const HEAD: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 8 }
 
 const TITLE: CSSProperties = {
   margin: 0,
   fontFamily: 'var(--font-e2e-avenir)',
   fontWeight: 800,
-  fontSize: 26,
-  lineHeight: '34px',
+  fontSize: 22,
+  lineHeight: '30px',
   color: 'var(--color-text-primary)',
+}
+
+const RULE: CSSProperties = {
+  width: '22%',
+  height: 2,
+  borderRadius: 1,
+  background: '#dcdcdc',
+  margin: '2px 0 4px',
 }
 
 const LEAD: CSSProperties = {
