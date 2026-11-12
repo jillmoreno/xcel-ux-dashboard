@@ -138,7 +138,10 @@ function wrapWith(course: Partial<CourseOptions>) {
 describe('the roadmap layout', () => {
   it('numbers the chapters the way the course does, and marks what is not one', () => {
     const { container } = wrapWith({ rows: 'cards', fold: false })
-    const chips = [...container.querySelectorAll('.crf-map__chip')]
+    /* ⚠ THE CHIP JOINED THE STATE TAG on 2026-11-12 ("made these a connected
+       component with a little dot inbetween"); the number is the tag's mark
+       now, and the selector moved with it. */
+    const chips = [...container.querySelectorAll('.crf-map__mark')]
     /* The Course Introduction is the first row and is NOT Chapter 1 —
        numbering by position put "00" on it and shifted every chapter. */
     expect(chips[0].textContent).toBe('')
@@ -413,7 +416,8 @@ describe('the open chapter’s badge says whether it has been started', () => {
     const { container } = wrapWith({ rows: 'cards' })
     const open = container.querySelector('.crf-map__card--current')
     if (!open) return
-    const word = open.querySelector('.crf-map__pill')?.textContent
+    /* The tag reads "04 · In Progress"; the word is what follows the mark. */
+    const word = open.querySelector('.crf-map__state')?.textContent?.replace(/^\d*/, '')
     expect(['Up Next', 'In Progress']).toContain(word)
   })
 })

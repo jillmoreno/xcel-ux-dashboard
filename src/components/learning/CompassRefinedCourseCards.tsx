@@ -73,6 +73,22 @@ function statusPill(c: RefinedChapter) {
   return { word: COPY.lockedWord, tone: 'locked' }
 }
 
+/**
+ * The mark on a row the course does not number — the Course Introduction and
+ * the Florida laws chapter.
+ *
+ * ⚠ IT FOLLOWS THE STATE, NOT THE KIND — 2026-11-12: "since completed, the
+ * book icon should be the checkmark". It had been the open book on all three
+ * states, which said what the row IS next to a word already saying where the
+ * learner stands on it. The numbered rows show their number here; these show
+ * the only thing they have.
+ */
+function StateMark({ state }: { state: string }) {
+  if (state === 'done') return <Check size={12} />
+  if (state === 'locked') return <LockRegular size={11} />
+  return <BookOpenRegular size={12} />
+}
+
 export function CompassRefinedCourseCards({
   chapters,
   shown,
@@ -160,44 +176,37 @@ export function CompassRefinedCourseCards({
               }
             >
               <div className="crf-map__body">
-                {/* ⚠ THE NUMBER IS THE COURSE'S, NOT THE ROW'S POSITION —
-                    her call, "Position, Intro gets a mark". The Course
-                    Introduction and the Florida laws row carry no chapter
-                    number in the course list, so they take the same mark the
-                    rows layout gives them and the two arms agree about what
-                    those rows are. Numbering by index put "00" beside the
-                    Introduction and shifted every chapter by one. */}
-                <span className={`crf-map__chip crf-map__chip--${c.state}`} aria-hidden>
-                  {/* ⚠ THE OPEN BOOK, SMALL — 2026-11-12: "make these icons
-                      much smaller. and use the open book icon". It drew
-                      `ChapterMark`, which is the rows layout's state glyph: a
-                      tick, a chevron or a padlock at 15px. In a chip whose
-                      other twenty-one members hold a NUMBER, a state glyph
-                      was answering a different question twice — the pill
-                      beside it already says Completed, Ready to begin or
-                      Locked — and a chevron in particular said nothing at
-                      all. A book is what the row IS. */}
-                  {c.number ? (
-                    String(c.number).padStart(2, '0')
-                  ) : (
-                    <BookOpenRegular size={12} />
-                  )}
-                </span>
+                {/* ⚠ THE NUMBER AND THE WORD ARE ONE TAG — 2026-11-12: "made
+                    these a connected component with a little dot inbetween."
+                    They were a 30px chip and a separate pill a column apart,
+                    saying two halves of one fact: which stop this is, and
+                    where the learner stands on it.
 
+                    ⚠ THE MARK IS THE NUMBER WHERE THERE IS ONE. The Course
+                    Introduction and the Florida laws row carry no chapter
+                    number in the course list — her call, "Position, Intro
+                    gets a mark" — so they show the state's own glyph
+                    instead, and "since completed, the book icon should be
+                    the checkmark". */}
                 <div className="crf-map__main">
                   <div className="crf-map__top">
-                    {pill ? (
-                      <span className={`crf-map__pill crf-map__pill--${pill.tone}`}>
-                        {/* ⚠ A TICK ON COMPLETED, A PADLOCK ON LOCKED — the
-                            glyph takes the tag's own colour, so the green
-                            checkmark is green by inheritance rather than by
-                            a second rule that could drift from the text
-                            beside it. */}
-                        {c.state === 'locked' ? <LockRegular size={11} aria-hidden /> : null}
-                        {c.state === 'done' ? <Check size={11} aria-hidden /> : null}
-                        {pill.word}
+                    <span className={`crf-map__state crf-map__state--${pill.tone}`}>
+                      <span className="crf-map__mark" aria-hidden>
+                        {c.number ? (
+                          String(c.number).padStart(2, '0')
+                        ) : (
+                          <StateMark state={c.state} />
+                        )}
                       </span>
-                    ) : null}
+                      {/* The drawn circle this page separates two phrases
+                          with, at the size the next-step meta line uses. */}
+                      <span aria-hidden className="crf-map__dot" />
+                      {/* ⚠ JUST THE WORD — "the tag should just be the
+                          word". The tick it carried has moved to the mark on
+                          the left, where it is the row's own stop rather
+                          than a second ornament on the state. */}
+                      {pill.word}
+                    </span>
                     {/* ⚠ THE ACTION, TOP RIGHT — her instruction. In the
                         reference this corner carries "8 Lessons · Est. 3h
                         15m"; this course has neither figure, and the one it

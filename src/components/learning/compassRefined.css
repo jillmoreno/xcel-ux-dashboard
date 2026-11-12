@@ -1754,13 +1754,14 @@
    bottom and past the last card — and would have to be clipped back. One
    segment per card ends where the cards do, by construction.
 
-   ⚠ 36px FROM THE CARD'S LEFT EDGE: the card's 1px border, the body's 20px
-   padding, and half the 30px chip. Those four numbers are a set — move any
-   of them and this moves with them, which is what happened when the chip
-   went from a 44px square to a 30px tag. The first version said 42 against
-   the 44px chip and was a pixel off, because the border is easy to forget
-   and impossible to see; both figures were measured against the chip's own
-   box in the browser rather than taken on trust.
+   ⚠ 40px FROM THE CARD'S LEFT EDGE, and the sum has changed three times in
+   a morning as the thing it points at changed: a 44px square chip (43), a
+   30px chip (36), and now the mark inside the joined state tag — the card's
+   1px border, the body's 20px padding, the tag's own 1px border and 10px
+   padding, and half the 16px mark. Every figure was MEASURED against that
+   element's box in the browser rather than computed on paper; the 44px
+   version was a pixel off on paper because the card's border is easy to
+   forget and impossible to see.
 
    ⚠ NOT AFTER THE LAST ONE. `:last-of-type` is the last `article`; the fold
    control is a `button`, so a dangling segment below the final card cannot
@@ -1768,7 +1769,7 @@
 .crf-map__card::after {
   content: '';
   position: absolute;
-  left: 36px;
+  left: 40px;
   top: 100%;
   width: 2px;
   height: 12px;
@@ -1818,133 +1819,99 @@
   gap: 16px;
   padding: 18px 20px;
 }
-/* ⚠ THE CHIP IS A TAG, NOT A TILE — 2026-11-12: "have these be the same
-   size height as the tags." 23px is the status pill's measured height and
-   5px its radius, so the number and the word beside it read as two marks of
-   one kind rather than a badge and a block. It was a 44px square at 15px.
+/* ⚠ THE NUMBER AND THE WORD IN ONE TAG — 2026-11-12: "made these a
+   connected component with a little dot inbetween." They had been a 30px
+   chip in the card's left column and a pill in the top row, a gutter apart,
+   saying two halves of one fact: which stop this is, and where the learner
+   stands on it.
 
-   ⚠ 30px WIDE, NOT 23. Matching the height was the ask; matching the width
-   as well would put "01" in a 23px box with no room either side of two
-   digits. The chip stays wider than it is tall, which is also what keeps the
-   number legible at 12px.
+   ⚠ 23px AND A 5px RADIUS, which the chip and the pill had each been given
+   separately that morning ("have these be the same size height as the
+   tags"). Joining them is what that ask was reaching for.
 
-   ⚠ THE SPINE MOVES WITH IT. `.crf-map__card::after` is positioned on the
-   chip's centre — 1px border + 20px padding + half of THIS width. Change
-   the width here and change it there. */
-.crf-map__chip {
-  display: flex;
+   ⚠ THE MARK IS A FIXED WIDTH so the dot lands in the same place down the
+   column whether the row shows "01", "21" or a glyph. Tabular numerals for
+   the same reason. */
+.crf-map__state {
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  box-sizing: border-box;
+  height: 23px;
+  padding: 0 10px;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.crf-map__mark {
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  flex: 0 0 30px;
-  width: 30px;
-  height: 23px;
-  /* Half the difference between the 34px top row and this 23px chip. The
-     arithmetic says 5.5; 6 measured a pixel low and 5 measures level, which
-     is the sort of thing only the browser can settle. */
-  margin-top: 5px;
-  border-radius: 5px;
-  background: var(--crf-locked-tile);
-  color: var(--crf-locked-ink);
-  font-size: 12px;
-  font-weight: 600;
+  width: 16px;
   font-variant-numeric: tabular-nums;
 }
-.crf-map__chip--done {
-  background: var(--crf-steel-pressed);
-  color: var(--crf-ink);
+/* The drawn circle this page separates two phrases with — the same one the
+   next-step meta line and the course sub-line use, at the size that suits
+   11px type. */
+.crf-map__dot {
+  display: inline-block;
+  width: 3px;
+  height: 3px;
+  margin: 0 7px;
+  border-radius: 50%;
+  background: currentcolor;
+  opacity: 0.55;
 }
-/* ⚠ THE CURRENT CHIP IS THE REFERENCE'S ONE PIECE OF FULL CONTRAST, and it
-   is the only place on the card that carries it: the chip says which chapter
-   you are in before you have read a word. */
-.crf-map__chip--current {
-  background: var(--crf-steel-deep);
-  color: #fff;
+/* ⚠ COMPLETED IS GREEN — 2026-11-12, "change the tags to this green style,
+   (use gradients as needed)". Her #2F7A5A is `--color-pass-500` and the
+   shades either side are derived from that one value, so the tint and the
+   ink are this green's own.
+
+   ⚠ THE INK IS -600, NOT -500. Measured against BOTH stops of the gradient:
+   -500 on the -100 ground is 4.37:1, under the 4.5 floor 11px text needs,
+   and worse against -200. -600 reads 6.23 and 5.22. */
+.crf-map__state--done {
+  background: linear-gradient(180deg, var(--color-pass-100), var(--color-pass-200));
+  color: var(--color-pass-600);
+}
+/* ⚠ NEITHER OPEN STATE IS GREEN, AMBER OR RED. Her palette assigns those to
+   success, warning and error, and "I have started this" is none of the
+   three; they take the page's own steel. Filled for started, outlined for
+   not — the difference between them is whether there is anything to come
+   back to. */
+.crf-map__state--progress {
+  background: var(--crf-steel-wash);
+  border-color: var(--crf-steel-edge);
+  color: var(--crf-steel-deep);
+}
+.crf-map__state--next {
+  background: var(--crf-white);
+  border-color: var(--crf-control-edge);
+  color: var(--crf-body);
+}
+.crf-map__state--locked {
+  background: var(--crf-locked-tile);
+  color: var(--crf-locked-ink);
 }
 .crf-map__main {
   flex: 1 1 auto;
   min-width: 0;
 }
-/* The pill and the action share the top line — the action hard right, which
-   is the instruction this variant was asked for. */
-/* ⚠ A FIXED HEIGHT SO THE CHIP CAN LINE UP WITH THE PILL — 2026-11-12. The
-   two are the same height now and sat 6px out of step, because this row is
-   as tall as whatever is in it: 34px on a card with a button, 23px on a
-   locked one with only the pill. The chip is outside the row and cannot
-   centre against something that changes size, so the row is pinned to the
-   button's height on every card and the chip takes the one offset that
-   follows from it. */
+/* ⚠ THE STATE TAG, THE ACTION AND THE CHEVRON ON ONE LINE, with the tag left
+   and the other two hard right.
+
+   ⚠ A FIXED HEIGHT so the row is the same on every card. It is as tall as
+   whatever is in it otherwise — 34px with a button, 23px on a locked card
+   with only the tag — and a column of cards whose top rows breathe
+   differently reads as a list that is not quite aligned. */
 .crf-map__top {
   display: flex;
   align-items: center;
   gap: 12px;
   min-height: 34px;
   margin-bottom: 8px;
-}
-/* ⚠ A SQUARED TAG, NOT A CAPSULE — 2026-11-12: "have the locked look more
-   square style tags". 5px is the radius her reference draws these at: read
-   as a tag rather than as a pill, which matters here because the page's
-   capsules are CONTROLS (the filter strip above, the Ask Rubi button) and
-   this is a label. */
-.crf-map__pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  /* ⚠ ONE HEIGHT FOR ALL FOUR, AND THE CHIP — 2026-11-12, following "have
-     these be the same size height as the tags". The tags were not the same
-     height as EACH OTHER: Completed and Locked have no border and measured
-     22, In Progress and Up Next have one and measured 24. Padding alone
-     cannot fix that, so the box is pinned and `border-box` absorbs the
-     border. 23 is the figure the chip matches. */
-  box-sizing: border-box;
-  height: 23px;
-  padding: 0 10px;
-  border-radius: 5px;
-  background: var(--crf-locked-tile);
-  color: var(--crf-locked-ink);
-  font-size: 11px;
-  font-weight: 600;
-}
-/* ⚠ COMPLETED IS GREEN — 2026-11-12, "for the completed badges, change the
-   tags to this green style, (use gradients as needed) and then update the
-   icon to be a green checkmark".
-
-   ⚠ THE RAMP IS HERS. #2F7A5A is `--color-pass-500` and the shades around it
-   are derived from that one value (hue 154, saturation held, lightness
-   stepped), so the tint and the ink below are this green's own rather than a
-   second opinion about it.
-
-   ⚠ A GRADIENT OF TWO STOPS, barely. "Use gradients as needed" — at 20px
-   tall a visible ramp reads as a button; 100 → 200 gives the tag a little
-   depth without making it look pressable.
-
-   ⚠ THE INK IS -600, NOT -500. Measured against both stops of the gradient
-   in the running build: -500 on the -100 ground is 4.37:1, under the 4.5
-   floor that 11px text needs, and it only gets worse against the -200 stop.
-   -600 reads 6.23:1 on -100 and 5.22:1 on -200, so the tag passes at the
-   bottom of the ramp as well as the top. The ramp's own note in `tokens.css`
-   quotes contrast against the WHITE card, which is a different sum. */
-.crf-map__pill--done {
-  background: linear-gradient(180deg, var(--color-pass-100), var(--color-pass-200));
-  color: var(--color-pass-600);
-}
-/* ⚠ THE OPEN CHAPTER'S TWO BADGES — 2026-11-12. Neither is green, amber or
-   red: her palette assigns those to success, warning and error, and "I have
-   started this" is none of the three. They take the page's own steel, which
-   is what every other "this is where you are" mark on the card already uses
-   — the chip, the border and the ground.
-
-   ⚠ FILLED FOR STARTED, OUTLINED FOR NOT. The difference between them is
-   whether there is anything to come back to, so the one with something
-   behind it is the one with a ground. */
-.crf-map__pill--progress {
-  background: var(--crf-steel-wash);
-  border: 1px solid var(--crf-steel-edge);
-  color: var(--crf-steel-deep);
-}
-.crf-map__pill--next {
-  background: var(--crf-white);
-  border: 1px solid var(--crf-control-edge);
-  color: var(--crf-body);
 }
 .crf-map__top .crf-btn {
   margin-left: auto;
@@ -2005,12 +1972,13 @@
    again rather than three. */
 /* The expanded half sits inside the card, ruled off rather than boxed — a
    second border inside a card reads as a card inside a card. */
-/* ⚠ THE TEXT COLUMN'S LEFT EDGE: 20px padding + the 30px chip + the body's
-   16px gap = 66. It was 80, set against the 44px chip this layout started
-   with; the lessons under an open chapter had been hanging 14px to the right
-   of the title above them. */
+/* ⚠ FLUSH WITH THE TITLE ABOVE IT — 2026-11-12. The chip left the card's
+   left column when it joined the state tag, so there is no gutter to clear
+   any more: the title starts at the body's own 20px padding and so does
+   this. It has been 80 and then 66, each time chasing a chip that has since
+   moved. */
 .crf-map__open {
-  padding: 4px 20px 18px 66px;
+  padding: 4px 20px 18px 20px;
   border-top: 1px solid var(--crf-ch-rule);
 }
 .crf-map__open .crf-lessons {
