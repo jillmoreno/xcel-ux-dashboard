@@ -19,6 +19,8 @@ import { E2E_LEARNER_EMAIL, E2E_LEARNER_FIRST } from '@/pages/endToEndDemo'
 import { LOADING_HANDOFF_MS } from '@/components/e2e/XcelLoadingPage'
 import { XcelLoadingStatus } from '@/components/e2e/XcelLoadingStatus'
 import { useV3DialogLayer } from '@/components/e2e/useV3DialogLayer'
+import { InvitePasswordChecklistV3 } from '@/components/e2e/InvitePasswordChecklistV3'
+import { meetsInvitePasswordRulesV3 } from '@/data/invitePasswordRulesV3'
 import '@/pages/inviteFlow.css'
 
 /**
@@ -406,6 +408,12 @@ function LoginStep({ email, onLoggedIn }: { email: string; onLoggedIn: () => voi
   /* Forgot password? — 2026-11-05, Afsana: the modal says a reset link went
      to the address, bold, and to follow the email's instructions. */
   const [resetSent, setResetSent] = useState(false)
+  /* Reset your password — 2026-11-12, Afsana: for the demo, a click on
+     Check your email (anywhere but its two buttons) stands in for following
+     the link. Reset password comes back here with a green banner — a
+     proposal; where a reset lands is still open. */
+  const [resetting, setResetting] = useState(false)
+  const [wasReset, setWasReset] = useState(false)
   /* Resend link waits after every send, the first included (2026-11-05,
      Afsana: "disabled for a bit until the system enables the user to make
      another request"). The real wait is the system's; the demo's is
@@ -418,9 +426,29 @@ function LoginStep({ email, onLoggedIn }: { email: string; onLoggedIn: () => voi
   }, [linkWait])
   const canResend = linkWait <= 0
   const ready = password !== ''
+  if (resetting) {
+    return (
+      <ResetPasswordStep
+        email={email}
+        onReset={() => {
+          setResetting(false)
+          setResetSent(false)
+          setPassword('')
+          setFailed(false)
+          setWasReset(true)
+        }}
+      />
+    )
+  }
   if (resetSent) {
     return (
-      <div style={BODY}>
+      <div
+        style={{ ...BODY, cursor: 'pointer' }}
+        title="Demo: click to follow the reset link"
+        onClick={(e) => {
+          if (!(e.target as HTMLElement).closest('button')) setResetting(true)
+        }}
+      >
         <img src="/brand/xcel-logo.webp" alt="XCEL Insurance Training by Colibri" style={CODE_LOGO} />
         <div style={HEAD}>
           <h2 id="verify-email-title" style={TITLE}>
@@ -473,6 +501,12 @@ function LoginStep({ email, onLoggedIn }: { email: string; onLoggedIn: () => voi
           Log in to continue
         </h2>
         <div aria-hidden style={RULE} />
+        {wasReset ? (
+          <p role="status" style={RESENT_BANNER}>
+            <CircleCheckSolid size={16} aria-hidden style={{ flex: 'none' }} />
+            <span>Your password has been reset.</span>
+          </p>
+        ) : null}
         {/* The address in the sentence, not a field (2026-11-03, Afsana) — it
             was a locked email field above the password. */}
         <p id="verify-email-lead" style={LEAD}>
@@ -552,6 +586,129 @@ function LoginStep({ email, onLoggedIn }: { email: string; onLoggedIn: () => voi
     </form>
   )
 }
+
+/** "Reset your password" — 2026-11-12, Afsana. Reached in the demo by
+ *  clicking Check your email. The same meter and seven rules as the password
+ *  the learner creates at the end of the flow, for continuity; Reset password
+ *  stays off until every rule is met and both fields match. */
+function ResetPasswordStep({ email, onReset }: { email: string; onReset: () => void }) {
+  const [password, setPassword] = useState('')
+  const [shown, setShown] = useState(false)
+  const [confirm, setConfirm] = useState('')
+  const [confirmShown, setConfirmShown] = useState(false)
+  /* The mismatch speaks once the second field has something in it. */
+  const mismatch = confirm.length > 0 && confirm !== password
+  const ready = meetsInvitePasswordRulesV3(password, email.trim()) && confirm === password
+  return (
+    <form
+      style={BODY}
+      onSubmit={(e) => {
+        e.preventDefault()
+        if (ready) onReset()
+      }}
+      noValidate
+    >
+      <img src="/brand/xcel-logo.webp" alt="XCEL Insurance Training by Colibri" style={CODE_LOGO} />
+      <div style={HEAD}>
+        <h2 id="verify-email-title" style={TITLE}>
+          Reset your password
+        </h2>
+        <div aria-hidden style={RULE} />
+        <p id="verify-email-lead" style={LEAD}>
+          Create a new password for <strong style={{ fontWeight: 800 }}>{email.trim()}</strong>.
+        </p>
+      </div>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <label htmlFor="reset-password" style={FIELD_GROUP}>
+          <span style={FIELD_LABEL}>
+            Password <span aria-hidden>*</span>
+          </span>
+          <span style={{ position: 'relative', display: 'block' }}>
+            <input
+              id="reset-password"
+              type={shown ? 'text' : 'password'}
+              required
+              autoComplete="new-password"
+              placeholder="Enter password..."
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="cre-e2e-input"
+              style={{ ...FIELD, paddingRight: 40 }}
+            />
+            <button
+              type="button"
+              onClick={() => setShown((v) => !v)}
+              aria-label={shown ? 'Hide password' : 'Show password'}
+              aria-pressed={shown}
+              style={EYE}
+            >
+              <img src={shown ? '/brand/confirmation/eye.svg' : '/brand/confirmation/eye-off.svg'} alt="" width={18} height={18} style={{ display: 'block' }} />
+            </button>
+          </span>
+        </label>
+        <InvitePasswordChecklistV3 password={password} username={email.trim()} />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          <label htmlFor="reset-confirm" style={FIELD_GROUP}>
+            <span style={FIELD_LABEL}>
+              Confirm new password <span aria-hidden>*</span>
+            </span>
+            <span style={{ position: 'relative', display: 'block' }}>
+              <input
+                id="reset-confirm"
+                type={confirmShown ? 'text' : 'password'}
+                required
+                autoComplete="new-password"
+                placeholder="Re-enter password..."
+                value={confirm}
+                onChange={(e) => setConfirm(e.target.value)}
+                aria-invalid={mismatch}
+                aria-describedby={mismatch ? 'reset-mismatch' : undefined}
+                className="cre-e2e-input"
+                style={mismatch ? { ...FIELD, paddingRight: 40, ...FIELD_INVALID } : { ...FIELD, paddingRight: 40 }}
+              />
+              <button
+                type="button"
+                onClick={() => setConfirmShown((v) => !v)}
+                aria-label={confirmShown ? 'Hide confirm new password' : 'Show confirm new password'}
+                aria-pressed={confirmShown}
+                style={EYE}
+              >
+                <img src={confirmShown ? '/brand/confirmation/eye.svg' : '/brand/confirmation/eye-off.svg'} alt="" width={18} height={18} style={{ display: 'block' }} />
+              </button>
+            </span>
+          </label>
+          {mismatch ? (
+            <p id="reset-mismatch" role="alert" style={INVALID}>
+              Passwords do not match.
+            </p>
+          ) : null}
+        </div>
+      </div>
+
+      <div style={ACTIONS}>
+        <button type="submit" className="cre-e2e-cta" disabled={!ready} aria-disabled={!ready} style={ready ? CTA : CTA_OFF}>
+          Reset password
+        </button>
+      </div>
+
+      {/* The demo fill — the same invisible corner as the ending's. */}
+      <button
+        type="button"
+        aria-label="Fill in a new demo password"
+        title="Demo shortcut: fill in a new demo password"
+        style={DEMO_FILL}
+        onClick={() => {
+          setPassword(RESET_DEMO_PASSWORD)
+          setConfirm(RESET_DEMO_PASSWORD)
+        }}
+      />
+    </form>
+  )
+}
+
+/* A valid new password for the demo fill — every rule met. */
+const RESET_DEMO_PASSWORD = 'Navarro#2027'
 
 /* ── Styles — the file's ────────────────────────────────────────────────── */
 

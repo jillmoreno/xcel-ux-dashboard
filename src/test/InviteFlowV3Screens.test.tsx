@@ -342,6 +342,41 @@ describe('Invite Flow V3 — the email check', () => {
     }
   })
 
+  it('a click on Check your email opens Reset your password; Reset password returns to Log in with a banner', async () => {
+    renderAt(CHECKOUT, `${V3_B2B},invite-v3-flow-b2b:qr-atlas-login`)
+    await userEvent.type(screen.getByLabelText(/Email address/), 'jordan@example.com')
+    await userEvent.click(screen.getByRole('button', { name: 'Continue' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Forgot password?' }))
+
+    /* Its two buttons keep their jobs: Back to sign in still goes back. */
+    await userEvent.click(screen.getByRole('button', { name: 'Back to sign in' }))
+    expect(screen.getByRole('heading', { name: 'Log in to continue' })).toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: 'Forgot password?' }))
+
+    /* Anywhere else on the modal stands in for following the link. */
+    await userEvent.click(screen.getByText(/We sent a password reset link/))
+    const dialog = screen.getByRole('dialog', { name: 'Reset your password' })
+    expect(within(dialog).getByText('jordan@example.com').tagName).toBe('STRONG')
+    expect(within(dialog).getByRole('meter', { name: 'Password strength' })).toHaveAttribute('aria-valuenow', '0')
+    expect(within(dialog).getByText(/^be different from email/)).toBeInTheDocument()
+    const reset = within(dialog).getByRole('button', { name: 'Reset password' })
+    expect(reset).toBeDisabled()
+
+    await userEvent.type(dialog.querySelector<HTMLInputElement>('#reset-password')!, 'Navarro#2027')
+    await userEvent.type(within(dialog).getByLabelText(/^Confirm new password/), 'Navarro#20')
+    expect(within(dialog).getByRole('alert')).toHaveTextContent('Passwords do not match.')
+    expect(reset).toBeDisabled()
+    await userEvent.type(within(dialog).getByLabelText(/^Confirm new password/), '27')
+    expect(reset).toBeEnabled()
+
+    await userEvent.click(reset)
+    expect(screen.getByRole('heading', { name: 'Log in to continue' })).toBeInTheDocument()
+    expect(within(screen.getByRole('dialog', { name: 'Log in to continue' })).getByRole('status')).toHaveTextContent(
+      'Your password has been reset.',
+    )
+    expect(document.querySelector('#login-password')).toHaveValue('')
+  })
+
   it('asks after the partner question on a B2C flow, never both at once', async () => {
     renderAt(CHECKOUT, 'invite-flow-version:v3,invite-v3-model:b2c,invite-v3-flow-b2c:xcel-signed-out,partner-code-ask:modal')
     expect(screen.queryByRole('dialog', { name: 'Enter your email to continue' })).not.toBeInTheDocument()
