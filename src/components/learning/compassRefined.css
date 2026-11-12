@@ -1913,8 +1913,21 @@
   min-height: 34px;
   margin-bottom: 8px;
 }
-.crf-map__top .crf-btn {
+/* ⚠ WHICHEVER COMES FIRST GOES RIGHT — 2026-11-12: "have this be on the
+   right side of the container, if there is a cta, it would be to the right
+   of the cta". The auto margin was on the BUTTON alone, so a locked card —
+   which has no button — left its chevron sitting against the state tag on
+   the left while every other card's sat at the right edge.
+
+   ⚠ AND THE PAIR STAYS TOGETHER. With the margin on both, a card with an
+   action would push them apart to the two ends of the row; the second rule
+   hands the gap back so the chevron rides beside the button. */
+.crf-map__top .crf-btn,
+.crf-map__top .crf-chev {
   margin-left: auto;
+}
+.crf-map__top .crf-btn + .crf-chev {
+  margin-left: 0;
 }
 /* ⚠ THE NEXT-STEP CARD'S TITLE, EXACTLY — 2026-11-12: "update courses in
    the roadmap to match the font and styling". These four declarations are
