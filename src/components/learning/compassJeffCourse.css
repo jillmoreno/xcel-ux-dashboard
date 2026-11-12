@@ -1,0 +1,2158 @@
+/* JEFF'S COMPASS COURSE PLAYER (2026-11-05).
+
+   Ported from the rendered build of `compass-prototype-b-v3.html` — measured
+   off the DOM, not read off his source. His export writes most of its styling
+   as INLINE styles and keeps a handful of classes (`.sec`, `.eyebrow`,
+   `.serif`, `.chip`, `.option`, `.card`, `.mini-btn`); the inline rules are
+   what most of this file is, lifted into classes so the TSX stays readable.
+
+   ⚠ HIS PALETTE IS DECLARED HERE, ONCE, AND NOT MAPPED AWAY. Anjani's
+   workspace could be mapped onto this repo's tokens because her palette was
+   this product's palette in another key. Jeff's is a different system — a
+   blue-slate ink over white, with a teal that is not the brand teal — and
+   forcing each colour onto the nearest token would have produced a surface
+   that is neither his nor ours, which is exactly the "near-miss" the Workspace
+   port's own notes warn about. So the block below is the one place his colours
+   exist, in the shape `tokens.css` itself uses for `--compass-*`, and every
+   rule after it reads a variable. Two of them DO have honest matches and take
+   them (`--jc-green`, `--jc-rule`); the rest are his and say so.
+
+     #1B2733 ink          --jc-ink        his body ink, blue-black
+     #1E2A33 head         --jc-head       course bar, strong labels
+     #3E4A54 body         --jc-body       lesson paragraphs
+     #56626C muted        --jc-muted      metadata, the track's eyebrow
+     #2F4A63 slate        --jc-slate      rail headings, the progress fill
+     #45586B eyebrow      --jc-eyebrow    the SECTION n.n eyebrow
+     #E1E5E8 rule      →  --color-border-subtle
+     #C9D1D7 rule-strong  --jc-rule-strong  buttons, chips, options
+     #D9DEE2 rule-soft    --jc-rule-soft    the track's unfilled segments
+     #1D6A80 teal         --jc-teal       links, outline buttons, chevrons
+     #0F5C61 teal-deep    --jc-teal-deep  the Compass pill
+     #0F6B63 green     →  --color-primary-600 (#017267 — the same decision)
+     #EEF5F6 tint         --jc-tint       the current lesson row, Compass tints
+     #CFE3E8 tint-edge    --jc-tint-edge
+     #F4F6F7 wash         --jc-wash       his `.card`
+     #2E7D4F / #A85E17    --jc-right / --jc-wrong   the scenario check's answer
+
+   ⚠ EVERY RULE IS SCOPED UNDER `.cre-jc`, like `compassWorkspace.css`: this
+   stylesheet is imported globally and his bare class names (`.sec`, `.chip`,
+   `.option`, `.card`) would otherwise land on half the app. */
+
+.cre-jc {
+  --jc-ink: #1b2733;
+  --jc-head: #1e2a33;
+  --jc-body: #3e4a54;
+  --jc-muted: #56626c;
+  --jc-slate: #2f4a63;
+  --jc-eyebrow: #45586b;
+  --jc-rule: var(--color-border-subtle);
+  --jc-rule-strong: #c9d1d7;
+  --jc-rule-soft: #d9dee2;
+  --jc-teal: #1d6a80;
+  --jc-teal-deep: #0f5c61;
+  --jc-green: var(--color-primary-600);
+  --jc-tint: #eef5f6;
+  --jc-tint-edge: #cfe3e8;
+  --jc-wash: #f4f6f7;
+  --jc-right: #2e7d4f;
+  --jc-right-fill: #eef7f1;
+  --jc-right-ink: #1f5c38;
+  --jc-wrong: #a85e17;
+  --jc-wrong-fill: #fdf3e7;
+
+  /* ⚠ THE PAGE SCROLLS, NOT THREE PANES — a deliberate departure, 2026-11-05.
+     His export is a fixed-height app: `height: 100vh`, `overflow: hidden`, and
+     each column scrolls inside itself. This product's shell does not give a
+     page a bounded height — `CompassSessionPage` grows to its content and the
+     frame scrolls, and the demo stage renders the app inside a centred
+     browser-window card, so a `100vh` floor here would be a second, competing
+     height for the same box (CLAUDE.md says so, and the first pass proved it:
+     every section counted as read the moment the lesson opened, because a
+     scroll container that is as tall as its content has nothing below the
+     fold). So the columns are STICKY instead of scroll-boxed: his layout is
+     preserved, his reading experience is this product's. */
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 100%;
+  background: #fff;
+  color: var(--jc-ink);
+  font-family: 'Open Sans', var(--font-body), system-ui, sans-serif;
+  font-size: 15px;
+}
+.cre-jc .serif {
+  font-family: 'Source Serif 4', var(--font-heading-serif), Georgia, serif;
+}
+.cre-jc .eyebrow {
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--jc-eyebrow);
+  font-weight: 700;
+}
+.cre-jc button {
+  font: inherit;
+  cursor: pointer;
+}
+.cre-jc button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+/* ---- the course bar (his second header row) ---- */
+.cre-jc .cre-jc-bar {
+  flex: 0 0 auto;
+  position: sticky;
+  top: 0;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  padding: 10px 16px 10px 24px;
+  border-bottom: 1px solid var(--jc-rule);
+  background: #fff;
+}
+.cre-jc .cre-jc-bar p {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  min-width: 0;
+  font-size: 16px;
+  line-height: 1.3;
+  color: var(--jc-head);
+}
+.cre-jc .cre-jc-course {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  color: var(--jc-slate);
+}
+.cre-jc .cre-jc-course em {
+  font-style: normal;
+  font-weight: 400;
+  color: var(--jc-head);
+}
+.cre-jc .cre-jc-exit {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1px solid var(--jc-rule-soft);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--jc-head);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* ---- the three columns ---- */
+.cre-jc .cre-jc-cols {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  align-items: flex-start;
+}
+.cre-jc .cre-jc-toc {
+  flex: 0 0 280px;
+  position: sticky;
+  top: 0;
+  max-height: 100vh;
+  overflow-y: auto;
+  align-self: stretch;
+  border-right: 1px solid var(--jc-rule);
+  padding: 16px 14px;
+  background: #fff;
+}
+.cre-jc .cre-jc-main {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.cre-jc .cre-jc-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: 0 32px 32px;
+}
+.cre-jc .cre-jc-rail {
+  flex: 0 0 400px;
+  position: sticky;
+  top: 0;
+  max-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-left: 1px solid var(--jc-rule);
+  background: #fff;
+}
+
+/* ---- contents ---- */
+.cre-jc .cre-jc-toc-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.cre-jc .cre-jc-sq {
+  width: 37px;
+  height: 37px;
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid var(--jc-teal);
+  border-radius: 4px;
+  background: #fff;
+  color: var(--jc-teal);
+}
+.cre-jc .cre-jc-chapter-pick {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 44px;
+  margin-bottom: 14px;
+  padding: 0 12px;
+  border: 1px solid var(--jc-rule-strong);
+  border-radius: 8px;
+  background: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--jc-head);
+}
+.cre-jc .cre-jc-chapter-pick span:last-child {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--jc-teal);
+}
+.cre-jc .cre-jc-chapter {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+.cre-jc .cre-jc-chapter-name {
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.35;
+  color: var(--jc-slate);
+}
+.cre-jc .cre-jc-chapter-pct {
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--jc-body);
+}
+.cre-jc .cre-jc-chapter-pct strong {
+  color: var(--jc-head);
+}
+.cre-jc .cre-jc-meter {
+  height: 6px;
+  margin-top: 6px;
+  background: var(--jc-rule);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.cre-jc .cre-jc-meter > div {
+  height: 6px;
+  background: var(--jc-slate);
+  border-radius: 3px;
+}
+.cre-jc .cre-jc-chapter-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--jc-body);
+}
+.cre-jc .cre-jc-lessons {
+  list-style: none;
+  padding: 14px 0 0;
+  margin: 14px 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border-top: 1px solid var(--jc-rule);
+}
+.cre-jc .cre-jc-lesson {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  text-align: left;
+  padding: 10px;
+  border: 1px solid var(--jc-rule);
+  border-radius: 6px;
+  background: #fff;
+  color: var(--jc-ink);
+}
+.cre-jc .cre-jc-lesson[aria-current='page'] {
+  background: var(--jc-tint-edge);
+  border-color: var(--jc-tint-edge);
+}
+.cre-jc .cre-jc-lesson-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+.cre-jc .cre-jc-lesson-title {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 13px;
+  line-height: 1.4;
+}
+.cre-jc .cre-jc-lesson[aria-current='page'] .cre-jc-lesson-title {
+  font-weight: 700;
+}
+.cre-jc .cre-jc-lesson-meta {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--jc-body);
+}
+.cre-jc .cre-jc-marks {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: var(--jc-tint);
+  color: var(--jc-teal-deep);
+  font-size: 11px;
+  font-weight: 700;
+}
+.cre-jc .cre-jc-next-chapter {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  text-align: left;
+  margin-top: 8px;
+  padding: 10px;
+  border: 1px solid var(--jc-rule);
+  border-radius: 6px;
+  background: #fff;
+  color: var(--jc-ink);
+}
+.cre-jc .cre-jc-badge {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  margin-top: 6px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--jc-tint);
+  color: var(--jc-teal-deep);
+  font-size: 12px;
+  font-weight: 700;
+}
+.cre-jc .cre-jc-footnote {
+  margin: 14px 0 0;
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--jc-muted);
+}
+.cre-jc .cre-jc-demo-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 44px;
+  margin-top: 14px;
+  padding: 0 12px;
+  border: 1px solid var(--jc-rule-strong);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--jc-head);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* ---- the lesson track ---- */
+.cre-jc .cre-jc-track {
+  max-width: 820px;
+  margin: 0 auto 18px;
+  position: sticky;
+  /* under the course bar, which is sticky above it */
+  top: 61px;
+  z-index: 3;
+  background: #fff;
+  padding: 14px 0 10px;
+}
+.cre-jc .cre-jc-track-head {
+  display: block;
+  width: 100%;
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 0;
+  border-radius: 10px;
+  background: #fff;
+  text-align: left;
+  color: var(--jc-ink);
+}
+.cre-jc .cre-jc-track-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  font-size: 12px;
+  color: var(--jc-muted);
+}
+.cre-jc .cre-jc-track-lesson {
+  font-weight: 600;
+  color: var(--jc-ink);
+  font-size: 13px;
+}
+.cre-jc .cre-jc-track-right {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.cre-jc .cre-jc-track-right b {
+  color: var(--jc-teal);
+  font-weight: 600;
+}
+.cre-jc .cre-jc-segs {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  padding: 0 12px 6px;
+  margin-top: -2px;
+}
+.cre-jc .cre-jc-seg {
+  min-width: 0;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  display: flex;
+  align-items: center;
+}
+.cre-jc .cre-jc-seg > span {
+  display: block;
+  width: 100%;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--jc-rule-soft);
+  transition: background 0.5s ease;
+}
+.cre-jc .cre-jc-seg:first-child > span {
+  border-radius: 999px 3px 3px 999px;
+}
+.cre-jc .cre-jc-seg:last-child > span {
+  border-radius: 3px 999px 999px 3px;
+}
+.cre-jc .cre-jc-seg.is-done > span {
+  background: var(--jc-slate);
+}
+.cre-jc .cre-jc-seg.is-waiting > span {
+  height: 8px;
+  background: var(--jc-wrong);
+}
+
+/* ---- the lesson body ---- */
+.cre-jc .cre-jc-article {
+  max-width: 820px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.cre-jc .cre-jc-lede h1 {
+  margin: 0 0 8px;
+  font-size: 32px;
+  line-height: 1.2;
+  font-weight: 700;
+}
+.cre-jc .cre-jc-lede p {
+  margin: 0;
+  line-height: 1.7;
+  font-size: 16px;
+  color: var(--jc-body);
+}
+.cre-jc .sec {
+  position: relative;
+  background: #fff;
+  border: 0;
+  border-radius: 12px;
+  padding: 20px 22px;
+  box-shadow: 0 1px 2px rgba(27, 39, 51, 0.06);
+  scroll-margin-top: 96px;
+}
+.cre-jc .sec > .cre-jc-sec-eyebrow {
+  display: flex;
+  align-items: center;
+  min-height: 28px;
+}
+.cre-jc .cre-jc-sec-eyebrow .eyebrow {
+  color: #3b6e86;
+}
+.cre-jc .sec h2 {
+  margin: 4px 0 10px;
+  font-size: 21px;
+  font-weight: 700;
+}
+.cre-jc .sec p {
+  margin: 0 0 12px;
+  line-height: 1.75;
+}
+.cre-jc .sec ul {
+  margin: 0 0 12px;
+  padding-left: 22px;
+  line-height: 1.75;
+}
+.cre-jc .sec dl {
+  margin: 0 0 12px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 10px;
+}
+.cre-jc .sec dl > div {
+  border: 1px solid var(--jc-rule);
+  border-radius: 8px;
+  padding: 12px;
+}
+.cre-jc .sec dt {
+  font-weight: 700;
+  color: var(--jc-slate);
+}
+.cre-jc .sec dd {
+  margin: 6px 0 0;
+  font-size: 14px;
+  line-height: 1.55;
+}
+.cre-jc .cre-jc-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0 0 12px;
+  font-size: 14px;
+}
+.cre-jc .cre-jc-table th,
+.cre-jc .cre-jc-table td {
+  text-align: left;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--jc-rule);
+}
+.cre-jc .cre-jc-table th {
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--jc-eyebrow);
+}
+.cre-jc .cre-jc-tip {
+  display: flex;
+  gap: 10px;
+  background: var(--jc-wash);
+  border: 1px solid var(--jc-rule);
+  border-radius: 8px;
+  padding: 12px 14px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--jc-body);
+}
+.cre-jc .cre-jc-tip b {
+  color: var(--jc-slate);
+}
+
+/* the scenario check */
+.cre-jc .cre-jc-options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0 0 12px;
+}
+.cre-jc .option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 48px;
+  padding: 10px 14px;
+  border: 1.5px solid var(--jc-rule-strong);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--jc-ink);
+  font-size: 15px;
+  text-align: left;
+}
+.cre-jc .option .cre-jc-key {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 13px;
+  flex: 0 0 auto;
+  background: var(--jc-wash);
+  color: var(--jc-slate);
+}
+.cre-jc .option.is-right {
+  border-color: var(--jc-right);
+  background: var(--jc-right-fill);
+  cursor: default;
+}
+.cre-jc .option.is-right .cre-jc-key {
+  background: var(--jc-right);
+  color: #fff;
+}
+.cre-jc .option.is-picked {
+  border-color: var(--jc-wrong);
+  background: var(--jc-wrong-fill);
+  cursor: default;
+}
+.cre-jc .option.is-answered {
+  cursor: default;
+}
+.cre-jc .cre-jc-tag {
+  margin-left: auto;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--jc-wrong);
+}
+.cre-jc .option.is-right .cre-jc-tag {
+  color: var(--jc-right-ink);
+}
+.cre-jc .cre-jc-feedback {
+  margin-top: 12px;
+  padding: 12px 14px;
+  border-radius: 8px;
+  line-height: 1.6;
+  font-size: 14px;
+}
+.cre-jc .cre-jc-feedback.is-right {
+  background: var(--jc-right-fill);
+  border: 1px solid #a9d3b7;
+  color: #173f28;
+}
+.cre-jc .cre-jc-feedback.is-wrong {
+  background: var(--jc-wrong-fill);
+  border: 1px solid #e8c9a0;
+  color: #6a3d0a;
+}
+
+/* ---- the lesson footer ---- */
+.cre-jc .cre-jc-foot {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  max-width: 820px;
+  margin: 18px auto 0;
+}
+.cre-jc .cre-jc-prev {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 0 14px;
+  border: 1px solid var(--jc-rule-strong);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--jc-slate);
+}
+.cre-jc .cre-jc-continue {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 20px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--jc-green);
+  color: #fff;
+  font-weight: 700;
+  margin-left: auto;
+}
+.cre-jc .cre-jc-gate {
+  font-size: 13px;
+  color: var(--jc-wrong);
+  font-weight: 600;
+}
+
+/* ---- the Compass rail ---- */
+.cre-jc .cre-jc-rail-head {
+  flex: 0 0 auto;
+  padding: 14px 16px 12px;
+  background: #fff;
+}
+.cre-jc .cre-jc-rail-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.cre-jc .cre-jc-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 8px 0 14px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--jc-teal-deep);
+  color: #fff;
+  font-weight: 700;
+}
+.cre-jc .cre-jc-pill-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 26px;
+  height: 26px;
+  padding: 0 7px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.22);
+  font-size: 13px;
+}
+.cre-jc .cre-jc-filter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 48px;
+  padding: 0 14px;
+  border: 1px solid var(--jc-tint-edge);
+  border-radius: 999px;
+  background: var(--jc-tint);
+  color: var(--jc-ink);
+  font-weight: 600;
+}
+.cre-jc .cre-jc-rail-list {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 16px;
+}
+.cre-jc .cre-jc-order {
+  margin: 0;
+  font-size: 13px;
+  color: var(--jc-muted);
+}
+.cre-jc .cre-jc-empty {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--jc-muted);
+}
+.cre-jc .cre-jc-mark {
+  background: var(--jc-wash);
+  border: 1.5px solid var(--jc-rule);
+  border-radius: 8px;
+  padding: 12px 14px;
+}
+.cre-jc .cre-jc-mark-kind {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--jc-teal-deep);
+}
+.cre-jc .cre-jc-mark-quote {
+  margin: 6px 0 0;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.cre-jc .cre-jc-mark-own {
+  margin: 8px 0 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--jc-body);
+}
+.cre-jc .cre-jc-mark-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--jc-muted);
+}
+.cre-jc .mini-btn {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  padding: 0 14px;
+  border: 1.5px solid var(--jc-teal);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--jc-teal);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* ---- the Rubi composer ---- */
+.cre-jc .cre-jc-composer {
+  flex: 0 0 auto;
+  padding: 10px 12px 12px;
+  border-top: 1px solid var(--jc-rule);
+  background: #fff;
+}
+.cre-jc .cre-jc-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.cre-jc .chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 0 14px;
+  border: 1px solid var(--jc-rule-strong);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--jc-ink);
+  font-size: 13px;
+  font-weight: 600;
+}
+.cre-jc .cre-jc-prompt {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.cre-jc .cre-jc-prompt textarea {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 44px;
+  resize: none;
+  padding: 11px 16px;
+  border: 0;
+  border-radius: 22px;
+  background: #f5f5f5;
+  color: var(--jc-ink);
+  font: inherit;
+  line-height: 22px;
+}
+.cre-jc .cre-jc-send {
+  width: 40px;
+  height: 40px;
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 50%;
+  background: var(--jc-teal-deep);
+  color: #fff;
+}
+.cre-jc .cre-jc-disclaimer {
+  margin: 8px 0 0;
+  font-size: 11px;
+  line-height: 1.45;
+  text-align: center;
+  color: var(--jc-muted);
+}
+
+/* ---- Rubi's thread, in the rail ---- */
+.cre-jc .cre-jc-msg {
+  border-radius: 12px;
+  padding: 12px 14px;
+  font-size: 14px;
+  line-height: 1.6;
+}
+.cre-jc .cre-jc-msg.is-learner {
+  background: var(--jc-tint);
+  border: 1px solid var(--jc-tint-edge);
+}
+.cre-jc .cre-jc-msg.is-rubi {
+  background: #fff;
+  border: 1px solid var(--jc-rule);
+}
+.cre-jc .cre-jc-msg-src {
+  display: block;
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--jc-muted);
+}
+
+/* His `.sr-only` — the spoken detail on a contents row. */
+.cre-jc .cre-jc-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.cre-jc .cre-jc-chapter-marks {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--jc-body);
+}
+.cre-jc .cre-jc-demo-caption {
+  margin: 10px 0 0;
+  font-size: 11px;
+  color: var(--jc-muted);
+}
+.cre-jc .cre-jc-demo-caption strong {
+  color: var(--jc-head);
+}
+
+/* His marker gutter, beside a section's eyebrow. */
+.cre-jc .cre-jc-gutter {
+  border: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  margin-right: 8px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--jc-tint);
+  color: var(--jc-teal-deep);
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.cre-jc .cre-jc-track-marks {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--jc-body);
+}
+.cre-jc .cre-jc-mark-label {
+  margin: 8px 0 0;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--jc-muted);
+}
+
+/* His marker list, and the two shapes a card takes. */
+.cre-jc .cre-jc-mark-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.cre-jc .cre-jc-mark-kind {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--jc-slate);
+}
+/* ⚠ THE RED RULE IS THE XCEL RED (#C8202F), his one use of the brand mark's
+   colour inside the rail — it is what says "this is a passage from the
+   course" rather than something the learner wrote. */
+.cre-jc blockquote.cre-jc-mark-quote {
+  margin: 0 0 8px;
+  padding: 2px 0 2px 10px;
+  border-left: 2px solid #c8202f;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--jc-body);
+}
+.cre-jc .cre-jc-mark-title {
+  margin: 0 0 8px;
+  font-size: 14px;
+  line-height: 1.5;
+  font-weight: 600;
+}
+.cre-jc .cre-jc-note-field {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid var(--jc-rule-strong);
+  border-radius: 6px;
+  padding: 8px 10px;
+  font: inherit;
+  font-size: 13px;
+  resize: vertical;
+}
+
+.cre-jc .cre-jc-status {
+  margin: 0;
+  padding: 8px 24px;
+  border-bottom: 1px solid var(--jc-rule);
+  background: var(--jc-tint);
+  color: var(--jc-teal-deep);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* ── THE COMPASS FULL VIEW ─────────────────────────────────────────────────
+   Sources · Course notebook · Studio. Measured off his build: a 56px bar with
+   the workspace name and its rename pencil, then three columns — 400 / fluid
+   (capped at 760 of reading measure) / 400 — each with a hairline between. */
+
+.cre-jcw .cre-jcw-bar {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--jc-rule);
+  background: #fff;
+}
+.cre-jcw .cre-jcw-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  color: var(--jc-teal-deep);
+  padding-right: 12px;
+  border-right: 1px solid var(--jc-rule);
+}
+.cre-jcw .cre-jcw-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 18px;
+  color: var(--jc-head);
+}
+.cre-jcw .cre-jcw-title strong {
+  font-weight: 600;
+}
+.cre-jcw .cre-jcw-title-input {
+  font: inherit;
+  padding: 4px 8px;
+  border: 1px solid var(--jc-rule-strong);
+  border-radius: 6px;
+}
+.cre-jcw .cre-jcw-icon {
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--jc-muted);
+}
+.cre-jcw .cre-jcw-close {
+  margin-left: auto;
+  border: 1px solid var(--jc-rule-strong);
+}
+.cre-jcw .cre-jcw-cols {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  align-items: flex-start;
+}
+.cre-jcw .cre-jcw-sources,
+.cre-jcw .cre-jcw-studio {
+  flex: 0 0 400px;
+  position: sticky;
+  top: 0;
+  max-height: 100vh;
+  overflow-y: auto;
+  padding: 16px 20px 32px;
+  background: #fff;
+}
+.cre-jcw .cre-jcw-sources {
+  border-right: 1px solid var(--jc-rule);
+}
+.cre-jcw .cre-jcw-studio {
+  border-left: 1px solid var(--jc-rule);
+}
+/* A folded rail keeps its name, turned on its side — 56px, as his does. */
+.cre-jcw .cre-jcw-folded {
+  flex: 0 0 56px;
+  align-self: stretch;
+  border: 0;
+  border-left: 1px solid var(--jc-rule);
+  border-right: 1px solid var(--jc-rule);
+  background: #fff;
+  color: var(--jc-muted);
+  writing-mode: vertical-rl;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 700;
+  padding: 16px 0;
+}
+.cre-jcw .cre-jcw-notebook {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  /* The notebook is bounded like the two rails, so the composer sits at the
+     bottom of the view rather than floating over the conversation. */
+  position: sticky;
+  top: 0;
+  max-height: 100vh;
+}
+.cre-jcw .cre-jcw-nb-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 24px 40px;
+  max-width: 760px;
+  width: 100%;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.cre-jcw .cre-jcw-nb-title {
+  margin: 0;
+  font-size: 30px;
+  line-height: 1.2;
+  font-weight: 700;
+}
+.cre-jcw .cre-jcw-nb-lede {
+  margin: 0;
+  line-height: 1.7;
+  color: var(--jc-body);
+}
+.cre-jcw .cre-jcw-readiness {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  font-size: 13px;
+  color: var(--jc-body);
+}
+.cre-jcw .cre-jcw-chip-read {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--jc-tint);
+  color: var(--jc-teal-deep);
+  font-size: 12px;
+  font-weight: 700;
+}
+.cre-jcw .cre-jcw-prompts {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+.cre-jcw .cre-jcw-prompts .chip {
+  padding: 8px 16px;
+}
+.cre-jcw .cre-jcw-msg {
+  max-width: 85%;
+  border-radius: 14px;
+  padding: 12px 16px;
+  line-height: 1.6;
+}
+/* ⚠ THE LEARNER'S MESSAGE IS THE DARK ONE, right-aligned — the only inverted
+   surface in his design, and what makes the transcript readable as a dialogue
+   rather than as a list of paragraphs. */
+.cre-jcw .cre-jcw-msg.is-user {
+  align-self: flex-end;
+  background: var(--jc-head);
+  color: #fff;
+  font-weight: 600;
+}
+.cre-jcw .cre-jcw-msg.is-rubi {
+  align-self: flex-start;
+  background: #fff;
+  color: var(--jc-ink);
+  padding-left: 0;
+}
+.cre-jcw .cre-jcw-composer {
+  flex: 0 0 auto;
+  padding: 12px 40px 16px;
+  max-width: 760px;
+  width: 100%;
+  margin: 0 auto;
+  border-top: 1px solid var(--jc-rule);
+  background: #fff;
+}
+.cre-jcw .cre-jcw-answering {
+  margin: 0 0 8px;
+  font-size: 13px;
+  color: var(--jc-muted);
+}
+.cre-jcw .cre-jc-prompt input {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 48px;
+  padding: 0 20px;
+  border: 1px solid var(--jc-rule-strong);
+  border-radius: 999px;
+  background: #fff;
+  font: inherit;
+}
+
+/* ---- Sources ---- */
+.cre-jcw .cre-jcw-src-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.cre-jcw .cre-jcw-h {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+}
+.cre-jcw .cre-jcw-sub {
+  margin: 2px 0 0;
+  font-size: 13px;
+  color: var(--jc-muted);
+}
+.cre-jcw .cre-jcw-outline {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 16px;
+  border: 1.5px solid var(--jc-teal);
+  border-radius: 6px;
+  background: #fff;
+  color: var(--jc-teal);
+  font-weight: 600;
+}
+.cre-jcw .cre-jcw-label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 13px;
+  color: var(--jc-body);
+}
+.cre-jcw .cre-jcw-select {
+  width: 100%;
+  min-height: 44px;
+  margin-bottom: 12px;
+  padding: 0 12px;
+  border: 1px solid var(--jc-rule-strong);
+  border-radius: 8px;
+  background: #fff;
+  font: inherit;
+}
+.cre-jcw .cre-jcw-markers-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 16px 0 10px;
+}
+.cre-jcw .cre-jcw-markers-head .eyebrow {
+  flex: 1 1 auto;
+}
+.cre-jcw .cre-jcw-selectall {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--jc-body);
+}
+.cre-jcw .cre-jcw-search {
+  width: 100%;
+  min-height: 40px;
+  margin-bottom: 10px;
+  padding: 0 12px;
+  border: 1px solid var(--jc-rule-strong);
+  border-radius: 8px;
+  font: inherit;
+}
+.cre-jcw .cre-jcw-group {
+  margin-bottom: 14px;
+}
+.cre-jcw .cre-jcw-group-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--jc-rule);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--jc-slate);
+}
+.cre-jcw .cre-jcw-marker {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+  padding: 12px 14px;
+  border: 1.5px solid var(--jc-rule);
+  border-radius: 8px;
+  background: var(--jc-wash);
+  cursor: pointer;
+}
+.cre-jcw .cre-jcw-marker-label {
+  display: block;
+  font-size: 14px;
+  line-height: 1.45;
+}
+.cre-jcw .cre-jcw-marker-meta {
+  display: block;
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--jc-muted);
+}
+
+/* ---- Studio ---- */
+.cre-jcw .cre-jcw-studio-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.cre-jcw .cre-jcw-readiness-card {
+  padding: 14px 16px;
+  border-radius: 10px;
+  background: var(--jc-wash);
+  margin-bottom: 18px;
+}
+.cre-jcw .cre-jcw-readiness-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+.cre-jcw .cre-jcw-readiness-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 14px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--jc-rule);
+}
+.cre-jcw .cre-jcw-focus {
+  margin: 10px 0 12px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--jc-body);
+}
+.cre-jcw .cre-jcw-focus strong {
+  color: var(--jc-head);
+}
+.cre-jcw .cre-jcw-make-head {
+  margin: 0 0 10px;
+  display: block;
+}
+.cre-jcw .cre-jcw-make {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.cre-jcw .cre-jcw-make-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: flex-start;
+  text-align: left;
+  padding: 12px 14px;
+  border: 1px solid var(--jc-rule);
+  border-radius: 10px;
+  background: #fff;
+  font-size: 13px;
+  color: var(--jc-muted);
+}
+.cre-jcw .cre-jcw-make-tile strong {
+  font-size: 15px;
+  color: var(--jc-head);
+}
+.cre-jcw .cre-jcw-make-tile.is-soon {
+  background: var(--jc-wash);
+}
+.cre-jcw .cre-jcw-soon {
+  display: inline-flex;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--jc-rule);
+  color: var(--jc-muted);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+.cre-jcw .cre-jcw-made {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: flex-start;
+  padding: 12px 14px;
+  margin-bottom: 10px;
+  border: 1px solid var(--jc-rule);
+  border-radius: 10px;
+  background: var(--jc-wash);
+  font-size: 13px;
+  color: var(--jc-muted);
+}
+.cre-jcw .cre-jcw-made strong {
+  font-size: 15px;
+  color: var(--jc-head);
+  line-height: 1.35;
+}
+.cre-jcw .cre-jcw-made-cta {
+  margin-top: 4px;
+  border: 0;
+  background: none;
+  padding: 0;
+  color: var(--jc-teal);
+  font-weight: 700;
+  font-size: 14px;
+}
+.cre-jcw .cre-jcw-studio-note {
+  margin: 8px 0 0;
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--jc-muted);
+}
+
+/* ---- the selection toolbar ----
+   ⚠ HIS ONE DARK SURFACE IN THE READING COLUMN (#1B5466), floated at the
+   highlight with a rotated-square pointer under it. The colour is not a token
+   here for the same reason the rest of his palette is not: it is his. */
+.cre-jc .cre-jc-article {
+  position: relative;
+}
+.cre-jc .cre-jc-seltool {
+  position: absolute;
+  transform: translate(-50%, -100%);
+  z-index: 6;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px;
+  border-radius: 14px;
+  background: #1b5466;
+  box-shadow: 0 10px 24px rgba(27, 39, 51, 0.28);
+}
+.cre-jc .cre-jc-seltool button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.cre-jc .cre-jc-seltool button:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+.cre-jc .cre-jc-seltool-rule {
+  width: 1px;
+  height: 26px;
+  background: rgba(255, 255, 255, 0.35);
+}
+/* His selection colour, so a highlight reads as part of the surface. */
+.cre-jc ::selection {
+  background: #cfe3e8;
+}
+
+.cre-jc .cre-jc-types {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+/* ---- Rubi's pointer, docked under the lesson ----
+   ⚠ HIS SECOND DARK SURFACE, and it sits in the READING column rather than in
+   the rail: a pointer is about the passage in front of you, so it arrives
+   there. Deep teal, 64px tall, with Open / snooze / dismiss. */
+.cre-jc .cre-jc-pointer {
+  /* ⚠ DOCKED, NOT PLACED. In his fixed-height app the pointer sits in the
+     reading column's bottom dock and is always on screen; dropped into this
+     page-scrolling shell it landed below the lesson footer, a thousand pixels
+     down, where a learner would never meet it — which is not a smaller
+     version of the same idea, it is a different one. Sticky to the bottom of
+     the view restores the behaviour his layout gave for free. */
+  position: sticky;
+  bottom: 16px;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 64px;
+  max-width: 820px;
+  margin: 18px auto 0;
+  padding: 10px 10px 10px 12px;
+  border-radius: 14px;
+  background: var(--jc-teal-deep);
+  color: #fff;
+  box-shadow: 0 10px 24px rgba(27, 39, 51, 0.22);
+}
+.cre-jc .cre-jc-pointer p {
+  margin: 0;
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 15px;
+  line-height: 1.35;
+  color: #fff;
+}
+.cre-jc .cre-jc-pointer-eyebrow {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  opacity: 0.85;
+}
+.cre-jc .cre-jc-pointer-mark {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #fff;
+  color: var(--jc-teal-deep);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+}
+.cre-jc .cre-jc-pointer-open {
+  min-width: 72px;
+  min-height: 44px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 8px;
+  background: #fff;
+  color: var(--jc-teal-deep);
+  font-weight: 700;
+}
+.cre-jc .cre-jc-pointer-icon {
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.cre-jc .cre-jc-pointer-icon:hover {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+/* A quiz answered inside the rail. */
+.cre-jc .cre-jc-quiz-opts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 8px 0 4px;
+}
+
+/* ---- the chapter-finish dialog ---- */
+.cre-jc .cre-jc-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: rgba(27, 39, 51, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+.cre-jc .cre-jc-finish {
+  width: 100%;
+  max-width: 560px;
+  max-height: 100%;
+  overflow-y: auto;
+  padding: 24px;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 24px 60px rgba(27, 39, 51, 0.3);
+}
+.cre-jc .cre-jc-finish-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+.cre-jc .cre-jc-finish-mark {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: var(--jc-teal-deep);
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+}
+.cre-jc .cre-jc-finish-eyebrow {
+  color: var(--jc-teal-deep);
+}
+.cre-jc .cre-jc-finish-title {
+  margin: 2px 0 0;
+  font-size: 26px;
+  line-height: 1.2;
+  font-weight: 700;
+}
+.cre-jc .cre-jc-finish-msg {
+  margin: 0 0 18px;
+  line-height: 1.65;
+  color: var(--jc-body);
+}
+.cre-jc .cre-jc-finish-stats {
+  margin: 0 0 18px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+.cre-jc .cre-jc-finish-stats > div {
+  background: var(--jc-wash);
+  border-radius: 10px;
+  padding: 12px 14px;
+}
+.cre-jc .cre-jc-finish-stats dt {
+  font-size: 12px;
+  color: var(--jc-eyebrow);
+  font-weight: 600;
+}
+.cre-jc .cre-jc-finish-stats dd {
+  margin: 4px 0 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--jc-ink);
+}
+.cre-jc .cre-jc-finish-note {
+  font-size: 12px;
+  color: var(--jc-muted);
+  margin-top: 2px;
+}
+.cre-jc .cre-jc-finish-next {
+  margin: 0 0 20px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--jc-body);
+}
+.cre-jc .cre-jc-finish-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding-top: 16px;
+  border-top: 1px solid var(--jc-rule);
+}
+.cre-jc .cre-jc-finish-chapter {
+  font-weight: 700;
+  font-size: 15px;
+  margin-top: 2px;
+}
+.cre-jc .cre-jc-finish-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.cre-jc .cre-jc-finish-actions .cre-jc-continue {
+  margin-left: 0;
+}
+
+/* ---- his inline flashcard deck (L2 · 2.5) ----
+   ⚠ A WARMER PALETTE THAN THE REST OF THE LESSON — his card is near-black on
+   a cream-edged white, and the three ratings are his own three colours. It
+   reads as a different kind of activity, which it is. */
+.cre-jc .cre-jcd {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 4px;
+}
+.cre-jc .cre-jcd-pos {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--jc-muted);
+}
+.cre-jc .cre-jcd-meter {
+  height: 6px;
+  background: var(--jc-rule);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.cre-jc .cre-jcd-meter > div {
+  height: 6px;
+  background: var(--jc-slate);
+  border-radius: 3px;
+}
+.cre-jc .cre-jcd-card {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 220px;
+  padding: 40px 48px;
+  border: 1px solid #e2dccf;
+  border-radius: 24px;
+  background: #fff;
+  box-shadow: 0 6px 18px rgba(30, 29, 26, 0.06);
+  font-family: 'Source Serif 4', var(--font-heading-serif), Georgia, serif;
+  font-size: 24px;
+  line-height: 1.35;
+  text-align: center;
+  color: #1e1d1a;
+}
+.cre-jc .cre-jcd-card.is-back {
+  border: 0;
+  background: #1e1d1a;
+  color: #fff;
+  box-shadow: 0 10px 28px rgba(30, 29, 26, 0.22);
+  font-size: 20px;
+}
+.cre-jc .cre-jcd-hint {
+  margin: 0;
+  text-align: center;
+  font-size: 13px;
+  color: var(--jc-muted);
+}
+.cre-jc .cre-jcd-rates {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+.cre-jc .cre-jcd-rate {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 84px;
+  padding: 10px;
+  border: 1px solid var(--jc-rule);
+  border-radius: 14px;
+  background: #fff;
+  font-size: 16px;
+  font-weight: 800;
+}
+.cre-jc .cre-jcd-rate.is-retry {
+  color: #a63a2e;
+}
+.cre-jc .cre-jcd-rate.is-almost {
+  color: #7a5a1e;
+}
+.cre-jc .cre-jcd-rate.is-got {
+  color: #3a4f66;
+}
+.cre-jc .cre-jcd-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.cre-jc .cre-jcd-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 0 24px;
+  border: 1px solid #e2dccf;
+  border-radius: 999px;
+  background: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--jc-slate);
+}
+.cre-jc .cre-jcd-done-title {
+  margin: 0;
+  text-align: center;
+  font-size: 26px;
+  font-weight: 600;
+  color: #1e1d1a;
+}
+.cre-jc .cre-jcd-counts {
+  display: flex;
+  gap: 22px;
+  flex-wrap: wrap;
+  justify-content: center;
+  font-size: 15px;
+  font-weight: 700;
+}
+.cre-jc .cre-jcd-counts .is-got {
+  color: #3a4f66;
+}
+.cre-jc .cre-jcd-counts .is-almost {
+  color: #7a5a1e;
+}
+.cre-jc .cre-jcd-counts .is-retry {
+  color: #a63a2e;
+}
+.cre-jc .cre-jcd-end {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.cre-jc .cre-jcd-end-btn {
+  min-height: 48px;
+  padding: 0 24px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--jc-teal-deep);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+}
+.cre-jc .cre-jcd-note {
+  margin: 0;
+  text-align: center;
+  font-size: 13px;
+  color: var(--jc-muted);
+}
+
+/* ---- the + menu, its pickers and the context tray ---- */
+.cre-jc .cre-jc-plus {
+  width: 40px;
+  height: 40px;
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--jc-rule-strong);
+  border-radius: 50%;
+  background: #fff;
+  color: var(--jc-slate);
+}
+.cre-jc .cre-jc-plus-menu {
+  position: absolute;
+  z-index: 20;
+  bottom: 64px;
+  left: 12px;
+  right: 12px;
+  padding: 10px;
+  border: 1px solid var(--jc-rule);
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 16px 40px rgba(27, 39, 51, 0.22);
+}
+.cre-jc .cre-jc-plus-menu .eyebrow {
+  display: block;
+  margin: 6px 6px 6px;
+}
+.cre-jc .cre-jc-plus-item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  width: 100%;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  text-align: left;
+}
+.cre-jc .cre-jc-plus-item:hover {
+  background: var(--jc-wash);
+}
+.cre-jc .cre-jc-plus-item strong {
+  font-size: 14px;
+  color: var(--jc-ink);
+}
+.cre-jc .cre-jc-plus-item span {
+  font-size: 12px;
+  color: var(--jc-muted);
+}
+.cre-jc .cre-jc-ctx {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+.cre-jc .cre-jc-ctx-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 6px 4px 10px;
+  border: 1px solid var(--jc-tint-edge);
+  border-radius: 999px;
+  background: var(--jc-tint);
+  color: var(--jc-teal-deep);
+  font-size: 12px;
+  font-weight: 600;
+}
+/* ⚠ HIS KIND COLOURS — course/marker/lib share the teal tint; exam is the
+   slate one; file, photo and link are the warm one. The tray is readable at a
+   glance because the colour says WHERE a thing came from. */
+.cre-jc .cre-jc-ctx-chip.is-exam {
+  background: #eef2f5;
+  border-color: #d5dde5;
+  color: #2f4a63;
+}
+.cre-jc .cre-jc-ctx-chip.is-file,
+.cre-jc .cre-jc-ctx-chip.is-photo,
+.cre-jc .cre-jc-ctx-chip.is-link {
+  background: #fff7ec;
+  border-color: #f0d3ae;
+  color: #6a3d0a;
+}
+.cre-jc .cre-jc-ctx-chip button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: inherit;
+}
+.cre-jc .cre-jc-pick {
+  width: 100%;
+  max-width: 520px;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 24px 60px rgba(27, 39, 51, 0.3);
+}
+.cre-jc .cre-jc-pick-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.cre-jc .cre-jc-pick-head h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+}
+.cre-jc .cre-jc-pick-head button {
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--jc-rule-strong);
+  border-radius: 8px;
+  background: #fff;
+}
+.cre-jc .cre-jc-pick-rows {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  list-style: none;
+  margin: 0 0 12px;
+  padding: 0;
+}
+.cre-jc .cre-jc-pick-rows label {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 8px;
+  border-radius: 8px;
+}
+.cre-jc .cre-jc-pick-rows label:hover {
+  background: var(--jc-wash);
+}
+.cre-jc .cre-jc-pick-head-row {
+  margin-top: 10px;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--jc-eyebrow);
+}
+.cre-jc .cre-jc-pick-label {
+  display: block;
+  font-size: 14px;
+  line-height: 1.4;
+}
+.cre-jc .cre-jc-pick-sub {
+  display: block;
+  font-size: 12px;
+  color: var(--jc-muted);
+}
+.cre-jc .cre-jc-pick-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--jc-rule);
+}
+.cre-jc .cre-jc-pick-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.cre-jc .cre-jc-pick-form label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--jc-body);
+}
+.cre-jc .cre-jc-pick-form input,
+.cre-jc .cre-jc-pick-form select {
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px solid var(--jc-rule-strong);
+  border-radius: 8px;
+  font: inherit;
+}
+.cre-jc .cre-jc-composer {
+  position: relative;
+}
+
+/* The mic. ⚠ His red pulse while listening, and it respects reduced motion —
+   his own stylesheet does the same. */
+.cre-jc .cre-jc-mic {
+  width: 40px;
+  height: 40px;
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--jc-rule-strong);
+  border-radius: 50%;
+  background: #fff;
+  color: var(--jc-slate);
+}
+.cre-jc .cre-jc-mic.is-on {
+  border-color: #c8202f;
+  color: #c8202f;
+  animation: creJcMic 1.4s ease-out infinite;
+}
+@keyframes creJcMic {
+  0% {
+    box-shadow: 0 0 0 0 rgba(200, 32, 47, 0.45);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(200, 32, 47, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(200, 32, 47, 0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cre-jc .cre-jc-mic.is-on {
+    animation: none;
+  }
+}
+
+/* The resize handles — invisible until hovered or focused, as his are. */
+.cre-jc .cre-jc-resize {
+  position: relative;
+  flex: 0 0 9px;
+  margin: 0 -4px;
+  align-self: stretch;
+  z-index: 6;
+  cursor: col-resize;
+  touch-action: none;
+  background: transparent;
+}
+.cre-jc .cre-jc-resize::after {
+  content: '';
+  position: absolute;
+  left: 3px;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  border-radius: 2px;
+  background: transparent;
+  transition: background 0.15s ease;
+}
+.cre-jc .cre-jc-resize:hover::after,
+.cre-jc .cre-jc-resize:focus-visible::after {
+  background: #3f7c80;
+}
+.cre-jc .cre-jc-resize:focus-visible {
+  outline: none;
+}
+@media (max-width: 880px) {
+  .cre-jc .cre-jc-resize {
+    display: none;
+  }
+}
+
+/* ---- a conversation in the rail ---- */
+.cre-jc .cre-jc-thread {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.cre-jc .cre-jc-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  align-self: flex-start;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--jc-teal);
+  font-size: 13px;
+  font-weight: 700;
+}
+.cre-jc .cre-jc-thread-title {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+.cre-jc .cre-jc-thread-at {
+  margin: 0;
+  font-size: 12px;
+  color: var(--jc-muted);
+}
+.cre-jc .cre-jc-linkish {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--jc-teal);
+  font: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+}
+/* ⚠ THE LEARNER'S MESSAGE IS THE DARK ONE, right-aligned; Rubi's is the
+   tinted panel. The same inversion his notebook uses, so a transcript reads
+   as a dialogue in both places. */
+.cre-jc .cre-jc-msg.is-learner {
+  align-self: flex-end;
+  margin-left: auto;
+  max-width: 85%;
+  background: var(--jc-head);
+  color: #fff;
+  border-radius: 14px;
+  padding: 10px 14px;
+  font-weight: 600;
+}
+.cre-jc .cre-jc-msg.is-rubi {
+  max-width: 92%;
+  background: var(--jc-tint);
+  border: 1px solid var(--jc-tint-edge);
+  border-radius: 14px;
+  padding: 12px 14px;
+}
+.cre-jc .cre-jc-replying {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 0 0 8px;
+  font-size: 12px;
+  color: var(--jc-muted);
+}
+.cre-jc .cre-jc-replying strong {
+  color: var(--jc-ink);
+}

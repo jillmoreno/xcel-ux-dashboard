@@ -7657,6 +7657,16 @@ a.cre-library-card-title::after {
   --color-e2e-split-line: rgb(120 200 210 / 0.35);
   --color-e2e-split-label: #6fb7c7;
   --color-e2e-split-tick: #3fbf6a;
+  /* An ALTERNATIVE flow's row in the Design bar's flow sheet — light orange
+     (2026-11-03, Afsana), fixed in both themes like the rail above, with its
+     own ink so it reads on either. `inviteFlow.css` applies it. */
+  --color-e2e-alt-flow: #ffe6d1;
+  --color-e2e-alt-flow-line: #f4a96b;
+  --color-e2e-alt-flow-ink: #3d2410;
+  /* …and the two OCD flows' rows, light green (2026-11-03, Afsana). */
+  --color-e2e-ocd-flow: #dcf2e2;
+  --color-e2e-ocd-flow-line: #7cc495;
+  --color-e2e-ocd-flow-ink: #12331d;
   /* The journey rail's ground (2026-10-22) — the charcoal of the wordmark's
      "CEL", a shade deeper than the course band so white type has room. The X's
      brick is the HIGHLIGHT on this panel, not the ground: one red mark saying
@@ -7705,6 +7715,11 @@ a.cre-library-card-title::after {
   --color-xcel-brick-600: #7b1618;
   --color-e2e-form-outline: #e5e7eb;
   --color-e2e-form-locked: #f3f4f6;
+  /* V3's locked EMAIL field — darker, so it reads as uneditable rather than
+     as an empty input (2026-11-03, Afsana). A step past the form outline
+     (#e5e7eb) so the field's edge still shows; V1/V2 keep the lighter one.
+     #666 text on it is 4.6:1. */
+  --color-e2e-form-locked-v3: #dfe2e6;
   --color-e2e-form-text: #4a5568;
   --color-e2e-form-placeholder: #4b5563;
   --color-e2e-form-shadow: rgb(0 0 0 / 0.05);

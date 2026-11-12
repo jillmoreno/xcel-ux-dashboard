@@ -1564,6 +1564,332 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'compass-content-version',
+    /* WHOSE COURSE CONTENT — 2026-11-05, the direct ask: "a design tool
+       dropdown to show Anjanis Version (current), Jeffs Version (what I will
+       upload), and then a Refined Version (to come later)".
+
+       ⚠ IT SWITCHES THE LESSON, NOT ITS CHROME, and that is why it sits beside
+       `compass-session-chrome` rather than inside it. That flag is already
+       LABELLED "Course content" and asks a different question — whole screen
+       or under the global header — which it asks of whichever version is on
+       screen. This one picks WHICH content renders; the two compose.
+
+       ⚠ TWO ARMS ARE EMPTY ON PURPOSE AND SAY SO ON SCREEN. Jeff's HTML has
+       not been uploaded yet and the refined version does not exist, so each
+       draws a panel naming what is missing and how to get back
+       (`CompassCourseContent`). The tempting alternative — fall back to
+       Anjani's until the file lands — is the one to not take: a reviewer who
+       picks Jeff and sees a lesson believes they are looking at Jeff's work,
+       and nothing on the screen corrects them.
+
+       ⚠ PORTING JEFF'S FILE IS REPLACING ONE ARM, not rewiring this. The
+       dispatcher, the dropdown and the two placeholder panels are the whole
+       mechanism; `/port-prototype` fills an arm. Read his RUNNING BUILD when
+       that happens — the Workspace port's four passes are what that skill is
+       made of.
+
+       ⚠ `anjani` IS THE DEFAULT because it is what ships. The arm is the
+       question; the baseline is not — the same rule `compass-session-chrome`
+       states. So this flag changes nothing until someone picks. */
+    surface: 'design',
+    /* Compass is Anjani's scope (`PROTOTYPE_SCOPES`), so the control is hers
+       even though two of its arms are not. ⚠ `DesignerId` carries no `jeff` —
+       he authors content, not a dashboard version, and inventing a designer id
+       to label one variant would put an empty tab in the Dashboard Versions
+       sheet. The variant's own label is where his name belongs. */
+    owner: 'anjani',
+    /* The two versions the session is reachable from — the same pair
+       `compass-session-chrome` names, for the same reason: the Compass row
+       opens Eric's default with no `version=` pin, and `hybrid-pacing` is
+       where the control was first asked for. */
+    versions: ['hybrid-pacing', 'eric-atlas-e2e'],
+    surfaces: ['compass:session'],
+    group: 'Widgets',
+    label: 'Course content version',
+    description:
+      'Which version of the lesson renders. Anjani’s is the seven-beat session in the product now (Video, Reading, Key terms, Infographic, Knowledge check, Worked example, Recap). Jeff’s and Refined are placeholders: each draws a panel naming what is missing instead of quietly falling back to hers, so nobody mistakes her lesson for his. Compose it with Course content above, which decides whether whichever version is on screen takes the whole screen or sits under the global header.',
+    variants: [
+      { value: 'anjani', label: 'Anjani’s version (current)', description: 'The session in the product now' },
+      { value: 'jeff', label: 'Jeff’s version', description: 'Not uploaded yet — draws a placeholder' },
+      { value: 'refined', label: 'Refined version', description: 'To come — draws a placeholder' },
+    ],
+    defaultVariant: 'anjani',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'compass-jeff-start',
+    /* HIS DEMO SETTINGS, QUESTION ONE — "Start the course as", 2026-11-05.
+       `/port-prototype` step 3: a prototype's own control bar becomes flags on
+       the DESIGN bar rather than a dialog inside the product. His dialog is
+       `PROTOTYPE C · DEMO ONLY` and restarts the course on a pick; this is the
+       same act, in the place this Hub puts every other variation.
+
+       ⚠ `fresh` IS THE DEFAULT BECAUSE IT IS HIS. His `componentDidMount`
+       calls `restartCourse('fresh')` unless a remembered preference says
+       otherwise, and his own dialog labels it "Best for testing with
+       learners". The story arm is the stakeholder walkthrough.
+
+       ⚠ PICKING EITHER RESTARTS THE COURSE, which is also his: "Restarting
+       clears anything added in this session." A control that quietly kept the
+       session's notes while changing which lessons are complete would be a
+       third state neither arm describes.
+
+       ⚠ HIS "Remember on this device" IS NOT PORTED. It writes
+       `compassB.demo` to localStorage so his prototype reopens the same way;
+       on the Hub a Design control already persists the same way, so a second
+       mechanism for the same thing would be one more place for the two to
+       disagree. */
+    surface: 'design',
+    owner: 'anjani',
+    versions: ['hybrid-pacing', 'eric-atlas-e2e'],
+    surfaces: ['compass:session'],
+    group: 'Widgets',
+    label: 'Course start (Jeff)',
+    description:
+      'How Jeff’s course player opens. New learner is his default: nothing complete, no markers, Lesson 1 current — what a learner test wants. Demo story restores his scripted progress — Lessons 1 and 2 complete, Lesson 3 in progress, with the seeded notes and flags — which is what a stakeholder walkthrough wants. Picking either restarts the course, as his dialog does. Only bites on the Jeff arm of Course content version.',
+    variants: [
+      { value: 'fresh', label: 'New learner', description: 'His default — nothing done yet' },
+      { value: 'story', label: 'Demo story', description: 'Lessons 1–2 complete, 9 markers' },
+    ],
+    defaultVariant: 'fresh',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'compass-jeff-exam-tips',
+    /* HIS DEMO SETTINGS, THE SECOND CHECKBOX — "Exam tip callouts in lesson
+       sections and in Rubi's section summaries. Off by default." Ported as a
+       toggle because that is what it is, and left OFF for the same reason the
+       arm above opens on New learner: the default is his, not the port's.
+
+       ⚠ THE TIPS ARE REAL CONTENT, not decoration — one per section on nine
+       of his sections, written as exam advice. They are in the fixtures either
+       way; this decides whether they are drawn. */
+    surface: 'design',
+    owner: 'anjani',
+    versions: ['hybrid-pacing', 'eric-atlas-e2e'],
+    surfaces: ['compass:session'],
+    group: 'Widgets',
+    label: 'Exam tips (Jeff)',
+    description:
+      'Jeff’s exam-tip callouts inside lesson sections. Off is his default. Only bites on the Jeff arm of Course content version.',
+    defaultEnabled: false,
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'compass-jeff-pointers',
+    /* HIS DEMO SETTINGS, THE FIRST CHECKBOX — "Show Rubi pointers · Pointer
+       cards above the prompt in Lesson 3." On by default, as his is.
+
+       ⚠ OFF MEANS NOT QUEUED, NOT QUEUED-AND-HIDDEN. His `queueNudge` returns
+       immediately when pointers are off, so turning them back on mid-session
+       does not deliver a backlog of three cards at once. That is the whole
+       difference between a control and a mute button. */
+    surface: 'design',
+    owner: 'anjani',
+    versions: ['hybrid-pacing', 'eric-atlas-e2e'],
+    surfaces: ['compass:session'],
+    group: 'Widgets',
+    label: 'Rubi pointers (Jeff)',
+    description:
+      'Jeff’s pointer cards above the lesson. Three of them, all in Lesson 3: one when a scripted session resumes, one when the scenario check is answered wrongly, one when section 3.4 comes into view. Each opens a conversation in the Compass rail; each can be snoozed for an hour or dismissed for good. On is his default. Only bites on the Jeff arm of Course content version.',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'compass-mvp-version',
+    /* WHOSE COMPASS — 2026-11-09, from `Compass-Prototype-MVP111926_v2.html`,
+       on the direct ask: "jeff has given me another prototype, and this needs
+       to get populated into my repo. page by page. with a tag that shows its
+       jeffs version."
+
+       ⚠ IT REPLACES THE WHOLE SURFACE, not one page of it, which is what makes
+       it different from `compass-content-version` (his LESSON) and
+       `compass-overview-version` (one page's body). His MVP is a thirteen-page
+       Compass with its own rail — three learning rows, an EXAM PREP rule, five
+       exam-prep rows — so there is no honest way to show one of his pages
+       inside the product's own navigation. The rail is part of the argument.
+
+       ⚠ `current` IS THE DEFAULT because it is what ships — the rule every
+       version control here follows: the arm is the question, the baseline is
+       not.
+
+       ⚠ THE ARM IS BEING FILLED PAGE BY PAGE. Readiness is ported; the other
+       seven rail rows draw a panel naming what is missing and pointing at the
+       document on the Hub. A silent fallback to the product's own page would
+       render shipped work under Jeff's name with nothing on screen to correct
+       a reviewer — the same decision `CompassContentPending` records.
+
+       ⚠ SCOPED TO HIS SURFACE AND THE OVERVIEW, so it is reachable from where
+       a reviewer starts (the Compass landing page) and still on the bar
+       wherever in his MVP they got to. Without the second scope, picking his
+       version would take its own dropdown off the bar.
+
+       ⚠ THE THIRD ARM IS `refined` — 2026-11-09, Jillienne: "I want a 3rd
+       page, so there is Anjanis Version, Jeffs Version, and the REFINED
+       Version." It is Jeff's shell — his rail, his other pages — with the
+       Readiness row opening `CompassReadinessRefined`: his page rebuilt
+       against Nina Conrad's "Compass Rapid Insights: Your Exam Prep" research
+       (Nov 2026) on the house Compass tokens. One page so far; it opens on
+       Readiness because that is the page that differs. Its surface is
+       `compass:refined`, scoped here for the same reason his is. */
+    surface: 'design',
+    owner: 'anjani',
+    versions: ['hybrid-pacing', 'eric-atlas-e2e'],
+    surfaces: ['compass:jeff-mvp', 'compass:refined', 'compass:overview'],
+    group: 'Widgets',
+    label: 'Compass version',
+    description:
+      'Which Compass a reviewer is in. Current is what ships — Anjani’s rail and pages. Jeff’s MVP is his thirteen-page prototype of 2026-11-09, with his own rail: Overview, Learn and Study planner, then an EXAM PREP rule over Prep Review, Practice, Flashcards, Exam Simulator and Readiness. Refined is Jeff’s shell with the Readiness page rebuilt against the Nov 2026 "Your Exam Prep" research — one ring with the level inside it, the gap to Ready stated as time against the exam date, plain language, and every topic and sub-topic on one comparable scale. The whole prototype is on the Hub under Explorations.',
+    variants: [
+      { value: 'current', label: 'Current', description: 'What ships today' },
+      { value: 'jeff', label: 'Jeff’s MVP', description: 'His thirteen-page prototype' },
+      { value: 'refined', label: 'Refined', description: 'Readiness rebuilt on the research' },
+    ],
+    defaultVariant: 'current',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'compass-refined-readiness-hero',
+    /* THE READINESS TO PASS SECTION, on the Refined page — 2026-11-09,
+       Jillienne: "Add a feature flag concept that focuses on the Readiness to
+       Pass section and make a variant that still includes the 3 ringed
+       version that was tested as users seemed to like it."
+
+       The research cut both ways on the rings. Insight 2: many participants
+       named them the most helpful part of the page and called them
+       motivating — "I would love filling those rings up." Insight 3: the
+       rings confused the people who noticed the KEY had more items than the
+       graphic had rings. Recommendation 1 is explicit that either answer is
+       acceptable — "make the number of rings match the number of items in the
+       key, OR simplify the graphic". The Refined page shipped the second; this
+       flag puts the first beside it.
+
+       ⚠ THE `rings` ARM IS THREE RINGS AND A THREE-ITEM KEY, one to one. That
+       is the whole fix. The tested graphic had three rings and a five-item
+       breakdown (Readiness · Practice questions · Flashcards · Exam Simulator
+       · Book your exam), and "Book your exam" was the worst offender — a
+       one-time task cannot fill like a progress ring. Here every ring is a
+       thing that fills: Readiness (a score), Practice questions (a count),
+       Exam simulators (a count). Nothing in the key lacks a ring; no ring
+       lacks a line in the key.
+
+       ⚠ `rings` IS THE DEFAULT SINCE 2026-11-10 — Jillienne, looking at it:
+       "i want this to be built into the refined view for Readiness." It was
+       `single` for a day, because that is what the Refined page was first
+       built as.
+
+       The research supports the move rather than merely permitting it.
+       Insight 3's objection was never the rings themselves — it was that the
+       KEY listed five things and the graphic drew three, so two lines had no
+       ring. This arm fixes exactly that: three rings, three key lines, one
+       to one. With the mismatch gone, Insight 2 is what is left — learners
+       called the concentric graphic the most helpful part of the page and
+       said they would love filling it up.
+
+       `single` STAYS as the arm, not deleted. It is the simpler answer the
+       same recommendation allows, it is one click away on the bar, and the
+       decision between them is still open until someone watches a learner
+       use this one. Scoped to the Refined surface only — a decision about
+       one section of one page. */
+    surface: 'design',
+    owner: 'anjani',
+    versions: ['hybrid-pacing', 'eric-atlas-e2e'],
+    surfaces: ['compass:refined'],
+    group: 'Widgets',
+    label: 'Readiness to Pass',
+    description:
+      'How the Readiness to Pass section draws the score on the Refined page. Three rings is what it shows: the concentric graphic learners called motivating, with a key that matches it ring for ring — Readiness, Practice questions, Exam simulators — which is the fix for the one thing the research faulted (a five-item key over a three-ring graphic). Single ring is the simpler alternative the same recommendation allows: one arc with the level inside it, and questions answered as a labelled bar beneath.',
+    variants: [
+      { value: 'rings', label: 'Three rings', description: 'Readiness · Practice questions · Exam simulators' },
+      { value: 'single', label: 'Single ring', description: 'One arc, the level inside it' },
+    ],
+    defaultVariant: 'rings',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'compass-overview-version',
+    /* WHOSE OVERVIEW — 2026-11-05, from `Compass-Overview-Prototype-V2_2`.
+       Anjani's shipped Overview ("Your learning journey", the 62% ring and
+       the assignments table) against the V2 prototype, which rebuilds the
+       page around READINESS.
+
+       ⚠ `anjani` IS THE DEFAULT because it is what ships, the same rule every
+       other version control here follows: the arm is the question, the
+       baseline is not.
+
+       ⚠ THE V2 ARM IS TWO PAGES, not one, and the stage control below picks
+       between them — his prototype holds sixteen states across three series,
+       and whether Readiness is a phase after the course (the `p` series) or a
+       signal running beside it (the `u` series) is the decision the whole
+       prototype exists to support. Porting one and calling it the design
+       would settle that quietly. */
+    surface: 'design',
+    owner: 'anjani',
+    versions: ['hybrid-pacing', 'eric-atlas-e2e'],
+    surfaces: ['compass:overview'],
+    group: 'Widgets',
+    label: 'Overview version',
+    description:
+      'Which Compass Overview renders. Anjani’s is what ships — her learning journey, the 62% ring, the assignments table. V2 is the Readiness prototype (2026-10-30): the page rebuilt around a three-arc Readiness ring, a blueprint-weighted topic table and what the learner’s confidence says against their answers. Pick the stage with Readiness stage.',
+    variants: [
+      { value: 'anjani', label: 'Anjani’s overview (current)', description: 'What ships today' },
+      { value: 'v2', label: 'Readiness V2', description: 'The 2026-10-30 prototype' },
+    ],
+    defaultVariant: 'anjani',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'compass-readiness-stage',
+    /* WHICH OF HIS SIXTEEN STATES — his own stage picker, as a design control.
+       Three series: `q` walks the QE course (⚠ Readiness does not exist until
+       q8, which is the prototype's first argument), `p` is the exam-prep page
+       after the course, `u` is the unified one where lessons and practice run
+       side by side.
+
+       ⚠ THE STAGE PICKS THE PAGE. A `p` stage draws "Your exam prep"; a `q`
+       or `u` stage draws "Your learning journey". That is his structure, not
+       a convenience: the two pages ARE the two answers, and a stage belongs
+       to one of them.
+
+       ⚠ `p2` IS THE DEFAULT because it is the state the two standalone
+       exports show (Readiness 58%), and the one the design conversation has
+       been about. */
+    surface: 'design',
+    owner: 'anjani',
+    versions: ['hybrid-pacing', 'eric-atlas-e2e'],
+    surfaces: ['compass:overview'],
+    group: 'Widgets',
+    label: 'Readiness stage',
+    description:
+      'Which of the prototype’s sixteen states the Overview shows. Q1–Q8 walk the QE course and Readiness only appears at Q8. P1–P3 are the exam-prep page: establishing, 58% Developing, 86% Ready. U1–U5 are the unified page where course progress and Readiness sit side by side. Only bites on the V2 arm of Overview version.',
+    variants: [
+      { value: 'q1', label: 'Q1 · First-time learner · 0%', description: 'The QE course' },
+      { value: 'q2', label: 'Q2 · QE 20% · Continue your course', description: 'The QE course' },
+      { value: 'q3', label: 'Q3 · QE 50% · Continue your course', description: 'The QE course' },
+      { value: 'q4', label: 'Q4 · QE 80% · You’re almost there', description: 'The QE course' },
+      { value: 'q5', label: 'Q5 · Lessons complete · affidavit next', description: 'The QE course' },
+      { value: 'q6', label: 'Q6 · Final course exam open', description: 'The QE course' },
+      { value: 'q7', label: 'Q7 · Survey and certificate next', description: 'The QE course' },
+      { value: 'q8', label: 'Q8 · QE complete · Readiness appears', description: 'The QE course' },
+      { value: 'p1', label: 'P1 · Establishing Readiness', description: 'Exam prep' },
+      { value: 'p2', label: 'P2 · Readiness 58% · exam preparation', description: 'Exam prep' },
+      { value: 'p3', label: 'P3 · Readiness 86% · Ready to pass', description: 'Exam prep' },
+      { value: 'u1', label: 'U1 · Starting · not enough data', description: 'Learning journey' },
+      { value: 'u2', label: 'U2 · Course 36% · building Readiness', description: 'Learning journey' },
+      { value: 'u3', label: 'U3 · Course 61% · Readiness 62%', description: 'Learning journey' },
+      { value: 'u4', label: 'U4 · Course complete · Readiness 80%', description: 'Learning journey' },
+      { value: 'u5', label: 'U5 · Simulator passed · Ready to pass', description: 'Learning journey' },    ],
+    defaultVariant: 'p2',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'compass-surface',
     /* WHOSE COMPASS — 2026-10-15, the direct ask: "I want what she did to be
        put into the Prototype - Compass Learning section only."
@@ -2833,7 +3159,8 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        card that selects nothing. `InviteFlowVersions.test.ts` holds the two
        lists together.
 
-       DEFAULT `v2` ON THIS BRANCH, which is the branch rule — the flag default
+       DEFAULT `v3` ON feat/invite-flow-v3 (2026-10-29, Afsana's concept;
+       `v2` before it), which is the branch rule — the flag default
        is what makes a branch build show the work. On `main` it is `v1`: the
        End-to-End and Invite & Purchase rows both open this flow, so the default
        here IS what stakeholders see, and moving it is `promote-to-prototype`'s
@@ -2841,12 +3168,13 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     group: 'Navigation',
     label: 'Invite flow version',
     description:
-      'Which build of the Invite & Purchase flow renders at its four routes — the invitation email, Invited Product Detail, checkout, and Confirmation & Password. V1 is the released baseline; V2 is the checkout exploration.',
+      "Which build of the Invite & Purchase flow renders at its four routes — the invitation email, Invited Product Detail, checkout, and Confirmation & Password. V1 is the released baseline; V2 is the checkout exploration; V3 is Afsana's concept.",
     defaultEnabled: true,
-    defaultVariant: 'v2',
+    defaultVariant: 'v3',
     variants: [
       { value: 'v1', label: 'V1', description: 'The released baseline — the flow as the End-to-End row shows it.' },
       { value: 'v2', label: 'V2', description: 'The checkout exploration. A fork of V1; identical until it is changed.' },
+      { value: 'v3', label: 'V3', description: "Afsana's concept. A fork of V2; identical until it is changed." },
     ],
     page: 'dashboard-rebrand',
   },
@@ -2990,6 +3318,121 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'invite-v3-model',
+    /* INVITE FLOW V3'S MODEL TYPE — 2026-10-30, Afsana: "each flow is split by
+       model type (e.g., b2b, b2c). once model type is selected, then flow is
+       available." V3 only: it names the two V3 surfaces and nothing else, so
+       V1 and V2 never see it and keep `invite-flow-journey`.
+
+       The chosen model is what `InviteSurfaceSync` declares as the surface,
+       which is what shows that model's flow control below and hides the
+       other's. `inviteFlowsV3.ts` carries the long form. */
+    surface: 'design',
+    versions: ['eric-atlas-e2e'],
+    surfaces: ['invite:v3-b2b', 'invite:v3-b2b-direct-email', 'invite:v3-b2c', 'invite:v3-b2c-signed-in'],
+    group: 'Navigation',
+    label: 'Model type',
+    description: 'Invite Flow V3 only. Which business model the flow belongs to: B2B invite (a partner’s QR code) or B2C guest checkout (direct from the public site’s cart). Picking one shows that model’s flows.',
+    defaultEnabled: true,
+    defaultVariant: 'b2b',
+    /* B2B → Invite → Checkout was a third model until 2026-11-05 —
+       `archivedInviteFlowsV3.ts`, with the two automatic sign-in flows and
+       the Go to Cart alternative. */
+    variants: [
+      { value: 'b2b', label: 'B2B2C', description: 'A partner’s QR code. Partner pricing; the learner proves their email by code.' },
+      { value: 'b2c', label: 'B2C', description: 'Direct from the public site’s cart. No partner.' },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'invite-v3-flow-b2b',
+    /* V3's B2B flows: Direct Email (V2's "B2B2C with email", first and the
+       default since 2026-11-03), then the four QR flows from Afsana's
+       `xcel-b2b2c-email-flow.html`. Shown only
+       while Model type is B2B — see `invite-v3-model`. The variants must
+       match `INVITE_FLOWS_V3`'s B2B rows; `InviteFlowsV3.test.ts` holds them
+       together. */
+    surface: 'design',
+    versions: ['eric-atlas-e2e'],
+    surfaces: ['invite:v3-b2b', 'invite:v3-b2b-direct-email'],
+    group: 'Navigation',
+    label: 'Invite flow',
+    picker: 'sheet',
+    description: 'Invite Flow V3, B2B invite. Which invite flow the demo walks: Direct Email (the partner’s invitation, address supplied), or one of the three QR flows — net new, has OCD but no Atlas, or has Atlas with a log-in widget.',
+    defaultEnabled: true,
+    defaultVariant: 'direct-email',
+    variants: [
+      { value: 'direct-email', label: 'Direct Email', description: 'Partner invited them, address supplied. Locked at checkout.' },
+      { value: 'qr-net-new', label: 'QR: Net New: No OCD, No Atlas', description: 'New to XCEL. Verify email by code, full checkout, then create a password.' },
+      { value: 'qr-ocd', label: 'QR: OCD, but no Atlas', description: 'Has an OCD account, no Atlas. Same screens as Net New for now.' },
+      { value: 'qr-atlas-login', label: 'QR: Has Atlas: Open Log-In Widget', description: 'Already on Atlas. Email check opens a log-in widget; ends ready to log in.' },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'invite-v3-flow-b2c',
+    /* V3's B2C flows — the B2B control's twin, shown only while Model type is
+       B2C. */
+    surface: 'design',
+    versions: ['eric-atlas-e2e'],
+    surfaces: ['invite:v3-b2c', 'invite:v3-b2c-signed-in'],
+    group: 'Navigation',
+    /* "Guest checkout", not "Invite flow" — 2026-10-30, Afsana: the B2C flows
+       "are actually not invite flows, rather they pertain to guest checkout".
+       The key keeps its name so stored picks and shared links still work. */
+    label: 'Guest checkout',
+    picker: 'sheet',
+    description: 'Invite Flow V3, B2C guest checkout. Which guest checkout flow the demo walks: signed in to XCEL or not.',
+    defaultEnabled: true,
+    defaultVariant: 'xcel-signed-out',
+    variants: [
+      /* Both descriptions in Afsana's words (2026-11-03). */
+      { value: 'xcel-signed-in', label: 'Signed in to XCEL (OCD)', description: 'Signed in to an existing XCEL account. Presence of a partner code dictates next steps. If they have a partner code, cart items affect next steps. If no partner code and all items are part of the 526 SKU list, or if they agree to drop unsupported items, they are signed out. The subsequent flow is affected by whether they have an Atlas account or not.' },
+      { value: 'xcel-signed-out', label: 'Not signed in to XCEL (OCD)', description: 'Presence of a partner code dictates next steps. If they have a partner code, cart items affect next steps. The subsequent flow is affected by whether they have an Atlas account or not.' },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'invite-v3-cart',
+    /* THE OCD LEARNER'S CART — 2026-11-02, Afsana. Which of the three cases
+       the "Signed in to XCEL (OCD)" flow walks — and, since 2026-11-03, "Not
+       signed in to XCEL (OCD)"; shown only on those two
+       (`invite:v3-b2c-signed-in`). See `signedInFlowV3`, `ocdCartFlowV3`. */
+    surface: 'design',
+    versions: ['eric-atlas-e2e'],
+    surfaces: ['invite:v3-b2c-signed-in'],
+    group: 'Navigation',
+    label: 'Cart contents',
+    description: 'Invite Flow V3, signed in to XCEL or not. Checkout asks the Partner Code question first; Yes collects the code, whatever the cart. On No — targeted SKUs only: on to the new guest checkout (signed out first, if signed in). Mixed: a dialog says what will be dropped, then the same. No targeted SKUs: the existing checkout, which ends the walk.',
+    defaultEnabled: true,
+    defaultVariant: 'targeted',
+    variants: [
+      { value: 'targeted', label: 'Targeted only', description: 'Only targeted SKUs (Arizona Health Pre-licensing Premier). No partner code: the new guest checkout — signed out first, if signed in.' },
+      { value: 'mixed', label: 'Mixed', description: 'A targeted SKU and one that is not (New York Life and Health Flashcards). No partner code: told it will be dropped, then on — signed out first, if signed in.' },
+      { value: 'none', label: 'None targeted', description: 'No targeted SKUs (New York Life and Health Flashcards). No partner code: the existing checkout — filled from the account if signed in — the last screen of the walk.' },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'invite-v3-email-account',
+    /* Which way "Verify your email" goes for the signed-out OCD learner — a
+       log-in when the email they give has Atlas, a code when it does not.
+       Direct Email too (2026-11-04): the supplied address, after Purchase. */
+    surface: 'design',
+    versions: ['eric-atlas-e2e'],
+    surfaces: ['invite:v3-b2b-direct-email', 'invite:v3-b2c-signed-in'],
+    group: 'Navigation',
+    label: 'Email belongs to',
+    description: 'Invite Flow V3 — B2B Direct Email (the supplied address, after Purchase), and signed in to XCEL or not (targeted or mixed cart). The email given at Verify your email: an Atlas account (log in, then Start course) or no Atlas account (a code, then Create password).',
+    defaultEnabled: true,
+    defaultVariant: 'no-atlas',
+    variants: [
+      { value: 'atlas', label: 'Atlas account', description: 'Log in, the checkout filled from the account, then Start course.' },
+      { value: 'no-atlas', label: 'No Atlas account', description: 'A code, enter the rest at checkout, then Create password.' },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'order-confirmation-style',
     /* WHICH THANK-YOU PAGE THE GUEST FLOW ENDS ON — 2026-10-22, Jillienne: "i
        want another version of this thank you page, use a feature flag dropdown
@@ -3014,6 +3457,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        and a popover hides two of the options while you look at the first. */
     surface: 'design',
     versions: ['eric-atlas-e2e'],
+    /* Not on V3: V3 has its own ending, which neither control changes. */
     surfaces: ['invite'],
     group: 'Navigation',
     label: 'Thank you page',
@@ -3054,6 +3498,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        not touch it. */
     surface: 'design',
     versions: ['eric-atlas-e2e'],
+    /* Not on V3: V3 has its own ending, which neither control changes. */
     surfaces: ['invite'],
     group: 'Navigation',
     label: 'Journey rail',
@@ -3094,6 +3539,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        decision rather than this line's. */
     surface: 'design',
     versions: ['eric-atlas-e2e'],
+    /* Not on V3: V3 always asks over the cart (Afsana's file, 2026-10-30). */
     surfaces: ['invite'],
     group: 'Navigation',
     label: 'Partner code ask',
@@ -3134,7 +3580,8 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        including why the answer lives in the address rather than in page state. */
     surface: 'design',
     versions: ['eric-atlas-e2e'],
-    surfaces: ['invite'],
+    /* Not on V3's B2C: guest checkout has no invitation to be missing anything. */
+    surfaces: ['invite', 'invite:v3-b2b', 'invite:v3-b2b-direct-email'],
     group: 'Navigation',
     label: 'Invitation missing details',
     description:
