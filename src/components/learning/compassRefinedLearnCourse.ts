@@ -283,14 +283,19 @@ function buildHeader(
    * `REFINED_FINISH_COPY.summaryLabel` — hers, and a shade fuller than the
    * row titles.
    *
-   * ⚠ "21 SECTIONS" IS HER WORD AND IT DISAGREES WITH THE FIGURE BESIDE IT,
-   * which reads "8 of 44 sections" — 44 being every row of the course, which
-   * is what audit finding 3 settled the page on. Carried as asked, and
-   * raised rather than silently resolved: which number "section" means is
-   * hers to decide.
+   * ⚠ 21 HERE AND 44 BESIDE IT, in one word. The stat reads "8 of 44
+   * lessons" — 44 being every row of the course, which is what audit finding
+   * 3 settled the page on — while this counts the twenty-one chapter rows,
+   * which is what `REFINED_COURSE_TOTALS.lessons` means. Both are hers and
+   * both are carried; the disagreement is recorded rather than silently
+   * resolved, because which number the word names is hers to decide. The
+   * Overview's next-step line reads this one.
    */
   eyebrow: [
-    `${chapters.length} Sections`,
+    /* ⚠ "Lessons", NOT "Sections" — 2026-11-12: "Use Lessons instead of
+       sections." It is the course's own word: its instruction reads
+       "Complete all lessons in the list below". */
+    `${chapters.length} Lessons`,
     ...finish.map((f) => REFINED_FINISH_COPY.summaryLabel[f.kind] ?? f.title),
   ].join(' · '),
   /** ⚠ THE WORD FOLLOWS THE FIGURE. The header read "Completed" beside "1 of

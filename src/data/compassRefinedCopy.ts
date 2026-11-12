@@ -1,3 +1,5 @@
+import { REFINED_COURSE_TOTALS } from './compassRefinedCourse'
+
 /**
  * REFINED'S OWN WORDS — the first fixture Refined forks, 2026-11-10.
  *
@@ -312,18 +314,27 @@ export const REFINED_RUBI_INTRO = {
  * title above already says; what a learner weighing "do I start this now?"
  * needs is how long it is and how far in they would get.
  *
- * ⚠ THE SECTION COUNT IS INVENTED, like the pace figures. The course list has
- * forty-one rows and no sub-structure — "do not worry about the course
- * content right now" — so nothing here knows that the Course Introduction has
- * three parts. One number stands for every row until the real shape arrives,
- * which is honest about being a placeholder and dishonest about varying.
+ * ⚠ THE INVENTED "3 sections" IS GONE — 2026-11-12: "Use Lessons instead of
+ * sections. and update that data point on the Overview to show the total
+ * count." It was a placeholder: the course list has no sub-structure ("do not
+ * worry about the course content right now"), so nothing knew the Course
+ * Introduction has three parts, and the same 3 stood on every state. A made-up
+ * number beside a real duration is the kind of figure somebody quotes back.
+ *
+ * ⚠ IT IS THE COURSE'S OWN LESSON COUNT NOW, counted rather than typed, and
+ * it is the same figure the Your Course header's eyebrow leads with — so the
+ * two pages state one fact in one word.
+ *
+ * ⚠ "LESSONS", NOT "SECTIONS", and that is the word everywhere this page and
+ * Your Course count the course. It is also the course's own: its instruction
+ * reads "Complete all lessons in the list below".
  *
  * ⚠ THE DURATION IS NOT INVENTED. It is the first segment of his own meta
  * line, reused rather than retyped, so the time on screen stays whatever his
  * fixture says for that state.
  */
 export const REFINED_NEXT_META = {
-  parts: '3 sections',
+  parts: `${REFINED_COURSE_TOTALS.lessons} Lessons`,
   /** Prefixes the duration lifted from the stage's own meta line. */
   approx: 'about',
 } as const

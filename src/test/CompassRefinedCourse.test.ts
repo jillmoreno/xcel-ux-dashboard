@@ -20,6 +20,7 @@ import {
   refinedCurrentSection,
   refinedProgressAt,
 } from '@/data/compassRefinedCourse'
+import { REFINED_NEXT_META } from '@/data/compassRefinedCopy'
 
 /**
  * THE FLORIDA LIFE & HEALTH COURSE — 2026-11-11, transcribed from the live
@@ -189,11 +190,12 @@ describe('the Your Course page is built from the course list', () => {
     expect(REFINED_COURSE_HEADER.sections).toBe(44)
     expect(REFINED_COURSE_HEADER.chapters).toBe(REFINED_CHAPTERS.length)
     /* ⚠ THE EYEBROW NAMES THE ENDING — 2026-11-12: "21 Sections - Final
-       Course Exam - Survey - Certificate". The tail is one label per closing
-       row, so a fourth would appear here without an edit; pinned against the
-       course rather than against the string. */
+       Course Exam - Survey - Certificate", the word changed to Lessons the
+       same day ("Use Lessons instead of sections"). The tail is one label per
+       closing row, so a fourth would appear here without an edit; pinned
+       against the course rather than against the string. */
     expect(REFINED_COURSE_HEADER.eyebrow).toBe(
-      '21 Sections · Final Course Exam · Survey · Certificate',
+      '21 Lessons · Final Course Exam · Survey · Certificate',
     )
     expect(REFINED_COURSE_HEADER.eyebrow.split(' · ')).toHaveLength(
       1 + REFINED_FINISH_STEPS.length,
@@ -332,5 +334,23 @@ describe('one derivation of where the learner is', () => {
       expect(c.eyebrow, `${c.title} counts a second unit`).not.toMatch(/lessons?/i)
       expect(c.eyebrow).toBe(c.label)
     }
+  })
+})
+
+/**
+ * ⚠ ONE WORD FOR THE COURSE'S ROWS — 2026-11-12: "Use Lessons instead of
+ * sections. and update that data point on the Overview to show the total
+ * count."
+ */
+describe('the course counts in lessons', () => {
+  it('leads the Overview’s next step with the course’s own count, not an invented 3', () => {
+    /* It read "3 sections" on every state — a placeholder for a sub-structure
+       the course list does not have. */
+    expect(REFINED_NEXT_META.parts).toBe(`${REFINED_COURSE_TOTALS.lessons} Lessons`)
+    expect(REFINED_NEXT_META.parts).not.toMatch(/section/i)
+  })
+
+  it('and says the same figure the Your Course eyebrow leads with', () => {
+    expect(REFINED_COURSE_HEADER.eyebrow.startsWith(REFINED_NEXT_META.parts)).toBe(true)
   })
 })

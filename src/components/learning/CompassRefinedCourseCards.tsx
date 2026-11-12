@@ -72,7 +72,7 @@ export function CompassRefinedCourseCards({
           <div className="crf-course__stat">
             <span className="crf-course__done">{header.status}</span>
             <span className="crf-course__of">
-              {header.done} of {header.sections} sections
+              {header.done} of {header.sections} lessons
             </span>
           </div>
           <CourseRing header={header} />

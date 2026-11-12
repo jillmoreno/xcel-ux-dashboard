@@ -165,7 +165,7 @@ export function CourseRing({ header }: { header: RefinedCourseView['header'] }) 
           width="72"
           height="72"
           role="img"
-          aria-label={`Qualifying Education ${header.pct}% complete, ${header.done} of ${header.sections} sections`}
+          aria-label={`Qualifying Education ${header.pct}% complete, ${header.done} of ${header.sections} lessons`}
         >
           <g transform="rotate(-90 60 60)">
             <circle cx="60" cy="60" r="50" fill="none" stroke="var(--cjm-ring-pale)" strokeWidth="12" />
