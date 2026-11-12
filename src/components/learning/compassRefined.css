@@ -1672,6 +1672,47 @@
   border: 1px solid var(--crf-steel-edge);
 }
 
+/* ⚠ THE ROADMAP'S HEADER — 2026-11-12, her reference: a title, the total
+   beside it, and the quick filters hard right. The strip is the shared
+   `PillTabs`, so it rounds and fills the way every other status filter in
+   the app does.
+
+   ⚠ IT WRAPS RATHER THAN SQUEEZING. Three pills and a title do not fit a
+   narrow column side by side; at that width the filters drop to their own
+   line instead of the title truncating. */
+.crf-map__head {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 28px;
+}
+/* ⚠ `crf-map__heading`, NOT `__title` — that is the CARD title's class, and
+   the first pass used it for both: a parity test comparing the two layouts'
+   chapter names caught "Learning Roadmap" at the head of the list.
+
+   ⚠ PLAYFAIR AT 20px — the fourth named exception to the "Open Sans below
+   32px" rule, and the same case as the other three: it is a title asked for
+   in the display face by a reference that sets it that way. Named here so
+   the next person to apply the rule does not quietly undo it. */
+.crf-map__heading {
+  margin: 0;
+  font-family: var(--font-heading-serif), Georgia, serif;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--color-text-primary);
+}
+.crf-map__total {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--crf-muted);
+}
+/* The strip goes hard right, and takes the whole line when the row wraps. */
+.crf-map__filters {
+  margin-left: auto;
+}
+
 /* ---------- the roadmap, 2026-11-12 ----------
    `compass-course-rows: cards`. A card per chapter, from a reference
    screenshot: a numbered chip, a status pill, the action top right and a
@@ -1686,6 +1727,8 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
+  /* ⚠ 12px FROM THE HEADER ABOVE IT since 2026-11-12 — it used to be the
+     first thing after the course card and carried that card's own spacing. */
   margin-top: 12px;
 }
 .crf-map__card {
@@ -1780,12 +1823,17 @@
   gap: 12px;
   margin-bottom: 8px;
 }
+/* ⚠ A SQUARED TAG, NOT A CAPSULE — 2026-11-12: "have the locked look more
+   square style tags". 5px is the radius her reference draws these at: read
+   as a tag rather than as a pill, which matters here because the page's
+   capsules are CONTROLS (the filter strip above, the Ask Rubi button) and
+   this is a label. */
 .crf-map__pill {
   display: inline-flex;
   align-items: center;
   gap: 5px;
   padding: 3px 10px;
-  border-radius: 999px;
+  border-radius: 5px;
   background: var(--crf-locked-tile);
   color: var(--crf-locked-ink);
   font-size: 11px;

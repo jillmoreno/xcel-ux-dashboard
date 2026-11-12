@@ -23,12 +23,29 @@
  *     mark rather than an 01 (her call: "Position, Intro gets a mark").
  */
 
+import { useState } from 'react'
 import { BookOpenRegular, ChevronDown, LockRegular } from '@/icons'
+import { PillTabs } from '@/components/ui/PillTabs'
 import { JEFF_MVP_LEARN_COPY as COPY } from '@/data/compassJeffMvpFixtures'
-import { REFINED_CHAPTER_BLURBS } from '@/data/compassRefinedCopy'
+import { REFINED_CHAPTER_BLURBS, REFINED_ROADMAP } from '@/data/compassRefinedCopy'
 import { ExamRow, LessonMark } from './CompassRefinedCourseParts'
-import type { CourseListProps } from './compassRefinedCourseModel'
+import type { CourseListProps, RoadmapFilter } from './compassRefinedCourseModel'
 import type { RefinedChapter } from './compassRefinedLearnCourse'
+
+/** ⚠ HER WORDS — "All Modules, In Progress, Completed". The noun is a third
+ *  one on this page (lesson, chapter, module); it is hers, it is what the
+ *  reference says, and the rows it filters are the same rows either way. */
+const ROADMAP_FILTERS: { id: RoadmapFilter; label: string }[] = [
+  { id: 'all', label: 'All Modules' },
+  { id: 'current', label: 'In Progress' },
+  { id: 'done', label: 'Completed' },
+]
+
+/** Which chapter state each arm keeps. `all` keeps the folded view. */
+const FILTER_STATE: Record<Exclude<RoadmapFilter, 'all'>, string> = {
+  current: 'current',
+  done: 'done',
+}
 
 /**
  * The pill over the title. The word follows the state, as everywhere else on
@@ -60,14 +77,49 @@ export function CompassRefinedCourseCards({
   openLesson,
   blurb,
 }: CourseListProps) {
+  /**
+   * ⚠ THE FILTER OVERRIDES THE FOLD, and that is the only way the two can
+   * both be true. The fold answers "the middle of this course is a wall"; a
+   * filter is a learner asking for a specific subset, and handing back three
+   * of eleven completed chapters behind a "Show all" control would be
+   * answering a question they did not ask. All modules is the folded view.
+   */
+  const [filter, setFilter] = useState<RoadmapFilter>('all')
+  const listed =
+    filter === 'all' ? shown : chapters.filter((c) => c.state === FILTER_STATE[filter])
+
   return (
     <>
       {/* ⚠ THE COURSE HEADER IS THE PAGE'S NOW — 2026-11-12. It moved up
           into `CourseHeadCard`, joined to the next-step card, so both chapter
           layouts draw only the chapters. */}
 
+      {/* ⚠ THE LIST'S OWN HEADER — 2026-11-12: "add this subtitle and quick
+          filters (pill styles) All Modules, In Progress, Completed".
+
+          ⚠ THE TOTAL SITS BESIDE THE STRIP AND THE PILLS CARRY NO COUNTS,
+          which is the repo's rule for every segmented status filter and
+          happens to be exactly what her reference draws. `PillTabs` is that
+          shared strip — the one My Courses, Certificates and the Study
+          Calendar use — rather than three buttons styled to look like it. */}
+      <div className="crf-map__head">
+        <h3 className="crf-map__heading">{REFINED_ROADMAP.title}</h3>
+        <span className="crf-map__total">
+          {chapters.length} {REFINED_ROADMAP.total}
+        </span>
+        <div className="crf-map__filters">
+          <PillTabs
+            items={ROADMAP_FILTERS}
+            active={filter}
+            onChange={setFilter}
+            label={REFINED_ROADMAP.title}
+            size="compact"
+          />
+        </div>
+      </div>
+
       <div className="crf-map">
-        {shown.map((c) => {
+        {listed.map((c) => {
           const expanded = isOpen(c)
           const pill = statusPill(c)
           return (
@@ -204,7 +256,7 @@ export function CompassRefinedCourseCards({
           )
         })}
 
-        {folded ? (
+        {filter !== 'all' ? null : folded ? (
           <button type="button" className="crf-map__more" onClick={() => setShowAll(true)}>
             <ChevronDown size={13} aria-hidden />
             Show all {chapters.length} chapters

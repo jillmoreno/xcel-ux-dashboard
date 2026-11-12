@@ -469,6 +469,27 @@ export function refinedAccessDaysLabel(today = new Date()): string | null {
   return `${days} ${days === 1 ? 'day' : 'days'} to complete`
 }
 
+/**
+ * THE CHAPTER LIST'S OWN HEADER — 2026-11-12, from her reference: "add this
+ * subtitle and quick filters (pill styles) All Modules, In Progress,
+ * Completed."
+ *
+ * ⚠ THE COUNT IS BESIDE THE STRIP AND THE PILLS CARRY NONE, which is this
+ * repo's standing rule for every segmented status filter ("no per-pill
+ * counts — show the total beside the strip") and is also exactly what her
+ * reference draws.
+ *
+ * ⚠ "Lessons", NOT HER "Topics". The reference reads "41 Topics Total"; that
+ * is its own course's word, and this page settled on one noun for its rows
+ * the same morning ("Use Lessons instead of sections"). The filter labels
+ * below ARE hers verbatim, because she gave those three by name.
+ */
+export const REFINED_ROADMAP = {
+  title: 'Learning Roadmap',
+  /** Follows a counted figure: "21 Lessons Total". */
+  total: 'Lessons Total',
+} as const
+
 export const REFINED_FINISH_COPY = {
   /** The section's own eyebrow and title, in the page's title case. */
   eyebrow: 'Course Completion',

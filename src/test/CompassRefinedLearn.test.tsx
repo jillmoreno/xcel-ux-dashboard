@@ -307,3 +307,40 @@ describe('the course image toggle', () => {
     expect(art.getAttribute('alt')).toBe('')
   })
 })
+
+describe('the roadmap’s quick filters', () => {
+  it('names the list and counts it beside the strip, not on the pills', () => {
+    const { container } = wrapWith({ rows: 'cards' })
+    expect(container.querySelector('.crf-map__heading')?.textContent).toBe('Learning Roadmap')
+    expect(container.querySelector('.crf-map__total')?.textContent).toBe(
+      `${REFINED_CHAPTERS.length} Lessons Total`,
+    )
+    /* ⚠ THE REPO'S RULE for every segmented status filter: "no per-pill
+       counts — show the total beside the strip". */
+    for (const tab of container.querySelectorAll('[role="tablist"] button')) {
+      expect(tab.textContent).not.toMatch(/\d/)
+    }
+  })
+
+  it('keeps only the chapters the arm names, and drops the fold with it', () => {
+    const { container } = wrapWith({ rows: 'cards' })
+    const tab = (name: string) => screen.getByRole('tab', { name })
+
+    fireEvent.click(tab('Completed'))
+    const done = [...container.querySelectorAll('.crf-map__card')]
+    expect(done.length).toBeGreaterThan(0)
+    expect(done.every((c) => c.classList.contains('crf-map__card--done'))).toBe(true)
+    /* ⚠ A FILTER IS A LEARNER ASKING FOR A SUBSET; handing back three of
+       eleven behind a "Show all" control answers a question they did not
+       ask. */
+    expect(container.querySelector('.crf-map__more')).toBeNull()
+
+    fireEvent.click(tab('In Progress'))
+    for (const c of container.querySelectorAll('.crf-map__card')) {
+      expect(c.classList.contains('crf-map__card--current')).toBe(true)
+    }
+
+    fireEvent.click(tab('All Modules'))
+    expect(container.querySelector('.crf-map__more')).not.toBeNull()
+  })
+})

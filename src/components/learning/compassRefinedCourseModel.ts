@@ -10,6 +10,9 @@
 import type { RefinedChapter } from './compassRefinedLearnCourse'
 import type { NextMarkStyle } from './compassRefinedFocusModel'
 
+/** The roadmap's quick filter — 2026-11-12. */
+export type RoadmapFilter = 'all' | 'current' | 'done'
+
 /** Rows or roadmap. `compass-course-rows`. */
 export type CourseRowStyle = 'list' | 'cards'
 
