@@ -123,12 +123,20 @@ export function TwoPackageProductDetailPage() {
   // The course tabs put Premier first (2026-11-06, Eric); the packages themselves keep their order.
   const courseTabPackages = [...packages].sort((a, b) => Number(b.id === 'premier') - Number(a.id === 'premier'))
   // The comparison's rows: all of them across both packages, or on a single page only the ones its package includes.
-  const comparison = soloId ? COMPARISON.filter((row) => row[soloId]) : COMPARISON
+  // Standard's own list, in its own words (2026-11-12, Eric).
+  // …and Premier's (same day, Eric) — not California's, which keeps the shared rows.
+  const premierOnly = soloId === 'premier' && !california
+  const comparison = standardOnly ? STANDARD_INCLUDES : premierOnly ? PREMIER_INCLUDES : soloId ? COMPARISON.filter((row) => row[soloId]) : COMPARISON
   /* THE TRAINING STEPS (2026-11-05, Eric: everything the live product pages say that this one did not — "but try to keep them worded
      more concisely"): what each part holds, the score to aim for, the 24-hour tip, what Part 1 unlocks, and the fourth step, Pass
      Your Exam! On the Standard page first, then on Premier and the multi-product page too (same day). */
-  const howItWorks = standardOnly
-    ? HOW_IT_WORKS
+  const howItWorks = multi2
+    ? // Multi-product 2: Parts 1–3 in the staging page's words, Pass Your Exam! kept as it is (2026-11-11, Eric).
+      HOW_IT_WORKS.map((step) => STAGING_PARTS[step.number] ?? step)
+    : standardOnly || premierOnly
+    ? // Standard: the live Standard page's How It Works, whole (2026-11-12, Eric) — Step 4 keeps its icon in the number's place.
+      // Premier the same (same day, Eric: "match the standard package").
+      STANDARD_STEPS
     : HOW_IT_WORKS.map((step) =>
         // Where Premier's extras come in — the end of Step 2, as on the staging Premier page (same day, Eric). Not on Standard's.
         step.number === '02' ? { ...step, body: `${step.body} Now’s the time for your recorded review class and flashcards.` } : step,
@@ -584,7 +592,12 @@ export function TwoPackageProductDetailPage() {
               capitals and 17 below the last baseline, so it drops 7 to centre the cap-top-to-baseline block. */}
           {/* Multi, in the page's dark text rather than brick (2026-10-30, Eric). */}
           <h2 style={single ? { ...COURSE_HEAD_TITLE, alignSelf: 'center', position: 'relative', top: 7 } : { ...COURSE_HEAD_TITLE, color: 'var(--color-text-primary)' }}>
-            {place} {line} <span style={{ whiteSpace: 'nowrap' }}>Pre-licensing</span> Package{multi2 ? 's' : ''}
+            {multi2 ? (
+              // Multi-product 2: the staging page's headline (2026-11-12, Eric; "…Pre-licensing Packages" before it).
+              <>Choose Your Life &amp; Health <span style={{ whiteSpace: 'nowrap' }}>Pre-Licensing</span> Package</>
+            ) : (
+              <>{place} {line} <span style={{ whiteSpace: 'nowrap' }}>Pre-licensing</span> Package</>
+            )}
           </h2>
           {/* The concise intro (2026-10-29, Eric), in place of "Our pre-licensing packages are updated annually and designed with a
               simplified approach…". */}
@@ -624,7 +637,10 @@ export function TwoPackageProductDetailPage() {
               {place} {line}
               <br />
               {/* California: "…Pre-licensing With Ethics Premier" (2026-11-10, Eric; "…Package Premier" from 2026-11-06). */}
-              <span style={{ whiteSpace: 'nowrap' }}>Pre-licensing</span> {california ? 'With Ethics Premier' : 'Package'}
+              {/* Standard: no "Package" after it (2026-11-12, Eric). */}
+              <span style={{ whiteSpace: 'nowrap' }}>Pre-licensing</span>
+              {/* Premier: "…Pre-licensing Premier" (2026-11-12, Eric; "…Package" before). */}
+              {california ? ' With Ethics Premier' : standardOnly ? null : ' Premier'}
             </h2>
             <div style={{ ...HEAD_PACKAGE_B, '--cp': compact ? 1 : 0, '--px': compact ? 1 : 0, '--py': compact ? 1 : 0 } as CSSProperties}>
               {/* The price left, over the Purchase's left edge (2026-10-29, Eric). */}
@@ -634,9 +650,11 @@ export function TwoPackageProductDetailPage() {
             {standardOnly ? (
               /* Standard's own description, shorter than the live page's (2026-11-05, Eric). */
               <p style={{ ...BODY, marginTop: 8, marginBottom: 0 /* 8 more under it on every page (2026-11-06, Eric; was -8) */ }}>
-                A solid foundation without the extras. Our 3-part training program and AI study partner can have you{' '}
-                <strong style={{ fontWeight: 800 }}>exam-ready in as little as 2 weeks</strong>
-                {' '}— ideal if you’re self-motivated and like to learn on your own.
+                {/* The live page's words, whole (2026-11-12, Eric; the shorter "A solid foundation without the extras…" before). */}
+                Our standard Life &amp; Health Pre-licensing course provides a solid foundation to help you prepare to pass your Life &amp;
+                Health licensing exam without all of the extras. This package includes XCEL’s proven 3-part training program with an
+                AI-powered study partner that helps you learn, practice, and prepare for your exam with confidence in as little as 2 weeks.
+                This package is ideal for those who are self-motivated and will prioritize learning on their own.
               </p>
             ) : california ? (
               /* California's description, word for word and unbolded (2026-11-06, Eric: "change this text to this … Do not bold any
@@ -649,9 +667,9 @@ export function TwoPackageProductDetailPage() {
             ) : soloId === 'premier' ? (
               /* Premier's own description, as Standard's is (same day, Eric) — the live Premier description, shortened. */
               <p style={{ ...BODY, marginTop: 8, marginBottom: 0 /* 8 more under it on every page (2026-11-06, Eric; was -8) */ }}>
-                Everything in Standard, plus flashcards, a recorded exam review class and{' '}
-                our <strong style={{ fontWeight: 800 }}>Prepared to Pass Promise</strong> — ideal if you want more ways to study, to be exam-ready in{' '}
-                as little as 2 weeks, and to <strong style={{ fontWeight: 800 }}>pass the {place} exam the first time.</strong>
+                {/* Eric's copy, unbolded (2026-11-12; "Everything in Standard, plus…" before). */}
+                Our Premier package adds flashcards, a recorded review class, and our Pass Guarantee to the standard package and is ideal
+                for those looking to maximize their studying with various learning formats.
               </p>
             ) : (
             <p style={{ ...BODY, marginTop: 8, marginBottom: 0 /* 8 more under it on every page (2026-11-06, Eric; was -8) */ }}>
@@ -685,9 +703,11 @@ export function TwoPackageProductDetailPage() {
             {standardOnly ? (
               /* Standard's own description, shorter than the live page's (2026-11-05, Eric). */
               <p style={{ ...BODY, marginTop: 8, marginBottom: 0 /* 8 more under it on every page (2026-11-06, Eric; was -8) */ }}>
-                A solid foundation without the extras. Our 3-part training program and AI study partner can have you{' '}
-                <strong style={{ fontWeight: 800 }}>exam-ready in as little as 2 weeks</strong>
-                {' '}— ideal if you’re self-motivated and like to learn on your own.
+                {/* The live page's words, whole (2026-11-12, Eric; the shorter "A solid foundation without the extras…" before). */}
+                Our standard Life &amp; Health Pre-licensing course provides a solid foundation to help you prepare to pass your Life &amp;
+                Health licensing exam without all of the extras. This package includes XCEL’s proven 3-part training program with an
+                AI-powered study partner that helps you learn, practice, and prepare for your exam with confidence in as little as 2 weeks.
+                This package is ideal for those who are self-motivated and will prioritize learning on their own.
               </p>
             ) : california ? (
               /* California's description, word for word and unbolded (2026-11-06, Eric: "change this text to this … Do not bold any
@@ -700,9 +720,9 @@ export function TwoPackageProductDetailPage() {
             ) : soloId === 'premier' ? (
               /* Premier's own description, as Standard's is (same day, Eric) — the live Premier description, shortened. */
               <p style={{ ...BODY, marginTop: 8, marginBottom: 0 /* 8 more under it on every page (2026-11-06, Eric; was -8) */ }}>
-                Everything in Standard, plus flashcards, a recorded exam review class and{' '}
-                our <strong style={{ fontWeight: 800 }}>Prepared to Pass Promise</strong> — ideal if you want more ways to study, to be exam-ready in{' '}
-                as little as 2 weeks, and to <strong style={{ fontWeight: 800 }}>pass the {place} exam the first time.</strong>
+                {/* Eric's copy, unbolded (2026-11-12; "Everything in Standard, plus…" before). */}
+                Our Premier package adds flashcards, a recorded review class, and our Pass Guarantee to the standard package and is ideal
+                for those looking to maximize their studying with various learning formats.
               </p>
             ) : (
             <p style={{ ...BODY, marginTop: 8, marginBottom: 0 /* 8 more under it on every page (2026-11-06, Eric; was -8) */ }}>
@@ -907,7 +927,22 @@ export function TwoPackageProductDetailPage() {
                   {/* In 'Select your package:''s style, 8 in like the column text below it (2026-10-27, Eric). */}
                   <caption style={{ ...SIDE_TITLE, textAlign: 'left', paddingBottom: 20 }}>
                     {/* "Package includes:" on California too again (2026-11-06, Eric — after "Included in this package:" and "Courses included…"). */}
-                    {single ? 'Package includes:' : 'Compare packages:'}
+                    {multi2 ? (
+                      /* Multi-product 2: the staging page's words over its grid — the title, and what it means under it (2026-11-12, Eric). */
+                      <>
+                        Unlimited Study Support -
+                        <span style={COMPARE_SUBHEAD}>
+                          with Rubi, XCEL&rsquo;s AI-powered study partner, gives you instant answers and real-world examples. Included free
+                          with every pre-licensing education course.
+                        </span>
+                      </>
+                    ) : standardOnly || premierOnly ? (
+                      /* Standard and Premier: "What's Included", and what it is under it (2026-11-12, Eric; "Package includes:" before). */
+                      <>
+                        What&rsquo;s Included
+                        <span style={COMPARE_SUBHEAD}>XCEL&rsquo;s Proven 3-Part Training Program:</span>
+                      </>
+                    ) : single ? 'Package includes:' : 'Compare packages:'}
                     {/* THE CALIFORNIA PACKAGE'S THREE PRODUCTS — Figma 668:1357 (2026-11-06, Eric: "add this below package includes" and
                         retitle it "Included in this package:"). Three tiles across the column: the course itself, then the Code and
                         Ethics course and the flashcards, each a link with its chevron. Not wired. */}
@@ -1045,14 +1080,26 @@ export function TwoPackageProductDetailPage() {
             <div style={SHARED}>
               {/* What You'll Learn moved to the rail, under At a Glance (2026-10-28, Eric). */}
               <section style={SECTION}>
-                <h2 style={SECTION_TITLE}>Earn your license fast with our 3-Part Training Program</h2>
-                {/* The subhead (2026-10-28, Eric). */}
+                {/* Multi-product 2: the staging page's heading and intro for the section (2026-11-11, Eric). */}
+                <h2 style={SECTION_TITLE}>
+                  {multi2 ? 'What Is XCEL\u2019s Proven 3-Part Training Program?' : standardOnly || premierOnly ? 'How It Works' : 'Earn your license fast with our 3-Part Training Program'}
+                </h2>
+                {/* The subhead (2026-10-28, Eric). None on Standard, whose How It Works goes straight into its steps (2026-11-12, Eric). */}
+                {standardOnly || premierOnly ? null : (
                 <div style={SUBHEAD}>
+                  {multi2 ? (
+                    <p style={{ margin: 0 }}>
+                      XCEL offers a clear path to getting licensed with a 3-Part Training Program that teaches you what you need to know and
+                      tests your knowledge.
+                    </p>
+                  ) : (
                   <p style={{ margin: 0 }}>
                     9 out of 10 students say XCEL’s proven 3-Part Training Program left them feeling prepared, and helped them pass their
                     insurance licensing exams on the first try.
                   </p>
+                  )}
                 </div>
+                )}
                 {/* Four benefits in tiles — Figma 558:3578 (2026-10-28, Eric). */}
                 {/* Hidden (2026-10-29, Eric) — kept whole behind SHOW_BENEFITS, so showing them again is one word. */}
                 {SHOW_BENEFITS ? (
@@ -1341,6 +1388,92 @@ const COMPARISON: { feature: ReactNode; detail?: ReactNode; standard: boolean; p
   },
   { feature: 'Flashcards (Life, Health, and Accident Insurance)', detail: '800+ cards covering fundamentals', standard: false, premier: true, link: 'Learn More' }, // (2026-10-29, Eric)
 ]
+
+/* THE STANDARD PAGE'S "PACKAGE INCLUDES:" — Eric's copy, 2026-11-12, verbatim: each item's name, then what it is. */
+const STANDARD_INCLUDES: typeof COMPARISON = [
+  { feature: 'Pre-licensing Course', detail: 'Online self-study course providing fundamentals and satisfies any state requirements.', standard: true, premier: true },
+  { feature: 'Prep Review Course', detail: 'Scaled down content focusing on the most important material weighted to match your state exam outline.', standard: true, premier: true },
+  { feature: 'Exam Simulator', detail: 'The three exam simulators with unlimited retakes are weighted by topic to match the state exam.', standard: true, premier: true },
+  { feature: 'Extended Access', detail: '30-day access to the Pre-licensing course & then 30 days for the prep review course & exam simulators.', standard: true, premier: true },
+  {
+    feature: 'AI-Powered Study Partner, Rubi\u2122',
+    detail: 'Study smarter with an AI-powered tutor built into your course that delivers real-time guidance, instant answers, and personalized support every step of the way.',
+    standard: true,
+    premier: true,
+  },
+]
+
+/* THE STANDARD PAGE'S HOW IT WORKS — Eric's copy, 2026-11-12, verbatim; Step 4's title only, its icon where the number would be. */
+const STANDARD_STEPS: { number: string; title: string; body: string }[] = [
+  {
+    number: '01',
+    title: 'Complete the Pre-Licensing Course',
+    body: 'The pre-licensing course provides a solid foundation for preparing to pass your exam and satisfies any state pre-licensing education requirements. It contains keywords, streamlined content, bite-size intro/summary videos, review notes, and chapter exams. Along the way, you can use Rubi\u2122, our AI-powered study partner, to better understand concepts, generate additional practice opportunities, and get instant answers to course-related questions. We recommend obtaining a 70% or better on course exams.',
+  },
+  {
+    number: '02',
+    title: 'Take the Prep Review Course',
+    body: 'Upon completion of Part 1, you gain access to the Prep Review Course (Part 2) and Exam Simulator (Part 3) \u2013 the sections we hear students value the most. XCEL\u2019s Prep Review Course scales down content to focus solely on the most important material with weighted sections identical to the state exam. We recommend obtaining an 80% or better on the chapter exams.',
+  },
+  {
+    number: '03',
+    title: 'Finish with the Exam Simulators',
+    body: 'There are three exam simulators. Each simulator is weighted by topic to match the state exam, allows for unlimited retakes, and can only be unlocked by completing the previous exam. We recommend obtaining an 85% or better on the exams. Revisit the simulators at least 24 hours before your state exam to keep the information in the front of your mind.',
+  },
+  {
+    number: '04',
+    title: 'Pass Your Exam!',
+    body: 'After successfully completing the 3-part training program in its entirety, you will have learned all the material needed to pass your exam on the first attempt.',
+  },
+]
+
+/* THE PREMIER PAGE'S "WHAT'S INCLUDED" — Eric's copy, 2026-11-12, verbatim: Standard's five, then Premier's two extras; the
+   flashcards' name links to their product page on xcelsolutions.com. */
+const PREMIER_INCLUDES: typeof COMPARISON = [
+  ...STANDARD_INCLUDES,
+  {
+    feature: 'Recorded Livestream Exam Review - Life and Health English',
+    detail: 'Play, pause, fast-forward, and rewind a recorded version of our 1-day Exam Review class.',
+    standard: false,
+    premier: true,
+  },
+  {
+    feature: (
+      <a
+        href="https://www.xcelsolutions.com/flashcards-life-health-and-accident-insurance-615us040007a00"
+        target="_blank"
+        rel="noreferrer"
+        className="cre-e2e-textlink cre-e2e-textlink--brick"
+        style={{ font: 'inherit', textDecoration: 'none' }}
+      >
+        Flashcards - Life, Health, and Accident Insurance
+      </a>
+    ),
+    detail: '800+ flashcards to test & reinforce your knowledge of fundamentals.',
+    standard: false,
+    premier: true,
+  },
+]
+
+/* MULTI-PRODUCT 2'S THREE PARTS — verbatim from the live staging page, mcstaging.xcelsolutions.com/insurance-license/life-and-health
+   (2026-11-11, Eric: "update the content in the sections from the attached link … ignore the last section, Pass Your Exam"). */
+const STAGING_PARTS: Record<string, { number: string; title: string; body: string }> = {
+  '01': {
+    number: '01',
+    title: 'Build Your Foundation & Meet Requirements',
+    body: 'Our state-specific insurance licensing classes put you on the path to passing your exams with expert-led instruction, bite-size videos, and more to help you meet your licensing requirements. Our AI study partner, Rubi\u2122, is built into each lesson, so you can ask questions, get instant explanations and examples (in multiple languages) and stay on track from the start.',
+  },
+  '02': {
+    number: '02',
+    title: 'Focus on What Matters Most',
+    body: 'After completing Part 1, you\u2019ll unlock the Prep Review Course with more streamlined content that lines up with what will be on the exam, so you can focus on the most important material. Rubi\u2122 continues to be by your side, helping you break down difficult concepts, reinforce weak areas, and feel confident heading into exam day.',
+  },
+  '03': {
+    number: '03',
+    title: 'Test Your Knowledge',
+    body: 'There are three exam simulators. Each simulator is weighted by topic to match the state exam, allows for unlimited retakes, and can only be unlocked by completing the previous exam. We recommend completing these the 24 hours before your state exam to keep the information in the front of your mind.',
+  },
+}
 
 /* MULTI-PRODUCT 2'S COMPARISON — verbatim from the live staging page, mcstaging.xcelsolutions.com/insurance-license/life-and-health
    (2026-11-11, Eric): its rows in its order, its three group headings, and the description each row opens to. Which package has
@@ -1798,7 +1931,7 @@ const BODY: CSSProperties = {
 const STEPS: CSSProperties = {
   margin: 0,
   padding: 0,
-  paddingTop: 38,
+  paddingTop: 30, // 8 less (2026-11-12, Eric; was 38)
   borderTop: '1px solid var(--color-neutral-100)',
   listStyle: 'none',
 }
@@ -1806,8 +1939,8 @@ const STEP: CSSProperties = {
   display: 'flex',
   alignItems: 'flex-start',
   gap: 23,
-  paddingBottom: 30,
-  marginBottom: 38, // 38 under the rule (2026-10-28, Eric; the site's 30)
+  paddingBottom: 22, // 8 less (2026-11-12, Eric; was 30)
+  marginBottom: 30, // 30 under the rule (2026-11-12, Eric: 8 less; 38 since 2026-10-28, the site's 30)
   borderBottom: '1px solid var(--color-neutral-100)',
 }
 const STEP_LAST: CSSProperties = { marginBottom: 0 } // keeps its rule underneath now (2026-10-29, Eric; was none)
@@ -1818,7 +1951,7 @@ const STEP_TITLE: CSSProperties = SIDE_TITLE
    title starts where 01–03's do (2026-11-05, Eric). */
 // 4 higher than centred (same day, Eric's requests: up 7, then back down 3) — marginTop -2, from 2.
 const STEP_ICON: CSSProperties = { flex: 'none', width: 25.2, height: 20, marginTop: -2, color: 'var(--color-xcel-brick)' }
-const STEP_BODY: CSSProperties = { ...BODY, marginTop: 7, color: 'var(--color-text-secondary)' } // 7 under the title (2026-10-28, Eric: 11, then 4 less; the site's 15)
+const STEP_BODY: CSSProperties = { ...BODY, fontSize: 16, lineHeight: '24px', marginTop: 7, color: 'var(--color-text-secondary)' } // 16 / 24 (2026-11-12, Eric; BODY's 18 / 27) // 7 under the title (2026-10-28, Eric: 11, then 4 less; the site's 15)
 
 /* Figma 558:3578, then opened up (2026-10-28, Eric): no fills, a 1 #DDD rule over the row like the one under it, and a 1 rule
    between the four (the outer ends flush with the column). Each 8 / 16 in; a Font Awesome icon (34 Thin in the design) in the
@@ -2589,6 +2722,7 @@ const COMPARE_TOGGLE: CSSProperties = {
 }
 const COMPARE_TOGGLE_ANGLE: CSSProperties = { flex: 'none', width: 14, height: 14, marginTop: 3, color: 'var(--color-xcel-brick)', transition: 'transform 200ms ease' }
 const COMPARE_DESC: CSSProperties = { margin: 0, paddingTop: 6, paddingLeft: 22, paddingRight: 8, fontSize: 13, lineHeight: '17px', color: 'var(--color-text-secondary)' }
+const COMPARE_SUBHEAD: CSSProperties = { ...SIDE_BODY, display: 'block', marginTop: 8, fontWeight: 400 }
 const COMPARE_GROUP: CSSProperties = { ...COMPARE_HEAD, paddingLeft: 0, paddingTop: 20, borderTop: 'none' }
 /* Single, with no header row, the rule over the first item stays (2026-10-28, Eric). */
 const COMPARE_FIRST_RULE: CSSProperties = { borderTop: `1px solid ${COMPARE_RULE}` }
