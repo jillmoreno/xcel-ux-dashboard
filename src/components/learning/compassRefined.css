@@ -1013,12 +1013,13 @@
   display: flex;
   align-items: center;
   gap: 14px;
-  /* ⚠ 16px TOP AND BOTTOM — 2026-11-12: "reduce top and bottom padding". It
-     was 22, set when the row carried a badge, a two-line name block and a
-     stacked stat column; the badge and the status word have both gone and
-     the count moved onto the name's own line, so the row is shorter content
-     in the same box. */
-  padding: 16px 20px;
+  /* ⚠ 12px TOP AND BOTTOM — 2026-11-12, "reduce top and bottom padding"
+     twice in a morning: 22 → 16 → 12. It was set when the row carried a
+     badge, a two-line name block and a stacked stat column; the badge and
+     the status word have both gone and the count moved onto the name's own
+     line, so it is markedly shorter content in the same box. The ring is
+     88px and the row cannot close below that plus its own padding. */
+  padding: 12px 20px;
   border-bottom: 1px solid var(--crf-card-edge);
 }
 .crf-tile {
@@ -1442,7 +1443,11 @@
    matching the other page's ground is what stops the same card reading as
    two different components. */
 .crf-course__step {
-  padding: 22px 20px;
+  /* ⚠ 14px, DOWN FROM 22 — the same ask, on the half below the divider. The
+     two halves are padded differently on purpose: this one holds a 60px
+     thumbnail and a button, so it needs a little more room than the header
+     to avoid reading as cramped against the rule above it. */
+  padding: 14px 20px;
   background: var(--crf-steel-wash);
 }
 /* ⚠ THE HEADER KEEPS ITS RULE ONLY WHEN SOMETHING FOLLOWS IT. On the roadmap
