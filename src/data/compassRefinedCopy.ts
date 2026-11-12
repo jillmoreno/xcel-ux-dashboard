@@ -130,7 +130,13 @@ export const REFINED_OVERVIEW_TITLE = 'Overview - Your Learning Journey'
  */
 export const REFINED_PAGE_TITLES = {
   overview: REFINED_OVERVIEW_TITLE,
-  learn: 'Your Course',
+  /* ⚠ "Course Roadmap" — 2026-11-12, "change both to Course Roadmap", the
+     row and the title together. It was "Your Course", which named the page
+     by what it is ABOUT; the page is a sequence of twenty-one stops with a
+     spine drawn down it, and the word for that is the one the list's own
+     header already used. Row and title are now the same string, which is
+     the agreement the rail has wanted since 2026-11-11. */
+  learn: 'Course Roadmap',
   'study-planner': 'Study Planner',
   'prep-review': 'Prep Review',
   practice: 'Practice',
@@ -153,15 +159,13 @@ export const REFINED_PAGE_TITLES = {
  */
 export const REFINED_RAIL_LABELS: Record<string, string> = {
   overview: 'Overview',
-  /* ⚠ "Course" — 2026-11-12, "Change to Course". It was "Your Course" from
-     2026-11-11, set so the row and the page it opens would not call
-     themselves different things ("Learn" opening "Your Course" was the
-     mismatch being fixed). "Course" keeps that agreement — the page is still
-     titled Your Course and nobody reads the two as different places — and
-     drops a word the rail does not need: every row on it is this learner's.
-     The group above it went the same way the same minute ("Your learning" →
-     "Learn"). */
-  learn: 'Course',
+  /* ⚠ "Course Roadmap" — 2026-11-12, and the SAME STRING as the page title
+     (see `REFINED_PAGE_TITLES`): "change both to Course Roadmap". It went
+     "Your Course" → "Course" → this within the hour; each step dropped a
+     word the rail does not need ("your": every row on it is this learner's)
+     and this one adds the page's actual shape. The group above went the same
+     way the same minute ("Your learning" → "Learn"). */
+  learn: 'Course Roadmap',
   'study-planner': 'Study Planner',
   'prep-review': 'Prep Review',
   practice: 'Practice',
