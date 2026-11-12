@@ -19,6 +19,8 @@ import { atlasHandoffVariantRender } from '@/components/prototype/atlasHandoffPr
  * before it.
  */
 const HOME_ROWS = [
+  // Home back at the top (2026-11-12, Eric: "add a button above My Courses for Home").
+  'Home',
   'My Courses',
   'My Certificates',
   'Exam Information',
@@ -34,7 +36,7 @@ describe('the Quick Links previews match the Home', () => {
      render a cropped iframe of the page rather than the card, so there are no
      rows of ours to count in them. */
   for (const variant of ['Default', 'Hover / focus']) {
-    it(`"${variant}" draws the Home's five rows and no others`, () => {
+    it(`"${variant}" draws the Home's six rows and no others`, () => {
       const node = atlasHandoffVariantRender('atlas-home-quick-links', variant)
       expect(node, `no render registered for "${variant}"`).toBeTruthy()
       /* The handoff page sits inside the app's Router, so the preview has to

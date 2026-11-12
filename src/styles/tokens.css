@@ -8129,3 +8129,33 @@ thead .cre-admin-sticky-col { background: var(--admin-fill-soft); }
   outline-offset: 2px;
   border-radius: 2px;
 }
+
+/* Figma 706:2416's course card (2026-11-12, Eric): its two buttons darken a step on hover. */
+.cre-atlas-card-primary:not(:disabled):hover { background: var(--color-primary-600) !important; }
+.cre-atlas-card-kebab:hover { background: var(--color-primary-200) !important; }
+.cre-atlas-card-outline:not(:disabled):hover { background: var(--color-primary-100) !important; }
+
+/* Quick Links pinned 40 under the header (2026-11-12, Eric: "stop scrolling vertically once it reaches 40 pixels below the
+   header"). `--atlas-header-bottom` is the shell's. The card's parent is stretched to its column's height so the card has
+   room to stay pinned; the card itself keeps its own height. */
+.cre-quick-links-card {
+  position: sticky;
+  top: calc(var(--atlas-header-bottom, 0px) + 40px);
+  align-self: flex-start;
+  z-index: 1;
+}
+:has(> .cre-quick-links-card) { align-self: stretch; }
+
+/* A Quick Links row on its own page keeps its hover angle (2026-11-12, Eric). */
+.cre-compass-v2-row[aria-current='page'] .cre-quick-link-chevron { opacity: 1; }
+
+/* The course card's ⋮ menu rows (2026-11-12, Eric). */
+.cre-atlas-card-menu-item:not(:disabled):hover, .cre-atlas-card-menu-item:not(:disabled):focus-visible { background: var(--color-primary-100) !important; }
+.cre-atlas-card-expired:not(:disabled):hover { background: var(--color-error-200) !important; }
+
+/* The Atlas Profile page's cards: no border, a Secondary 100 fill (2026-11-12, Eric; Primary 100 first). Only inside the Atlas
+   account frame — the shared ProfileCard keeps its outline everywhere else. */
+.cre-atlas-account-body .cre-profile-card {
+  border-color: transparent !important;
+  background: var(--color-secondary-100) !important;
+}

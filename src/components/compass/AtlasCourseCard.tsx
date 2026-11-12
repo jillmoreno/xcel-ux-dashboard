@@ -37,11 +37,21 @@ export type AtlasCourseCardData = {
   actionLabel: string
   /** `secondary`: the outline button — white fill, brand-red border and label
    *  (2026-10-06, for the Begin Course cards). Default `primary`. */
-  actionStyle?: 'primary' | 'secondary'
+  actionStyle?: 'primary' | 'secondary' | 'expired' // `expired`: Purchase Extension's pink outline (2026-11-12, Eric; Figma card only)
   /** A COMPLETED course (2026-10-06): the date line reads "Completed:" with
    *  the FA circle-check (regular), `availableDate` is the completion date, and
    *  the button is an inactive "Completed" — disabled, in neutral greys. */
   completed?: boolean
+  /* THE FIGMA 706:2416 CARD'S FACTS (2026-11-12, Eric) — read by `AtlasCourseCardFigma` only; a row with nothing to say is
+     not drawn. */
+  /** "Florida". */
+  state?: string
+  /** "Licensing". */
+  category?: string
+  /** "Life and Health". */
+  lineOfAuthority?: string
+  /** 0–100; the progress row and its bar. Absent → read off the lifecycle (Completed 100, Begin 0). */
+  progress?: number
 }
 
 export function AtlasCourseCard({

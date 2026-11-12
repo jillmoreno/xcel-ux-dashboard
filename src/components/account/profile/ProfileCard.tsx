@@ -23,7 +23,7 @@ type Props = {
  */
 export function ProfileCard({ title, icon: Icon, onEdit, editLabel, children }: Props) {
   return (
-    <section style={cardStyle}>
+    <section className="cre-profile-card" style={cardStyle}>
       <div style={headerRowStyle}>
         <div style={titleWrapStyle}>
           <Icon size={20} aria-hidden />

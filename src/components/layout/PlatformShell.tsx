@@ -21,7 +21,7 @@ import { CatalogPage } from '@/pages/CatalogPage'
 import { MyCoursesPage } from '@/pages/MyCoursesPage'
 import { AtlasAccountLinksCard, AtlasJourneyLinksCard } from '@/components/compass/AtlasJourneyLinksCard'
 import { useAtlasAccountPages } from '@/components/account/useAtlasAccountPages'
-import { AtlasCourseCard } from '@/components/compass/AtlasCourseCard'
+import { AtlasCourseCardFigma } from '@/components/compass/AtlasCourseCardFigma'
 import {
   ATLAS_COURSE_CARD_W,
   ATLAS_MY_COURSES,
@@ -199,6 +199,10 @@ const VALID_SECTIONS: PlatformSection[] = [
   'purchases',
   'gift-recipients',
 ]
+
+/* MY COURSES' PAGE WIDTH — three 265 cards beside Quick Links, inside the 40 gutters, and 9 to spare (2026-11-12, Eric: "allow
+   three columns on a row, increasing the width of the body if needed"). The other pages keep 1180 (1172 under the top nav). */
+const MY_COURSES_PAGE_W = Math.max(1180, ATLAS_MY_COURSES_WIDTH + 80 + 9)
 
 export function PlatformShell() {
   // Wrap the shell in the in-shell course-launcher provider so a card deep in
@@ -452,7 +456,9 @@ function PlatformShellBody() {
   const e2eSectionIndent =
     atlasAccountPage ||
     (isE2ELikeVersion(shellVersion) && !atlasQuickLinksHidden && e2eQuickLinksLeft && (active === 'courses' || active === 'certificates'))
-      ? E2E_QUICK_LINKS_COLUMN_W + 24
+      ? /* The title over the page lines up with the page under it (2026-11-12, Eric): Certificates' aside is 5.5 wider and
+           My Courses' 1, for Home's gutter — so their titles move with them. */
+        E2E_QUICK_LINKS_COLUMN_W + 24 + (atlasAccountPage ? 5 : active === 'certificates' ? 5.5 : active === 'courses' ? 1 : 0)
       : undefined
   /* ⚠ THE ACCOUNT PAGES HAVE THEIR OWN NAV, AND IT IS NOT THIS ONE
      (2026-10-19, Jillienne: "clicking on profile should not show this random
@@ -1129,6 +1135,8 @@ function PlatformShellBody() {
           : atlasNav && (active === 'dashboard' || active === 'course' || active === 'resources')
             ? { background: 'var(--color-compass-page)' }
             : null),
+        // Where the Quick Links card pins — the header's real bottom edge (2026-11-12, Eric).
+        ['--atlas-header-bottom' as string]: `${headerBottom}px`,
         display: 'grid',
         /* Rail is a fixed column anchored flush to the viewport's LEFT edge at
            every width (no left filler), so the nav never floats inward on wide
@@ -1461,9 +1469,18 @@ function PlatformShellBody() {
                 maxWidth:
                   active === 'dashboard' && (shellVersion === 'eric-atlas-v3' || isEricAtlasWhiteLike(shellVersion))
                     ? 1278
-                    : 1172,
+                    : /* My Courses: wide enough for three 265 cards beside Quick Links — the 1172 grows by what they need
+                         (2026-11-12, Eric: "allow three columns on a row, increasing the width of the body if needed"). */
+                      active === 'courses'
+                      ? MY_COURSES_PAGE_W
+                      : 1172,
                 width: '100%',
-                margin: '0 auto',
+                /* My Courses grows to the RIGHT of the 1180 frame, not about its centre, so its left edge — and Quick Links
+                   with it — stays where every other page has it (2026-11-12, Eric: "keep it positioned horizontally in the
+                   same place"). */
+                ...(active === 'courses'
+                  ? { width: MY_COURSES_PAGE_W, marginLeft: 4, marginRight: 1172 + 4 - MY_COURSES_PAGE_W }
+                  : { margin: '0 auto' }),
               }
             : null),
         }}
@@ -1498,7 +1515,8 @@ function PlatformShellBody() {
               onBack={() => handleSelect('dashboard')}
               /* THE MY ACCOUNT PAGES' PATH — "Home / My Account / Profile" on every width (2026-11-10, Eric; until then the
                  phone's alone, and through Profile: "Home / Profile / Transcripts"). My Account opens its first page, Profile. */
-              crumbs={isAccountSection(active) ? [{ label: 'My Account', onClick: () => handleSelect('profile') }] : undefined}
+              // …and since 2026-11-12 (Eric: "remove My Account from the breadcrumb") just "Home / Profile".
+              crumbs={undefined}
               // Every section page of the End-to-End family a path too since the same day — the Quick Links pages read "Home /
               // My Courses", "Home / My Certificates" (Eric: "make the quick links pages breadcrumb align with the profile pages").
               // Hybrid and the other Atlas versions keep Back to Home.
@@ -2695,7 +2713,7 @@ function MyCoursesSection() {
   // WIP's page — and Eric/Atlas White's, a duplicate of it on a white page
   // (2026-10-14, Eric's request).
   const wip = (sectionVersion === 'eric-atlas-v3' || isEricAtlasWhiteLike(sectionVersion))
-  const white = isEricAtlasWhiteLike(sectionVersion)
+  // `white` (isEricAtlasWhiteLike) fed the old card's activeFill; the Figma 706:2416 card is Primary 100 on every version.
   const quickLinksRight = useFeatureFlag('atlas-wip-quick-links-side').variant === 'right'
   /*
    * THE BASELINE — Jill/Atlas-Main and End-to-End Demo, the two versions the
@@ -2780,7 +2798,9 @@ function MyCoursesSection() {
   return (
     <MyCoursesPage
       embedded
-      aside={showQuickLinks ? <AtlasJourneyLinksCard withoutCoursePages={wip} style={wip ? (baseline && !quickLinksRight ? WIP_QUICK_LINKS_LIFTED : WIP_QUICK_LINKS) : undefined} /> : undefined}
+      // 4.5 further left than the lifted card's 7.5, so its left edge is Certificates' and the account pages' (2026-11-12, Eric:
+      // "keep it positioned horizontally in the same place").
+      aside={showQuickLinks ? <AtlasJourneyLinksCard withoutCoursePages={wip} style={wip ? (baseline && !quickLinksRight ? { ...WIP_QUICK_LINKS_LIFTED, marginLeft: 3 } : WIP_QUICK_LINKS) : undefined} /> : undefined}
       // On the LEFT again on WIP (2026-10-13, Eric's request — its Home's
       // Quick Links moved left the same day); `asideRight` stays available.
       // …at the Home card's 230 (same day). The Design bar's Quick Links
@@ -2798,7 +2818,8 @@ function MyCoursesSection() {
       /* Centred at the October width while the rail is there; full width
          without it, so the cards "shift over to the left" (2026-11-02). */
       contentWidth={showQuickLinks ? ATLAS_MY_COURSES_WIDTH : undefined}
-      asideWidth={wip ? (baseline && !quickLinksRight ? E2E_QUICK_LINKS_COLUMN_W : WIP_QUICK_LINKS_W) : ATLAS_MY_COURSES_ASIDE_W}
+      // 1 wider — the gutter to the cards Home's to the pixel (2026-11-12).
+      asideWidth={wip ? (baseline && !quickLinksRight ? E2E_QUICK_LINKS_COLUMN_W + 1 : WIP_QUICK_LINKS_W) : ATLAS_MY_COURSES_ASIDE_W}
       /* THE SHARED CARD'S TWO PROPS (2026-11-02, Jillienne: "use the shared
          course card, but update the course title to the serif font, do NOT put
          a cta on the card"). The shared card has never had a call to action, so
@@ -2825,15 +2846,15 @@ function MyCoursesSection() {
         ) : (
           <div style={{ display: 'grid', gridTemplateColumns: `repeat(auto-fill, ${ATLAS_COURSE_CARD_W}px)`, gap: 16 }}>
             {cards.map((c, i) => (
-              <AtlasCourseCard
+              /* Figma 706:2416's card (2026-11-12, Eric: "rework the course cards to match") — `AtlasCourseCard`, the 213:3619
+                 card, is kept unreferenced for the way back (White's Primary 100 fill was its `activeFill`; this card is Primary
+                 100 already). */
+              <AtlasCourseCardFigma
                 key={c.id}
                 data={c}
                 // See `actionFor` — the baseline's flag, or Eric's first card.
                 onAction={actionFor(i)}
                 onOpen={() => openHomeFor(c)}
-                // White's active cards in Primary 100 on its white page
-                // (2026-10-14, Eric's request); completed cards keep no fill.
-                activeFill={white ? 'var(--color-primary-100)' : undefined}
               />
             ))}
           </div>
@@ -2865,16 +2886,20 @@ function AccountSection({
   }
   return (
     <div
+      // The Atlas account pages' frame — `.cre-atlas-account-body` scopes their cards' look (tokens.css, 2026-11-12).
+      className="cre-atlas-account-body"
       style={{
         maxWidth: ATLAS_MY_COURSES_WIDTH,
         margin: '24px auto 0',
         display: 'grid',
-        gridTemplateColumns: `${E2E_QUICK_LINKS_COLUMN_W}px minmax(0, 1fr)`,
+        // 5 wider, for Home's gutter from Quick Links to the page (2026-11-12, Eric).
+        gridTemplateColumns: `${E2E_QUICK_LINKS_COLUMN_W + 5}px minmax(0, 1fr)`,
         gap: 24,
         alignItems: 'start',
       }}
     >
-      <AtlasAccountLinksCard active={active} onSelect={onSelect} style={WIP_QUICK_LINKS_LIFTED} />
+      {/* As wide as Home's Quick Links, though its own rows are shorter (2026-11-12, Eric). */}
+      <AtlasAccountLinksCard active={active} onSelect={onSelect} style={{ ...WIP_QUICK_LINKS_LIFTED, minWidth: HOME_QUICK_LINKS_W }} />
       <div style={{ minWidth: 0 }}>{body}</div>
     </div>
   )
@@ -2899,6 +2924,9 @@ const E2E_QUICK_LINKS_LIFT = 16.5 + 6 + 34 + 24
 /* Its column: 8 in, the card's 234 and 8 more — with the page's own 24 gap
    after it, the cards sit Home's 32 from Quick Links (2026-11-03). */
 const E2E_QUICK_LINKS_COLUMN_W = 8 + WIP_QUICK_LINKS_W + 8
+/* Home's Quick Links as drawn — fit to "Applying for a License" and its 24 either side (measured 2026-11-12). The account
+   pages' card takes it as a minimum so the two read as one card. */
+const HOME_QUICK_LINKS_W = 231.625
 // …and Home's 20 corners, not the card's own 12 (2026-11-03).
 /* ⚠ 7.5 IN, NOT 8 (2026-11-04, Eric: the icons and text "shifting one or two
    pixels to the right" from Home). These pages centre an odd 1081 column, so
@@ -2939,7 +2967,9 @@ function CertificatesSection() {
       // (2026-10-13, Eric's request). Off the baseline since 2026-11-02 —
       // `atlas-pages-quick-links`.
       aside={showQuickLinks ? <AtlasJourneyLinksCard withoutCoursePages style={baseline && !quickLinksRight ? WIP_QUICK_LINKS_LIFTED : WIP_QUICK_LINKS} /> : undefined}
-      asideWidth={baseline && !quickLinksRight ? E2E_QUICK_LINKS_COLUMN_W : WIP_QUICK_LINKS_W}
+      // 5.5 wider, so the gutter from Quick Links to the page is Home's and My Courses' (2026-11-12, Eric) — the card itself
+      // stays where it is.
+      asideWidth={baseline && !quickLinksRight ? E2E_QUICK_LINKS_COLUMN_W + 5.5 : WIP_QUICK_LINKS_W}
       asideRight={quickLinksRight}
       /* Centred at the October width while the rail is there; full width
          without it, so the cards shift left (2026-11-02). */

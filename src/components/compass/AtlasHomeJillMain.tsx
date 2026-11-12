@@ -1642,6 +1642,8 @@ export function AtlasHomeJillMain({
             paddingBottom: 32,
             // …and its 20 corners (same day).
             ...(onWhite ? { borderRadius: 'var(--atlas-card-radius, 20px)' } : null),
+            // 5.5 left, so its edge is the other pages' (2026-11-12, Eric: "keep it positioned horizontally in the same place").
+            marginLeft: -5.5,
           }}
         />
 

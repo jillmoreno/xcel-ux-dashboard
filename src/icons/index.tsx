@@ -228,6 +228,14 @@ import UsersSvg from './users.svg?react'
 import VideoSvg from './video.svg?react'
 import FacebookSvg from './facebook.svg?react'
 import XmarkSvg from './xmark.svg?react'
+import LocationDotRegularSvg from './location-dot-regular.svg?react'
+import ListTreeRegularSvg from './list-tree-regular.svg?react'
+import GaugeRegularSvg from './gauge-regular.svg?react'
+import WatchLightSvg from './watch-light.svg?react'
+import EllipsisVerticalSolidSvg from './ellipsis-vertical-solid.svg?react'
+import AlarmExclamationRegularSvg from './alarm-exclamation-regular.svg?react'
+import CircleXRegularSvg from './circle-x-regular.svg?react'
+import PlayPauseRegularSvg from './play-pause-regular.svg?react'
 
 type LucideLikeProps = {
   size?: number
@@ -532,3 +540,13 @@ export const UserSlash = makeIcon(UserSlashSvg) // FA: user-slash
 export const Users = makeIcon(UsersSvg)
 export const Video = makeIcon(VideoSvg)
 export const X = makeIcon(XmarkSvg) // FA: xmark
+// The Atlas course card's icons — Figma 706:2416 (2026-11-12, Eric).
+export const LocationDotRegular = makeIcon(LocationDotRegularSvg) // FA: location-dot (regular)
+export const ListTreeRegular = makeIcon(ListTreeRegularSvg) // FA: list-tree (regular)
+export const GaugeRegular = makeIcon(GaugeRegularSvg) // FA: gauge (regular)
+export const WatchLight = makeIcon(WatchLightSvg) // FA: watch (light)
+export const EllipsisVerticalSolid = makeIcon(EllipsisVerticalSolidSvg) // FA: ellipsis-vertical (solid)
+// The Atlas course card's status pills — Figma 710:2531–2551 (2026-11-12, Eric).
+export const AlarmExclamationRegular = makeIcon(AlarmExclamationRegularSvg) // FA: alarm-exclamation (regular)
+export const CircleXRegular = makeIcon(CircleXRegularSvg) // FA: circle-x (regular)
+export const PlayPauseRegular = makeIcon(PlayPauseRegularSvg) // FA: play-pause (regular)

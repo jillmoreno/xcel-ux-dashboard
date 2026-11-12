@@ -11,7 +11,7 @@ import {
   CircleInfoRegular,
   ClipboardListCheckRegular,
   FileCertificateRegular,
-  HouseBlankRegular,
+  HouseRegular,
   NotebookRegular,
   PenFieldRegular,
 } from '@/icons'
@@ -32,7 +32,9 @@ import { EXAM_DETAILS_STEP_ID } from '@/data/examDetails'
 export const ATLAS_OPEN_PARAM = 'open'
 
 /** The Home link — built, hidden for now (2026-10-07). */
-const SHOW_HOME_LINK: boolean = false
+const SHOW_HOME_LINK: boolean = true // back on (2026-11-12, Eric: "add a button above My Courses for Home")
+/** The card's "Quick Links" title — off since 2026-11-12 (Eric: "remove the quick links text"). */
+const SHOW_QUICK_LINKS_TITLE: boolean = false
 
 export type AtlasJourneyLinksCardProps = {
   onOpenStep?: (id: string) => void
@@ -127,21 +129,23 @@ export function AtlasJourneyLinksCard({ onOpenStep, onOpenRequirements, style, w
   const apply = GET_LICENSED_STEPS[GET_LICENSED_STEPS.length - 1]
 
   return (
-    <nav aria-label="Quick links" style={{ ...SIDE_CARD, ...style }}>
+    <nav aria-label="Quick links" className="cre-quick-links-card" style={{ ...SIDE_CARD, ...style, ...QUICK_LINKS_FRAME }}>
       {/* The exam-date card's heading style — Serif H8 (2026-10-02, the
           designer's request; the design sets it in Open Sans SemiBold 16). */}
       {/* "Quick Links" since 2026-10-07 (Eric's request); it was "More
           Information for Your Journey" ("Other …" before 2026-10-06). */}
-      <p style={TITLE}>Quick Links</p>
+      {/* Off (2026-11-12, Eric: "remove the quick links text") — kept behind SHOW_QUICK_LINKS_TITLE. */}
+      {SHOW_QUICK_LINKS_TITLE ? <p style={TITLE}>Quick Links</p> : null}
       {/* The card's 16 gap below it; 8 above — the gap less 8 (2026-10-13,
           Eric's request). */}
-      {titleRule ? <span aria-hidden style={{ ...TITLE_RULE, marginTop: -8 }} /> : null}
+      {SHOW_QUICK_LINKS_TITLE && titleRule ? <span aria-hidden style={{ ...TITLE_RULE, marginTop: -8 }} /> : null}
       <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 16 }}>
         {/* Home, first (2026-10-07, Eric's request) — FA house-blank (regular);
             current on the Home page, which has no `section`. HIDDEN "for now"
             the same day (Eric's request): set SHOW_HOME_LINK to bring it back. */}
         {SHOW_HOME_LINK ? (
-          <SideLink icon={<HouseBlankRegular size={13} aria-hidden />} label="Home" active={section == null} onClick={() => go(null)} />
+          // On FA house (regular) since it came back (2026-11-12, Eric); house-blank before.
+          <SideLink icon={<HouseRegular size={13} aria-hidden />} label="Home" active={section == null} onClick={() => go(null)} />
         ) : null}
         <SideLink icon={<BookRegular size={13} aria-hidden />} label="My Courses" count={coursesCount} active={here('courses')} onClick={() => go('courses', undefined, linksOff && !learningPagesLive)} />
         {/* 15% larger in WIP's card (2026-10-13, Eric's request): 15, not 13 —
@@ -193,8 +197,9 @@ export function AtlasAccountLinksCard({
   const { brand } = useAccount()
   const giftRecipientsOn = useFeatureFlag('gift-recipients').enabled
   return (
-    <nav aria-label="Account sections" style={{ ...SIDE_CARD, ...style }}>
-      <p style={TITLE}>My Account</p>
+    <nav aria-label="Account sections" className="cre-quick-links-card" style={{ ...SIDE_CARD, ...style, ...QUICK_LINKS_FRAME }}>
+      {/* No "My Account" title (2026-11-12, Eric) — like Quick Links', kept behind SHOW_QUICK_LINKS_TITLE. */}
+      {SHOW_QUICK_LINKS_TITLE ? <p style={TITLE}>My Account</p> : null}
       <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 16 }}>
         {accountSectionsFor(brand, giftRecipientsOn).map(({ id, label, icon: Icon }) => (
           <SideLink key={id} icon={<Icon size={13} aria-hidden />} label={label} active={id === active} onClick={() => onSelect(id)} />
@@ -270,6 +275,12 @@ const SIDE_CARD: CSSProperties = {
   borderRadius: 'var(--atlas-card-radius, 12px)',
   border: '1px solid var(--color-atlas-nav-rule)',
 }
+/* EVERY QUICK LINKS CARD, WHEREVER IT IS DRAWN (2026-11-12, Eric), over whatever its caller set:
+   · as wide as its longest row and its padding, no wider ("fit to the width of the longest item");
+   · a 1 Primary 100 border;
+   · pinned 40 under the header as the page scrolls — `.cre-quick-links-card` in tokens.css, which also stretches its parent
+     so there is a column to pin within. */
+const QUICK_LINKS_FRAME: CSSProperties = { width: 'fit-content', border: '1px solid var(--color-primary-100)' }
 /* The Readiness card's Tertiary 300 hairline. */
 const TITLE_RULE: CSSProperties = { display: 'block', height: 1, background: 'var(--color-atlas-tan-300)' }
 /* Serif H8 — Home V2's STEP_TITLE. */

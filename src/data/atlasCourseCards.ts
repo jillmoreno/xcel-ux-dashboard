@@ -23,6 +23,11 @@ export const ATLAS_MY_COURSES: readonly AtlasCourseCardData[] = [
     availableDate: 'October 19, 2026',
     availableTime: '5:49 PM CDT',
     actionLabel: 'Resume Course',
+    // Figma 706:2416's facts (2026-11-12, Eric) — the state is the course's, New York; the design's frame says Florida.
+    state: 'New York',
+    category: 'Licensing',
+    lineOfAuthority: 'Life and Health',
+    progress: 45,
   },
   {
     id: 'demo-ny-pc',
@@ -32,6 +37,10 @@ export const ATLAS_MY_COURSES: readonly AtlasCourseCardData[] = [
     availableTime: '11:59 PM CST',
     actionLabel: 'Begin Course',
     actionStyle: 'secondary',
+    state: 'New York',
+    category: 'Licensing',
+    lineOfAuthority: 'Property and Casualty',
+    progress: 0,
   },
   /* The THIRD card (2026-10-06, Eric's request), its badge, date and button
      INVENTED like the P&C card's. PLACEHOLDER IMAGE: a Hamptons house (Long
@@ -50,6 +59,44 @@ export const ATLAS_MY_COURSES: readonly AtlasCourseCardData[] = [
     availableDate: 'September 18, 2026',
     availableTime: '3:12 PM CDT',
     actionLabel: 'Completed',
+    state: 'New York',
+    category: 'Continuing Education',
+    lineOfAuthority: 'All Lines',
+    progress: 100,
+  },
+  /* THE FOURTH CARD (2026-11-12, Eric): New York Personal Lines, EXPIRED — its access ran out partway through, so its button
+     is Purchase Extension (not wired). Badge, date, progress and button INVENTED like the P&C card's. The image is the
+     project's own stock homeowners photo (`/courses/0.webp`, a couple and an agent over a new home's keys) — personal lines,
+     though not New York. */
+  {
+    id: 'demo-ny-personal-lines',
+    title: 'New York Personal Lines Pre-licensing',
+    imageUrl: '/courses/0.webp',
+    badge: 'Expired',
+    availableDate: 'November 2, 2026',
+    availableTime: '11:59 PM CST',
+    actionLabel: 'Purchase Extension',
+    // Begin Course's outline (2026-11-12, Eric; the Expired pill's pink outline for a moment — `expired`, kept on the card).
+    actionStyle: 'secondary',
+    state: 'New York',
+    category: 'Licensing',
+    lineOfAuthority: 'Personal Lines',
+    progress: 62,
+  },
+  /* THE FIFTH CARD (2026-11-12, Eric): the NY P&C / L&H Refresher CE Package, FAILED — finished, its final exam not passed,
+     so its button is Retake Course (which is what makes the card read Failed). Everything but the title INVENTED. The image
+     is the project's stock agent-and-clients meeting (`/courses/6.webp`). */
+  {
+    id: 'demo-ny-pclh-refresher-ce',
+    title: 'NY Property, Casualty, Life, and Health Refresher CE Package',
+    imageUrl: '/courses/6.webp',
+    availableDate: 'January 15, 2027',
+    availableTime: '11:59 PM CST',
+    actionLabel: 'Retake Course',
+    state: 'New York',
+    category: 'Continuing Education',
+    lineOfAuthority: 'Property, Casualty, Life and Health',
+    progress: 87, // (2026-11-12, Eric; 100 first)
   },
 ]
 
@@ -59,7 +106,7 @@ export const ATLAS_MY_COURSES_ASIDE_W = 260
 /** One Atlas course card's width: the Figma card's 255. Three fit in one row
  *  beside the 260 links card inside the shell's 1092px content box (260 + 24 +
  *  3 × 255 + 2 × 16 = 1081). It was 250 while the links card was 280. */
-export const ATLAS_COURSE_CARD_W = 255
+export const ATLAS_COURSE_CARD_W = 265 // Figma 706:2416's card (2026-11-12, Eric; was 255)
 
 /**
  * HOW MANY CARDS SIT IN ONE ROW — three, the design's row (2026-10-06).
@@ -130,6 +177,9 @@ export function atlasCourseCardFor(course: MyCourseRecord, today: Date = FIXTURE
     ...dateLine(course, completed),
     completed,
     ...action(course.myStatus),
+    // Figma 706:2416's rows (2026-11-12): what the record knows — its state and progress. Category and line are not on it.
+    state: course.state,
+    progress: completed ? 100 : (course.progress ?? 0),
   }
 }
 
