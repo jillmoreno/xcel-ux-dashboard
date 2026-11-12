@@ -85,7 +85,14 @@
   --crf-rule-warm: #e0dbcd;
   --crf-rule-cool: #e1e5e8;
   --crf-amber: #c08a2e;
-  --crf-green: var(--color-success-700);
+  /* ⚠ THE PASS RAMP, NOT THE SUCCESS ONE — 2026-11-12: "These are the green
+     yellow and red colors that we will use for success/completed …". Her
+     green is #2F7A5A, which is `--color-pass-500`; `--color-success-700`
+     (#005221) is Nectar's bright functional ramp, right for a toast or a
+     form error and a different green from the one Compass uses for "on
+     track / mastery". The two exist for two jobs — see the note on the ramp
+     in `tokens.css` — and this surface was pointing at the wrong one. */
+  --crf-green: var(--color-pass-500);
   --crf-rubi: var(--color-compass-page-rubi);
   --crf-transparent: transparent;
   /* The chart and ring furniture, which is cooler than the page's warm rules:
@@ -1839,9 +1846,28 @@
   font-size: 11px;
   font-weight: 600;
 }
+/* ⚠ COMPLETED IS GREEN — 2026-11-12, "for the completed badges, change the
+   tags to this green style, (use gradients as needed) and then update the
+   icon to be a green checkmark".
+
+   ⚠ THE RAMP IS HERS. #2F7A5A is `--color-pass-500` and the shades around it
+   are derived from that one value (hue 154, saturation held, lightness
+   stepped), so the tint and the ink below are this green's own rather than a
+   second opinion about it.
+
+   ⚠ A GRADIENT OF TWO STOPS, barely. "Use gradients as needed" — at 20px
+   tall a visible ramp reads as a button; 100 → 200 gives the tag a little
+   depth without making it look pressable.
+
+   ⚠ THE INK IS -600, NOT -500. Measured against both stops of the gradient
+   in the running build: -500 on the -100 ground is 4.37:1, under the 4.5
+   floor that 11px text needs, and it only gets worse against the -200 stop.
+   -600 reads 6.23:1 on -100 and 5.22:1 on -200, so the tag passes at the
+   bottom of the ramp as well as the top. The ramp's own note in `tokens.css`
+   quotes contrast against the WHITE card, which is a different sum. */
 .crf-map__pill--done {
-  background: var(--crf-steel-pressed);
-  color: var(--crf-ink);
+  background: linear-gradient(180deg, var(--color-pass-100), var(--color-pass-200));
+  color: var(--color-pass-600);
 }
 .crf-map__pill--open {
   background: var(--crf-white);

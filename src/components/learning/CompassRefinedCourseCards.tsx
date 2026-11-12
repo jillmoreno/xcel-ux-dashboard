@@ -24,7 +24,7 @@
  */
 
 import { useState } from 'react'
-import { BookOpenRegular, ChevronDown, LockRegular } from '@/icons'
+import { BookOpenRegular, Check, ChevronDown, LockRegular } from '@/icons'
 import { PillTabs } from '@/components/ui/PillTabs'
 import { JEFF_MVP_LEARN_COPY as COPY } from '@/data/compassJeffMvpFixtures'
 import { REFINED_CHAPTER_BLURBS, REFINED_ROADMAP } from '@/data/compassRefinedCopy'
@@ -153,7 +153,13 @@ export function CompassRefinedCourseCards({
                   <div className="crf-map__top">
                     {pill ? (
                       <span className={`crf-map__pill crf-map__pill--${pill.tone}`}>
+                        {/* ⚠ A TICK ON COMPLETED, A PADLOCK ON LOCKED — the
+                            glyph takes the tag's own colour, so the green
+                            checkmark is green by inheritance rather than by
+                            a second rule that could drift from the text
+                            beside it. */}
                         {c.state === 'locked' ? <LockRegular size={11} aria-hidden /> : null}
+                        {c.state === 'done' ? <Check size={11} aria-hidden /> : null}
                         {pill.word}
                       </span>
                     ) : null}
