@@ -1079,10 +1079,15 @@
    difference instead. */
 .crf-course__sub {
   margin: 3px 0 0;
-  font-size: 14px;
+  /* ⚠ THE NEXT STEP'S META LINE, EXACTLY — 2026-11-12: "This should be the
+     same style as the 21 lessons line." Both are a footnote under a title,
+     one in each half of this card, and they had been 14/400 body and 12/400
+     muted: two registers doing one job, a divider apart. These four
+     declarations are `.crf-step__note`'s. */
+  font-size: 12px;
   font-weight: 400;
-  line-height: 1.3;
-  color: var(--crf-body);
+  line-height: 1.45;
+  color: var(--crf-muted);
 }
 .crf-course__stat {
   display: flex;
@@ -4310,12 +4315,25 @@
    the weight of a subtitle — right when it sat under the title as the second
    thing you read, wrong above it where it would compete with the title it is
    labelling. An eyebrow names the context; the title is still the headline. */
+/* ⚠ PRIMARY 500 ON EVERY PAGE — 2026-11-12: "this is the blue color, make it
+   the primary blue 500 color and have it be the same on all the pages."
+   Measured first, and the two surfaces did NOT agree: the Overview's
+   eyebrow was #243645 (Primary 700, asked for by name on 2026-11-11) and
+   every other page's was `--crf-muted`, a warm grey. One instruction
+   settles both — `--crf-steel` is #3d5a73, the 500 from the ramp she sent.
+
+   ⚠ IT SUPERSEDES THE 700, deliberately. That decision is a day old and is
+   recorded in the journey stylesheet; this is not an oversight of it.
+
+   ⚠ THE ACCESS DATE STAYS MUTED. The same note the 700 was argued on: the
+   course is what the platform is about and the date is a fact about it, so
+   they are a name and its footnote rather than one blue line. */
 .crf-head__eyebrow {
   display: flex;
   align-items: center;
   gap: 7px;
   margin: 0 0 7px;
-  color: var(--crf-muted);
+  color: var(--crf-steel);
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.08em;
@@ -4341,6 +4359,9 @@
    a fact, and `Jan` becomes `JAN`. So the eyebrow's transform is undone for
    this span alone, and its letter-spacing with it. */
 .crf-head__access {
+  /* ⚠ NOT THE EYEBROW'S BLUE — see the note above. It had inherited, which
+     was harmless while the eyebrow was grey and is not now. */
+  color: var(--crf-muted);
   text-transform: none;
   letter-spacing: 0.01em;
   font-weight: 400;
