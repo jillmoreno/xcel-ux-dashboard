@@ -63,7 +63,34 @@ export function CompassRefinedLearn({
      `isOpen`. Seeded from the fixture rather than hard-coded, so the chapter
      that opens is the one his data says is current. */
   const [open, setOpen] = useState<Record<number, boolean>>({})
-  const isOpen = (c: (typeof REFINED_CHAPTERS)[number]) => open[c.n] ?? c.state === 'current'
+  /**
+   * ⚠ THE LOCKED RUN IS FOLDED — 2026-11-12, finding 1 of the audit.
+   *
+   * Nineteen of twenty-one chapters are locked, and they occupied 1,364px of
+   * a 2,495px page: 55% of a learner's scroll is things they cannot do, and
+   * the page ends in them. What is open, what is next and what finishes the
+   * course are the three things worth standing up; the middle of the course
+   * is a reference list, and a reference list is something you ask for.
+   *
+   * ⚠ IT IS A PEEK, NOT A CUT. Two locked chapters stay visible past the
+   * current one — a course has to show what is coming or the lock message
+   * has nothing to be about — and the count on the control says exactly what
+   * is behind it. Folding ALL of them would answer finding 1 by creating the
+   * opposite complaint.
+   *
+   * ⚠ AND IT FIXES THE HALF OF FINDING 2 THAT A SENTENCE CREATES. Every
+   * locked chapter now says what opens it; nineteen of those stacked are
+   * nineteen near-identical lines. Three are information.
+   */
+  const [showAll, setShowAll] = useState(false)
+  const lastOpenIdx = REFINED_CHAPTERS.map((c) => c.state !== 'locked').lastIndexOf(true)
+  const PEEK = 2
+  const cutoff = lastOpenIdx + 1 + PEEK
+  const folded = !showAll && cutoff < REFINED_CHAPTERS.length
+  const shown = folded ? REFINED_CHAPTERS.slice(0, cutoff) : REFINED_CHAPTERS
+  const hiddenCount = REFINED_CHAPTERS.length - shown.length
+  const isOpen = (c: (typeof REFINED_CHAPTERS)[number]) =>
+    c.expandable && (open[c.n] ?? c.state === 'current')
 
   return (
     <div className="crf-page">
@@ -133,7 +160,7 @@ export function CompassRefinedLearn({
               counted forty-one rows of `compassRefinedCourse.ts`; two
               hand-kept lists of one course is how "22 of 36 lessons" ended up
               on this page. See `compassRefinedLearnCourse.ts`. */}
-          {REFINED_CHAPTERS.map((c) => {
+          {shown.map((c) => {
             const expanded = isOpen(c)
             return (
               <article
@@ -164,10 +191,17 @@ export function CompassRefinedLearn({
                       is meant to have. The state is told by the mark and the
                       row's ground; the word beside the button is context, in
                       one colour. */}
-                  <span className="crf-ch__status">
-                    {/* His `status` is '' on a locked chapter; the word is the
-                        template's, keyed off the state. */}
-                    {c.state === 'locked' ? COPY.lockedWord : c.status}
+                  {/* ⚠ THE SENTENCE, NOT THE WORD — 2026-11-12, finding 2.
+                      A locked row said "Locked", which the padlock beside it
+                      had already said, while the page's lead promises that "a
+                      locked step tells you exactly what opens it". The exam
+                      rows keep that promise in this very column; the chapters
+                      now say the same kind of thing in the same place, and it
+                      is visible without expanding the row — which is where
+                      his message was, and so was never read by anyone who did
+                      not already open it. */}
+                  <span className={c.state === 'locked' ? 'crf-ch__status crf-ch__opens' : 'crf-ch__status'}>
+                    {c.state === 'locked' ? c.lockMsg : c.status}
                   </span>
                   {c.hasAction ? (
                     <button
@@ -181,27 +215,36 @@ export function CompassRefinedLearn({
                   ) : (
                     <span className="crf-ch__noaction" />
                   )}
-                  <button
-                    type="button"
-                    className="crf-chev"
-                    aria-expanded={expanded}
-                    aria-label={c.chevLabel}
-                    onClick={() => setOpen((o) => ({ ...o, [c.n]: !expanded }))}
-                  >
-                    <ChevronDown
-                      size={14}
-                      aria-hidden
-                      style={{ transform: expanded ? 'rotate(180deg)' : undefined }}
-                    />
-                  </button>
+                  {/* ⚠ NO CHEVRON WHERE THERE IS NOTHING BEHIND IT — finding
+                      8. The space is still held, so the twenty-one rows stay
+                      in one column. */}
+                  {c.expandable ? (
+                    <button
+                      type="button"
+                      className="crf-chev"
+                      aria-expanded={expanded}
+                      aria-label={c.chevLabel}
+                      onClick={() => setOpen((o) => ({ ...o, [c.n]: !expanded }))}
+                    >
+                      <ChevronDown
+                        size={14}
+                        aria-hidden
+                        style={{ transform: expanded ? 'rotate(180deg)' : undefined }}
+                      />
+                    </button>
+                  ) : (
+                    <span className="crf-chev crf-chev--none" aria-hidden />
+                  )}
                 </div>
 
                 {expanded ? (
                   <div className="crf-ch__body">
-                    {/* ⚠ BOTH, ON A LOCKED CHAPTER: the message AND the lessons.
-                        See the header note — this is the page's lead made
-                        good, not a leak. */}
-                    {c.state === 'locked' ? <p className="crf-ch__lock">{c.lockMsg}</p> : null}
+                    {/* ⚠ THE MESSAGE MOVED UP INTO THE ROW — 2026-11-12,
+                        finding 2. It was repeated here; saying it twice in
+                        one card is noise, and the row is the half a learner
+                        sees without clicking. The lessons behind a locked
+                        chapter still show, which is the page's lead made
+                        good and the part worth keeping. */}
                     <ul className="crf-lessons">
                       {c.lessons.map((l) => (
                         <li key={l.label} className={`crf-lesson crf-lesson--${l.state}`}>
@@ -238,6 +281,23 @@ export function CompassRefinedLearn({
               </article>
             )
           })}
+
+          {/* ⚠ THE COUNT IS THE POINT, not the word "more". A learner who
+              cannot see the rest of the course has to be told how much of it
+              there is — and the control says which way it goes, so it is not
+              a one-way door. */}
+          {folded ? (
+            <button type="button" className="crf-ch__more" onClick={() => setShowAll(true)}>
+              <ChevronDown size={13} aria-hidden />
+              Show all {REFINED_CHAPTERS.length} chapters
+              <span className="crf-ch__more-n">{hiddenCount} more, locked</span>
+            </button>
+          ) : cutoff < REFINED_CHAPTERS.length ? (
+            <button type="button" className="crf-ch__more" onClick={() => setShowAll(false)}>
+              <ChevronDown size={13} aria-hidden style={{ transform: 'rotate(180deg)' }} />
+              Show less
+            </button>
+          ) : null}
         </section>
 
         {/* ---------- how the course ends ----------

@@ -59,7 +59,10 @@ export type RefinedChapter = {
   action?: string
   actionLabel?: string
   chevLabel?: string
+  /** What opens this chapter, for a locked one — see `lockNote` below. */
   lockMsg?: string
+  /** Whether there is anything behind the chevron. See finding 8. */
+  expandable: boolean
   exam?: { title: string; done?: boolean; locked?: boolean; note?: string }
   lessons: { label: string; state: string }[]
 }
@@ -77,6 +80,28 @@ function splitTitle(t: string): { label: string; title: string } {
 }
 
 const LESSON_ROWS = REFINED_COURSE_SECTIONS.filter((s) => s.kind === 'lesson')
+
+/**
+ * WHAT OPENS A LOCKED CHAPTER — 2026-11-12, finding 2 of the audit.
+ *
+ * ⚠ THE PAGE PROMISES THIS AND DID NOT KEEP IT. Its lead is "a locked step
+ * tells you exactly what opens it"; the exam rows say so and the chapters
+ * said only "Locked". What they had was `his.lockMsg`, which reaches only the
+ * chapters whose names match his outline — so the sentence was missing from
+ * exactly the rows the port could not cover, with nothing on screen saying a
+ * sentence was meant to be there.
+ *
+ * ⚠ IT IS THE ROW BEFORE, NAMED. The course is linear, so the gate on any row
+ * is the one above it: Chapter 2 opens when Chapter 1's exam is done, Chapter
+ * 1 when the Introduction is. Said with the course's own label ("Chapter 1
+ * Exam") rather than its full string, which runs to sixty characters.
+ */
+function lockNote(n: number): string {
+  const before = REFINED_COURSE_SECTIONS.find((x) => x.n === n - 1)
+  if (!before) return ''
+  const { label, title } = splitTitle(before.title)
+  return `Opens when ${label || title} is complete`
+}
 
 export const REFINED_CHAPTERS: RefinedChapter[] = LESSON_ROWS.map((s, i) => {
   const next = REFINED_COURSE_SECTIONS.find((x) => x.n === s.n + 1)
@@ -138,18 +163,41 @@ export const REFINED_CHAPTERS: RefinedChapter[] = LESSON_ROWS.map((s, i) => {
     action: state === 'done' ? 'Review' : 'Resume',
     actionLabel: `${state === 'done' ? 'Review' : 'Resume'} ${s.title}`,
     chevLabel: his?.chevLabel ?? `Expand ${title}`,
-    lockMsg: his?.lockMsg,
+    /* ⚠ DERIVED, NOT HIS — see `lockNote`. A chapter that is not locked has
+       no sentence, because there is nothing to open. */
+    lockMsg: state === 'locked' ? lockNote(s.n) : undefined,
+    /* ⚠ NOTHING OPENS ON NOTHING — 2026-11-12, finding 8. The Course
+       Introduction carried a chevron, and behind it an empty lesson list and
+       no exam: a control whose entire effect was to change its own arrow.
+       Her upload has no lesson-level detail for that row, and until it does
+       the honest row is one that does not offer to expand. */
+    expandable: lessons.length > 0 || next?.kind === 'exam',
     /* ⚠ THE EXAM IS THE COURSE'S NEXT ROW, named as the course names it.
        His nested exam carried its own title ("Chapter 2 exam"); the course
        calls it "Chapter 2 Exam: Nature of Insurance", and that is the string
        a learner will see in the list. */
+    /* ⚠ AND THE EXAM'S STATE IS THE COURSE'S TOO. Taking `done` and `locked`
+       from his fixture put "Completed · Review exam" on Chapter 1's exam
+       inside a chapter marked In progress whose seven lessons were all still
+       to do — his Chapter 1 was finished, this course's is not. One learner
+       cannot have passed the exam for a chapter they are halfway through,
+       and it is the kind of contradiction a reviewer reads as a bug in the
+       product rather than in the demo data.
+
+       The note goes the same way: his said "Opens after all lessons" on the
+       chapters he covered and nothing on the others. */
     exam:
       next?.kind === 'exam'
         ? {
             title: next.title,
-            done: his?.exam?.done,
-            locked: his?.exam?.locked,
-            note: his?.exam?.note,
+            done: next.n < REFINED_COURSE_PROGRESS.currentN,
+            locked: next.n >= REFINED_COURSE_PROGRESS.currentN,
+            note:
+              next.n >= REFINED_COURSE_PROGRESS.currentN
+                ? lessons.length
+                  ? `Opens after all ${lessons.length} lessons`
+                  : 'Opens after all lessons'
+                : '',
           }
         : undefined,
     /* ⚠ AND THE LESSONS FOLLOW IT TOO. His were all `done`, because his

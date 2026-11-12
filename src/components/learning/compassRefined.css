@@ -1130,10 +1130,54 @@
   color: var(--crf-muted);
   white-space: nowrap;
 }
+/* ⚠ THE SENTENCE WRAPS; THE WORD DID NOT — 2026-11-12, finding 2. The status
+   slot is `white-space: nowrap` because it held one or two words. "Opens when
+   Chapter 1 Exam is complete" in one unbreakable line pushes the chapter
+   title's column in by a third, so the locked variant gets a width and two
+   lines of its own — the same shape the exam rows' notes have. */
+.crf-ch__opens {
+  flex: 0 0 150px;
+  white-space: normal;
+  text-align: right;
+  line-height: 1.35;
+}
 /* A locked chapter has no action button; the space is held so the chevrons of
    all nineteen rows line up. */
 .crf-ch__noaction {
   flex: 0 0 96px;
+}
+/* ⚠ AND A ROW WITH NOTHING TO EXPAND HOLDS THE CHEVRON'S SPACE — finding 8.
+   Same box, no control and no glyph. */
+.crf-chev--none {
+  pointer-events: none;
+}
+/* ⚠ THE FOLD'S CONTROL — 2026-11-12, finding 1. A full-width row rather than
+   a button floated under the list: it is the last ROW of the chapter list and
+   reads as one, which is what makes the fold legible as part of the course
+   rather than as a widget beside it. */
+.crf-ch__more {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 14px 20px;
+  border: 0;
+  border-top: 1px solid var(--crf-ch-rule);
+  background: none;
+  color: var(--crf-steel-deep);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+.crf-ch__more:hover {
+  background: var(--crf-steel-wash);
+}
+.crf-ch__more-n {
+  margin-left: auto;
+  font-weight: 400;
+  color: var(--crf-muted);
 }
 
 .crf-ch__body {
