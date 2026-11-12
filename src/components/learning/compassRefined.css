@@ -1451,18 +1451,17 @@
   line-height: 1.5;
   color: var(--crf-body);
 }
+/* ⚠ ONLY THE DETAILS LINK LIVES HERE NOW — the "Opens when …" line was
+   removed on 2026-11-12 ("remove this line from all the sections"). The row
+   is kept rather than collapsed into the link: it holds the card's bottom
+   edge at one height whether or not a chapter has anything to expand. */
 .crf-map__foot {
   display: flex;
   align-items: center;
+  justify-content: flex-end;
   gap: 12px;
   margin-top: 12px;
   min-height: 20px;
-}
-/* What opens it, bottom left — finding 2, in the place the reference puts
-   "Unlocks upon completing Module 01 Assessment". */
-.crf-map__opens {
-  font-size: 12px;
-  color: var(--crf-muted);
 }
 /* The Details link, bottom right: the rows layout's chevron with a word on
    it. */

@@ -136,10 +136,20 @@ describe('the roadmap layout', () => {
     expect(chips.at(-1)?.textContent).toBe('')
   })
 
-  it('keeps finding 2 — a locked card says what opens it', () => {
+  it('carries no “opens when” line — removed from the cards on 2026-11-12', () => {
+    /* ⚠ A DELIBERATE REVERSAL OF FINDING 2 ON THIS LAYOUT ONLY: "remove this
+       line from all the sections". On a card the padlock and the Locked pill
+       say the state, and twenty-one cards each ending in a near-identical
+       sentence is finding 1's wall in prose. */
     const { container } = wrapWith({ rows: 'cards', fold: false })
-    for (const card of container.querySelectorAll('.crf-map__card--locked')) {
-      expect(card.querySelector('.crf-map__opens')?.textContent).toMatch(
+    expect(container.querySelectorAll('.crf-map__opens')).toHaveLength(0)
+    expect(container.textContent).not.toMatch(/Opens when .+ is complete/)
+  })
+
+  it('and the rows layout still does — that is where finding 2 was raised', () => {
+    const { container } = wrapWith({ rows: 'list', fold: false })
+    for (const row of container.querySelectorAll('.crf-ch--locked')) {
+      expect(row.querySelector('.crf-ch__status')?.textContent).toMatch(
         /^Opens when .+ is complete$/,
       )
     }

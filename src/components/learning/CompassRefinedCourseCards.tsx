@@ -127,13 +127,20 @@ export function CompassRefinedCourseCards({
                     <p className="crf-map__blurb">{REFINED_CHAPTER_BLURBS[c.title]}</p>
                   ) : null}
 
+                  {/* ⚠ NO "OPENS WHEN …" LINE ON A CARD — 2026-11-12:
+                      "remove this line from all the sections". It sat bottom
+                      left, where the reference puts "Unlocks upon completing
+                      Module 01 Assessment", and it is audit finding 2's
+                      sentence — so this is a deliberate reversal on THIS
+                      layout, not an oversight: on a card the padlock and the
+                      Locked pill already say the state, and twenty-one cards
+                      each ending in a near-identical sentence is the wall
+                      finding 1 was about, in prose.
+
+                      ⚠ THE ROWS LAYOUT KEEPS IT. That is where finding 2 was
+                      raised and fixed, and the row has no pill — "Locked" on
+                      its own was the thing the finding objected to. */}
                   <div className="crf-map__foot">
-                    {/* ⚠ WHAT OPENS IT, BOTTOM LEFT — audit finding 2, in the
-                        place the reference puts "Unlocks upon completing
-                        Module 01 Assessment". */}
-                    <span className="crf-map__opens">
-                      {c.state === 'locked' ? c.lockMsg : null}
-                    </span>
                     {/* ⚠ THE DETAILS LINK, BOTTOM RIGHT — her instruction, and
                         it is the rows layout's chevron wearing a word. A
                         chapter with no lessons and no exam has nothing behind
