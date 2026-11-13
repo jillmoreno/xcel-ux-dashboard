@@ -173,20 +173,30 @@ export function PanelFooter({
   saveDisabled,
   onSave,
   onCancel,
+  cancelFirst = false,
 }: {
   saveLabel?: string
   saveDisabled: boolean
   onSave: () => void
   onCancel: () => void
+  /** Cancel on the left, the primary on the right — Keycloak's Change
+   *  Password step (2026-11-13, Afsana). Every other step keeps save first. */
+  cancelFirst?: boolean
 }) {
+  const save = (
+    <Button variant="primary" size="md" disabled={saveDisabled} onClick={onSave} style={footerButtonStyle}>
+      {saveLabel}
+    </Button>
+  )
+  const cancel = (
+    <Button variant="secondary" size="md" onClick={onCancel} style={footerButtonStyle}>
+      Cancel
+    </Button>
+  )
   return (
     <footer style={footerStyle}>
-      <Button variant="primary" size="md" disabled={saveDisabled} onClick={onSave} style={footerButtonStyle}>
-        {saveLabel}
-      </Button>
-      <Button variant="secondary" size="md" onClick={onCancel} style={footerButtonStyle}>
-        Cancel
-      </Button>
+      {cancelFirst ? cancel : save}
+      {cancelFirst ? save : cancel}
     </footer>
   )
 }

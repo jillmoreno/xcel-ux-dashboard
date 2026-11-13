@@ -7,9 +7,9 @@ import { AccountDetailsEditPanel } from '@/components/account/profile/AccountDet
 
 /**
  * KEYCLOAK'S CHANGE PASSWORD — 2026-11-12, Afsana. Update Password on the Edit
- * Account Details sheet embeds Keycloak's widget in the sheet (the default)
- * or opens it as a modal instead of the sheet's own step, with the invite flow's strength bar and rules under New Password, and the
- * open item (stay signed in, or sign out) drawn both ways.
+ * Account Details sheet embeds Keycloak's widget as the sheet's step, with the
+ * invite flow's strength bar and rules under New Password, and the open item
+ * (stay signed in, or sign out) drawn both ways.
  */
 
 const EMAIL = 'learner@example.com'
@@ -51,16 +51,15 @@ function fill(current: string, next: string, confirm: string) {
   fireEvent.change(screen.getByLabelText('Confirm New Password'), { target: { value: confirm } })
 }
 
+const save = () => screen.getByRole('button', { name: 'Save Password' }) as HTMLButtonElement
+
 afterEach(() => {
   cleanup()
   localStorage.clear()
 })
 
-const MODAL = { 'account-keycloak-change-password': { variant: 'modal' } }
-const SIGN_OUT = { 'account-password-change-outcome': { variant: 'sign-out' } }
-
 describe('Keycloak change password', () => {
-  it('in panel (the default): embeds the widget as the sheet\'s step, no modal', () => {
+  it('embeds the widget as the sheet\'s step, with no heading of its own', () => {
     renderPanel()
     fireEvent.click(screen.getByText('Update Password'))
     expect(screen.queryByRole('dialog', { name: 'Change Password' })).toBeNull()
@@ -68,68 +67,58 @@ describe('Keycloak change password', () => {
     expect(screen.getByRole('heading', { name: 'Update Password' })).toBeTruthy()
     expect(screen.queryByRole('heading', { name: 'Change Password' })).toBeNull()
     expect(screen.getByText(/Security experts generally recommend against reuse/)).toBeTruthy()
-    expect(screen.queryByText(/Enter your current password and choose a new one/)).toBeNull()
     expect(screen.getByRole('button', { name: 'Back to Edit Account Details' })).toBeTruthy()
     expect(screen.getByRole('meter', { name: 'Password strength' })).toBeTruthy()
     expect(screen.getByText('Password must:')).toBeTruthy()
-    expect(screen.queryByAltText('XCEL Insurance Training by Colibri')).toBeNull()
     expect(screen.queryByText('Password Requirements')).toBeNull()
   })
 
-  it('modal: opens in place of the sheet step, with the logo, strength bar and rules', () => {
-    renderPanel(MODAL)
-    fireEvent.click(screen.getByText('Update Password'))
-    expect(screen.getByRole('dialog', { name: 'Change Password' })).toBeTruthy()
-    expect(screen.getByAltText('XCEL Insurance Training by Colibri')).toBeTruthy()
-    expect(screen.getByRole('meter', { name: 'Password strength' })).toBeTruthy()
-    expect(screen.getByText('Password must:')).toBeTruthy()
-  })
-
-  it('enables Change Password only once every rule is met and the two match', () => {
+  it('puts Cancel first and Save Password second', () => {
     renderPanel()
     fireEvent.click(screen.getByText('Update Password'))
-    const submit = () => screen.getByRole('button', { name: 'Change Password' }) as HTMLButtonElement
-    expect(submit().disabled).toBe(true)
-    fill('OldPass1!', 'weak', 'weak')
-    expect(submit().disabled).toBe(true)
-    fill('OldPass1!', 'NewPass12!', 'NewPass12?')
-    expect(screen.getByText('Both passwords must match.')).toBeTruthy()
-    expect(submit().disabled).toBe(true)
-    fill('NewPass12!', 'NewPass12!', 'NewPass12!')
-    expect(screen.getByText(/must be different from your current password/)).toBeTruthy()
-    expect(submit().disabled).toBe(true)
-    fill('OldPass1!', 'NewPass12!', 'NewPass12!')
-    expect(submit().disabled).toBe(false)
+    const footer = save().closest('footer') as HTMLElement
+    const labels = Array.from(footer.querySelectorAll('button')).map((b) => b.textContent)
+    expect(labels).toEqual(['Cancel', 'Save Password'])
+    expect(screen.queryByRole('button', { name: 'Change Password' })).toBeNull()
   })
 
-  it.each([
-    ['in panel', {}],
-    ['modal', MODAL],
-  ])('%s, stay signed in: closes and toasts', (_arm, set) => {
-    renderPanel(set)
+  it('enables Save Password only once every rule is met and the two match', () => {
+    renderPanel()
+    fireEvent.click(screen.getByText('Update Password'))
+    expect(save().disabled).toBe(true)
+    fill('OldPass1!', 'weak', 'weak')
+    expect(save().disabled).toBe(true)
+    fill('OldPass1!', 'NewPass12!', 'NewPass12?')
+    expect(screen.getByText('Both passwords must match.')).toBeTruthy()
+    expect(save().disabled).toBe(true)
+    fill('NewPass12!', 'NewPass12!', 'NewPass12!')
+    expect(screen.getByText(/must be different from your current password/)).toBeTruthy()
+    expect(save().disabled).toBe(true)
+    fill('OldPass1!', 'NewPass12!', 'NewPass12!')
+    expect(save().disabled).toBe(false)
+  })
+
+  it('stay signed in: closes and toasts', () => {
+    renderPanel()
     fireEvent.click(screen.getByText('Update Password'))
     fill('OldPass1!', 'NewPass12!', 'NewPass12!')
-    fireEvent.click(screen.getByRole('button', { name: 'Change Password' }))
+    fireEvent.click(save())
     expect(screen.queryByLabelText('New Password')).toBeNull()
     expect(screen.getByText('Password updated')).toBeTruthy()
   })
 
-  it.each([
-    ['in panel', {}],
-    ['modal', MODAL],
-  ])('%s, sign out: says so and asks the learner to sign in again', (_arm, set) => {
-    renderPanel({ ...set, ...SIGN_OUT })
+  it('sign out: says so and asks the learner to sign in again', () => {
+    renderPanel({ 'account-password-change-outcome': { variant: 'sign-out' } })
     fireEvent.click(screen.getByText('Update Password'))
     fill('OldPass1!', 'NewPass12!', 'NewPass12!')
-    fireEvent.click(screen.getByRole('button', { name: 'Change Password' }))
+    fireEvent.click(save())
     expect(screen.getByRole('heading', { name: 'Password changed' })).toBeTruthy()
     expect(screen.getByRole('button', { name: 'Sign In' })).toBeTruthy()
   })
 
-  it('side panel: the sheet\'s own Update Password step, as before', () => {
-    renderPanel({ 'account-keycloak-change-password': { variant: 'sheet' } })
+  it('off: the sheet\'s own Update Password step, as before', () => {
+    renderPanel({ 'account-keycloak-change-password': { enabled: false } })
     fireEvent.click(screen.getByText('Update Password'))
-    expect(screen.queryByRole('heading', { name: 'Change Password' })).toBeNull()
     expect(screen.getByText('Password Requirements')).toBeTruthy()
   })
 })
