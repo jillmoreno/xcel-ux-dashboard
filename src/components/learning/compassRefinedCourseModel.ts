@@ -7,11 +7,11 @@
  * instead of swapping the component.
  */
 
-import type { RefinedChapter } from './compassRefinedLearnCourse'
+import type { RefinedChapter, RefinedFinishStep } from './compassRefinedLearnCourse'
 import type { NextMarkStyle } from './compassRefinedFocusModel'
 
 /** What the roadmap tag leads with. `compass-course-mark`. */
-export type ChapterMarkStyle = 'number' | 'icon'
+export type ChapterMarkStyle = 'number' | 'icon' | 'kind'
 
 /** The roadmap's quick filter — 2026-11-12. */
 export type RoadmapFilter = 'all' | 'current' | 'done'
@@ -81,6 +81,13 @@ export type CourseListProps = {
   chapters: RefinedChapter[]
   /** The ones that draw — all of them when the fold is off or opened. */
   shown: RefinedChapter[]
+  /**
+   * ⚠ THE COURSE'S CLOSING STEPS, AS MODULES — 2026-11-13: "Exam, Survey,
+   * and Certificate should all be their own modules." They had been a
+   * separate "Finish Your Course" strip under the list; they are rows of the
+   * same course and now draw as rows of the same roadmap.
+   */
+  finish: RefinedFinishStep[]
   /** The locked run is folded right now (the option is on and not opened). */
   folded: boolean
   /**

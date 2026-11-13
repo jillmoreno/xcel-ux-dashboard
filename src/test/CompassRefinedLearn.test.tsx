@@ -28,6 +28,11 @@ import { journeyStage } from '@/components/learning/compassReadinessModel'
    stage would be a second thing under test. */
 const REFINED_CHAPTERS = REFINED_DEFAULT_VIEW.chapters
 
+/* ⚠ THE ROADMAP DRAWS THE COURSE'S CLOSING MODULES TOO since 2026-11-13
+   ("Exam, Survey, and Certificate should all be their own modules"), so a
+   test about CHAPTERS has to say so. */
+const CHAPTER_CARDS = '.crf-map__card:not(.crf-map__card--finish)'
+
 /**
  * THE YOUR COURSE AUDIT, 2026-11-12 — findings 1, 2, 7 and 8.
  *
@@ -176,7 +181,7 @@ describe('the roadmap layout', () => {
        same chevron logic used in the other variant"), where it was a
        "Details" link. Same rule either way: nothing to open, no control. */
     const { container } = wrapWith({ rows: 'cards', fold: false })
-    for (const card of container.querySelectorAll('.crf-map__card')) {
+    for (const card of container.querySelectorAll(CHAPTER_CARDS)) {
       const title = card.querySelector('.crf-map__title')?.textContent ?? ''
       const chapter = REFINED_CHAPTERS.find((c) => c.title === title)!
       const chev = card.querySelector('.crf-chev:not(.crf-chev--none)')
@@ -190,7 +195,9 @@ describe('the roadmap layout', () => {
     const cards = wrapWith({ rows: 'cards', fold: false })
     const titles = (sel: string, root: HTMLElement) =>
       [...root.querySelectorAll(sel)].map((e) => e.textContent)
-    const fromCards = titles('.crf-map__title', cards.container)
+    const fromCards = [...cards.container.querySelectorAll(CHAPTER_CARDS)].map(
+      (c) => c.querySelector('.crf-map__title')?.textContent,
+    )
     cards.unmount()
     const rows = wrapWith({ rows: 'list', fold: false })
     expect(fromCards).toEqual(titles('.crf-ch__title', rows.container))
@@ -214,7 +221,7 @@ describe('the two toggles', () => {
 
   it('shows every chapter with the fold off, and no control', () => {
     const { container } = wrapWith({ rows: 'cards', fold: false })
-    expect(container.querySelectorAll('.crf-map__card')).toHaveLength(REFINED_CHAPTERS.length)
+    expect(container.querySelectorAll(CHAPTER_CARDS)).toHaveLength(REFINED_CHAPTERS.length)
     expect(container.querySelector('.crf-map__more')).toBeNull()
   })
 })
@@ -325,8 +332,13 @@ describe('the roadmap’s quick filters', () => {
   it('names the list and counts it beside the strip, not on the pills', () => {
     const { container } = wrapWith({ rows: 'cards' })
     expect(container.querySelector('.crf-map__heading')?.textContent).toBe('Learning Roadmap')
+    /* ⚠ IT COUNTS THE COURSE'S MODULES, NOT THE VISIBLE ONES — the chapters
+       and the three closing steps, in the filter's own noun. It read "21
+       Lessons Total" over twenty-four cards until 2026-11-13. A fold is
+       about what is on screen; this is how many there are. */
+    const modules = REFINED_DEFAULT_VIEW.chapters.length + REFINED_DEFAULT_VIEW.finish.length
     expect(container.querySelector('.crf-map__total')?.textContent).toBe(
-      `${REFINED_CHAPTERS.length} Lessons Total`,
+      `${modules} Modules Total`,
     )
     /* ⚠ THE REPO'S RULE for every segmented status filter: "no per-pill
        counts — show the total beside the strip". */
@@ -340,7 +352,7 @@ describe('the roadmap’s quick filters', () => {
     const tab = (name: string) => screen.getByRole('tab', { name })
 
     fireEvent.click(tab('Completed'))
-    const done = [...container.querySelectorAll('.crf-map__card')]
+    const done = [...container.querySelectorAll(CHAPTER_CARDS)]
     expect(done.length).toBeGreaterThan(0)
     expect(done.every((c) => c.classList.contains('crf-map__card--done'))).toBe(true)
     /* ⚠ A FILTER IS A LEARNER ASKING FOR A SUBSET; handing back three of
@@ -349,7 +361,7 @@ describe('the roadmap’s quick filters', () => {
     expect(container.querySelector('.crf-map__more')).toBeNull()
 
     fireEvent.click(tab('In Progress'))
-    for (const c of container.querySelectorAll('.crf-map__card')) {
+    for (const c of container.querySelectorAll(CHAPTER_CARDS)) {
       expect(c.classList.contains('crf-map__card--current')).toBe(true)
     }
 
@@ -437,7 +449,7 @@ describe('clicking a roadmap card expands it', () => {
 
     /* ⚠ A CARD WITH NOTHING BEHIND ITS CHEVRON IS NOT CLICKABLE — it would
        be promising a click that does nothing. Finding 8, kept. */
-    for (const c of container.querySelectorAll('.crf-map__card')) {
+    for (const c of container.querySelectorAll(CHAPTER_CARDS)) {
       const title = c.querySelector('.crf-map__title')?.textContent ?? ''
       const chapter = REFINED_CHAPTERS.find((x) => x.title === title)!
       expect(c.classList.contains('is-clickable'), title).toBe(chapter.expandable)
@@ -484,7 +496,7 @@ describe('a roadmap card’s label says what is inside the chapter', () => {
     /* ⚠ THE LESSON COUNT IS JEFF'S OUTLINE, which covers ten of the
        twenty-one chapters by name. The rest say nothing rather than a zero. */
     const { container } = wrapWith({ rows: 'cards', fold: false })
-    for (const card of container.querySelectorAll('.crf-map__card')) {
+    for (const card of container.querySelectorAll(CHAPTER_CARDS)) {
       const label = card.querySelector('.crf-map__label')?.textContent ?? ''
       expect(label).not.toMatch(/\b0 Lessons\b/)
       const title = card.querySelector('.crf-map__title')?.textContent ?? ''
@@ -498,7 +510,7 @@ describe('a roadmap card’s label says what is inside the chapter', () => {
     /* ⚠ "Shift these to the right of the status tag so the module vertical
        height is reduced." The test that matters is that they share a row. */
     const { container } = wrapWith({ rows: 'cards', fold: false })
-    const card = container.querySelector('.crf-map__card')!
+    const card = container.querySelector(CHAPTER_CARDS)!
     expect(card.querySelector('.crf-map__top .crf-map__name')).not.toBeNull()
     expect(card.querySelector('.crf-map__main > .crf-map__title')).toBeNull()
   })
@@ -592,7 +604,7 @@ describe('the completed run folds at the top', () => {
       </MemoryRouter>,
     )
     expect(screen.queryByRole('button', { name: /completed modules/ })).toBeNull()
-    expect(container.querySelectorAll('.crf-map__card')).toHaveLength(REFINED_CHAPTERS.length)
+    expect(container.querySelectorAll(CHAPTER_CARDS)).toHaveLength(REFINED_CHAPTERS.length)
   })
 })
 
@@ -613,7 +625,7 @@ describe('the roadmap mark — number or icon', () => {
 
   it('numbers 01–19 across twenty-one modules — the mismatch this arm tests', () => {
     const { container } = draw('number')
-    const marks = [...container.querySelectorAll('.crf-map__mark')]
+    const marks = [...container.querySelectorAll(`${CHAPTER_CARDS} .crf-map__mark`)]
     const numbered = marks.filter((m) => /^\d\d$/.test(m.textContent ?? ''))
     expect(marks).toHaveLength(REFINED_CHAPTERS.length)
     /* Two rows carry no chapter number in the course list. */
@@ -623,13 +635,13 @@ describe('the roadmap mark — number or icon', () => {
 
   it('drops every digit on the icon arm, and keeps the word', () => {
     const { container } = draw('icon')
-    for (const mark of container.querySelectorAll('.crf-map__mark')) {
+    for (const mark of container.querySelectorAll(`${CHAPTER_CARDS} .crf-map__mark`)) {
       expect(mark.textContent).toBe('')
       expect(mark.querySelector('svg')).not.toBeNull()
     }
     /* ⚠ THE WORD SURVIVES — "still have the locked tag, but put it on the
        right next to the cta area." */
-    const words = [...container.querySelectorAll('.crf-map__state--word')]
+    const words = [...container.querySelectorAll(`${CHAPTER_CARDS} .crf-map__state--word`)]
     expect(words).toHaveLength(REFINED_CHAPTERS.length)
     expect(words.map((w) => w.textContent)).toContain('Locked')
   })
@@ -770,5 +782,94 @@ describe('the progress bar is a column, not a third line', () => {
     expect(step.querySelector('.crf-step__textlines .crf-step__name')).not.toBeNull()
     expect(step.querySelector('.crf-step__textlines .crf-step__bar')).toBeNull()
     expect(step.querySelector('.crf-step__text > .crf-step__bar')).not.toBeNull()
+  })
+})
+
+describe('the course’s closing steps are modules', () => {
+  const roadmap = (chapterMark: 'number' | 'icon' | 'kind' = 'kind') =>
+    render(
+      <MemoryRouter>
+        <AccountProvider>
+          <FeatureFlagProvider>
+            <CompassRefinedLearn
+              stage="q3"
+              course={{ ...COURSE_DEFAULTS, rows: 'cards', fold: false, chapterMark }}
+            />
+          </FeatureFlagProvider>
+        </AccountProvider>
+      </MemoryRouter>,
+    )
+
+  it('draws them as the last three cards, in the course’s order', () => {
+    const { container } = roadmap()
+    const finish = [...container.querySelectorAll('.crf-map__card--finish')]
+    expect(finish.map((c) => c.querySelector('.crf-map__title')?.textContent)).toEqual([
+      'Final Exam',
+      'Course Survey',
+      'Certificate',
+    ])
+    /* ⚠ LAST, AND IN THE LIST — not a strip under it. */
+    const all = [...container.querySelectorAll('.crf-map__card')]
+    expect(all.slice(-3)).toEqual(finish)
+  })
+
+  it('marks each by what it IS, on every arm', () => {
+    /* A padlock on all three would lose the only thing that tells an exam
+       from a survey from a certificate. */
+    for (const arm of ['number', 'icon', 'kind'] as const) {
+      const { container, unmount } = roadmap(arm)
+      for (const card of container.querySelectorAll('.crf-map__card--finish')) {
+        expect(card.querySelector('.crf-map__mark svg'), arm).not.toBeNull()
+        expect(card.querySelector('.crf-map__mark')?.textContent, arm).toBe('')
+      }
+      unmount()
+    }
+  })
+
+  it('has nothing to expand, and holds the space', () => {
+    const { container } = roadmap()
+    for (const card of container.querySelectorAll('.crf-map__card--finish')) {
+      expect(card.querySelector('.crf-chev:not(.crf-chev--none)')).toBeNull()
+      expect(card.querySelector('.crf-chev--none')).not.toBeNull()
+    }
+  })
+})
+
+describe('the Type arm', () => {
+  it('marks a chapter with a book and moves the state into the word tag', () => {
+    const { container } = render(
+      <MemoryRouter>
+        <AccountProvider>
+          <FeatureFlagProvider>
+            <CompassRefinedLearn
+              stage="q3"
+              course={{ ...COURSE_DEFAULTS, rows: 'cards', fold: false, chapterMark: 'kind' }}
+            />
+          </FeatureFlagProvider>
+        </AccountProvider>
+      </MemoryRouter>,
+    )
+    const card = container.querySelector(CHAPTER_CARDS)!
+    /* ⚠ "includes the locked icon with this tag over here and the icon on
+       the left indicates what the type of module is". */
+    expect(card.querySelector('.crf-map__mark svg')).not.toBeNull()
+    expect(card.querySelector('.crf-map__state--word svg')).not.toBeNull()
+  })
+
+  it('leaves the state arm’s word tag without a glyph', () => {
+    const { container } = render(
+      <MemoryRouter>
+        <AccountProvider>
+          <FeatureFlagProvider>
+            <CompassRefinedLearn
+              stage="q3"
+              course={{ ...COURSE_DEFAULTS, rows: 'cards', fold: false, chapterMark: 'icon' }}
+            />
+          </FeatureFlagProvider>
+        </AccountProvider>
+      </MemoryRouter>,
+    )
+    const card = container.querySelector(CHAPTER_CARDS)!
+    expect(card.querySelector('.crf-map__state--word svg')).toBeNull()
   })
 })

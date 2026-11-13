@@ -1841,15 +1841,23 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        each row twice ("Life & Health Chapter 13 | Health Chapter 4"). A
        reader counting the chips finds nineteen in a list of twenty-one.
 
-       ⚠ SO THE ARM IS WHICH FACT THE TAG CARRIES: the course's own number,
-       or the state. `number` is what the cards were built with and is the
-       baseline; `icon` drops the digits and shows the tick, the book or the
-       padlock on every row, which makes the tag say one thing and the count
-       beside the heading say the other.
+       ⚠ SO THE ARM IS WHICH FACT THE MARK CARRIES: the course's own number,
+       the state, or what the module IS. `number` is what the cards were
+       built with and is the baseline.
 
-       ⚠ EITHER WAY THE WORD IS UNCHANGED. "Completed", "In Progress", "Up
-       Next" and "Locked" follow the state on both arms; this is only about
-       what sits to the left of the dot. */
+       ⚠ `kind` ARRIVED WITH THE CLOSING MODULES — 2026-11-13, the same hour
+       the Final Exam, the Survey and the Certificate became rows of this
+       list: "the icon on the left indicates what the type of module is,
+       course, vs, exam, vs certificate etc." With four kinds in one list a
+       state glyph on every row says the least useful of the three things a
+       mark could say.
+
+       ⚠ ON THAT ARM THE STATE'S GLYPH MOVES RIGHT, into the word tag —
+       "includes the locked icon with this tag over here". The left mark is
+       saying what the row is, so the state has nowhere else to be.
+
+       ⚠ THE WORD IS UNCHANGED ON ALL THREE. "Completed", "In Progress", "Up
+       Next" and "Locked" follow the state whichever mark is drawn. */
     surface: 'design',
     owner: 'anjani',
     versions: ['hybrid-pacing', 'eric-atlas-e2e'],
@@ -1857,10 +1865,11 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     group: 'Widgets',
     label: 'Roadmap mark',
     description:
-      'What the roadmap tag shows before its word. Number is the course’s own chapter number — which runs 01–19 across twenty-one modules, because the Course Introduction and the Florida laws row carry none, and is the mismatch this arm exists to test. Icon drops the digits for the state’s own glyph on every row: a tick when complete, an open book for the one you are on, a padlock for the rest. The word after the dot is the same either way.',
+      'What the roadmap tag shows before its word. Number is the course’s own chapter number — which runs 01–19 across twenty-one modules, because the Course Introduction and the Florida laws row carry none, and is the mismatch this arm exists to test. State drops the digits for the state’s own glyph: a tick when complete, an open book for the one you are on, a padlock for the rest. Type marks what the module IS — a book, an exam, a survey, a certificate — which tells the course’s closing steps apart now that they are rows of this list; on that arm the state’s glyph moves into the word tag on the right. The word itself is the same on all three.',
     variants: [
       { value: 'number', label: 'Number', description: 'The course’s chapter number' },
-      { value: 'icon', label: 'Icon', description: 'The state’s glyph on every row' },
+      { value: 'icon', label: 'State', description: 'The state’s glyph on every row' },
+      { value: 'kind', label: 'Type', description: 'What the module is' },
     ],
     defaultVariant: 'number',
     defaultEnabled: true,

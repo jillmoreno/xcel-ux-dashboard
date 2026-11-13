@@ -1,7 +1,7 @@
 import { refinedCourseView, type RefinedChapter } from './compassRefinedLearnCourse'
 import { refinedProgressAt } from '@/data/compassRefinedCourse'
 import { journeyStage } from './compassReadinessModel'
-import { REFINED_FINISH_COPY as FINISH, REFINED_PAGE_TITLES } from '@/data/compassRefinedCopy'
+import { REFINED_PAGE_TITLES } from '@/data/compassRefinedCopy'
 import { useState } from 'react'
 import { RubiLogo } from '@/icons'
 import {
@@ -11,7 +11,7 @@ import {
 import { CompassRefinedColumn, CompassRefinedHead } from './CompassRefinedChrome'
 import { CompassRefinedCourseCards } from './CompassRefinedCourseCards'
 import { CompassRefinedCourseRows } from './CompassRefinedCourseRows'
-import { AwardMark, CourseHeadCard, FinishRow } from './CompassRefinedCourseParts'
+import { CourseHeadCard } from './CompassRefinedCourseParts'
 import { refinedNextStep } from './compassRefinedNextStepModel'
 import { durationOf } from './compassRefinedFocusDuration'
 import { COURSE_DEFAULTS, type CourseListProps, type CourseOptions } from './compassRefinedCourseModel'
@@ -113,6 +113,7 @@ export function CompassRefinedLearn({
   const listProps: CourseListProps = {
     chapters,
     shown,
+    finish,
     folded,
     fold: options.fold,
     hiddenCount,
@@ -169,33 +170,13 @@ export function CompassRefinedLearn({
           <CompassRefinedCourseRows {...listProps} />
         )}
 
-        {/* ---------- how the course ends ----------
-            ⚠ THREE ROWS OF THE COURSE, NOT A TYPED CARD — 2026-11-12. This
-            was his "Certification Exam" card: an exam the course list does
-            not contain, noted "Opens after all 19 chapters" against
-            twenty-one of them. The rows are
-            `finish` — whatever the chapters above do not
-            consume — so the page ends where the course does. */}
-        <section
-          className="crf-course"
-          aria-label={`${FINISH.eyebrow}: ${FINISH.title}`}
-        >
-          <header className="crf-course__head">
-            <span className="crf-tile" aria-hidden>
-              <AwardMark />
-            </span>
-            <div className="crf-course__name">
-              <p className="crf-eyebrow">{FINISH.eyebrow}</p>
-              <h2 className="crf-h2">{FINISH.title}</h2>
-            </div>
-            <span className="crf-ch__status">
-              {finish.every((f) => f.state === 'locked') ? COPY.lockedWord : ''}
-            </span>
-          </header>
-          {finish.map((f) => (
-            <FinishRow key={f.n} step={f} />
-          ))}
-        </section>
+        {/* ⚠ THE COURSE'S ENDING IS IN THE LIST NOW — 2026-11-13: "Exam,
+            Survey, and Certificate should all be their own modules." It had
+            been a "Finish Your Course" card under the roadmap, which made
+            three rows of one course look like a different kind of thing.
+            `CompassRefinedCourseCards` draws them as the last three modules;
+            the ROWS layout still has no ending of its own, which is the one
+            thing this move left behind. */}
       </CompassRefinedColumn>
     </div>
   )

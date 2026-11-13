@@ -28,6 +28,8 @@ import { BookOpenRegular, Check, ChevronDown, LockRegular } from '@/icons'
 import { JEFF_MVP_LEARN_COPY as COPY } from '@/data/compassJeffMvpFixtures'
 import { REFINED_CHAPTER_BLURBS, REFINED_ROADMAP } from '@/data/compassRefinedCopy'
 import { ExamRow, LessonMark } from './CompassRefinedCourseParts'
+import { SECTION_ICON } from './compassRefinedSectionIcons'
+import type { RefinedSectionKind } from '@/data/compassRefinedCourse'
 import type { CourseListProps, RoadmapFilter } from './compassRefinedCourseModel'
 import type { RefinedChapter } from './compassRefinedLearnCourse'
 
@@ -101,6 +103,25 @@ function chapterParts(c: RefinedChapter): string {
     .join(' · ')
 }
 
+/** The closing modules wear the chapters' own tones and words. */
+const FINISH_TONE: Record<string, string> = {
+  done: 'done',
+  current: 'progress',
+  locked: 'locked',
+}
+const FINISH_WORD: Record<string, string> = {
+  done: 'Completed',
+  current: 'Up Next',
+  locked: 'Locked',
+}
+
+/** What the module IS — the `kind` arm's mark. The same map the next-step
+ *  card draws from, so a thing marked an exam there is marked an exam here. */
+function KindMark({ kind }: { kind: RefinedSectionKind }) {
+  const Icon = SECTION_ICON[kind] ?? SECTION_ICON.lesson
+  return <Icon size={12} />
+}
+
 /**
  * The mark on a row the course does not number — the Course Introduction and
  * the Florida laws chapter.
@@ -130,6 +151,7 @@ export function CompassRefinedCourseCards({
   openLesson,
   blurb,
   chapterMark,
+  finish,
 }: CourseListProps) {
   /**
    * ⚠ THE FILTER OVERRIDES THE FOLD, and that is the only way the two can
@@ -183,8 +205,10 @@ export function CompassRefinedCourseCards({
           Calendar use — rather than three buttons styled to look like it. */}
       <div className="crf-map__head">
         <h3 className="crf-map__heading">{REFINED_ROADMAP.title}</h3>
+        {/* ⚠ COUNTS WHAT THE LIST DRAWS — the chapters AND the three closing
+            modules. See `REFINED_ROADMAP.total`. */}
         <span className="crf-map__total">
-          {chapters.length} {REFINED_ROADMAP.total}
+          {chapters.length + finish.length} {REFINED_ROADMAP.total}
         </span>
         {/* ⚠ STANDALONE PILLS, NOT THE SEGMENTED STRIP — 2026-11-13: "update
             filters to be pills." `PillTabs` is the app's SEGMENTED filter —
@@ -216,7 +240,7 @@ export function CompassRefinedCourseCards({
 
       {/* ⚠ THE ARM IS ON THE LIST, because the spine is drawn per card and
           has to follow the mark's centre — see `.crf-map__card::after`. */}
-      <div className={`crf-map${chapterMark === 'icon' ? ' crf-map--icon' : ''}`}>
+      <div className={`crf-map${chapterMark === 'number' ? '' : ' crf-map--icon'}`}>
         {/* ⚠ THE SAME BAR AS THE ONE AT THE FOOT, pointing the other way —
             the count is the point, and the control says which way it goes so
             it is not a one-way door. */}
@@ -300,18 +324,21 @@ export function CompassRefinedCourseCards({
                   <div className="crf-map__top">
                     <span
                       className={`crf-map__state crf-map__state--${pill.tone}${
-                        chapterMark === 'icon' ? ' crf-map__state--markonly' : ''
+                        chapterMark === 'number' ? '' : ' crf-map__state--markonly'
                       }`}
                     >
-                      {/* ⚠ THE NUMBER OR THE STATE — `compass-course-mark`.
-                          On `number` the chips run 01–19 across twenty-one
-                          modules, because the Introduction and the Florida
-                          laws row carry none in the course list; `icon`
-                          drops the digits so every row marks the same kind
-                          of thing. The arm is which fact this carries. */}
+                      {/* ⚠ THREE ARMS — `compass-course-mark`. `number` is
+                          the course's chapter number, which runs 01–19
+                          across twenty-one modules; `icon` is the state's
+                          glyph; `kind` is what the module IS — a book, an
+                          exam, a survey, a certificate — which is the one
+                          that earns its place now that the closing steps are
+                          modules in this list too. */}
                       <span className="crf-map__mark" aria-hidden>
                         {chapterMark === 'number' && c.number ? (
                           String(c.number).padStart(2, '0')
+                        ) : chapterMark === 'kind' ? (
+                          <KindMark kind="lesson" />
                         ) : (
                           <StateMark state={c.state} />
                         )}
@@ -379,10 +406,17 @@ export function CompassRefinedCourseCards({
                         the action rather than between it and the chevron:
                         the two buttons are one group and a label driven
                         between them separates what the hand goes to. */}
-                    {chapterMark === 'icon' ? (
+                    {chapterMark !== 'number' ? (
                       <span
                         className={`crf-map__state crf-map__state--${pill.tone} crf-map__state--word`}
                       >
+                        {/* ⚠ THE STATE'S GLYPH TRAVELS WITH THE WORD ON THE
+                            `kind` ARM — 2026-11-13: "includes the locked
+                            icon with this tag over here and the icon on the
+                            left indicates what the type of module is". The
+                            left mark is saying what the row IS there, so
+                            the state has nowhere else to be. */}
+                        {chapterMark === 'kind' ? <StateMark state={c.state} /> : null}
                         {pill.word}
                       </span>
                     ) : null}
@@ -501,6 +535,80 @@ export function CompassRefinedCourseCards({
             Show less
           </button>
         ) : null}
+
+        {/* ⚠ THE COURSE'S CLOSING STEPS ARE MODULES — 2026-11-13: "Exam,
+            Survey, and Certificate should all be their own modules." They
+            were a separate "Finish Your Course" strip under this list, which
+            made three rows of one course look like a different kind of
+            thing; they are rows of the same list now, in the order the
+            course puts them.
+
+            ⚠ THEY ALWAYS SHOW THEIR KIND. A chapter's mark answers to the
+            flag; these three are an exam, a survey and a certificate, and a
+            padlock on all three would lose the only thing that tells them
+            apart. The `kind` arm is what makes the whole list read this way.
+
+            ⚠ AND THEY DO NOT EXPAND. There is nothing inside them — no
+            lessons, no exam of their own — so no chevron, and the space is
+            held the way it is for a chapter with nothing behind it. */}
+        {filter === 'all'
+          ? finish.map((f) => (
+              <article
+                key={f.n}
+                /* ⚠ MARKED AS A CLOSING MODULE. It wears the card's own
+                   classes so it looks like one, and carries this so anything
+                   reasoning about CHAPTERS — the tests, a future count — can
+                   tell the two apart without matching on titles. */
+                className={`crf-map__card crf-map__card--${f.state} crf-map__card--finish`}
+              >
+                <div className="crf-map__body">
+                  <div className="crf-map__main">
+                    <div className="crf-map__top">
+                      <span
+                        className={`crf-map__state crf-map__state--${FINISH_TONE[f.state]}${
+                          chapterMark === 'number' ? '' : ' crf-map__state--markonly'
+                        }`}
+                      >
+                        <span className="crf-map__mark" aria-hidden>
+                          <KindMark kind={f.kind} />
+                        </span>
+                        {chapterMark === 'number' ? (
+                          <>
+                            <span aria-hidden className="crf-map__dot" />
+                            {FINISH_WORD[f.state]}
+                          </>
+                        ) : null}
+                      </span>
+                      <div className="crf-map__name">
+                        <p className="crf-map__title">{f.title}</p>
+                        <p className="crf-map__label">
+                          {f.eyebrow} · {f.note}
+                        </p>
+                      </div>
+                      {chapterMark !== 'number' ? (
+                        <span
+                          className={`crf-map__state crf-map__state--${FINISH_TONE[f.state]} crf-map__state--word`}
+                        >
+                          {chapterMark === 'kind' ? <StateMark state={f.state} /> : null}
+                          {FINISH_WORD[f.state]}
+                        </span>
+                      ) : null}
+                      <button
+                        type="button"
+                        className={f.state === 'locked' ? 'crf-btn crf-btn--locked' : 'crf-btn'}
+                        disabled={f.state === 'locked'}
+                        aria-disabled={f.state === 'locked' || undefined}
+                        aria-label={`${f.cta} ${f.title}`}
+                      >
+                        {f.cta}
+                      </button>
+                      <span className="crf-chev crf-chev--none" aria-hidden />
+                    </div>
+                  </div>
+                </div>
+              </article>
+            ))
+          : null}
       </div>
     </>
   )

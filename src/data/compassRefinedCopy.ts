@@ -499,8 +499,22 @@ export function refinedAccessDaysLabel(today = new Date()): string | null {
  */
 export const REFINED_ROADMAP = {
   title: 'Learning Roadmap',
-  /** Follows a counted figure: "21 Lessons Total". */
-  total: 'Lessons Total',
+  /**
+   * Follows a counted figure: "24 Modules Total".
+   *
+   * ⚠ "Modules", AND IT COUNTS THE LIST — 2026-11-13, when the Final Exam,
+   * the Survey and the Certificate became rows of this roadmap ("Exam,
+   * Survey, and Certificate should all be their own modules"). It read "21
+   * Lessons Total" over twenty-four cards, which is the same arithmetic she
+   * caught on the numbered chips an hour earlier: a count beside a list that
+   * does not count the list.
+   *
+   * ⚠ IT IS THE FILTER'S OWN NOUN. The pills above read "All Modules", and
+   * a certificate is not a lesson. The course card's eyebrow keeps "21
+   * Lessons · Final Course Exam · Survey · Certificate", which says what the
+   * course is MADE of; this says how many rows are below it.
+   */
+  total: 'Modules Total',
 } as const
 
 export const REFINED_FINISH_COPY = {

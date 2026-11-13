@@ -13,8 +13,13 @@
  */
 
 import { ChevronDown } from '@/icons'
-import { REFINED_CHAPTER_BLURBS, REFINED_COURSE } from '@/data/compassRefinedCopy'
-import { ChapterMark, ExamRow, LessonMark } from './CompassRefinedCourseParts'
+import {
+  REFINED_CHAPTER_BLURBS,
+  REFINED_COURSE,
+  REFINED_FINISH_COPY as FINISH,
+} from '@/data/compassRefinedCopy'
+import { JEFF_MVP_LEARN_COPY as COPY } from '@/data/compassJeffMvpFixtures'
+import { AwardMark, ChapterMark, ExamRow, FinishRow, LessonMark } from './CompassRefinedCourseParts'
 import type { CourseListProps } from './compassRefinedCourseModel'
 
 export function CompassRefinedCourseRows({
@@ -28,8 +33,10 @@ export function CompassRefinedCourseRows({
   toggle,
   openLesson,
   blurb,
+  finish,
 }: CourseListProps) {
   return (
+    <>
     <section className="crf-course crf-course--list" aria-label={REFINED_COURSE.name}>
 {/* ⚠ THE REAL COURSE, NOT A SECOND LIST OF IT — 2026-11-11. These were
             nineteen chapters typed into his fixture while the Overview
@@ -180,5 +187,33 @@ export function CompassRefinedCourseRows({
           </button>
         ) : null}
     </section>
+      {/* ---------- how the course ends ----------
+          ⚠ THREE ROWS OF THE COURSE, NOT A TYPED CARD — 2026-11-12. This
+          was his "Certification Exam" card: an exam the course list does
+          not contain, noted "Opens after all 19 chapters" against
+          twenty-one of them. The rows are
+          `finish` — whatever the chapters above do not
+          consume — so the page ends where the course does. */}
+      <section
+        className="crf-course"
+        aria-label={`${FINISH.eyebrow}: ${FINISH.title}`}
+      >
+        <header className="crf-course__head">
+          <span className="crf-tile" aria-hidden>
+            <AwardMark />
+          </span>
+          <div className="crf-course__name">
+            <p className="crf-eyebrow">{FINISH.eyebrow}</p>
+            <h2 className="crf-h2">{FINISH.title}</h2>
+          </div>
+          <span className="crf-ch__status">
+            {finish.every((f) => f.state === 'locked') ? COPY.lockedWord : ''}
+          </span>
+        </header>
+        {finish.map((f) => (
+          <FinishRow key={f.n} step={f} />
+        ))}
+      </section>
+    </>
   )
 }
