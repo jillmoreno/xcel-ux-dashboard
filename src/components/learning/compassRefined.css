@@ -1966,6 +1966,15 @@
 .crf-map__state--markonly {
   padding: 0 7px;
 }
+/* ⚠ A GAP BETWEEN THE GLYPH AND THE WORD — 2026-11-13: "add space beside the
+   icon and the text". The tag itself is `gap: 0`, because on the `number`
+   arm the spacing between the mark, the dot and the word is the DOT's own
+   margins; this tag holds a glyph and a word with nothing between them, so
+   it needs its own. 5px is the gap the status pill carried for its padlock
+   before the two were joined. */
+.crf-map__state--word {
+  gap: 5px;
+}
 .crf-map__state--markonly .crf-map__mark {
   width: auto;
 }
