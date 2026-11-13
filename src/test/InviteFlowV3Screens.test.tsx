@@ -187,11 +187,11 @@ describe('Invite Flow V3 — the Direct Email invitation', () => {
     renderAt(CHECKOUT, `${DIRECT},invite-v3-email-account:atlas`)
     const dialog = screen.getByRole('dialog', { name: 'Log in to continue' })
     expect(dialog).toHaveAccessibleDescription('Welcome back, Jordan! Sign in to finish checking out.')
-    /* The supplied address, pre-filled and locked (2026-11-13). */
-    const field = within(dialog).getByLabelText('Email address')
+    /* The supplied address, pre-filled and editable — no lock (2026-11-13). */
+    const field = within(dialog).getByLabelText(/Email address/)
     expect(field).toHaveValue(E2E_LEARNER_EMAIL)
-    expect(field).toBeDisabled()
-    expect(within(dialog).getByAltText('Locked')).toBeInTheDocument()
+    expect(field).toBeEnabled()
+    expect(within(dialog).queryByAltText('Locked')).not.toBeInTheDocument()
     expect(screen.queryByRole('dialog', { name: 'Enter your one-time code' })).not.toBeInTheDocument()
   })
 })
