@@ -84,6 +84,9 @@ export function VerifyEmailModalV3({
   const layer = useV3DialogLayer()
   const [email, setEmail] = useState(suppliedEmail ?? '')
   const ready = looksLikeEmail(email)
+  /* Said as the learner types, once there is something to judge
+     (2026-11-13, Afsana). */
+  const badEmail = email.trim() !== '' && !ready
   /* The name — asked after the code, for a learner with no Atlas account
      (2026-11-13, Afsana); the log-in finds it on the account, so it stays
      empty there. The checkout's student form arrives with it filled. */
@@ -143,22 +146,27 @@ export function VerifyEmailModalV3({
               </p>
             </div>
 
-            <label htmlFor="verify-email" style={FIELD_GROUP}>
-              <span style={FIELD_LABEL}>
-                Email address<span aria-hidden>*</span>
-              </span>
-              <input
-                id="verify-email"
-                type="email"
-                required
-                autoComplete="email"
-                placeholder="you@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="cre-e2e-input cre-e2e-input-v3"
-                style={FIELD}
-              />
-            </label>
+            <div style={FIELD_AND_ERROR}>
+              <label htmlFor="verify-email" style={FIELD_GROUP}>
+                <span style={FIELD_LABEL}>
+                  Email address<span aria-hidden>*</span>
+                </span>
+                <input
+                  id="verify-email"
+                  type="email"
+                  required
+                  autoComplete="email"
+                  placeholder="you@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  aria-invalid={badEmail}
+                  aria-describedby={badEmail ? 'verify-email-invalid' : undefined}
+                  className="cre-e2e-input cre-e2e-input-v3"
+                  style={badEmail ? { ...FIELD, ...FIELD_INVALID } : FIELD}
+                />
+              </label>
+              {badEmail ? <EmailInvalid id="verify-email-invalid" /> : null}
+            </div>
 
             <div style={ACTIONS}>
               <button
@@ -559,6 +567,7 @@ function LoginStep({
   const canResend = linkWait <= 0
   /* Direct Email's field can be edited, so it has to hold an address too. */
   const ready = password !== '' && (!supplied || looksLikeEmail(email))
+  const badEmail = supplied && email.trim() !== '' && !looksLikeEmail(email)
   if (resetting) {
     return (
       <ResetPasswordStep
@@ -671,21 +680,26 @@ function LoginStep({
         {/* Direct Email's address, pre-filled from the invitation and
             editable — no lock, no grey (2026-11-13, Afsana). */}
         {supplied ? (
-          <label htmlFor="login-email" style={FIELD_GROUP}>
-            <span style={FIELD_LABEL}>
-              Email address <span aria-hidden>*</span>
-            </span>
-            <input
-              id="login-email"
-              type="email"
-              required
-              autoComplete="email"
-              value={email}
-              onChange={(e) => onEmailChange(e.target.value)}
-              className="cre-e2e-input cre-e2e-input-v3"
-              style={FIELD}
-            />
-          </label>
+          <div style={FIELD_AND_ERROR}>
+            <label htmlFor="login-email" style={FIELD_GROUP}>
+              <span style={FIELD_LABEL}>
+                Email address <span aria-hidden>*</span>
+              </span>
+              <input
+                id="login-email"
+                type="email"
+                required
+                autoComplete="email"
+                value={email}
+                onChange={(e) => onEmailChange(e.target.value)}
+                aria-invalid={badEmail}
+                aria-describedby={badEmail ? 'login-email-invalid' : undefined}
+                className="cre-e2e-input cre-e2e-input-v3"
+                style={badEmail ? { ...FIELD, ...FIELD_INVALID } : FIELD}
+              />
+            </label>
+            {badEmail ? <EmailInvalid id="login-email-invalid" /> : null}
+          </div>
         ) : null}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
           <label htmlFor="login-password" style={FIELD_GROUP}>
@@ -754,6 +768,14 @@ function LoginStep({
           Log in
         </button>
       </div>
+      {/* The way out for a learner who cannot get in at all (2026-11-13,
+          Afsana). Drawn only — the help center's address is not settled. */}
+      <p style={{ ...NOTE, textAlign: 'center' }}>
+        Can’t log in?{' '}
+        <button type="button" className="cre-e2e-textlink" style={{ ...TEXT_LINK, color: 'var(--color-xcel-brick)' }}>
+          Visit our help center
+        </button>
+      </p>
     </form>
   )
 }
@@ -1047,6 +1069,19 @@ const CODE_BOX_INVALID: CSSProperties = { boxShadow: 'inset 0 -2px 0 var(--color
 
 /* The same stroke under the log-in password on a wrong password. */
 const FIELD_INVALID: CSSProperties = CODE_BOX_INVALID
+
+/* A field with its error line under it, 6px apart — as the password's. */
+const FIELD_AND_ERROR: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 6 }
+
+/** The email fields' inline error — shown as the learner types, while what
+ *  is there is not an address (2026-11-13, Afsana). */
+function EmailInvalid({ id }: { id: string }) {
+  return (
+    <p id={id} role="alert" style={INVALID}>
+      Please enter a valid email address
+    </p>
+  )
+}
 
 const ACTIONS: CSSProperties = {
   display: 'flex',

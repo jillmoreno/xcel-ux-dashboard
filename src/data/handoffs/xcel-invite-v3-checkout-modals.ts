@@ -24,7 +24,7 @@ const feature: PrototypeFeature = {
   devStatus: 'not-ready',
   surface: 'invite',
   owner: 'Afsana',
-  lastUpdated: '2026-11-13T17:57:57Z',
+  lastUpdated: '2026-11-13T18:18:06Z',
   accent: 'gold',
   icon: 'flag',
   brands: ['xcel'],
@@ -86,13 +86,15 @@ const feature: PrototypeFeature = {
         variants: [
           { name: 'Empty', when: 'On open. Continue is off.' },
           { name: 'Valid email', when: 'The field holds something shaped like an email address. Continue turns on.' },
+          { name: 'Not a valid email', when: 'The field holds something that is not an email address. As the learner types, "Please enter a valid email address" shows in red under the field, with a red stroke along its bottom; Continue stays off. Both go the moment it is an address, and an empty field shows no error.', why: 'The learner learns why Continue is off while they are still in the field, rather than guessing.' },
           { name: 'Pre-filled (Direct Email)', when: 'Direct Email when the address has no Atlas account. The field opens holding the address the partner supplied, and Continue is on.', why: 'The learner sees where the code is going before it is sent, instead of a code arriving unannounced.' },
         ],
         ctas: [
           { name: 'Continue', does: 'Off until the email is valid. Then opens Log in to continue if the email has an Atlas account, otherwise Enter your one-time code.' },
         ],
         statesMatrix: [
-          { question: 'What if the email is not valid?', answer: 'Continue stays off until it looks like an email address. There is no error message.' },
+          { question: 'What if the email is not valid?', answer: '"Please enter a valid email address" in red under the field, 12px, with a 2px red stroke along its bottom, shown as the learner types. Continue stays off until it is an address.' },
+          { question: 'What if the field is empty?', answer: 'No error — there is nothing to judge yet. Continue is off.' },
           { question: 'Can the learner close it?', answer: 'No. There is no ✕ and no Escape — the checkout behind it cannot be used until the email is checked.' },
         ],
         edgeCases: [
@@ -242,11 +244,12 @@ const feature: PrototypeFeature = {
         tabLabel: 'Log in',
         location: 'Over the checkout, after Enter your email when the email has an Atlas account — or first, on Direct Email, with the address pre-filled in an editable field. src/components/e2e/VerifyEmailModalV3.tsx — LoginStep.',
         summary:
-          'The XCEL logo, "Log in to continue", and "Welcome back, [first name]! Sign in to [email, bold] to finish checking out." — the address in the sentence. On Direct Email the line is "Welcome back, [first name]! Sign in to finish checking out." and the address is in an Email address field above the password, pre-filled from the invitation and editable. A password field with show and hide, Forgot password?, and Log in. Forgot password? turns the modal into Check your email; following the link opens Reset your password.',
+          'The XCEL logo, "Log in to continue", and "Welcome back, [first name]! Sign in to [email, bold] to finish checking out." — the address in the sentence. On Direct Email the line is "Welcome back, [first name]! Sign in to finish checking out." and the address is in an Email address field above the password, pre-filled from the invitation and editable. A password field with show and hide, Forgot password?, Log in, and under it, centred, "Can’t log in? Visit our help center" with the link in brick red. Forgot password? turns the modal into Check your email; following the link opens Reset your password.',
         variants: [
           { name: 'Empty password', when: 'On open. Log in is off.' },
           { name: 'Password entered', when: 'Anything in the field. Log in turns on.' },
           { name: 'Direct Email — address pre-filled', when: 'Direct Email with an Atlas account. An Email address field holds the invited address, editable like any field — no lock, no grey; the line drops the address. Log in needs a password and a valid email.', why: 'The learner sees which account they are signing in to, and can sign in with another address if the invitation went to a different one.' },
+          { name: 'Direct Email — not a valid email', when: 'Direct Email, the Email address field edited into something that is not an address. "Please enter a valid email address" in red under it, as the learner types, with a red stroke along its bottom. Log in stays off.' },
           { name: 'Wrong password', when: 'Log in with a password that does not match. Red text under the field — "We couldn’t log you in. Please try again." — and a red stroke along the field’s bottom. Editing the password clears both.' },
           { name: 'Check your email', when: 'Forgot password? was clicked. The modal becomes "Check your email": "We sent a password reset link to [email, bold]. Follow the instructions in the email to reset your password. Be sure to check your spam or junk folders." Under it, the address in an Email address field, disabled — grey, no lock. Resend link (primary), the countdown under it while it waits, then Back to sign in (secondary).' },
           { name: 'Resend link waiting', when: 'Check your email, straight after a link is sent and after every resend. Resend link is disabled for 30 seconds, and a line under it counts down: "You can resend the link in 0:30". The line goes when the button turns on.', why: 'A link has just gone out; a second request before the first can arrive only multiplies the emails.' },
@@ -258,12 +261,14 @@ const feature: PrototypeFeature = {
           { name: 'Password eye', does: 'Shows or hides the password.' },
           { name: 'Forgot password?', does: 'Sends a reset link to the address and turns the modal into Check your email.' },
           { name: 'Log in', does: 'Off until there is a password. Then signs in and opens Signing you in…, or shows the wrong-password error.' },
+          { name: 'Visit our help center', does: 'Under Log in, centred: "Can’t log in? Visit our help center", the link in brick red. Drawn only — it goes nowhere yet; the help center’s address is not settled.' },
           { name: 'Resend link (Check your email)', does: 'Disabled for 30 seconds after each send, the first included, with the countdown under it. Then sends another reset link and is disabled again.' },
           { name: 'Back to sign in (Check your email)', does: 'Returns to Log in to continue.' },
           { name: 'Password and Confirm new password eyes (Reset your password)', does: 'Show or hide each field.' },
           { name: 'Reset password', does: 'Off until all seven rules are met and both fields match. Then saves the new password and returns to Log in to continue with the Password reset banner (proposed).' },
         ],
         statesMatrix: [
+          { question: 'What if the Direct Email address is not valid?', answer: '"Please enter a valid email address" in red under the field as the learner types, with a red stroke along its bottom. Log in stays off.' },
           { question: 'What if the password is wrong?', answer: '"We couldn’t log you in. Please try again." in red under the field, 12px, with a 2px red stroke along its bottom. Log in stays on.' },
           { question: 'How long is Resend link disabled?', answer: '30 seconds after each send, counted down under the button.' },
           { question: 'Can the learner change the address on Check your email?', answer: 'No. It is shown in a disabled field — grey, no lock. To use a different address they go Back to sign in.' },

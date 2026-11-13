@@ -229,10 +229,29 @@ describe('Invite Flow V3 — the email check', () => {
     expect(screen.queryByText(/This is the address you verified/)).not.toBeInTheDocument()
     const go = screen.getByRole('button', { name: 'Continue' })
     expect(go).toBeDisabled()
-    await userEvent.type(screen.getByLabelText(/Email address/), 'sam@example')
+    /* An empty field says nothing; a half-typed one says why Continue is off. */
+    expect(screen.queryByText('Please enter a valid email address')).not.toBeInTheDocument()
+    const field = screen.getByLabelText(/Email address/)
+    await userEvent.type(field, 'sam@example')
     expect(go).toBeDisabled()
-    await userEvent.type(screen.getByLabelText(/Email address/), '.com')
+    expect(field).toHaveAccessibleDescription('Please enter a valid email address')
+    expect(field).toHaveAttribute('aria-invalid', 'true')
+    await userEvent.type(field, '.com')
     expect(go).toBeEnabled()
+    expect(screen.queryByText('Please enter a valid email address')).not.toBeInTheDocument()
+  })
+
+  it('says when the Direct Email log-in address is not valid, and offers the help center', async () => {
+    renderAt(CHECKOUT, 'invite-flow-version:v3,invite-v3-model:b2b,invite-v3-flow-b2b:direct-email,invite-v3-email-account:atlas')
+    const dialog = screen.getByRole('dialog', { name: 'Log in to continue' })
+    const field = within(dialog).getByLabelText(/Email address/)
+    await userEvent.clear(field)
+    await userEvent.type(field, 'jordan@')
+    expect(field).toHaveAccessibleDescription('Please enter a valid email address')
+    await userEvent.type(field, 'example.com')
+    expect(within(dialog).queryByText('Please enter a valid email address')).not.toBeInTheDocument()
+    expect(dialog).toHaveTextContent('Can’t log in? Visit our help center')
+    expect(within(dialog).getByRole('button', { name: 'Visit our help center' })).toBeInTheDocument()
   })
 
   it('shows the one-time code step with the logo, and unlocks Resend after 10 minutes', async () => {
