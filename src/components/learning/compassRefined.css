@@ -1976,12 +1976,19 @@
    carries the position, so the label is the double-numbered detail
    ("Life & Health Chapter 13 | Health Chapter 4") and belongs with the
    title it qualifies. Same treatment as every other row label — finding 6. */
+/* ⚠ NOT UPPERCASED — 2026-11-12: "change to sentence case". It was 11px
+   caps at 0.08em, the eyebrow treatment finding 6 settled on, and that was
+   right while the line was a LABEL ("CHAPTER 1"). It now carries the
+   chapter's contents as well, and a sentence of three facts set in capitals
+   reads as shouting rather than as a caption.
+
+   ⚠ THE TRACKING GOES WITH THE CAPS. 0.08em is there to open up uppercase
+   letterforms; on lower case it just looks loose. The words keep the
+   capitalisation she wrote them with. */
 .crf-map__label {
   margin: 2px 0 0;
   font-size: 11px;
   font-weight: 400;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
   color: var(--crf-muted);
 }
 /* ⚠ INVENTED COPY, OFF BY DEFAULT — `compass-course-blurb`. */
