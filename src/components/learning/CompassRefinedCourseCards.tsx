@@ -74,6 +74,35 @@ function statusPill(c: RefinedChapter) {
 }
 
 /**
+ * WHAT IS INSIDE THE CHAPTER — 2026-11-12: "Chapter 1 - 7 Lessons - 1
+ * Chapter Quiz".
+ *
+ * ⚠ THIS IS NOT FINDING 3 COMING BACK. That finding removed a lesson count
+ * from the row's eyebrow because the page was COUNTING THE COURSE in two
+ * units at once — "7 lessons" beside a header reading "8 of 44 sections".
+ * This line counts what is in one chapter, which is the chapter's own shape
+ * rather than a second measure of the whole.
+ *
+ * ⚠ IT SAYS ONLY WHAT IT KNOWS. The lesson count comes from Jeff's outline,
+ * which covers ten of the twenty-one chapters by name; the rest have no
+ * lesson-level detail and say nothing rather than "0 Lessons". The quiz is
+ * the chapter's own exam row, which the course gives every chapter but the
+ * Introduction.
+ *
+ * ⚠ "Chapter Quiz", HER WORD. The course calls the row "Chapter 1 Exam" and
+ * the exam strip below says EXAM; this line is hers verbatim.
+ */
+function chapterParts(c: RefinedChapter): string {
+  return [
+    c.label,
+    c.lessons.length ? `${c.lessons.length} Lessons` : '',
+    c.exam ? '1 Chapter Quiz' : '',
+  ]
+    .filter(Boolean)
+    .join(' · ')
+}
+
+/**
  * The mark on a row the course does not number — the Course Introduction and
  * the Florida laws chapter.
  *
@@ -207,6 +236,26 @@ export function CompassRefinedCourseCards({
                           than a second ornament on the state. */}
                       {pill.word}
                     </span>
+
+                    {/* ⚠ THE NAME MOVES UP BESIDE THE TAG — 2026-11-12:
+                        "Shift these to the right of the status tag so the
+                        module vertical height is reduced". The title and its
+                        label had been two rows under the top row; a card was
+                        three bands tall to say one chapter's name and state.
+                        They are one row now, and the card is shorter by the
+                        height of both. */}
+                    <div className="crf-map__name">
+                      <p className="crf-map__title">{c.title}</p>
+                      {/* ⚠ RENDERED ON ANYTHING IT CAN SAY, not only on a
+                          chapter label. The Florida laws row has no number
+                          in the course list and does have an exam, so
+                          gating on the label alone dropped its "1 Chapter
+                          Quiz" — the one card in twenty-one where the two
+                          conditions differ. */}
+                      {chapterParts(c) ? (
+                        <p className="crf-map__label">{chapterParts(c)}</p>
+                      ) : null}
+                    </div>
                     {/* ⚠ THE ACTION, TOP RIGHT — her instruction. In the
                         reference this corner carries "8 Lessons · Est. 3h
                         15m"; this course has neither figure, and the one it
@@ -255,8 +304,6 @@ export function CompassRefinedCourseCards({
                     )}
                   </div>
 
-                  <p className="crf-map__title">{c.title}</p>
-                  {c.label ? <p className="crf-map__label">{c.label}</p> : null}
                   {blurb && REFINED_CHAPTER_BLURBS[c.title] ? (
                     <p className="crf-map__blurb">{REFINED_CHAPTER_BLURBS[c.title]}</p>
                   ) : null}

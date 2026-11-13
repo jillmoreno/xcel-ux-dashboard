@@ -1929,6 +1929,14 @@
    ⚠ AND THE PAIR STAYS TOGETHER. With the margin on both, a card with an
    action would push them apart to the two ends of the row; the second rule
    hands the gap back so the chevron rides beside the button. */
+/* ⚠ THE NAME FILLS THE ROW — 2026-11-12, when the title and its label moved
+   up beside the state tag. It is what pushes the action and the chevron
+   right; the auto margins below are what did that before and still cover
+   the case where this block is absent. */
+.crf-map__name {
+  flex: 1 1 auto;
+  min-width: 0;
+}
 .crf-map__top .crf-btn,
 .crf-map__top .crf-chev {
   margin-left: auto;
@@ -1969,7 +1977,7 @@
    ("Life & Health Chapter 13 | Health Chapter 4") and belongs with the
    title it qualifies. Same treatment as every other row label — finding 6. */
 .crf-map__label {
-  margin: 3px 0 0;
+  margin: 2px 0 0;
   font-size: 11px;
   font-weight: 400;
   letter-spacing: 0.08em;

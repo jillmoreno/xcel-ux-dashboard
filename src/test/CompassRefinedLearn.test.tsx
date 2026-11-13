@@ -471,3 +471,34 @@ describe('clicking a roadmap card expands it', () => {
     expect(details.getAttribute('aria-expanded')).toBe('true')
   })
 })
+
+describe('a roadmap card’s label says what is inside the chapter', () => {
+  it('reads “Chapter 1 · 7 Lessons · 1 Chapter Quiz” where the course knows', () => {
+    const { container } = wrapWith({ rows: 'cards', fold: false })
+    const labels = [...container.querySelectorAll('.crf-map__label')].map((e) => e.textContent)
+    expect(labels).toContain('Chapter 1 · 7 Lessons · 1 Chapter Quiz')
+  })
+
+  it('says only what it knows — no “0 Lessons” on a chapter without them', () => {
+    /* ⚠ THE LESSON COUNT IS JEFF'S OUTLINE, which covers ten of the
+       twenty-one chapters by name. The rest say nothing rather than a zero. */
+    const { container } = wrapWith({ rows: 'cards', fold: false })
+    for (const card of container.querySelectorAll('.crf-map__card')) {
+      const label = card.querySelector('.crf-map__label')?.textContent ?? ''
+      expect(label).not.toMatch(/\b0 Lessons\b/)
+      const title = card.querySelector('.crf-map__title')?.textContent ?? ''
+      const chapter = REFINED_CHAPTERS.find((c) => c.title === title)!
+      expect(/\d+ Lessons/.test(label), title).toBe(chapter.lessons.length > 0)
+      expect(label.includes('1 Chapter Quiz'), title).toBe(!!chapter.exam)
+    }
+  })
+
+  it('puts the name beside the tag, not under it', () => {
+    /* ⚠ "Shift these to the right of the status tag so the module vertical
+       height is reduced." The test that matters is that they share a row. */
+    const { container } = wrapWith({ rows: 'cards', fold: false })
+    const card = container.querySelector('.crf-map__card')!
+    expect(card.querySelector('.crf-map__top .crf-map__name')).not.toBeNull()
+    expect(card.querySelector('.crf-map__main > .crf-map__title')).toBeNull()
+  })
+})
