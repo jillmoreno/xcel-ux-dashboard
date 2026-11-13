@@ -7,6 +7,7 @@ import { CompassRefinedStageOverview } from './CompassRefinedStageOverview'
 import { CompassRefinedPractice } from './CompassRefinedPractice'
 import { CompassRefinedPrep } from './CompassRefinedPrep'
 import { CompassRefinedPlanner } from './CompassRefinedPlanner'
+import { CompassRefinedPlannerStc } from './CompassRefinedPlannerStc'
 import { CompassRefinedFlashcards } from './CompassRefinedFlashcards'
 import { CompassRefinedSimulator } from './CompassRefinedSimulator'
 import { CompassRefinedFlashcardTopic } from './CompassRefinedFlashcardTopic'
@@ -56,6 +57,9 @@ import './compassRefined.css'
  * What the class is still for: saying in the DOM which shell drew the page,
  * which is what the inert-refactor test strips before comparing the two.
  */
+/** The Study Planner's model — `compass-planner-source`. */
+export type PlannerSource = 'compass' | 'stc'
+
 export function CompassRefinedShell({
   page,
   onSelectPage,
@@ -63,12 +67,16 @@ export function CompassRefinedShell({
   stage,
   course,
   focus,
+  planner,
 }: {
   page: JeffMvpPage
   onSelectPage: (p: JeffMvpPage) => void
   /** `compass-refined-readiness-hero`, read by `CompassLearningPage` and
    *  passed down so this shell stays a plain function of its props. */
   readinessHero?: RefinedHeroStyle
+  /** `compass-planner-source` — which model the Study Planner runs on.
+   *  Read by `CompassLearningPage`, for the same reason. */
+  planner?: PlannerSource
   /** `compass-readiness-stage` — which of the sixteen learner states the
    *  Overview draws. Read by `CompassLearningPage`, for the same reason. */
   stage?: string
@@ -108,6 +116,7 @@ export function CompassRefinedShell({
         stage={stage}
         course={course}
         focus={focus}
+        planner={planner}
       />
     </div>
   )
@@ -128,6 +137,7 @@ function RefinedPage({
   stage,
   course,
   focus,
+  planner,
 }: {
   page: JeffMvpPage
   onSelectPage: (p: JeffMvpPage) => void
@@ -137,6 +147,7 @@ function RefinedPage({
   stage?: string
   course?: CourseOptions
   focus?: FocusOptions
+  planner?: PlannerSource
 }) {
   const source = refinedSourceFor(page)
 
@@ -177,7 +188,11 @@ function RefinedPage({
     case 'prep-review':
       return <CompassRefinedPrep />
     case 'study-planner':
-      return <CompassRefinedPlanner />
+      /* ⚠ TWO MODELS, ONE SLOT — 2026-11-13, `compass-planner-source`. Jeff's
+         pace-and-sessions planner, or the LMS Study Plan's task calendar
+         composed inside the same chrome. A sibling file, not a conditional
+         threaded through his: `CompassRefinedPlanner` is untouched. */
+      return planner === 'stc' ? <CompassRefinedPlannerStc /> : <CompassRefinedPlanner />
     case 'flashcards':
       return <CompassRefinedFlashcards onSelectPage={onSelectPage} />
     case 'exam-simulator':

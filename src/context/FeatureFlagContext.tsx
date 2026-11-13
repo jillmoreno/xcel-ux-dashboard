@@ -2094,6 +2094,44 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'compass-planner-source',
+    /* WHOSE LOGIC RUNS THE STUDY PLANNER — 2026-11-13. Jillienne, with the
+       LMS Study Plan calendar open beside the Compass planner: "i want to
+       make another standalone link that incorporates logic from the lms STC
+       calendar. should it be a separate link? or should it be built into the
+       refined compass prototype with a feature flag". A flag, because the
+       STC logic is already React in this repo (`study-calendar/`), a flag
+       can go to Refinement, stage and a frozen test where a loose HTML file
+       can only be a test, and `freeze-for-testing` pins it with one `ff=`.
+
+       `compass` is Jeff's planner as ported: an exam date, a weekly pace
+       and a calendar of study SESSIONS that rebuilds when a day is skipped.
+       `stc` is the LMS Study Plan's model inside the same chrome: every
+       lesson, quiz and reading as a TASK on a day, a status per task, a
+       stat band that says on track or off, Today / All Tasks, status
+       filters, Hide weekends. Two answers to "what is a plan" — a pace or
+       a task list — which is the decision this flag keeps open.
+
+       ⚠ THE `stc` ARM IS ON BY DEFAULT ON THIS BRANCH ONLY — that is what
+       makes the branch build show the work (CLAUDE.md, the flag rule).
+       `decide-defaults` / `share-to-stage` is where the default for `main`
+       gets decided. */
+    surface: 'design',
+    versions: ['hybrid-pacing', 'eric-atlas-e2e'],
+    surfaces: ['compass:refined'],
+    group: 'Widgets',
+    label: 'Planner logic',
+    description:
+      'Which model the Refined Study Planner runs on. Compass: a weekly pace and a calendar of study sessions that rebuilds itself when a day is skipped. STC: the LMS Study Plan’s task calendar — every lesson, quiz and reading placed on a day, a status on each, the on-track stat band, Today / All Tasks, status filters and Hide weekends.',
+    variants: [
+      { value: 'compass', label: 'Compass', description: 'Pace and sessions; skip a day and the plan rebuilds' },
+      { value: 'stc', label: 'STC', description: 'The LMS task calendar: tasks per day, statuses, stat band' },
+    ],
+    defaultVariant: 'stc',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'compass-overview-version',
     /* WHOSE OVERVIEW — 2026-11-05, from `Compass-Overview-Prototype-V2_2`.
        Anjani's shipped Overview ("Your learning journey", the 62% ring and

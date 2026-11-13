@@ -131,6 +131,9 @@ const REBRAND_FLAGS = [
   'compass-overview-pace-note',
   'compass-overview-next-mark',
   'compass-refined-readiness-hero',
+  // The Refined Study Planner's model — Compass pace/sessions or the LMS
+  // STC task calendar (2026-11-13).
+  'compass-planner-source',
   'compass-planner-rubi',
   'compass-planner-return',
   'compass-planner-under',

@@ -1,0 +1,210 @@
+/* The Study Planner's `stc` arm — layout only. Colour and type come from the
+   LMS study-calendar components it composes (tokens) and from
+   compassRefined.css (the page chrome). Prefix `crf-pls-` so nothing here
+   reaches the Compass planner or the LMS plan. 2026-11-13. */
+
+.crf-pls__band {
+  margin-top: 24px;
+}
+
+.crf-pls__toolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px 16px;
+  margin-top: 20px;
+}
+
+.crf-pls__chips {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.crf-pls__scope {
+  margin-top: 16px;
+  background: var(--color-neutral-100);
+  color: var(--color-text-primary);
+  padding: 6px 18px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.crf-pls__scope-title {
+  margin: 0;
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 15px;
+  line-height: 24px;
+}
+
+.crf-pls__scope-sub {
+  margin-left: 8px;
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--color-text-secondary);
+}
+
+.crf-pls__scope-bar {
+  margin-right: 8px;
+  color: var(--color-border-subtle);
+}
+
+.crf-pls__scope-count {
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+.crf-pls__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+  margin-top: 16px;
+}
+
+@media (max-width: 1100px) {
+  .crf-pls__grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.crf-pls__cal {
+  background: var(--color-neutral-0, #fff);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+  padding: 16px;
+}
+
+.crf-pls__month {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  margin-bottom: 12px;
+}
+
+.crf-pls__month-title {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.crf-pls__nav {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--color-text-primary);
+  cursor: pointer;
+}
+
+.crf-pls__nav:hover:not(:disabled) {
+  background: var(--color-neutral-100);
+}
+
+.crf-pls__nav:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.crf-pls__dow {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.crf-pls__dow span {
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+  padding: 0 10px;
+}
+
+.crf-pls__cells {
+  display: grid;
+  gap: 6px;
+}
+
+.crf-pls__cell {
+  min-height: 72px;
+  padding: 8px 10px;
+  text-align: left;
+  border-radius: var(--radius-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.crf-pls__cell-day {
+  font-family: var(--font-body);
+  font-size: 13px;
+}
+
+.crf-pls__cell-count {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--color-text-secondary);
+}
+
+.crf-pls__cell-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: var(--radius-pill);
+  display: inline-block;
+}
+
+.crf-pls__cal-foot {
+  margin-top: 12px;
+}
+
+.crf-pls__tasks {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  position: sticky;
+  top: 24px;
+}
+
+.crf-pls__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.crf-pls__empty {
+  margin: 0;
+  padding: 18px;
+  border: 1px dashed var(--color-border-subtle);
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--color-text-secondary);
+}
+
+.crf-pls__note {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--color-text-secondary);
+}

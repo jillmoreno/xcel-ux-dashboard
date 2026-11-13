@@ -21,7 +21,7 @@ import { useNavPlacement } from '@/components/layout/navPlacement'
 import { CompassStudyPlanner } from './CompassStudyPlanner'
 import { CompassPlanProvider } from './CompassPlanContext'
 import { CompassJeffMvpShell } from './CompassJeffMvpShell'
-import { CompassRefinedShell } from './CompassRefinedShell'
+import { CompassRefinedShell, type PlannerSource } from './CompassRefinedShell'
 import { JEFF_MVP_PAGES, JEFF_MVP_SUBPAGES, type JeffMvpPage } from '@/data/compassJeffMvpFixtures'
 import type { RefinedHeroStyle } from './CompassReadinessRefined'
 import type {
@@ -151,6 +151,9 @@ export function CompassLearningPage({
      the tested three rings with a matching key. Read here with the other
      Compass controls; the page is a plain function of its props. */
   const refinedHero = useFeatureFlag('compass-refined-readiness-hero').variant as RefinedHeroStyle
+  /* The Study Planner's model — Compass pace/sessions or the LMS STC task
+     calendar (2026-11-13). Read here with the other Compass controls. */
+  const plannerSource = useFeatureFlag('compass-planner-source').variant as PlannerSource
   /* ⚠ THE OVERVIEW'S MERGED PROGRESS + NEXT CARD — 2026-11-11, three
      arrangements while the shape is being decided. Read here with the other
      Compass controls so every component below stays a plain function of its
@@ -257,6 +260,7 @@ export function CompassLearningPage({
             stage={readinessStage}
             course={courseOptions}
             focus={overviewFocus}
+            planner={plannerSource}
           />
         ) : (
           <CompassJeffMvpShell page={jeffPage} onSelectPage={setJeffPage} />
