@@ -1700,9 +1700,16 @@
 
    ⚠ PLAYFAIR AT 20px — the fourth named exception to the "Open Sans below
    32px" rule, and the same case as the other three: it is a title asked for
-   in the display face by a reference that sets it that way. Named here so
-   the next person to apply the rule does not quietly undo it. */
-.crf-map__heading {
+   in the display face. Named here so the next person to apply the rule does
+   not quietly undo it.
+
+   ⚠ AND IT NEEDS `.crf` IN FRONT OF IT. The page sets `--font-body` on every
+   heading through `.crf :is(h1,…,h6)`, which is a class AND an element and
+   beats a bare class; this rule declared Playfair from the day it was
+   written and rendered Open Sans the whole time. `.crf .crf-h1` carries the
+   same note for the same reason. Caught by measuring the computed family —
+   the declaration looks right in the file. */
+.crf .crf-map__heading {
   margin: 0;
   font-family: var(--font-heading-serif), Georgia, serif;
   font-size: 20px;
