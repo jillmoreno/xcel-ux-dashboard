@@ -56,6 +56,9 @@ const out = join(root, 'public', 'demos', opt('out', 'compass-course-test.html')
 const KEEP = opt('keep', 'Main,Learn,Course').split(',').map((p) => p.trim() + '.dc.html')
 const START = opt('start', KEEP[0].replace('.dc.html', '')) + '.dc.html'
 const STAGE = opt('stage', 'q1')
+/* Rubi message mode: 'current' or 'new' (LX 11-2). The prototype defaults to
+   current when nothing is stored; pinning it makes the session's record say so. */
+const MSG = opt('msg', 'current')
 if (!KEEP.includes(START)) {
   console.error(`--start ${START} is not in --keep`)
   process.exit(1)
@@ -118,7 +121,8 @@ for (const k of KEEP) {
 const RESET = `
 try {
   localStorage.setItem('compass-stage-v1', ${JSON.stringify(STAGE)});
-  ['compassB.demo','compass-msg-v1','compass-toc-v1','compass-rubinudge-v1','compass-fc-sel','compass-exam-provider']
+  localStorage.setItem('compass-msg-v1', ${JSON.stringify(MSG)});
+  ['compassB.demo','compass-toc-v1','compass-rubinudge-v1','compass-fc-sel','compass-exam-provider']
     .forEach(function (k) { localStorage.removeItem(k); });
 } catch (e) {}`
 
@@ -171,4 +175,4 @@ go(${JSON.stringify(START)});
 
 mkdirSync(dirname(out), { recursive: true })
 writeFileSync(out, doc)
-console.log(`wrote ${out} — ${(doc.length / 1024).toFixed(0)} KB, pages: ${KEEP.join(', ')}, start ${START}, stage ${STAGE}`)
+console.log(`wrote ${out} — ${(doc.length / 1024).toFixed(0)} KB, pages: ${KEEP.join(', ')}, start ${START}, stage ${STAGE}, Rubi messages ${MSG}`)
