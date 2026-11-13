@@ -615,7 +615,7 @@ function LoginStep({
           </button>
           {/* The wait, counted down under the button (2026-11-13, Afsana). */}
           {canResend ? null : (
-            <p role="timer" aria-live="off" style={{ ...NOTE, alignSelf: 'stretch', textAlign: 'center' }}>
+            <p role="timer" aria-live="off" style={NOTE}>
               You can resend the link in {formatCountdown(linkWait)}
             </p>
           )}
