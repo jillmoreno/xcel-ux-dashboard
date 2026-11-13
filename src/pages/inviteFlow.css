@@ -72,6 +72,11 @@
   outline: 2px solid var(--color-xcel-brick);
   outline-offset: 1px;
 }
+/* V3's modals ring their fields in blue instead (2026-11-13, Afsana: "the
+   outline should be blue"). V2's verification modal keeps the brick. */
+.cre-e2e-input-v3:focus-visible {
+  outline-color: var(--color-e2e-field-focus-v3);
+}
 /* ⚠ A DISABLED CTA MUST NOT ANSWER. The checkout's Place Order and the
    password step's Confirm both draw grey until their field is filled, and
    those arms do not carry this class — but `:disabled` is belt and braces

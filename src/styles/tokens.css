@@ -7720,6 +7720,9 @@ a.cre-library-card-title::after {
      (#e5e7eb) so the field's edge still shows; V1/V2 keep the lighter one.
      #666 text on it is 4.6:1. */
   --color-e2e-form-locked-v3: #dfe2e6;
+  /* V3's modal fields ring in blue when focused, not the brick the CTAs use
+     (2026-11-13, Afsana). 5.2:1 on white. */
+  --color-e2e-field-focus-v3: #2563eb;
   --color-e2e-form-text: #4a5568;
   --color-e2e-form-placeholder: #4b5563;
   --color-e2e-form-shadow: rgb(0 0 0 / 0.05);

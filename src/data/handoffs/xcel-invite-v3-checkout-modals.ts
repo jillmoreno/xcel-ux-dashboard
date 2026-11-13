@@ -24,7 +24,7 @@ const feature: PrototypeFeature = {
   devStatus: 'not-ready',
   surface: 'invite',
   owner: 'Afsana',
-  lastUpdated: '2026-11-13T16:54:58Z',
+  lastUpdated: '2026-11-13T17:25:56Z',
   accent: 'gold',
   icon: 'flag',
   brands: ['xcel'],
@@ -105,6 +105,7 @@ const feature: PrototypeFeature = {
             { role: 'Shadow', token: '--color-e2e-form-shadow' },
             { role: 'Field', token: '--color-e2e-field' },
             { role: 'Field border', token: '--color-e2e-card-outline' },
+            { role: 'Field focus ring', token: '--color-e2e-field-focus-v3' },
             { role: 'Heading and body text', token: '--color-text-primary' },
             { role: 'Primary button', token: '--color-xcel-brick-600' },
             { role: 'Disabled button', token: '--color-e2e-form-locked' },
@@ -161,6 +162,7 @@ const feature: PrototypeFeature = {
           tokens: [
             { role: 'Digit box', token: '--color-e2e-field' },
             { role: 'Digit box border', token: '--color-e2e-card-outline' },
+            { role: 'Digit box focus ring', token: '--color-e2e-field-focus-v3' },
             { role: 'Error text and stroke', token: '--color-error-600' },
             { role: 'Code resent banner — fill', token: '--color-success-100' },
             { role: 'Code resent banner — border', token: '--color-success-200' },
@@ -218,6 +220,7 @@ const feature: PrototypeFeature = {
             { role: 'Scrim', token: '--color-e2e-scrim' },
             { role: 'Field', token: '--color-e2e-field' },
             { role: 'Field border', token: '--color-e2e-card-outline' },
+            { role: 'Field focus ring', token: '--color-e2e-field-focus-v3' },
             { role: 'Heading and body text', token: '--color-text-primary' },
             { role: 'Primary button', token: '--color-xcel-brick-600' },
             { role: 'Disabled button', token: '--color-e2e-form-locked' },
@@ -273,6 +276,7 @@ const feature: PrototypeFeature = {
         designSpec: {
           tokens: [
             { role: 'Field', token: '--color-e2e-field' },
+            { role: 'Field focus ring', token: '--color-e2e-field-focus-v3' },
             { role: 'Error text and stroke', token: '--color-error-600' },
             { role: 'Primary button', token: '--color-xcel-brick-600' },
             { role: 'Secondary button — outline and text', token: '--color-xcel-brick-600' },
