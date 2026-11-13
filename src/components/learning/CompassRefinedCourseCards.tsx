@@ -25,7 +25,6 @@
 
 import { useState } from 'react'
 import { BookOpenRegular, Check, ChevronDown, LockRegular } from '@/icons'
-import { PillTabs } from '@/components/ui/PillTabs'
 import { JEFF_MVP_LEARN_COPY as COPY } from '@/data/compassJeffMvpFixtures'
 import { REFINED_CHAPTER_BLURBS, REFINED_ROADMAP } from '@/data/compassRefinedCopy'
 import { ExamRow, LessonMark } from './CompassRefinedCourseParts'
@@ -160,14 +159,31 @@ export function CompassRefinedCourseCards({
         <span className="crf-map__total">
           {chapters.length} {REFINED_ROADMAP.total}
         </span>
-        <div className="crf-map__filters">
-          <PillTabs
-            items={ROADMAP_FILTERS}
-            active={filter}
-            onChange={setFilter}
-            label={REFINED_ROADMAP.title}
-            size="compact"
-          />
+        {/* ⚠ STANDALONE PILLS, NOT THE SEGMENTED STRIP — 2026-11-13: "update
+            filters to be pills." `PillTabs` is the app's SEGMENTED filter —
+            tabs edge to edge on one rounded container — and its own note
+            draws the distinction: "the standalone chip rows are deliberately
+            NOT this shape … individually-outlined pills at ~25px tall, where
+            a 16px radius reads as a mistake. They stay `--radius-pill`."
+            This is that second pattern, which is what her reference shows.
+
+            ⚠ STILL `role="tablist"`, and still no counts on the pills. They
+            are one choice among three over one list, which is what a tablist
+            is, and the total stays beside the strip — the repo's rule for
+            every status filter. */}
+        <div className="crf-map__filters" role="tablist" aria-label={REFINED_ROADMAP.title}>
+          {ROADMAP_FILTERS.map((f) => (
+            <button
+              key={f.id}
+              type="button"
+              role="tab"
+              aria-selected={filter === f.id}
+              className={`crf-map__filter${filter === f.id ? ' is-on' : ''}`}
+              onClick={() => setFilter(f.id)}
+            >
+              {f.label}
+            </button>
+          ))}
         </div>
       </div>
 

@@ -1724,7 +1724,44 @@
 }
 /* The strip goes hard right, and takes the whole line when the row wraps. */
 .crf-map__filters {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   margin-left: auto;
+}
+/* ⚠ CAPSULES, NOT A SEGMENTED STRIP — 2026-11-13: "update filters to be
+   pills." The shape is the one `PillTabs` names as deliberately not itself:
+   "individually-outlined pills at ~25px tall … they stay `--radius-pill`".
+   13px/600 and 6px/14px padding are that chip row's own figures, so the two
+   surfaces draw the same control.
+
+   ⚠ SELECTED IS A TINT AND A COLOURED EDGE, not a fill. A solid pill at this
+   size reads as a button — something that does a thing — where these three
+   report which of one list is showing. */
+.crf-map__filter {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 14px;
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--crf-body);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    border-color 120ms ease,
+    background 120ms ease;
+}
+.crf-map__filter:hover {
+  border-color: var(--crf-control-edge);
+}
+.crf-map__filter.is-on {
+  border-color: var(--crf-steel);
+  background: var(--crf-steel-wash);
+  color: var(--crf-steel-deep);
 }
 
 /* ---------- the roadmap, 2026-11-12 ----------
