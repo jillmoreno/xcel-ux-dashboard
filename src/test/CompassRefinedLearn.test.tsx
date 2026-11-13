@@ -591,3 +591,65 @@ describe('the completed run folds at the top', () => {
     expect(container.querySelectorAll('.crf-map__card')).toHaveLength(REFINED_CHAPTERS.length)
   })
 })
+
+describe('the roadmap mark — number or icon', () => {
+  const draw = (chapterMark: 'number' | 'icon') =>
+    render(
+      <MemoryRouter>
+        <AccountProvider>
+          <FeatureFlagProvider>
+            <CompassRefinedLearn
+              stage="q3"
+              course={{ ...COURSE_DEFAULTS, rows: 'cards', fold: false, chapterMark }}
+            />
+          </FeatureFlagProvider>
+        </AccountProvider>
+      </MemoryRouter>,
+    )
+
+  it('numbers 01–19 across twenty-one modules — the mismatch this arm tests', () => {
+    const { container } = draw('number')
+    const marks = [...container.querySelectorAll('.crf-map__mark')]
+    const numbered = marks.filter((m) => /^\d\d$/.test(m.textContent ?? ''))
+    expect(marks).toHaveLength(REFINED_CHAPTERS.length)
+    /* Two rows carry no chapter number in the course list. */
+    expect(numbered.length).toBe(REFINED_CHAPTERS.filter((c) => c.number).length)
+    expect(numbered.length).toBeLessThan(marks.length)
+  })
+
+  it('drops every digit on the icon arm, and keeps the word', () => {
+    const { container } = draw('icon')
+    for (const mark of container.querySelectorAll('.crf-map__mark')) {
+      expect(mark.textContent).toBe('')
+      expect(mark.querySelector('svg')).not.toBeNull()
+    }
+    /* ⚠ THE WORD SURVIVES — "still have the locked tag, but put it on the
+       right next to the cta area." */
+    const words = [...container.querySelectorAll('.crf-map__state--word')]
+    expect(words).toHaveLength(REFINED_CHAPTERS.length)
+    expect(words.map((w) => w.textContent)).toContain('Locked')
+  })
+
+  it('puts the word ahead of the controls, not between them', () => {
+    const { container } = draw('icon')
+    const top = container.querySelector('.crf-map__card .crf-map__top')!
+    const kids = [...top.children].map((e) => e.className)
+    const word = kids.findIndex((c) => c.includes('state--word'))
+    const chev = kids.findIndex((c) => c.includes('crf-chev'))
+    expect(word).toBeGreaterThan(-1)
+    expect(word).toBeLessThan(chev)
+  })
+
+  it('says the same words on both arms — only the mark changes', () => {
+    const a = draw('number')
+    const wordsA = [...a.container.querySelectorAll('.crf-map__state')].map((e) =>
+      (e.textContent ?? '').replace(/^\d+/, ''),
+    )
+    a.unmount()
+    const b = draw('icon')
+    const wordsB = [...b.container.querySelectorAll('.crf-map__state--word')].map(
+      (e) => e.textContent,
+    )
+    expect(wordsB).toEqual(wordsA)
+  })
+})

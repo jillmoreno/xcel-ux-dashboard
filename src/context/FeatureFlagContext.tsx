@@ -1827,6 +1827,46 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'compass-course-mark',
+    /* WHAT THE ROADMAP'S TAG LEADS WITH — 2026-11-13, Jillienne: "the number
+       of modules is 21, but the numbers are correllating to the chapter
+       number, there wont always be a chapter number. I am not sure if we
+       should show numbers. Now I am thinking we just show the lock icon.
+       maybe put that as a variant and we can compare."
+
+       ⚠ SHE IS RIGHT ABOUT THE ARITHMETIC. The list is twenty-one modules
+       and the numbers run 01–19, because they are the COURSE's chapter
+       numbers: the Course Introduction and the Florida laws row carry none
+       in the uploaded list, and from chapter thirteen the course numbers
+       each row twice ("Life & Health Chapter 13 | Health Chapter 4"). A
+       reader counting the chips finds nineteen in a list of twenty-one.
+
+       ⚠ SO THE ARM IS WHICH FACT THE TAG CARRIES: the course's own number,
+       or the state. `number` is what the cards were built with and is the
+       baseline; `icon` drops the digits and shows the tick, the book or the
+       padlock on every row, which makes the tag say one thing and the count
+       beside the heading say the other.
+
+       ⚠ EITHER WAY THE WORD IS UNCHANGED. "Completed", "In Progress", "Up
+       Next" and "Locked" follow the state on both arms; this is only about
+       what sits to the left of the dot. */
+    surface: 'design',
+    owner: 'anjani',
+    versions: ['hybrid-pacing', 'eric-atlas-e2e'],
+    surfaces: ['compass:refined'],
+    group: 'Widgets',
+    label: 'Roadmap mark',
+    description:
+      'What the roadmap tag shows before its word. Number is the course’s own chapter number — which runs 01–19 across twenty-one modules, because the Course Introduction and the Florida laws row carry none, and is the mismatch this arm exists to test. Icon drops the digits for the state’s own glyph on every row: a tick when complete, an open book for the one you are on, a padlock for the rest. The word after the dot is the same either way.',
+    variants: [
+      { value: 'number', label: 'Number', description: 'The course’s chapter number' },
+      { value: 'icon', label: 'Icon', description: 'The state’s glyph on every row' },
+    ],
+    defaultVariant: 'number',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'compass-course-image',
     /* ⚠ THE COURSE'S PICTURE, BESIDE ITS NAME — 2026-11-12: "add a toggle
        that shows the course image to the left of the course details".

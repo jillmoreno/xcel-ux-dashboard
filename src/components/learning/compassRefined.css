@@ -1939,6 +1939,23 @@
   background: var(--crf-locked-tile);
   color: var(--crf-locked-ink);
 }
+/* ⚠ THE `icon` ARM'S TWO HALVES — 2026-11-13, `compass-course-mark`. With no
+   number to introduce, the tag is a glyph alone at the head of the row and
+   the word is its own tag over by the controls ("still have the locked tag,
+   but put it on the right next to the cta area"). Both keep the state's
+   colours, so they read as one statement in two places rather than two
+   different marks. */
+.crf-map__state--markonly {
+  padding: 0 7px;
+}
+.crf-map__state--markonly .crf-map__mark {
+  width: auto;
+}
+/* The spine points at the mark, and the mark is narrower here — see
+   `.crf-map__card::after`, which is positioned on its centre. */
+.crf-map--icon .crf-map__card::after {
+  left: 35px;
+}
 .crf-map__main {
   flex: 1 1 auto;
   min-width: 0;
@@ -1980,10 +1997,13 @@
   flex: 1 1 auto;
   min-width: 0;
 }
+.crf-map__top .crf-map__state--word,
 .crf-map__top .crf-btn,
 .crf-map__top .crf-chev {
   margin-left: auto;
 }
+.crf-map__top .crf-map__state--word + .crf-btn,
+.crf-map__top .crf-map__state--word + .crf-chev,
 .crf-map__top .crf-btn + .crf-chev {
   margin-left: 0;
 }

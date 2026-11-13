@@ -125,6 +125,7 @@ const REBRAND_FLAGS = [
   'compass-course-blurb',
   'compass-course-fold',
   'compass-course-image',
+  'compass-course-mark',
   'compass-overview-focus',
   'compass-overview-focus-swap',
   'compass-overview-pace-note',

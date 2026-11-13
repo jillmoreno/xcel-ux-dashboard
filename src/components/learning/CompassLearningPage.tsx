@@ -30,7 +30,11 @@ import type {
   NextMarkStyle,
   PaceNoteStyle,
 } from './compassRefinedFocusModel'
-import type { CourseOptions, CourseRowStyle } from './compassRefinedCourseModel'
+import type {
+  ChapterMarkStyle,
+  CourseOptions,
+  CourseRowStyle,
+} from './compassRefinedCourseModel'
 
 /**
  * COMPASS LEARNING — the top nav's second destination (Figma 765:3471).
@@ -170,6 +174,7 @@ export function CompassLearningPage({
     blurb: useFeatureFlag('compass-course-blurb').enabled,
     fold: useFeatureFlag('compass-course-fold').enabled,
     image: useFeatureFlag('compass-course-image').enabled,
+    chapterMark: useFeatureFlag('compass-course-mark').variant as ChapterMarkStyle,
     /* ⚠ THE OVERVIEW'S FLAG, READ FOR BOTH — the next-step card is one
        component on two pages; see `CourseOptions.nextMark`. */
     nextMark: useFeatureFlag('compass-overview-next-mark').variant as NextMarkStyle,

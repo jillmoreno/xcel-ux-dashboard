@@ -122,6 +122,7 @@ export function CompassRefinedLearn({
     toggle: (n, expanded) => setOpen((o) => ({ ...o, [n]: !expanded })),
     openLesson,
     blurb: options.blurb,
+    chapterMark: options.chapterMark,
   }
 
   return (

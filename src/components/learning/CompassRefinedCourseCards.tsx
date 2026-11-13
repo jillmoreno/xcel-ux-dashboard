@@ -129,6 +129,7 @@ export function CompassRefinedCourseCards({
   toggle,
   openLesson,
   blurb,
+  chapterMark,
 }: CourseListProps) {
   /**
    * ⚠ THE FILTER OVERRIDES THE FOLD, and that is the only way the two can
@@ -213,7 +214,9 @@ export function CompassRefinedCourseCards({
         </div>
       </div>
 
-      <div className="crf-map">
+      {/* ⚠ THE ARM IS ON THE LIST, because the spine is drawn per card and
+          has to follow the mark's centre — see `.crf-map__card::after`. */}
+      <div className={`crf-map${chapterMark === 'icon' ? ' crf-map--icon' : ''}`}>
         {/* ⚠ THE SAME BAR AS THE ONE AT THE FOOT, pointing the other way —
             the count is the point, and the control says which way it goes so
             it is not a one-way door. */}
@@ -281,22 +284,38 @@ export function CompassRefinedCourseCards({
                     the checkmark". */}
                 <div className="crf-map__main">
                   <div className="crf-map__top">
-                    <span className={`crf-map__state crf-map__state--${pill.tone}`}>
+                    <span
+                      className={`crf-map__state crf-map__state--${pill.tone}${
+                        chapterMark === 'icon' ? ' crf-map__state--markonly' : ''
+                      }`}
+                    >
+                      {/* ⚠ THE NUMBER OR THE STATE — `compass-course-mark`.
+                          On `number` the chips run 01–19 across twenty-one
+                          modules, because the Introduction and the Florida
+                          laws row carry none in the course list; `icon`
+                          drops the digits so every row marks the same kind
+                          of thing. The arm is which fact this carries. */}
                       <span className="crf-map__mark" aria-hidden>
-                        {c.number ? (
+                        {chapterMark === 'number' && c.number ? (
                           String(c.number).padStart(2, '0')
                         ) : (
                           <StateMark state={c.state} />
                         )}
                       </span>
-                      {/* The drawn circle this page separates two phrases
-                          with, at the size the next-step meta line uses. */}
-                      <span aria-hidden className="crf-map__dot" />
-                      {/* ⚠ JUST THE WORD — "the tag should just be the
-                          word". The tick it carried has moved to the mark on
-                          the left, where it is the row's own stop rather
-                          than a second ornament on the state. */}
-                      {pill.word}
+                      {/* ⚠ THE WORD TRAVELS ON THE `icon` ARM — 2026-11-13:
+                          "still have the locked tag, but put it on the right
+                          next to the cta area." With no number to introduce,
+                          a glyph and a word in one capsule is a wide tag
+                          saying one thing; split, the mark leads the row and
+                          the word joins the controls it belongs with. */}
+                      {chapterMark === 'number' ? (
+                        <>
+                          {/* The drawn circle this page separates two
+                              phrases with. */}
+                          <span aria-hidden className="crf-map__dot" />
+                          {pill.word}
+                        </>
+                      ) : null}
                     </span>
 
                     {/* ⚠ THE NAME MOVES UP BESIDE THE TAG — 2026-11-12:
@@ -318,6 +337,18 @@ export function CompassRefinedCourseCards({
                         <p className="crf-map__label">{chapterParts(c)}</p>
                       ) : null}
                     </div>
+                    {/* ⚠ THE WORD, AHEAD OF THE CONTROLS — 2026-11-13,
+                        "put it on the right next to the cta area". Before
+                        the action rather than between it and the chevron:
+                        the two buttons are one group and a label driven
+                        between them separates what the hand goes to. */}
+                    {chapterMark === 'icon' ? (
+                      <span
+                        className={`crf-map__state crf-map__state--${pill.tone} crf-map__state--word`}
+                      >
+                        {pill.word}
+                      </span>
+                    ) : null}
                     {/* ⚠ THE ACTION, TOP RIGHT — her instruction. In the
                         reference this corner carries "8 Lessons · Est. 3h
                         15m"; this course has neither figure, and the one it

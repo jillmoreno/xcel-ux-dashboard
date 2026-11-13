@@ -10,6 +10,9 @@
 import type { RefinedChapter } from './compassRefinedLearnCourse'
 import type { NextMarkStyle } from './compassRefinedFocusModel'
 
+/** What the roadmap tag leads with. `compass-course-mark`. */
+export type ChapterMarkStyle = 'number' | 'icon'
+
 /** The roadmap's quick filter — 2026-11-12. */
 export type RoadmapFilter = 'all' | 'current' | 'done'
 
@@ -32,6 +35,9 @@ export type CourseOptions = {
   fold: boolean
   /** `compass-course-image` — the course's art beside its name. */
   image: boolean
+  /** `compass-course-mark` — the course's chapter number, or the state's
+   *  own glyph on every row. */
+  chapterMark: ChapterMarkStyle
   /**
    * ⚠ `compass-overview-next-mark`, READ BY THIS PAGE TOO — 2026-11-12. The
    * next-step card is one component on two pages ("This should be a 1:1"),
@@ -52,6 +58,7 @@ export const COURSE_DEFAULTS: CourseOptions = {
   blurb: false,
   fold: true,
   image: false,
+  chapterMark: 'number',
   /* Agrees with `FOCUS_DEFAULTS.nextMark`, or a card rendered without
      options draws a shape the bar never shows. */
   nextMark: 'stacked',
@@ -91,4 +98,6 @@ export type CourseListProps = {
   openLesson: () => void
   /** `compass-course-blurb` — the invented sentences. */
   blurb: boolean
+  /** `compass-course-mark` — see `CourseOptions`. */
+  chapterMark: ChapterMarkStyle
 }
