@@ -256,27 +256,30 @@ export function CourseHeadCard({
           <img className="crf-course__art" src={REFINED_COURSE.image} alt="" aria-hidden />
         ) : null}
         <div className="crf-course__name">
-          {/* ⚠ COUNTED, NOT TYPED — his read "19 chapters · 28 of 40 hours", a
-              chapter count wrong by two and an hours figure nothing
-              produces. */}
-          <p className="crf-eyebrow">{header.eyebrow}</p>
+          {/* ⚠ THE KIND OF COURSE LEADS — 2026-11-12: "swap the styles and
+              locations of these 2. QE should be on top, 21 lessons below to
+              match the UI in the Learning Roadmap." The contents list was
+              the eyebrow and the kind was the line under the title; the
+              roadmap cards below put the name first and what is IN the thing
+              underneath it, and this card is the same shape one size up. */}
+          <p className="crf-eyebrow">{REFINED_COURSE.kind}</p>
           {/* ⚠ THE COURSE'S NAME LEADS — 2026-11-12: "This should be the
               course name in the Playfair font style. Below in smaller text
               should be Qualifying Education - Florida." The card led with the
               regulatory CATEGORY, which is true of every XCEL course. */}
           <h2 className="crf-h2">{REFINED_COURSE.name}</h2>
-          {/* ⚠ THE COUNT JOINS THIS LINE — 2026-11-12: "add the 0 of 21
-              lessons completed in this line." It was stacked in the stat
-              column on the right, over "In progress"; what is left there is
-              the state and the ring, which are the same fact drawn twice at
-              two sizes. The figure now reads as part of what the course IS.
+          {/* ⚠ WHAT THE COURSE CONTAINS, AND HOW FAR IN — the roadmap card's
+              label one size up: the same register, the same drawn dot, under
+              the name rather than over it.
 
-              ⚠ THE DOT IS `crf-step__sep`, the drawn circle the next-step
-              meta line uses — this line took that line's type on the same
-              day, so it takes its punctuation too rather than a second dot
-              of its own. */}
+              ⚠ COUNTED, NOT TYPED — the list was "19 chapters · 28 of 40
+              hours", a chapter count wrong by two and an hours figure nothing
+              produces. The progress figure joined it on 2026-11-12 ("add the
+              0 of 21 lessons completed in this line"), out of a stat column
+              that also held the word "In progress" — the state and the ring
+              being the same fact drawn twice at two sizes. */}
           <p className="crf-course__sub">
-            {REFINED_COURSE.kind}
+            {header.eyebrow}
             <span aria-hidden className="crf-step__sep" />
             {header.lessonsDone} of {header.lessons} lessons completed
           </p>
