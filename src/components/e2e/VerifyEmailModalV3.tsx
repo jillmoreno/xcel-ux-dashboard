@@ -189,7 +189,12 @@ export function VerifyEmailModalV3({
         ) : step === 'login' ? (
           /* Log in always holds on "Signing you in" (2026-11-05, Afsana),
              whether or not the flow's `signsIn` does. */
-          <LoginStep email={email} supplied={Boolean(suppliedEmail)} onLoggedIn={() => setStep('signing-in')} />
+          <LoginStep
+            email={email}
+            supplied={Boolean(suppliedEmail)}
+            onEmailChange={setEmail}
+            onLoggedIn={() => setStep('signing-in')}
+          />
         ) : (
           <div style={SIGNING_IN}>
             <img src="/brand/xcel-logo.webp" alt="XCEL Insurance Training by Colibri" style={CODE_LOGO} />
@@ -410,12 +415,14 @@ function formatCountdown(seconds: number): string {
 function LoginStep({
   email,
   supplied,
+  onEmailChange,
   onLoggedIn,
 }: {
   email: string
-  /** Direct Email: the partner supplied the address, and Log in shows it in a
-   *  locked field (2026-11-13, Afsana). */
+  /** Direct Email: the partner supplied the address, and Log in shows it in
+   *  an email field, filled and editable (2026-11-13, Afsana). */
   supplied: boolean
+  onEmailChange: (email: string) => void
   onLoggedIn: () => void
 }) {
   const [password, setPassword] = useState('')
@@ -443,7 +450,8 @@ function LoginStep({
     return () => window.clearTimeout(t)
   }, [linkWait])
   const canResend = linkWait <= 0
-  const ready = password !== ''
+  /* Direct Email's field can be edited, so it has to hold an address too. */
+  const ready = password !== '' && (!supplied || looksLikeEmail(email))
   if (resetting) {
     return (
       <ResetPasswordStep
@@ -540,29 +548,23 @@ function LoginStep({
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-        {/* Direct Email's address, pre-filled and locked as the checkout locks
-            it (2026-11-13, Afsana) — the partner named it, so it is not
-            changed here. A disabled input, so it reads as the form's field. */}
+        {/* Direct Email's address, pre-filled from the invitation and
+            editable — no lock, no grey (2026-11-13, Afsana). */}
         {supplied ? (
           <label htmlFor="login-email" style={FIELD_GROUP}>
-            <span style={FIELD_LABEL}>Email address</span>
-            <span style={{ position: 'relative', display: 'block' }}>
-              <input
-                id="login-email"
-                type="email"
-                value={email.trim()}
-                disabled
-                readOnly
-                style={{ ...FIELD, ...FIELD_LOCKED }}
-              />
-              <img
-                src="/brand/confirmation/lock.svg"
-                alt="Locked"
-                width={16}
-                height={16}
-                style={{ position: 'absolute', right: 11, top: 11, display: 'block' }}
-              />
+            <span style={FIELD_LABEL}>
+              Email address <span aria-hidden>*</span>
             </span>
+            <input
+              id="login-email"
+              type="email"
+              required
+              autoComplete="email"
+              value={email}
+              onChange={(e) => onEmailChange(e.target.value)}
+              className="cre-e2e-input"
+              style={FIELD}
+            />
           </label>
         ) : null}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
@@ -849,14 +851,6 @@ const FIELD: CSSProperties = {
   fontSize: 14,
   color: 'var(--color-text-primary)',
   border: '1px solid var(--color-e2e-card-outline)',
-}
-
-/* The locked address — the checkout's locked email field. */
-const FIELD_LOCKED: CSSProperties = {
-  paddingRight: 36,
-  background: 'var(--color-e2e-form-locked-v3)',
-  color: 'var(--color-text-secondary)',
-  cursor: 'not-allowed',
 }
 
 /* Code resent — light green, the success scale's lightest fill. */
