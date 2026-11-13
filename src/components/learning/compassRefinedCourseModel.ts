@@ -74,7 +74,15 @@ export type CourseListProps = {
   chapters: RefinedChapter[]
   /** The ones that draw — all of them when the fold is off or opened. */
   shown: RefinedChapter[]
+  /** The locked run is folded right now (the option is on and not opened). */
   folded: boolean
+  /**
+   * ⚠ THE OPTION ITSELF — `compass-course-fold`. `folded` above is the
+   * locked run's current state; this is whether folding is switched on at
+   * all, and the completed run at the top reads it too. One control for
+   * both runs: "show me the whole course" has to mean the whole course.
+   */
+  fold: boolean
   hiddenCount: number
   cutoff: number
   setShowAll: (v: boolean) => void

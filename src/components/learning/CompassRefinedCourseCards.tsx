@@ -121,6 +121,7 @@ export function CompassRefinedCourseCards({
   chapters,
   shown,
   folded,
+  fold,
   hiddenCount,
   cutoff,
   setShowAll,
@@ -137,8 +138,33 @@ export function CompassRefinedCourseCards({
    * answering a question they did not ask. All modules is the folded view.
    */
   const [filter, setFilter] = useState<RoadmapFilter>('all')
-  const listed =
-    filter === 'all' ? shown : chapters.filter((c) => c.state === FILTER_STATE[filter])
+  /**
+   * ⚠ THE COMPLETED RUN FOLDS AT THE TOP — 2026-11-13: "i want to do
+   * something similar at the top of the roadmap when modules are completed,
+   * to just show 1 bar that has the number of completed modules so that they
+   * can expand when they want, otherwise user will have to keep scrolling
+   * down to see everything."
+   *
+   * It is the locked run's fold turned round. That one answered "the middle
+   * of this course is a wall"; this answers the same complaint from the
+   * other end, which only appears once a learner is some way in — at 50% the
+   * page opened on eleven finished chapters before the one they are on.
+   *
+   * ⚠ ONLY ON "All Modules". Collapsing the completed run under the
+   * Completed filter would hide exactly what was asked for.
+   *
+   * ⚠ AND ONLY WHEN IT SAVES SOMETHING. A bar reading "1 completed module"
+   * in place of one card is a swap, not a fold.
+   */
+  const [showDone, setShowDone] = useState(false)
+  const DONE_FOLD_MIN = 2
+  const base = filter === 'all' ? shown : chapters.filter((c) => c.state === FILTER_STATE[filter])
+  /* The leading run only — a chapter finished out of order further down the
+     list is not part of "what I have already been through". */
+  const doneRun = filter === 'all' ? base.findIndex((c) => c.state !== 'done') : -1
+  const doneCount = doneRun === -1 ? 0 : doneRun
+  const doneFolded = fold && !showDone && doneCount >= DONE_FOLD_MIN
+  const listed = doneFolded ? base.slice(doneCount) : base
 
   return (
     <>
@@ -188,6 +214,26 @@ export function CompassRefinedCourseCards({
       </div>
 
       <div className="crf-map">
+        {/* ⚠ THE SAME BAR AS THE ONE AT THE FOOT, pointing the other way —
+            the count is the point, and the control says which way it goes so
+            it is not a one-way door. */}
+        {fold && doneCount >= DONE_FOLD_MIN ? (
+          <button
+            type="button"
+            className="crf-map__more crf-map__more--done"
+            aria-expanded={showDone}
+            onClick={() => setShowDone(!showDone)}
+          >
+            <ChevronDown
+              size={13}
+              aria-hidden
+              style={{ transform: showDone ? 'rotate(180deg)' : undefined }}
+            />
+            {showDone ? 'Hide' : 'Show'} {doneCount} completed{' '}
+            {doneCount === 1 ? 'module' : 'modules'}
+          </button>
+        ) : null}
+
         {listed.map((c) => {
           const expanded = isOpen(c)
           const pill = statusPill(c)

@@ -1870,9 +1870,9 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     versions: ['hybrid-pacing', 'eric-atlas-e2e'],
     surfaces: ['compass:refined'],
     group: 'Widgets',
-    label: 'Fold locked chapters',
+    label: 'Fold the runs',
     description:
-      'Collapses the run of locked chapters behind a count — what is open, two chapters of peek, then “Show all 21 chapters”. This was audit finding 1: nineteen of twenty-one chapters are locked and occupied 55% of the page; folded they occupy 7%. Turn it off to show the whole course at once, which is how the roadmap reference draws it. Applies to both course layouts.',
+      'Collapses the runs a learner is not in, behind a count at each end: the locked chapters below (“Show all 21 chapters”) and, on the roadmap, the completed ones above (“Show 11 completed modules”). The locked half was audit finding 1 — nineteen of twenty-one chapters are locked and occupied 55% of the page; folded they occupy 7%. The completed half answers the same complaint from the other end, which only appears once a learner is some way in. Turn it off to show the whole course at once. The locked fold applies to both course layouts; the completed one is the roadmap’s.',
     defaultEnabled: true,
     page: 'dashboard-rebrand',
   },

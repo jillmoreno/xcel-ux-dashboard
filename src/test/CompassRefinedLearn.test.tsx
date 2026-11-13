@@ -21,6 +21,7 @@ import {
   refinedProgressAt,
 } from '@/data/compassRefinedCourse'
 import { REFINED_COURSE } from '@/data/compassRefinedCopy'
+import { journeyStage } from '@/components/learning/compassReadinessModel'
 
 /* ⚠ RENDERED WITH NO STAGE, so the page draws the upload's own learner — one
    section done, the second open — and these are that learner's chapters. A
@@ -500,5 +501,93 @@ describe('a roadmap card’s label says what is inside the chapter', () => {
     const card = container.querySelector('.crf-map__card')!
     expect(card.querySelector('.crf-map__top .crf-map__name')).not.toBeNull()
     expect(card.querySelector('.crf-map__main > .crf-map__title')).toBeNull()
+  })
+})
+
+describe('the completed run folds at the top', () => {
+  /** A learner half way through: eleven chapters behind them. */
+  const halfway = () =>
+    render(
+      <MemoryRouter>
+        <AccountProvider>
+          <FeatureFlagProvider>
+            <CompassRefinedLearn
+              stage="q3"
+              course={{ ...COURSE_DEFAULTS, rows: 'cards' }}
+            />
+          </FeatureFlagProvider>
+        </AccountProvider>
+      </MemoryRouter>,
+    )
+
+  it('opens on the chapter the learner is in, not on what they have finished', () => {
+    const { container } = halfway()
+    const bar = screen.getByRole('button', { name: /Show \d+ completed modules/ })
+    expect(bar).toBeTruthy()
+    /* ⚠ THE POINT OF THE FOLD: the first card is not a finished one. */
+    expect(container.querySelector('.crf-map__card--done')).toBeNull()
+
+    fireEvent.click(bar)
+    expect(container.querySelector('.crf-map__card--done')).not.toBeNull()
+    expect(screen.getByRole('button', { name: /Hide \d+ completed modules/ })).toBeTruthy()
+  })
+
+  it('counts the leading run, and says it in the bar', () => {
+    const { container } = halfway()
+    const bar = screen.getByRole('button', { name: /completed modules/ })
+    const n = Number(bar.textContent!.match(/\d+/)![0])
+    fireEvent.click(bar)
+    const done = container.querySelectorAll('.crf-map__card--done').length
+    expect(done).toBe(n)
+  })
+
+  it('does not fold under the Completed filter — that would hide the ask', () => {
+    const { container } = halfway()
+    fireEvent.click(screen.getByRole('tab', { name: 'Completed' }))
+    expect(screen.queryByRole('button', { name: /completed modules/ })).toBeNull()
+    expect(container.querySelectorAll('.crf-map__card--done').length).toBeGreaterThan(0)
+  })
+
+  it('appears only when there is a run to fold, at every stage', () => {
+    /* ⚠ A BAR READING "1 completed module" IN PLACE OF ONE CARD IS A SWAP,
+       not a fold — so the control is gated on the run being two or more.
+       Checked against what the course actually says at each stage rather
+       than against a stage picked for its answer: q1 is nothing finished, q2
+       four chapters, q3 eleven. */
+    for (const stage of ['q1', 'q2', 'q3']) {
+      const view = refinedCourseView(refinedProgressAt(journeyStage(stage).prog?.pct))
+      const leadingDone = view.chapters.findIndex((c) => c.state !== 'done')
+      const { unmount } = render(
+        <MemoryRouter>
+          <AccountProvider>
+            <FeatureFlagProvider>
+              <CompassRefinedLearn stage={stage} course={{ ...COURSE_DEFAULTS, rows: 'cards' }} />
+            </FeatureFlagProvider>
+          </AccountProvider>
+        </MemoryRouter>,
+      )
+      const bar = screen.queryByRole('button', { name: /completed modules?/ })
+      expect(!!bar, `${stage} has ${leadingDone} finished`).toBe(leadingDone >= 2)
+      unmount()
+    }
+  })
+
+  it('shows the whole course when the fold is off', () => {
+    /* One control for both runs — "show me the whole course" has to mean the
+       whole course, at both ends. */
+    const { container } = render(
+      <MemoryRouter>
+        <AccountProvider>
+          <FeatureFlagProvider>
+            <CompassRefinedLearn
+              stage="q3"
+              course={{ ...COURSE_DEFAULTS, rows: 'cards', fold: false }}
+            />
+          </FeatureFlagProvider>
+        </AccountProvider>
+      </MemoryRouter>,
+    )
+    expect(screen.queryByRole('button', { name: /completed modules/ })).toBeNull()
+    expect(container.querySelectorAll('.crf-map__card')).toHaveLength(REFINED_CHAPTERS.length)
   })
 })

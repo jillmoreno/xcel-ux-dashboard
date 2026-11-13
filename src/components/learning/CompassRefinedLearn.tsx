@@ -114,6 +114,7 @@ export function CompassRefinedLearn({
     chapters,
     shown,
     folded,
+    fold: options.fold,
     hiddenCount,
     cutoff: options.fold ? cutoff : chapters.length,
     setShowAll,

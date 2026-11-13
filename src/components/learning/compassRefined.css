@@ -2082,6 +2082,12 @@
 .crf-map__more:hover {
   background: var(--crf-steel-wash);
 }
+/* ⚠ THE SAME BAR AT THE TOP — 2026-11-13, the completed run's fold. It sits
+   above the first card rather than after the last, and the spine does not
+   run into it: the line marks chapters, and this is a control. */
+.crf-map__more--done::after {
+  content: none;
+}
 /* ⚠ THE BLURB ON THE ROWS LAYOUT TOO, because the toggle is a question about
    content and the arm is a question about shape — see `compass-course-blurb`.
    Sized to sit under a 17px row title without competing with it. */
