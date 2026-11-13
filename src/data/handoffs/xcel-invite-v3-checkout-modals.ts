@@ -24,7 +24,7 @@ const feature: PrototypeFeature = {
   devStatus: 'not-ready',
   surface: 'invite',
   owner: 'Afsana',
-  lastUpdated: '2026-11-13T14:39:21Z',
+  lastUpdated: '2026-11-13T16:54:58Z',
   accent: 'gold',
   icon: 'flag',
   brands: ['xcel'],
@@ -82,7 +82,7 @@ const feature: PrototypeFeature = {
         tabLabel: 'Enter your email',
         location: 'Over the checkout, on every flow except Direct Email with an Atlas account (that one opens on Log in to continue). src/components/e2e/VerifyEmailModalV3.tsx — the email step.',
         summary:
-          'The XCEL logo, "Enter your email to continue", a line under it, one email field and Continue. The email decides what comes next: Log in to continue if it has an Atlas account, the one-time code if it does not. Where the code comes next the line reads "We will send a one time code to you to verify your email."; on the Has Atlas flows it reads "Provide your email address. We use it to find or create your account." No code is sent until Continue.',
+          'The XCEL logo, "Enter your email to continue", a line under it, one email field and Continue. The email decides what comes next: Log in to continue if it has an Atlas account, the one-time code if it does not. The line reads "Provide your email address. We will use it to find your existing account or create one." on every flow, B2B2C and B2C, whatever the account turns out to be. No code is sent until Continue.',
         variants: [
           { name: 'Empty', when: 'On open. Continue is off.' },
           { name: 'Valid email', when: 'The field holds something shaped like an email address. Continue turns on.' },
@@ -526,9 +526,8 @@ const feature: PrototypeFeature = {
         },
         {
           question: 'Does Enter your email to continue promise a code before the email is known?',
-          decision: 'Open. In the prototype each flow already knows whether the email has an Atlas account, so the no-Atlas flows say "We will send a one time code to you to verify your email." and the Has Atlas flows keep "Provide your email address. We use it to find or create your account." In the product the account is only found after Continue, except on Direct Email. One line has to cover both outcomes, or the line changes once the email is checked.',
-          status: 'Needs weigh-in',
-          owner: 'Design and Engineering',
+          decision: 'No. Every flow — QR code, Direct Email and B2C — says "Provide your email address. We will use it to find your existing account or create one." (Afsana, 2026-11-13). In the product the account is only found after Continue, so the line has to hold for both outcomes; for a few hours the no-Atlas flows said "We will send a one time code to you to verify your email.", which promised a code to a learner who might turn out to have Atlas.',
+          status: 'Decided',
         },
         {
           question: 'Where does Reset password take the learner?',
