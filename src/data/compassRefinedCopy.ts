@@ -565,6 +565,25 @@ export const REFINED_FINISH_COPY = {
     survey: 'Take survey',
     certificate: 'Download',
   } as Record<string, string>,
+  /**
+   * ⚠ WHAT A FINISHED CLOSING MODULE OFFERS — 2026-11-13, found the moment
+   * the locked ones stopped drawing a button: at 100% a COMPLETED Final Exam
+   * was offering "Take exam". It is the same contradiction the chapter exams
+   * carried on 2026-11-12, where a passed exam read "Completed · Review
+   * exam" inside a chapter in progress — a verb that does not follow the
+   * state.
+   *
+   * ⚠ "Review exam" IS HIS, `JEFF_MVP_LEARN_COPY.examReviewCta`, which is
+   * what a chapter exam already says once it is passed. The survey offers
+   * NOTHING: there is no word for going back to a survey you have filled in
+   * that is not invented, and a finished survey has nothing a learner wants.
+   * The certificate keeps Download, which is the whole point of it.
+   */
+  doneCta: {
+    exam: 'Review exam',
+    survey: '',
+    certificate: 'Download',
+  } as Record<string, string>,
 } as const
 
 /**

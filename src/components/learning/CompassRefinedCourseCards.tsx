@@ -593,15 +593,25 @@ export function CompassRefinedCourseCards({
                           {FINISH_WORD[f.state]}
                         </span>
                       ) : null}
-                      <button
-                        type="button"
-                        className={f.state === 'locked' ? 'crf-btn crf-btn--locked' : 'crf-btn'}
-                        disabled={f.state === 'locked'}
-                        aria-disabled={f.state === 'locked' || undefined}
-                        aria-label={`${f.cta} ${f.title}`}
-                      >
-                        {f.cta}
-                      </button>
+                      {/* ⚠ NO BUTTON UNTIL IT OPENS — 2026-11-13: "these
+                          will not display until the module is unlocked."
+                          They had been drawn disabled with a padlock, which
+                          is the EXAM STRIP's rule, carried in with them:
+                          there, the control is the only thing saying the
+                          exam exists. Here the card says that, the tag says
+                          it is shut, and three dead buttons down the end of
+                          the list were the only ones on the page. A locked
+                          CHAPTER has shown no button since the layout was
+                          built; this is the closing modules catching up. */}
+                      {f.state !== 'locked' && f.cta ? (
+                        <button
+                          type="button"
+                          className="crf-btn"
+                          aria-label={`${f.cta} ${f.title}`}
+                        >
+                          {f.cta}
+                        </button>
+                      ) : null}
                       <span className="crf-chev crf-chev--none" aria-hidden />
                     </div>
                   </div>

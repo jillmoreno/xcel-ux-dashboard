@@ -418,7 +418,12 @@ function buildFinish(progress: RefinedProgress, chapters: RefinedChapter[]): Ref
   /* ⚠ COUNTED, LIKE EVERY OTHER FIGURE ON THIS PAGE. His note said "all 19
      chapters" beside twenty-one of them. */
   note: (REFINED_FINISH_COPY.stepNote[s.kind] ?? (() => ''))(chapters.length),
-  cta: REFINED_FINISH_COPY.cta[s.kind] ?? '',
+  /* ⚠ THE VERB FOLLOWS THE STATE. A finished exam is reviewed, not taken —
+     see `REFINED_FINISH_COPY.doneCta`. */
+  cta:
+    (s.n < progress.currentN
+      ? REFINED_FINISH_COPY.doneCta[s.kind]
+      : REFINED_FINISH_COPY.cta[s.kind]) ?? '',
   /* The same reading of `REFINED_COURSE_PROGRESS` the chapters use, so the
      ending cannot claim a state the course list disagrees with. */
   state:

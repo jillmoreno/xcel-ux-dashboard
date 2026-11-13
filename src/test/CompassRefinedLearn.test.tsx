@@ -873,3 +873,47 @@ describe('the Type arm', () => {
     expect(card.querySelector('.crf-map__state--word svg')).toBeNull()
   })
 })
+
+describe('a closing module’s button', () => {
+  const at = (stage: string) =>
+    render(
+      <MemoryRouter>
+        <AccountProvider>
+          <FeatureFlagProvider>
+            <CompassRefinedLearn
+              stage={stage}
+              course={{ ...COURSE_DEFAULTS, rows: 'cards', fold: false }}
+            />
+          </FeatureFlagProvider>
+        </AccountProvider>
+      </MemoryRouter>,
+    )
+
+  it('does not draw until the module is unlocked', () => {
+    /* ⚠ "these will not display until the module is unlocked." They had been
+       drawn disabled with a padlock, which is the EXAM STRIP's rule carried
+       in with them — there the control is the only thing saying the exam
+       exists. A locked CHAPTER has shown no button since this layout was
+       built. */
+    const { container } = at('q1')
+    for (const card of container.querySelectorAll('.crf-map__card--finish')) {
+      expect(card.className).toContain('--locked')
+      expect(card.querySelector('.crf-btn')).toBeNull()
+    }
+  })
+
+  it('and the verb follows the state once it does', () => {
+    /* At 100% a completed Final Exam was offering "Take exam" — the same
+       contradiction the chapter exams carried the day before. */
+    const { container } = at('q5')
+    const byTitle = (t: string) =>
+      [...container.querySelectorAll('.crf-map__card--finish')].find(
+        (c) => c.querySelector('.crf-map__title')?.textContent === t,
+      )!
+    expect(byTitle('Final Exam').querySelector('.crf-btn')?.textContent).toBe('Review exam')
+    /* No word for going back to a survey that is not invented, and nothing a
+       learner wants there. */
+    expect(byTitle('Course Survey').querySelector('.crf-btn')).toBeNull()
+    expect(byTitle('Certificate').querySelector('.crf-btn')?.textContent).toBe('Download')
+  })
+})
