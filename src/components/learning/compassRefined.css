@@ -1913,12 +1913,18 @@
    whatever is in it otherwise — 34px with a button, 23px on a locked card
    with only the tag — and a column of cards whose top rows breathe
    differently reads as a list that is not quite aligned. */
+/* ⚠ NO BOTTOM MARGIN — 2026-11-12: "the text should be centered vertically
+   and even padding on top/bottom, it looks a little off visually." Measured:
+   18px above the row and 26 below it. The 8px was there to separate this row
+   from the title block under it, and the title block moved INTO it an hour
+   earlier; what was left was dead space at the foot of every card. The one
+   thing that can still follow — the optional blurb — carries its own 8px
+   top margin, so nothing loses its gap. */
 .crf-map__top {
   display: flex;
   align-items: center;
   gap: 12px;
   min-height: 34px;
-  margin-bottom: 8px;
 }
 /* ⚠ WHICHEVER COMES FIRST GOES RIGHT — 2026-11-12: "have this be on the
    right side of the container, if there is a cta, it would be to the right
