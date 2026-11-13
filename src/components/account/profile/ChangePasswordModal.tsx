@@ -10,13 +10,14 @@ import { meetsInvitePasswordRulesV3 } from '@/data/invitePasswordRulesV3'
  * Edit Account Details sheet opens this modal instead of the sheet's own
  * Update Password step: the account's password lives in Keycloak, so the
  * product hands the change to Keycloak's widget rather than drawing a form
- * of its own. Behind `account-keycloak-change-password`.
+ * of its own. Behind `account-keycloak-change-password` — its `modal` arm here,
+ * its `inline` arm as `KeycloakChangePassword` inside the sheet.
  *
  * ⚠ THE RULES AND THE STRENGTH BAR ARE THE INVITE FLOW'S, not the sheet's.
  * Under New Password sits `InvitePasswordChecklistV3`, the block a learner
  * sees the first time they set a password — one policy, drawn the same way
  * wherever a password is set. The sheet's older list (`passwordRequirements`)
- * is left alone; it is what the flag's off arm still shows.
+ * is left alone; it is what the flag's `sheet` arm still shows.
  *
  * ⚠ OPEN ITEM — WHAT HAPPENS AFTER A SUCCESSFUL CHANGE. Nobody yet knows
  * whether the learner stays signed in or is signed out to sign back in with
@@ -49,37 +50,14 @@ export function ChangePasswordModal({ open, onClose, email, outcome, onChanged }
 function ChangePasswordDialog({ onClose, email, outcome, onChanged }: Omit<Props, 'open'>) {
   const id = useId()
   const layer = useV3DialogLayer()
-  const firstField = useRef<HTMLInputElement | null>(null)
-  const [current, setCurrent] = useState('')
-  const [next, setNext] = useState('')
-  const [confirm, setConfirm] = useState('')
-  const [signedOut, setSignedOut] = useState(false)
 
   useEffect(() => {
-    firstField.current?.focus()
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose()
     }
     document.addEventListener('keydown', onKey)
     return () => document.removeEventListener('keydown', onKey)
   }, [onClose])
-
-  /* Keycloak refuses a new password equal to the current one; say so here
-     rather than after submit. */
-  const sameAsCurrent = next.length > 0 && current.length > 0 && next === current
-  const confirmMismatch = confirm.length > 0 && confirm !== next
-  const canSubmit =
-    current.length > 0 &&
-    meetsInvitePasswordRulesV3(next, email) &&
-    !sameAsCurrent &&
-    confirm === next
-
-  const submit = () => {
-    if (!canSubmit) return
-    console.info('account:keycloak-change-password')
-    if (outcome === 'sign-out') setSignedOut(true)
-    else onChanged()
-  }
 
   return createPortal(
     <div
@@ -98,101 +76,176 @@ function ChangePasswordDialog({ onClose, email, outcome, onChanged }: Omit<Props
         <button type="button" aria-label="Close" onClick={onClose} style={CLOSE}>
           <X size={18} aria-hidden />
         </button>
-
-        {signedOut ? (
-          <div style={BODY}>
-            <img src="/brand/xcel-logo.webp" alt="XCEL Insurance Training by Colibri" style={LOGO} />
-            <span aria-hidden style={DONE_GLYPH}>
-              <CircleCheckSolid size={40} />
-            </span>
-            <div style={HEAD}>
-              <h2 id={`${id}-title`} style={TITLE}>
-                Password changed
-              </h2>
-              <div aria-hidden style={RULE} />
-              <p style={LEAD}>
-                For your security, we've signed you out. Sign in again with your new password.
-              </p>
-            </div>
-            <button type="button" onClick={onClose} style={CTA}>
-              Sign In
-            </button>
-          </div>
-        ) : (
-          <form
-            style={BODY}
-            onSubmit={(e) => {
-              e.preventDefault()
-              submit()
-            }}
-          >
-            <img src="/brand/xcel-logo.webp" alt="XCEL Insurance Training by Colibri" style={LOGO} />
-            <div style={HEAD}>
-              <h2 id={`${id}-title`} style={TITLE}>
-                Change Password
-              </h2>
-              <div aria-hidden style={RULE} />
-              <p style={LEAD}>Enter your current password and choose a new one.</p>
-            </div>
-
-            <PasswordField
-              id={`${id}-current`}
-              label="Current Password"
-              placeholder="Enter current password"
-              value={current}
-              onChange={setCurrent}
-              inputRef={firstField}
-              autoComplete="current-password"
-            />
-
-            <div style={FIELD_STACK}>
-              <PasswordField
-                id={`${id}-new`}
-                label="New Password"
-                placeholder="Enter new password"
-                value={next}
-                onChange={setNext}
-                autoComplete="new-password"
-                invalid={sameAsCurrent}
-                describedBy={`${id}-new-rules ${id}-new-error`}
-              />
-              <p id={`${id}-new-error`} role="alert" aria-live="polite" style={ERROR}>
-                {sameAsCurrent ? 'Your new password must be different from your current password.' : ''}
-              </p>
-              <div id={`${id}-new-rules`}>
-                <InvitePasswordChecklistV3 password={next} username={email} />
-              </div>
-            </div>
-
-            <div style={FIELD_STACK}>
-              <PasswordField
-                id={`${id}-confirm`}
-                label="Confirm New Password"
-                placeholder="Confirm new password"
-                value={confirm}
-                onChange={setConfirm}
-                autoComplete="new-password"
-                invalid={confirmMismatch}
-                describedBy={`${id}-confirm-error`}
-              />
-              <p id={`${id}-confirm-error`} role="alert" aria-live="polite" style={ERROR}>
-                {confirmMismatch ? 'Both passwords must match.' : ''}
-              </p>
-            </div>
-
-            <div style={ACTIONS}>
-              <button type="submit" disabled={!canSubmit} style={canSubmit ? CTA : CTA_OFF}>
-                Change Password
-              </button>
-              <button type="button" onClick={onClose} style={CTA_SECONDARY}>
-                Cancel
-              </button>
-            </div>
-          </form>
-        )}
+        <KeycloakChangePassword
+          titleId={`${id}-title`}
+          email={email}
+          outcome={outcome}
+          onChanged={onChanged}
+          onCancel={onClose}
+          showLogo
+          autoFocus
+        />
       </div>
     </div>,
     document.body,
+  )
+}
+
+/**
+ * THE WIDGET ITSELF — the modal's contents, and also what the Edit Account
+ * Details sheet embeds as its Update Password step on the `inline` arm
+ * (2026-11-13, Afsana: "embedded inline, just like … update email address").
+ *
+ * ⚠ ONE FORM FOR BOTH ARMS, so the modal and the embed cannot drift — the
+ * comparison is about where Keycloak's widget sits, not two copies of it.
+ * What differs is the frame's: the modal brings the XCEL mark, the close ✕
+ * and Escape; the sheet already says XCEL around it and owns Escape and
+ * Back, so the embed has no logo and no listener of its own.
+ */
+export function KeycloakChangePassword({
+  titleId,
+  email,
+  outcome,
+  onChanged,
+  onCancel,
+  showLogo = false,
+  autoFocus = false,
+}: {
+  titleId: string
+  email: string
+  outcome: PasswordChangeOutcome
+  onChanged: () => void
+  /** Cancel, and Sign In on the signed-out card. */
+  onCancel: () => void
+  showLogo?: boolean
+  autoFocus?: boolean
+}) {
+  const id = useId()
+  const firstField = useRef<HTMLInputElement | null>(null)
+  const [current, setCurrent] = useState('')
+  const [next, setNext] = useState('')
+  const [confirm, setConfirm] = useState('')
+  const [signedOut, setSignedOut] = useState(false)
+
+  useEffect(() => {
+    if (autoFocus) firstField.current?.focus()
+  }, [autoFocus])
+
+  /* Keycloak refuses a new password equal to the current one; say so here
+     rather than after submit. */
+  const sameAsCurrent = next.length > 0 && current.length > 0 && next === current
+  const confirmMismatch = confirm.length > 0 && confirm !== next
+  const canSubmit =
+    current.length > 0 &&
+    meetsInvitePasswordRulesV3(next, email) &&
+    !sameAsCurrent &&
+    confirm === next
+
+  const submit = () => {
+    if (!canSubmit) return
+    console.info('account:keycloak-change-password')
+    if (outcome === 'sign-out') setSignedOut(true)
+    else onChanged()
+  }
+
+  const logo = showLogo ? (
+    <img src="/brand/xcel-logo.webp" alt="XCEL Insurance Training by Colibri" style={LOGO} />
+  ) : null
+
+  if (signedOut) {
+    return (
+      <div style={BODY}>
+        {logo}
+        <span aria-hidden style={DONE_GLYPH}>
+          <CircleCheckSolid size={40} />
+        </span>
+        <div style={HEAD}>
+          <h2 id={titleId} style={TITLE}>
+            Password changed
+          </h2>
+          <div aria-hidden style={RULE} />
+          <p style={LEAD}>
+            For your security, we've signed you out. Sign in again with your new password.
+          </p>
+        </div>
+        <button type="button" onClick={onCancel} style={CTA}>
+          Sign In
+        </button>
+      </div>
+    )
+  }
+
+  return (
+    <form
+      style={BODY}
+      onSubmit={(e) => {
+        e.preventDefault()
+        submit()
+      }}
+    >
+      {logo}
+      <div style={HEAD}>
+        <h2 id={titleId} style={TITLE}>
+          Change Password
+        </h2>
+        <div aria-hidden style={RULE} />
+        <p style={LEAD}>Enter your current password and choose a new one.</p>
+      </div>
+
+      <PasswordField
+        id={`${id}-current`}
+        label="Current Password"
+        placeholder="Enter current password"
+        value={current}
+        onChange={setCurrent}
+        inputRef={firstField}
+        autoComplete="current-password"
+      />
+
+      <div style={FIELD_STACK}>
+        <PasswordField
+          id={`${id}-new`}
+          label="New Password"
+          placeholder="Enter new password"
+          value={next}
+          onChange={setNext}
+          autoComplete="new-password"
+          invalid={sameAsCurrent}
+          describedBy={`${id}-new-rules ${id}-new-error`}
+        />
+        <p id={`${id}-new-error`} role="alert" aria-live="polite" style={ERROR}>
+          {sameAsCurrent ? 'Your new password must be different from your current password.' : ''}
+        </p>
+        <div id={`${id}-new-rules`}>
+          <InvitePasswordChecklistV3 password={next} username={email} />
+        </div>
+      </div>
+
+      <div style={FIELD_STACK}>
+        <PasswordField
+          id={`${id}-confirm`}
+          label="Confirm New Password"
+          placeholder="Confirm new password"
+          value={confirm}
+          onChange={setConfirm}
+          autoComplete="new-password"
+          invalid={confirmMismatch}
+          describedBy={`${id}-confirm-error`}
+        />
+        <p id={`${id}-confirm-error`} role="alert" aria-live="polite" style={ERROR}>
+          {confirmMismatch ? 'Both passwords must match.' : ''}
+        </p>
+      </div>
+
+      <div style={ACTIONS}>
+        <button type="submit" disabled={!canSubmit} style={canSubmit ? CTA : CTA_OFF}>
+          Change Password
+        </button>
+        <button type="button" onClick={onCancel} style={CTA_SECONDARY}>
+          Cancel
+        </button>
+      </div>
+    </form>
   )
 }
 
