@@ -74,8 +74,12 @@ export function VerifyEmailModalV3({
    *  no "Use a different email": the partner named this one. */
   suppliedEmail?: string
 }) {
+  /* A supplied address with Atlas goes straight to Log in. Without Atlas it
+     no longer goes straight to the code (2026-11-13, Afsana): the email step
+     comes first, filled with the invitation's address, so no code is sent
+     before the learner says where. */
   const [step, setStep] = useState<'email' | 'code' | 'login' | 'signing-in'>(() =>
-    suppliedEmail && second !== 'none' ? second : 'email',
+    suppliedEmail && second === 'login' ? 'login' : 'email',
   )
   const layer = useV3DialogLayer()
   const [email, setEmail] = useState(suppliedEmail ?? '')
@@ -129,7 +133,11 @@ export function VerifyEmailModalV3({
               </h2>
               <div aria-hidden style={RULE} />
               <p id="verify-email-lead" style={LEAD}>
-                Provide your email address. We use it to find or create your account.
+                {/* No Atlas: the code is what comes next, so say so
+                    (2026-11-13, Afsana). */}
+                {second === 'code'
+                  ? 'We will send a one time code to you to verify your email.'
+                  : 'Provide your email address. We use it to find or create your account.'}
               </p>
             </div>
 
@@ -181,7 +189,7 @@ export function VerifyEmailModalV3({
         ) : step === 'login' ? (
           /* Log in always holds on "Signing you in" (2026-11-05, Afsana),
              whether or not the flow's `signsIn` does. */
-          <LoginStep email={email} onLoggedIn={() => setStep('signing-in')} />
+          <LoginStep email={email} supplied={Boolean(suppliedEmail)} onLoggedIn={() => setStep('signing-in')} />
         ) : (
           <div style={SIGNING_IN}>
             <img src="/brand/xcel-logo.webp" alt="XCEL Insurance Training by Colibri" style={CODE_LOGO} />
@@ -399,7 +407,17 @@ function formatCountdown(seconds: number): string {
 /** "Log in to continue" — the Has Atlas log-in widget (`login-1`, `login-2`).
  *  The address is the one just given, locked; Log in stays off until there
  *  is a password. Any password is accepted, as in the file. */
-function LoginStep({ email, onLoggedIn }: { email: string; onLoggedIn: () => void }) {
+function LoginStep({
+  email,
+  supplied,
+  onLoggedIn,
+}: {
+  email: string
+  /** Direct Email: the partner supplied the address, and Log in shows it in a
+   *  locked field (2026-11-13, Afsana). */
+  supplied: boolean
+  onLoggedIn: () => void
+}) {
   const [password, setPassword] = useState('')
   const [shown, setShown] = useState(false)
   /* A wrong password — 2026-11-05, Afsana, as the code step's wrong code.
@@ -509,13 +527,44 @@ function LoginStep({ email, onLoggedIn }: { email: string; onLoggedIn: () => voi
         ) : null}
         {/* The address in the sentence, not a field (2026-11-03, Afsana) — it
             was a locked email field above the password. */}
-        <p id="verify-email-lead" style={LEAD}>
-          Welcome back, {E2E_LEARNER_FIRST}! Sign in to <strong style={{ fontWeight: 800 }}>{email.trim()}</strong>{' '}
-          to finish checking out.
-        </p>
+        {supplied ? (
+          <p id="verify-email-lead" style={LEAD}>
+            Welcome back, {E2E_LEARNER_FIRST}! Sign in to finish checking out.
+          </p>
+        ) : (
+          <p id="verify-email-lead" style={LEAD}>
+            Welcome back, {E2E_LEARNER_FIRST}! Sign in to <strong style={{ fontWeight: 800 }}>{email.trim()}</strong>{' '}
+            to finish checking out.
+          </p>
+        )}
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        {/* Direct Email's address, pre-filled and locked as the checkout locks
+            it (2026-11-13, Afsana) — the partner named it, so it is not
+            changed here. A disabled input, so it reads as the form's field. */}
+        {supplied ? (
+          <label htmlFor="login-email" style={FIELD_GROUP}>
+            <span style={FIELD_LABEL}>Email address</span>
+            <span style={{ position: 'relative', display: 'block' }}>
+              <input
+                id="login-email"
+                type="email"
+                value={email.trim()}
+                disabled
+                readOnly
+                style={{ ...FIELD, ...FIELD_LOCKED }}
+              />
+              <img
+                src="/brand/confirmation/lock.svg"
+                alt="Locked"
+                width={16}
+                height={16}
+                style={{ position: 'absolute', right: 11, top: 11, display: 'block' }}
+              />
+            </span>
+          </label>
+        ) : null}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
           <label htmlFor="login-password" style={FIELD_GROUP}>
             <span style={FIELD_LABEL}>
@@ -800,6 +849,14 @@ const FIELD: CSSProperties = {
   fontSize: 14,
   color: 'var(--color-text-primary)',
   border: '1px solid var(--color-e2e-card-outline)',
+}
+
+/* The locked address — the checkout's locked email field. */
+const FIELD_LOCKED: CSSProperties = {
+  paddingRight: 36,
+  background: 'var(--color-e2e-form-locked-v3)',
+  color: 'var(--color-text-secondary)',
+  cursor: 'not-allowed',
 }
 
 /* Code resent — light green, the success scale's lightest fill. */
