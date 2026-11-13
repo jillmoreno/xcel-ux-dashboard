@@ -728,3 +728,47 @@ describe('the completed fold carries its count as a tag', () => {
     expect(container.querySelectorAll('.crf-map__card--done')).toHaveLength(n)
   })
 })
+
+describe('the progress bar is a column, not a third line', () => {
+  it('sits between the name and the controls on a roadmap card', () => {
+    const { container } = render(
+      <MemoryRouter>
+        <AccountProvider>
+          <FeatureFlagProvider>
+            <CompassRefinedLearn
+              stage="q3"
+              course={{ ...COURSE_DEFAULTS, rows: 'cards', fold: false }}
+            />
+          </FeatureFlagProvider>
+        </AccountProvider>
+      </MemoryRouter>,
+    )
+    const top = container.querySelector('.crf-map__card--current .crf-map__top')!
+    const kids = [...top.children].map((e) => e.className)
+    const name = kids.findIndex((c) => c.includes('crf-map__name'))
+    const bar = kids.findIndex((c) => c.includes('crf-map__bar'))
+    /* ⚠ A CHILD OF THE ROW, NOT OF THE NAME BLOCK — under the title it made
+       the open card taller than every other one. */
+    expect(bar).toBeGreaterThan(name)
+    expect(top.querySelector('.crf-map__name .crf-map__bar')).toBeNull()
+  })
+
+  it('leaves the next step’s own bar beside its words on the row, under them on the stack', () => {
+    const { container } = render(
+      <MemoryRouter>
+        <AccountProvider>
+          <FeatureFlagProvider>
+            <CompassRefinedLearn stage="q3" course={{ ...COURSE_DEFAULTS }} />
+          </FeatureFlagProvider>
+        </AccountProvider>
+      </MemoryRouter>,
+    )
+    /* Your Course draws the row arrangement; the words are wrapped so the
+       bar can sit beside them. The Overview's stack keeps the wrapper inert
+       — that card is in a 394px bay with no room for a column. */
+    const step = container.querySelector('.crf-step--row')!
+    expect(step.querySelector('.crf-step__textlines .crf-step__name')).not.toBeNull()
+    expect(step.querySelector('.crf-step__textlines .crf-step__bar')).toBeNull()
+    expect(step.querySelector('.crf-step__text > .crf-step__bar')).not.toBeNull()
+  })
+})

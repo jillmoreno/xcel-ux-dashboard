@@ -71,12 +71,20 @@ export function CompassRefinedNextStep({
           <Icon size={mark === 'tile' ? 19 : 17} />
         </span>
         <div className="crf-step__text">
-          <p className="crf-step__name">{step.title}</p>
-          <p className="crf-step__note">
-            {step.parts}
-            <span aria-hidden className="crf-step__sep" />
-            about {step.duration}
-          </p>
+          {/* ⚠ THE WORDS IN THEIR OWN BLOCK — 2026-11-13, so the row
+              arrangement can put the bar BESIDE them rather than under
+              them ("progress bar can be in the center of the module
+              section"). On `stack` the wrapper is inert and the bar falls
+              under the note as it always has: that card sits in a 394px bay
+              where there is no room for a column. */}
+          <div className="crf-step__textlines">
+            <p className="crf-step__name">{step.title}</p>
+            <p className="crf-step__note">
+              {step.parts}
+              <span aria-hidden className="crf-step__sep" />
+              about {step.duration}
+            </p>
+          </div>
           {/* ⚠ ALWAYS, INCLUDING AT 0% — 2026-11-12: "include a progress
               bar, even if this section is Not Started at 0%." It had been
               drawn only while resuming; an empty track is a truer picture of

@@ -1650,12 +1650,30 @@
   grid-column: 3;
   grid-row: 1 / span 2;
 }
-/* ⚠ A LONGER TRACK, NOT AN UNCAPPED ONE. Left to fill the text column it
-   ran 628px — a hairline the width of the card, which reads as a rule under
-   the content rather than as a measure of anything. 360 is about the
-   proportion the reference draws it at. */
+/* ⚠ ITS OWN COLUMN ON THE ROW — 2026-11-13, the same move the roadmap
+   card's bar made: out of the text block, into the row between the name and
+   the action, centred with them. Under the note it ran 628px uncapped —
+   a hairline the width of the card, reading as a rule rather than a measure
+   — and then 360px, which was still a third line of content.
+
+   ⚠ `display: contents` ON THE BODY puts the mark and the text in this
+   grid; the bar is a child of the text, so it is placed by its own rule
+   rather than by the grid. 120px, the roadmap card's width, so the two
+   cards measure the same thing the same way. */
+.crf-step--row .crf-step__text {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+.crf-step--row .crf-step__textlines {
+  flex: 1 1 auto;
+  min-width: 0;
+}
 .crf-step--row .crf-step__bar {
-  max-width: 360px;
+  flex: 0 0 120px;
+  width: 120px;
+  max-width: none;
+  margin-top: 0;
 }
 
 /* ⚠ THE `tile` ARM — `compass-overview-next-mark`. A 40px rounded square
@@ -2051,12 +2069,18 @@
 /* ⚠ THE OPEN CHAPTER'S OWN PROGRESS — 2026-11-13. The next-step card's
    track at the same weight and radius; it is capped narrower because it sits
    in a row beside a title rather than under one. */
+/* ⚠ A COLUMN IN THE ROW, NOT A LINE UNDER THE TITLE — 2026-11-13: "progress
+   bar can be in the center of the module section". Under the label it made
+   the open card taller than its neighbours; here it is one more item on the
+   row, centred with the tag and the buttons beside it.
+
+   ⚠ A FIXED WIDTH, because it sits between a name that grows and controls
+   that do not. Left to flex it would be a different length on every card
+   that happened to be open. */
 .crf-map__bar {
-  display: block;
-  width: 100%;
-  max-width: 260px;
+  flex: 0 0 120px;
+  width: 120px;
   height: 4px;
-  margin-top: 8px;
   border-radius: 999px;
   background: var(--crf-steel-pressed);
   overflow: hidden;

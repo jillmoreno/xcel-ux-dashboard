@@ -350,26 +350,30 @@ export function CompassRefinedCourseCards({
                       {chapterParts(c) ? (
                         <p className="crf-map__label">{chapterParts(c)}</p>
                       ) : null}
-                      {/* ⚠ A BAR ON THE OPEN CHAPTER — 2026-11-13: "in
-                          progress should show a progress bar." Only there:
-                          a finished chapter's bar would be a full track
-                          saying what the tick already says, and a locked
-                          one's an empty track under a padlock. The figure is
-                          the chapter's own span — its lessons AND its exam
-                          — so finishing the lessons reads 50, not 100. */}
-                      {c.state === 'current' ? (
-                        <span
-                          className="crf-map__bar"
-                          role="img"
-                          aria-label={`${c.title} ${c.pct}% complete`}
-                        >
-                          <span
-                            className="crf-map__barfill"
-                            style={{ width: `${c.pct}%` }}
-                          />
-                        </span>
-                      ) : null}
                     </div>
+                    {/* ⚠ A BAR ON THE OPEN CHAPTER — 2026-11-13: "in
+                        progress should show a progress bar." Only there: a
+                        finished chapter's bar would be a full track saying
+                        what the tick already says, and a locked one's an
+                        empty track under a padlock. The figure is the
+                        chapter's own span — its lessons AND its exam — so
+                        finishing the lessons reads 50, not 100.
+
+                        ⚠ ITS OWN COLUMN, NOT A THIRD LINE UNDER THE LABEL —
+                        "progress bar can be in the center of the module
+                        section". Under the title it made the open card
+                        taller than every other one; in the row it sits
+                        between the name and the controls, centred with
+                        them, and the card keeps its height. */}
+                    {c.state === 'current' ? (
+                      <span
+                        className="crf-map__bar"
+                        role="img"
+                        aria-label={`${c.title} ${c.pct}% complete`}
+                      >
+                        <span className="crf-map__barfill" style={{ width: `${c.pct}%` }} />
+                      </span>
+                    ) : null}
                     {/* ⚠ THE WORD, AHEAD OF THE CONTROLS — 2026-11-13,
                         "put it on the right next to the cta area". Before
                         the action rather than between it and the chevron:
