@@ -23,6 +23,19 @@
 [context.deploy-preview.environment]
   VITE_DEPLOY_CONTEXT = "branch-deploy"
 
+# THE ON STAGE CARD, FILED BY THE DEPLOY (2026-11-05). The To Do Board's On
+# Stage column is the only record of what is waiting on a release — the Hub
+# runs on main and cannot read the stage build — and until now that record was
+# a prefilled form someone had to remember to click. The plugin writes it when
+# the STAGE deploy goes green, and does nothing on every other branch.
+#
+# ⚠ It can never fail a build: everything it does is inside a try/catch that
+# reports and returns. See the file for why it writes Blobs directly rather
+# than calling /api/todo-board (the site password is enforced at the edge, so
+# an automated caller never reaches the function).
+[[plugins]]
+  package = "./netlify/plugins/stage-card"
+
 # The QA capture endpoint, ahead of the SPA fallback. Netlify matches a v2
 # function's own `config.path` before redirects, so this is belt-and-braces —
 # but the catch-all below returns 200 for EVERYTHING, so if that precedence ever

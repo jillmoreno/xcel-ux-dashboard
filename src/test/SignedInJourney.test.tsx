@@ -31,7 +31,7 @@ import { XcelOrderConfirmationPage } from '@/pages/XcelOrderConfirmationPage'
  */
 
 function renderAt(path: string, flow: InviteFlowId, extra = '') {
-  const entry = `${path}?ff=${INVITE_FLOW_FLAG}:${flow}${extra}`
+  const entry = `${path}?ff=${INVITE_FLOW_FLAG}:${flow},invite-flow-version:v2${extra}`
   window.history.replaceState({}, '', entry)
   return render(
     <MemoryRouter initialEntries={[entry]}>

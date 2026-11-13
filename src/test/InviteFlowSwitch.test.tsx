@@ -28,21 +28,31 @@ import {
 
 vi.mock('@/pages/InviteEmailPage', () => ({ InviteEmailPage: () => <p>V1 email</p> }))
 vi.mock('@/pages/InviteEmailPageV2', () => ({ InviteEmailPageV2: () => <p>V2 email</p> }))
+vi.mock('@/pages/InviteEmailPageV3', () => ({ InviteEmailPageV3: () => <p>V3 email</p> }))
 vi.mock('@/pages/InvitedProductDetailPage', () => ({
   InvitedProductDetailPage: () => <p>V1 product detail</p>,
 }))
 vi.mock('@/pages/InvitedProductDetailPageV2', () => ({
   InvitedProductDetailPageV2: () => <p>V2 product detail</p>,
 }))
+vi.mock('@/pages/InvitedProductDetailPageV3', () => ({
+  InvitedProductDetailPageV3: () => <p>V3 product detail</p>,
+}))
 vi.mock('@/pages/InvitedCheckoutPage', () => ({ InvitedCheckoutPage: () => <p>V1 checkout</p> }))
 vi.mock('@/pages/InvitedCheckoutPageV2', () => ({
   InvitedCheckoutPageV2: () => <p>V2 checkout</p>,
+}))
+vi.mock('@/pages/InvitedCheckoutPageV3', () => ({
+  InvitedCheckoutPageV3: () => <p>V3 checkout</p>,
 }))
 vi.mock('@/pages/InvitedConfirmationPage', () => ({
   InvitedConfirmationPage: () => <p>V1 confirmation</p>,
 }))
 vi.mock('@/pages/InvitedConfirmationPageV2', () => ({
   InvitedConfirmationPageV2: () => <p>V2 confirmation</p>,
+}))
+vi.mock('@/pages/InvitedConfirmationPageV3', () => ({
+  InvitedConfirmationPageV3: () => <p>V3 confirmation</p>,
 }))
 
 function renderRoute(Route: () => React.ReactElement, version: string, path: string) {
@@ -89,11 +99,19 @@ describe('the invite flow version switch', () => {
       unmount()
     })
 
+    it(`renders V3's ${name} on v3`, () => {
+      const { unmount } = renderRoute(Route, 'v3', path)
+      expect(screen.getByText(`V3 ${name}`)).toBeInTheDocument()
+      expect(screen.queryByText(`V2 ${name}`)).not.toBeInTheDocument()
+      expect(screen.queryByText(`V1 ${name}`)).not.toBeInTheDocument()
+      unmount()
+    })
+
     /* A stored id this build no longer carries must fall back, not blank the
        page — the same guard `resolvePaceStyle` gives the demo bar. */
     it(`falls back to a real page for ${name} on an unknown version`, () => {
       const { unmount } = renderRoute(Route, 'v9', path)
-      expect(screen.getByText(/^V[12] /)).toBeInTheDocument()
+      expect(screen.getByText(/^V[123] /)).toBeInTheDocument()
       unmount()
     })
   }
