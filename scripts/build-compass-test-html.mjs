@@ -107,6 +107,13 @@ try {
     .forEach(function (k) { localStorage.removeItem(k); });
 } catch (e) {}`
 
+/* JSON that lives INSIDE a <script> must not contain `</script>` — the HTML
+   parser ends the script there, whatever the JS says, and the rest of the
+   data shows on screen as text (it did: raw `{{stageHint}}` and `\\n`
+   everywhere). `\\u003c` is `<` to JSON and nothing to the HTML parser; the
+   original export does the same. */
+const inScript = (v) => JSON.stringify(v).replace(/</g, '\\u003c')
+
 const doc = `<!doctype html>
 <html lang="en">
 <head>
@@ -125,8 +132,8 @@ html,body{margin:0;height:100%;background:#FFFFFF;font-family:'Open Sans',system
 <div id="toast" role="status" aria-live="polite"></div>
 <script>
 ${RESET}
-var PAGES = ${JSON.stringify(pages)};
-var RT = ${JSON.stringify(inlinedRT)};
+var PAGES = ${inScript(pages)};
+var RT = ${inScript(inlinedRT)};
 var frame = document.getElementById('frame');
 var toast = document.getElementById('toast'), toastT = null;
 function say(msg) {
@@ -137,7 +144,8 @@ function go(name) {
   if (!PAGES[name]) { say('That part of Compass is not in this test. Please stay with your course.'); return; }
   window.__curSrc = PAGES[name];
   // Function replacer: the runtime contains "$&", which a string replacement would expand.
-  frame.srcdoc = PAGES[name].replace('<script src="__RT__"></script>', function () { return '<script>' + RT + '</script>'; });
+  // Spelled with \\x3c so the HTML parser never sees a closing script tag inside this script.
+  frame.srcdoc = PAGES[name].replace('\\x3cscript src="__RT__">\\x3c/script>', function () { return '\\x3cscript>' + RT + '\\x3c/script>'; });
 }
 window.addEventListener('message', function (e) { if (e.data && e.data.__proto === 'go') go(e.data.page); });
 go(${JSON.stringify(START)});
