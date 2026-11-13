@@ -1,0 +1,70 @@
+{
+  "_why": "2026-11-13, Jillienne: the Overview says the learner is starting Chapter 1, the course reader opens on Chapter 2 · Insurers and Insurance Markets. The reader's content is the fixed point (a whole chapter of lesson text); the three pages are patched so they tell one story — a first-time learner whose Chapter 1 IS Insurers and Insurance Markets, Lesson 1 Stock and Mutual Insurers. Every entry must match at least `min` times (default 1) or the build refuses.",
+  "Main.dc.html": [
+    {
+      "from": "What life insurance does",
+      "to": "Stock and Mutual Insurers",
+      "all": true,
+      "min": 4
+    },
+    {
+      "from": "1h 40m · insurable interest · how a policy pays",
+      "to": "~12 min · who owns the insurer · stock vs mutual"
+    }
+  ],
+  "Learn.dc.html": [
+    {
+      "from": "'Basic Principles of Life and Health Insurance', 'Insurers and Insurance Markets', 'Legal Concepts of Insurance',",
+      "to": "'Insurers and Insurance Markets', 'Agents and General Law', 'Legal Concepts of Insurance',"
+    },
+    {
+      "from": "return ['Introduction', 'Benefits and the costs of insurance to society / professional designations', 'Risk / loss exposure',",
+      "to": "return ['Stock and Mutual Insurers', 'Mutualization and Demutualization', 'Domestic, Foreign and Alien Insurers', 'Admitted and Non-admitted Insurers', 'Standard, Surplus Lines and Residual Markets', 'Participating and Nonparticipating Policies', 'Chapter Review and Quick Check']; } ch1LessonsUnused() { return ['Introduction', 'Benefits and the costs of insurance to society / professional designations', 'Risk / loss exposure',"
+    }
+  ],
+  "Course.dc.html": [
+    {
+      "_": "The reader's own chapter list starts with a finished Insurance Basics chapter; a first-time learner has none. Drop it from the rail and number the rest from 1. The logic keys on c.n === 2, so n is kept and only the DISPLAY number (dn) changes.",
+      "to": "var tocChaps = TOC_CHAPTERS.filter(function (c) { return c.n !== 1; }).map(function (c) {\n      c = Object.assign({}, c, { dn: c.n - 1 });\n      if (c.n !== 2) return Object.assign({}, c, {",
+      "re": "var tocChaps = TOC_CHAPTERS\\.map\\(function \\(c\\) \\{\\s*if \\(c\\.n !== 2\\) return Object\\.assign\\(\\{\\}, c, \\{"
+    },
+    {
+      "from": "tocChapters.push({\n        n: c.n, title: c.title,",
+      "to": "tocChapters.push({\n        n: c.n, dn: c.dn, title: c.title,"
+    },
+    {
+      "from": "Chapter {{c.n}}",
+      "to": "Chapter {{c.dn}}",
+      "all": true,
+      "min": 3
+    },
+    {
+      "from": "'Chapter ' + tocCurN + ' of ' + TOC_CHAPTERS.length",
+      "to": "'Chapter ' + (tocCurN - 1) + ' of ' + (TOC_CHAPTERS.length - 1)"
+    },
+    {
+      "from": "'All ' + TOC_CHAPTERS.length + ' chapters'",
+      "to": "'All ' + (TOC_CHAPTERS.length - 1) + ' chapters'"
+    },
+    {
+      "from": "'Show all ' + TOC_CHAPTERS.length + ' chapters'",
+      "to": "'Show all ' + (TOC_CHAPTERS.length - 1) + ' chapters'"
+    },
+    {
+      "re": "Chapter 2\\b",
+      "to": "Chapter 1",
+      "min": 10
+    },
+    {
+      "re": "Chapter 3\\b",
+      "to": "Chapter 2",
+      "min": 5
+    },
+    {
+      "from": "2 of 6 chapters",
+      "to": "1 of 5 chapters",
+      "all": true,
+      "min": 3
+    }
+  ]
+}

@@ -59,6 +59,13 @@ const STAGE = opt('stage', 'q1')
 /* Rubi message mode: 'current' or 'new' (LX 11-2). The prototype defaults to
    current when nothing is stored; pinning it makes the session's record say so. */
 const MSG = opt('msg', 'current')
+/* --patches <file.json>: per-page string edits applied to the kept pages
+   before anything else, so the pages tell one story (see the file's _why).
+   Each entry is {from, to} (literal, first match unless all:true) or
+   {re, to} (a regex, always global), with an optional min count; a patch
+   that matches fewer times than min REFUSES the build — a silent no-op is
+   exactly what this file must not become when the export is re-cut. */
+const PATCHES = opt('patches', '')
 if (!KEEP.includes(START)) {
   console.error(`--start ${START} is not in --keep`)
   process.exit(1)
@@ -111,9 +118,38 @@ div:has(> #demo-btn){display:none !important}
    strings (`<x-dc>`, `<body>`…): it rendered its own minified source as the
    page. Keeping the runtime out of the source also stores it once, not per
    page. */
+let patchSpec = {}
+if (PATCHES) {
+  patchSpec = JSON.parse(readFileSync(PATCHES, 'utf8'))
+}
+function applyPatches(name, html) {
+  const list = patchSpec[name]
+  if (!Array.isArray(list)) return html
+  for (const p of list) {
+    const min = p.min ?? 1
+    let count = 0
+    let next
+    if (p.re) {
+      next = html.replace(new RegExp(p.re, 'g'), () => { count++; return p.to })
+    } else if (p.all) {
+      next = html.split(p.from).join(p.to)
+      count = html.split(p.from).length - 1
+    } else {
+      count = html.includes(p.from) ? 1 : 0
+      next = html.replace(p.from, () => p.to)
+    }
+    if (count < min) {
+      console.error(`patch for ${name} matched ${count} < ${min}: ${(p.re ?? p.from).slice(0, 80)}`)
+      process.exit(1)
+    }
+    html = next
+  }
+  return html
+}
+
 const pages = {}
 for (const k of KEEP) {
-  pages[k] = PAGES[k].replace('</head>', () => INJECT + '\n</head>')
+  pages[k] = applyPatches(k, PAGES[k]).replace('</head>', () => INJECT + '\n</head>')
 }
 
 /* localStorage keys the staged prototype reads. Cleared or pinned on every
@@ -175,4 +211,4 @@ go(${JSON.stringify(START)});
 
 mkdirSync(dirname(out), { recursive: true })
 writeFileSync(out, doc)
-console.log(`wrote ${out} — ${(doc.length / 1024).toFixed(0)} KB, pages: ${KEEP.join(', ')}, start ${START}, stage ${STAGE}, Rubi messages ${MSG}`)
+console.log(`wrote ${out} — ${(doc.length / 1024).toFixed(0)} KB, pages: ${KEEP.join(', ')}, start ${START}, stage ${STAGE}, Rubi messages ${MSG}${PATCHES ? ', patches ' + PATCHES : ''}`)
