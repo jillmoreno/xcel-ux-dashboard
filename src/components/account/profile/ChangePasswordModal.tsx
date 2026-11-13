@@ -4,6 +4,9 @@ import { CircleCheckSolid, X } from '@/icons'
 import { InvitePasswordChecklistV3 } from '@/components/e2e/InvitePasswordChecklistV3'
 import { useV3DialogLayer } from '@/components/e2e/useV3DialogLayer'
 import { meetsInvitePasswordRulesV3 } from '@/data/invitePasswordRulesV3'
+import { Button } from '@/components/ui/Button'
+import { PanelFooter } from './profileFormBits'
+import { introTextStyle, panelBodyStyle } from './profileFormStyles'
 
 /**
  * KEYCLOAK'S "CHANGE PASSWORD" — 2026-11-12, Afsana. Update Password on the
@@ -101,6 +104,12 @@ function ChangePasswordDialog({ onClose, email, outcome, onChanged }: Omit<Props
  * What differs is the frame's: the modal brings the XCEL mark, the close ✕
  * and Escape; the sheet already says XCEL around it and owns Escape and
  * Back, so the embed has no logo and no listener of its own.
+ *
+ * ⚠ THE BUTTONS ARE THE DESIGN SYSTEM'S, not Keycloak's brick (2026-11-13,
+ * Afsana: "match the established design system by jill … the update email
+ * panel"). `frame="panel"` ends in the sheet's own `PanelFooter` — Change
+ * Password and Cancel side by side on the neutral band, exactly as Update
+ * Email Address does; the modal stacks the same two `Button`s full width.
  */
 export function KeycloakChangePassword({
   titleId,
@@ -110,6 +119,7 @@ export function KeycloakChangePassword({
   onCancel,
   showLogo = false,
   autoFocus = false,
+  frame = 'modal',
 }: {
   titleId: string
   email: string
@@ -119,7 +129,11 @@ export function KeycloakChangePassword({
   onCancel: () => void
   showLogo?: boolean
   autoFocus?: boolean
+  /** `panel` sits in a sheet: the body scrolls and the buttons are the sheet's
+   *  footer band. `modal` is one column with the buttons at the end. */
+  frame?: 'modal' | 'panel'
 }) {
+  const inPanel = frame === 'panel'
   const id = useId()
   const firstField = useRef<HTMLInputElement | null>(null)
   const [current, setCurrent] = useState('')
@@ -154,7 +168,7 @@ export function KeycloakChangePassword({
 
   if (signedOut) {
     return (
-      <div style={BODY}>
+      <div style={inPanel ? panelBodyStyle : BODY}>
         {logo}
         <span aria-hidden style={DONE_GLYPH}>
           <CircleCheckSolid size={40} />
@@ -168,29 +182,33 @@ export function KeycloakChangePassword({
             For your security, we've signed you out. Sign in again with your new password.
           </p>
         </div>
-        <button type="button" onClick={onCancel} style={CTA}>
+        <Button variant="primary" size="md" onClick={onCancel} style={MODAL_BUTTON}>
           Sign In
-        </button>
+        </Button>
       </div>
     )
   }
 
-  return (
-    <form
-      style={BODY}
-      onSubmit={(e) => {
-        e.preventDefault()
-        submit()
-      }}
-    >
+  /* ⚠ NO HEADING IN THE SHEET (2026-11-13, Afsana). The sheet's own title
+     already says Update Password, so a second "Change Password" and its rule
+     under it would name the step twice; the lead is the sheet step's own
+     line, in its own size, as it read before Keycloak. */
+  const fields = (
+    <>
       {logo}
-      <div style={HEAD}>
-        <h2 id={titleId} style={TITLE}>
-          Change Password
-        </h2>
-        <div aria-hidden style={RULE} />
-        <p style={LEAD}>Enter your current password and choose a new one.</p>
-      </div>
+      {inPanel ? (
+        <p style={introTextStyle}>
+          Security experts generally recommend against reuse of passwords you use on other sites.
+        </p>
+      ) : (
+        <div style={HEAD}>
+          <h2 id={titleId} style={TITLE}>
+            Change Password
+          </h2>
+          <div aria-hidden style={RULE} />
+          <p style={LEAD}>Enter your current password and choose a new one.</p>
+        </div>
+      )}
 
       <PasswordField
         id={`${id}-current`}
@@ -237,13 +255,42 @@ export function KeycloakChangePassword({
         </p>
       </div>
 
+    </>
+  )
+
+  if (inPanel) {
+    return (
+      <>
+        <form
+          style={panelBodyStyle}
+          onSubmit={(e) => {
+            e.preventDefault()
+            submit()
+          }}
+        >
+          {fields}
+        </form>
+        <PanelFooter saveLabel="Change Password" saveDisabled={!canSubmit} onSave={submit} onCancel={onCancel} />
+      </>
+    )
+  }
+
+  return (
+    <form
+      style={BODY}
+      onSubmit={(e) => {
+        e.preventDefault()
+        submit()
+      }}
+    >
+      {fields}
       <div style={ACTIONS}>
-        <button type="submit" disabled={!canSubmit} style={canSubmit ? CTA : CTA_OFF}>
+        <Button type="submit" variant="primary" size="md" disabled={!canSubmit} style={MODAL_BUTTON}>
           Change Password
-        </button>
-        <button type="button" onClick={onCancel} style={CTA_SECONDARY}>
+        </Button>
+        <Button variant="secondary" size="md" onClick={onCancel} style={MODAL_BUTTON}>
           Cancel
-        </button>
+        </Button>
       </div>
     </form>
   )
@@ -440,33 +487,14 @@ const ERROR: CSSProperties = {
 
 const ACTIONS: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 12, paddingTop: 4 }
 
-const CTA: CSSProperties = {
+/* The sheet footer's button size (`footerButtonStyle` in `profileFormBits`),
+   so the modal's pair — and Sign In — read as the same buttons, stacked. */
+const MODAL_BUTTON: CSSProperties = {
   width: '100%',
-  boxSizing: 'border-box',
-  padding: '12px 26px',
-  borderRadius: 3,
-  border: '1px solid var(--color-xcel-brick-600)',
-  background: 'var(--color-xcel-brick-600)',
-  color: 'var(--color-fixed-light)',
-  fontFamily: 'var(--font-e2e-avenir)',
-  fontWeight: 800,
-  fontSize: 15,
-  letterSpacing: '0.02em',
-  cursor: 'pointer',
-}
-
-const CTA_SECONDARY: CSSProperties = {
-  ...CTA,
-  background: 'var(--color-fixed-light)',
-  color: 'var(--color-xcel-brick-600)',
-}
-
-const CTA_OFF: CSSProperties = {
-  ...CTA,
-  border: '1px solid var(--color-e2e-form-locked)',
-  background: 'var(--color-e2e-form-locked)',
-  color: 'var(--color-text-secondary)',
-  cursor: 'not-allowed',
+  height: 52,
+  padding: '12px 24px',
+  fontSize: 16,
+  lineHeight: '28px',
 }
 
 const DONE_GLYPH: CSSProperties = {

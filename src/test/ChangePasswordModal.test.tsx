@@ -64,7 +64,11 @@ describe('Keycloak change password', () => {
     renderPanel()
     fireEvent.click(screen.getByText('Update Password'))
     expect(screen.queryByRole('dialog', { name: 'Change Password' })).toBeNull()
-    expect(screen.getByRole('heading', { name: 'Change Password' })).toBeTruthy()
+    /* The sheet's title names the step; the widget adds no heading of its own. */
+    expect(screen.getByRole('heading', { name: 'Update Password' })).toBeTruthy()
+    expect(screen.queryByRole('heading', { name: 'Change Password' })).toBeNull()
+    expect(screen.getByText(/Security experts generally recommend against reuse/)).toBeTruthy()
+    expect(screen.queryByText(/Enter your current password and choose a new one/)).toBeNull()
     expect(screen.getByRole('button', { name: 'Back to Edit Account Details' })).toBeTruthy()
     expect(screen.getByRole('meter', { name: 'Password strength' })).toBeTruthy()
     expect(screen.getByText('Password must:')).toBeTruthy()
@@ -106,7 +110,7 @@ describe('Keycloak change password', () => {
     fireEvent.click(screen.getByText('Update Password'))
     fill('OldPass1!', 'NewPass12!', 'NewPass12!')
     fireEvent.click(screen.getByRole('button', { name: 'Change Password' }))
-    expect(screen.queryByRole('heading', { name: 'Change Password' })).toBeNull()
+    expect(screen.queryByLabelText('New Password')).toBeNull()
     expect(screen.getByText('Password updated')).toBeTruthy()
   })
 

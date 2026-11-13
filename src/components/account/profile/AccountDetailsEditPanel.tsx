@@ -128,17 +128,16 @@ export function AccountDetailsEditPanel({ open, onClose, currentEmail, onEmailSa
 
         {step === 'choose' && <ChooserStep onPick={pick} />}
         {step === 'password' && passwordArm === 'inline' && (
-          <div style={panelBodyStyle}>
-            <KeycloakChangePassword
-              titleId={`${titleId}-keycloak`}
-              email={currentEmail}
-              outcome={passwordOutcome}
-              onCancel={onClose}
-              onChanged={() =>
-                closeWithToast({ title: 'Password updated', body: 'Your password has been changed.' })
-              }
-            />
-          </div>
+          <KeycloakChangePassword
+            frame="panel"
+            titleId={`${titleId}-keycloak`}
+            email={currentEmail}
+            outcome={passwordOutcome}
+            onCancel={onClose}
+            onChanged={() =>
+              closeWithToast({ title: 'Password updated', body: 'Your password has been changed.' })
+            }
+          />
         )}
         {step === 'password' && passwordArm !== 'inline' && (
           <PasswordStep onCancel={onClose} onSaved={closeWithToast} />
