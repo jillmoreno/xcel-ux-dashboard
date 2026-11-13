@@ -137,11 +137,9 @@ export function VerifyEmailModalV3({
               </h2>
               <div aria-hidden style={RULE} />
               <p id="verify-email-lead" style={LEAD}>
-                {/* No Atlas: the code is what comes next, so say so
-                    (2026-11-13, Afsana). */}
-                {second === 'code'
-                  ? 'We will send a one time code to you to verify your email.'
-                  : 'Provide your email address. We use it to find or create your account.'}
+                {/* One line on every flow, whatever the account turns out to
+                    be — it is only checked after Continue (2026-11-13, Afsana). */}
+                Provide your email address. We will use it to find your existing account or create one.
               </p>
             </div>
 

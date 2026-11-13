@@ -145,7 +145,7 @@ describe('Invite Flow V3 — the Direct Email invitation', () => {
     /* No code goes out until the learner says where (2026-11-13). */
     expect(screen.queryByRole('dialog', { name: 'Enter your one-time code' })).not.toBeInTheDocument()
     const ask = screen.getByRole('dialog', { name: 'Enter your email to continue' })
-    expect(ask).toHaveAccessibleDescription('We will send a one time code to you to verify your email.')
+    expect(ask).toHaveAccessibleDescription('Provide your email address. We will use it to find your existing account or create one.')
     /* Filled with the invitation's address. */
     expect(within(ask).getByLabelText(/Email address/)).toHaveValue(E2E_LEARNER_EMAIL)
     await userEvent.click(within(ask).getByRole('button', { name: 'Continue' }))
@@ -201,10 +201,28 @@ describe('Invite Flow V3 — the Direct Email invitation', () => {
 })
 
 describe('Invite Flow V3 — the email check', () => {
+  it('gives every flow the same line on the email step, whatever the account', () => {
+    const b2c = 'invite-flow-version:v3,invite-v3-model:b2c,invite-v3-flow-b2c:xcel-signed-out'
+    for (const ff of [
+      `${V3_B2B},invite-v3-flow-b2b:qr-net-new`,
+      `${V3_B2B},invite-v3-flow-b2b:qr-ocd`,
+      `${V3_B2B},invite-v3-flow-b2b:qr-atlas-login`,
+      `invite-flow-version:v3,invite-v3-model:b2b,invite-v3-flow-b2b:direct-email,invite-v3-email-account:no-atlas`,
+      `${b2c},invite-v3-email-account:no-atlas,partner-code-ask:modal&partner=no`,
+      `${b2c},invite-v3-email-account:atlas,partner-code-ask:modal&partner=no`,
+    ]) {
+      const { unmount } = renderAt(CHECKOUT, ff)
+      expect(screen.getByRole('dialog', { name: 'Enter your email to continue' })).toHaveAccessibleDescription(
+        'Provide your email address. We will use it to find your existing account or create one.',
+      )
+      unmount()
+    }
+  })
+
   it('asks for the email only, and keeps Continue off until it is an address', async () => {
     renderAt(CHECKOUT, `${V3_B2B},invite-v3-flow-b2b:qr-net-new`)
     const dialog = screen.getByRole('dialog', { name: 'Enter your email to continue' })
-    expect(dialog).toHaveAccessibleDescription('We will send a one time code to you to verify your email.')
+    expect(dialog).toHaveAccessibleDescription('Provide your email address. We will use it to find your existing account or create one.')
     expect(screen.queryByLabelText(/First name/)).not.toBeInTheDocument()
     /* The checkout behind says nothing about an address nobody has given yet. */
     expect(screen.queryByDisplayValue(/@/)).not.toBeInTheDocument()
