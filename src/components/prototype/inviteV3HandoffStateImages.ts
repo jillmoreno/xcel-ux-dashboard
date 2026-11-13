@@ -27,6 +27,7 @@ const STATE_IMAGES: Record<string, Record<string, string>> = {
     Empty: `${MODALS}/enter-email--empty.png`,
     'Valid email': `${MODALS}/enter-email--valid.png`,
     'Pre-filled (Direct Email)': `${MODALS}/enter-email--prefilled.png`,
+    'Not a valid email': `${MODALS}/enter-email--invalid.png`,
   },
   'v3-one-time-code': {
     Empty: `${MODALS}/one-time-code--empty.png`,
@@ -47,6 +48,7 @@ const STATE_IMAGES: Record<string, Record<string, string>> = {
     'Empty password': `${MODALS}/log-in--empty.png`,
     'Password entered': `${MODALS}/log-in--entered.png`,
     'Direct Email — address pre-filled': `${MODALS}/log-in--direct-email.png`,
+    'Direct Email — not a valid email': `${MODALS}/log-in--direct-email-invalid.png`,
     'Wrong password': `${MODALS}/log-in--wrong.png`,
     'Check your email': `${MODALS}/log-in--check-email.png`,
     'Resend link waiting': `${MODALS}/log-in--resend-waiting.png`,
