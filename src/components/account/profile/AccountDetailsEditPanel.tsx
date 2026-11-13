@@ -4,7 +4,7 @@ import { Sheet } from '@/components/ui/Sheet'
 import { Toast } from '@/components/ui/Toast'
 import { ActionRow, ActionRowGroup } from '@/components/ui/ActionRow'
 import { useFeatureFlag } from '@/context/FeatureFlagContext'
-import { ChangePasswordModal, KeycloakChangePassword, type PasswordChangeOutcome } from './ChangePasswordModal'
+import { KeycloakChangePassword, type PasswordChangeOutcome } from './KeycloakChangePassword'
 import { Field, InlineError, PanelFooter, PasswordInput, TextInput } from './profileFormBits'
 import { introTextStyle, panelBodyStyle } from './profileFormStyles'
 import {
@@ -51,25 +51,12 @@ export function AccountDetailsEditPanel({ open, onClose, currentEmail, onEmailSa
   const [toast, setToast] = useState<{ title: string; body: string } | null>(null)
   const titleId = useId()
 
-  /* Keycloak's Change Password (2026-11-12, `account-keycloak-change-password`),
-     three arms: `sheet` is the `password` step as it stood; `modal` closes
-     the sheet and opens Keycloak's modal — a sibling of the Sheet, like the
-     Toast, so it outlives the sheet closing; `inline` (2026-11-13) keeps the
-     sheet and embeds the same widget as the `password` step, the way Update
-     Email Address sits in it. */
-  const passwordArm = useFeatureFlag('account-keycloak-change-password').variant ?? 'inline'
+  /* Keycloak's Change Password (2026-11-12, `account-keycloak-change-password`)
+     is the `password` step when on — embedded in the sheet the way Update
+     Email Address sits in it. Off is the step as it stood. */
+  const keycloakPassword = useFeatureFlag('account-keycloak-change-password').enabled
   const passwordOutcome = (useFeatureFlag('account-password-change-outcome').variant ??
     'stay') as PasswordChangeOutcome
-  const [keycloakOpen, setKeycloakOpen] = useState(false)
-
-  const pick = (s: Step) => {
-    if (s === 'password' && passwordArm === 'modal') {
-      onClose()
-      setKeycloakOpen(true)
-      return
-    }
-    setStep(s)
-  }
 
   /*
    * Reopening always starts at the chooser — without this the sheet reopens on
@@ -126,10 +113,9 @@ export function AccountDetailsEditPanel({ open, onClose, currentEmail, onEmailSa
         </header>
         <div aria-hidden style={{ height: 1, background: 'var(--color-border-subtle)' }} />
 
-        {step === 'choose' && <ChooserStep onPick={pick} />}
-        {step === 'password' && passwordArm === 'inline' && (
+        {step === 'choose' && <ChooserStep onPick={setStep} />}
+        {step === 'password' && keycloakPassword && (
           <KeycloakChangePassword
-            frame="panel"
             titleId={`${titleId}-keycloak`}
             email={currentEmail}
             outcome={passwordOutcome}
@@ -139,7 +125,7 @@ export function AccountDetailsEditPanel({ open, onClose, currentEmail, onEmailSa
             }
           />
         )}
-        {step === 'password' && passwordArm !== 'inline' && (
+        {step === 'password' && !keycloakPassword && (
           <PasswordStep onCancel={onClose} onSaved={closeWithToast} />
         )}
         {step === 'email' && (
@@ -154,17 +140,6 @@ export function AccountDetailsEditPanel({ open, onClose, currentEmail, onEmailSa
         )}
         </div>
       </Sheet>
-
-      <ChangePasswordModal
-        open={keycloakOpen}
-        onClose={() => setKeycloakOpen(false)}
-        email={currentEmail}
-        outcome={passwordOutcome}
-        onChanged={() => {
-          setKeycloakOpen(false)
-          setToast({ title: 'Password updated', body: 'Your password has been changed.' })
-        }}
-      />
 
       {/* OUTSIDE the Sheet, and the panel stays mounted while `open` flips —
           the toast has to outlive the sheet that produced it. */}
