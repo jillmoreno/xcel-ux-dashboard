@@ -87,7 +87,7 @@ export const INVITE_FLOWS_V3: InviteFlowV3[] = [
     label: 'Direct Email',
     description: 'Partner invited them, address supplied. Locked at checkout.',
     base: 'b2b2c-email',
-    screens: ['email', 'pdp', ...CODE, 'checkout-1', ...CHECKOUT, 'placing', ...NEW_PASSWORD],
+    screens: ['email', 'pdp', ...VERIFY, ...CODE, 'checkout-1', ...CHECKOUT, 'placing', ...NEW_PASSWORD],
   },
   {
     id: 'qr-net-new',
@@ -205,9 +205,11 @@ export function verifiesEmailFirst(flow: InviteFlowV3): boolean {
   )
 }
 
-/** Did the partner supply the address? Direct Email's invitation names it, so
- *  the email check opens on its second step — the code or the log-in — with
- *  that address, never asking for it (2026-11-04, Afsana). */
+/** Did the partner supply the address? Direct Email's invitation names it.
+ *  With Atlas the check opens on Log in, the address locked in its field;
+ *  without, on the email step filled with it, so no code is sent until the
+ *  learner presses Continue (2026-11-13, Afsana — 2026-11-04 went straight
+ *  to the code). */
 export function suppliesEmailV3(flow: InviteFlowV3): boolean {
   return flow.screens.includes('email')
 }
@@ -311,7 +313,7 @@ export function directEmailFlowV3(flow: InviteFlowV3, email: V3EmailAccount): In
     screens:
       email === 'atlas'
         ? [...start, 'login-1', 'login-2', ...CHECKOUT, 'placing', 'ready']
-        : [...start, ...CODE, 'checkout-1', ...CHECKOUT, 'placing', ...NEW_PASSWORD],
+        : [...start, ...VERIFY, ...CODE, 'checkout-1', ...CHECKOUT, 'placing', ...NEW_PASSWORD],
   }
 }
 

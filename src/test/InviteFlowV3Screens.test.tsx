@@ -140,20 +140,27 @@ describe('Invite Flow V3 — the Direct Email invitation', () => {
     expect(within(letter).getByRole('button', { name: 'View invitation' })).toHaveClass('cre-e2e-cta')
   })
 
-  it('after Purchase, sends a code to the supplied address when it has no Atlas', async () => {
+  it('after Purchase, asks for the email first when the supplied address has no Atlas, then sends the code', async () => {
     renderAt(CHECKOUT, `${DIRECT},invite-v3-email-account:no-atlas`)
+    /* No code goes out until the learner says where (2026-11-13). */
+    expect(screen.queryByRole('dialog', { name: 'Enter your one-time code' })).not.toBeInTheDocument()
+    const ask = screen.getByRole('dialog', { name: 'Enter your email to continue' })
+    expect(ask).toHaveAccessibleDescription('We will send a one time code to you to verify your email.')
+    /* Filled with the invitation's address. */
+    expect(within(ask).getByLabelText(/Email address/)).toHaveValue(E2E_LEARNER_EMAIL)
+    await userEvent.click(within(ask).getByRole('button', { name: 'Continue' }))
     const dialog = screen.getByRole('dialog', { name: 'Enter your one-time code' })
     expect(dialog).toHaveTextContent(E2E_LEARNER_EMAIL)
-    /* Never asks for the address, and there is no other to use. */
-    expect(screen.queryByRole('dialog', { name: 'Enter your email to continue' })).not.toBeInTheDocument()
+    /* The partner named the address, so there is no other to go back for. */
     expect(within(dialog).queryByRole('button', { name: 'Use a different email' })).not.toBeInTheDocument()
   })
 
   it('leaves the checkout’s email plain until the check is done, then locks it', async () => {
     renderAt(CHECKOUT, `${DIRECT},invite-v3-email-account:no-atlas`)
-    /* Behind the code: no lock, no grey, no address. */
+    /* Behind the check: no lock, no grey, no address. */
     expect(screen.queryByAltText('Locked')).not.toBeInTheDocument()
-    expect(screen.queryByDisplayValue(E2E_LEARNER_EMAIL)).not.toBeInTheDocument()
+    expect(screen.queryAllByDisplayValue(E2E_LEARNER_EMAIL).filter((el) => el.closest('[role="dialog"]') === null)).toHaveLength(0)
+    await userEvent.click(screen.getByRole('button', { name: 'Continue' }))
     const dialog = screen.getByRole('dialog', { name: 'Enter your one-time code' })
     await userEvent.type(within(dialog).getByLabelText('Digit 1 of 6'), '111111')
     await userEvent.click(within(dialog).getByRole('button', { name: 'Confirm' }))
@@ -179,7 +186,12 @@ describe('Invite Flow V3 — the Direct Email invitation', () => {
   it('after Purchase, asks the learner to log in when the address has Atlas', () => {
     renderAt(CHECKOUT, `${DIRECT},invite-v3-email-account:atlas`)
     const dialog = screen.getByRole('dialog', { name: 'Log in to continue' })
-    expect(dialog).toHaveTextContent(E2E_LEARNER_EMAIL)
+    expect(dialog).toHaveAccessibleDescription('Welcome back, Jordan! Sign in to finish checking out.')
+    /* The supplied address, pre-filled and locked (2026-11-13). */
+    const field = within(dialog).getByLabelText('Email address')
+    expect(field).toHaveValue(E2E_LEARNER_EMAIL)
+    expect(field).toBeDisabled()
+    expect(within(dialog).getByAltText('Locked')).toBeInTheDocument()
     expect(screen.queryByRole('dialog', { name: 'Enter your one-time code' })).not.toBeInTheDocument()
   })
 })
@@ -188,7 +200,7 @@ describe('Invite Flow V3 — the email check', () => {
   it('asks for the email only, and keeps Continue off until it is an address', async () => {
     renderAt(CHECKOUT, `${V3_B2B},invite-v3-flow-b2b:qr-net-new`)
     const dialog = screen.getByRole('dialog', { name: 'Enter your email to continue' })
-    expect(dialog).toHaveAccessibleDescription('Provide your email address. We use it to find or create your account.')
+    expect(dialog).toHaveAccessibleDescription('We will send a one time code to you to verify your email.')
     expect(screen.queryByLabelText(/First name/)).not.toBeInTheDocument()
     /* The checkout behind says nothing about an address nobody has given yet. */
     expect(screen.queryByDisplayValue(/@/)).not.toBeInTheDocument()
