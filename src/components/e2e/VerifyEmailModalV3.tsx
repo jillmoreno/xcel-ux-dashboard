@@ -155,7 +155,7 @@ export function VerifyEmailModalV3({
                 placeholder="you@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="cre-e2e-input"
+                className="cre-e2e-input cre-e2e-input-v3"
                 style={FIELD}
               />
             </label>
@@ -344,7 +344,7 @@ function CodeStep({
               onFocus={(e) => e.target.select()}
               aria-invalid={invalid}
               aria-describedby={invalid ? 'code-invalid' : undefined}
-              className="cre-e2e-input"
+              className="cre-e2e-input cre-e2e-input-v3"
               style={invalid ? { ...CODE_BOX, ...CODE_BOX_INVALID } : CODE_BOX}
             />
           ))}
@@ -462,7 +462,7 @@ function NameStep({
             placeholder="First name"
             value={first}
             onChange={(e) => onFirst(e.target.value)}
-            className="cre-e2e-input"
+            className="cre-e2e-input cre-e2e-input-v3"
             style={FIELD}
           />
         </label>
@@ -478,7 +478,7 @@ function NameStep({
             placeholder="Last name"
             value={last}
             onChange={(e) => onLast(e.target.value)}
-            className="cre-e2e-input"
+            className="cre-e2e-input cre-e2e-input-v3"
             style={FIELD}
           />
         </label>
@@ -669,7 +669,7 @@ function LoginStep({
               autoComplete="email"
               value={email}
               onChange={(e) => onEmailChange(e.target.value)}
-              className="cre-e2e-input"
+              className="cre-e2e-input cre-e2e-input-v3"
               style={FIELD}
             />
           </label>
@@ -791,7 +791,7 @@ function ResetPasswordStep({ email, onReset }: { email: string; onReset: () => v
               placeholder="Enter password..."
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="cre-e2e-input"
+              className="cre-e2e-input cre-e2e-input-v3"
               style={{ ...FIELD, paddingRight: 40 }}
             />
             <button
@@ -822,7 +822,7 @@ function ResetPasswordStep({ email, onReset }: { email: string; onReset: () => v
                 onChange={(e) => setConfirm(e.target.value)}
                 aria-invalid={mismatch}
                 aria-describedby={mismatch ? 'reset-mismatch' : undefined}
-                className="cre-e2e-input"
+                className="cre-e2e-input cre-e2e-input-v3"
                 style={mismatch ? { ...FIELD, paddingRight: 40, ...FIELD_INVALID } : { ...FIELD, paddingRight: 40 }}
               />
               <button
