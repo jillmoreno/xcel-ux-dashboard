@@ -2048,6 +2048,25 @@
    ⚠ THE TRACKING GOES WITH THE CAPS. 0.08em is there to open up uppercase
    letterforms; on lower case it just looks loose. The words keep the
    capitalisation she wrote them with. */
+/* ⚠ THE OPEN CHAPTER'S OWN PROGRESS — 2026-11-13. The next-step card's
+   track at the same weight and radius; it is capped narrower because it sits
+   in a row beside a title rather than under one. */
+.crf-map__bar {
+  display: block;
+  width: 100%;
+  max-width: 260px;
+  height: 4px;
+  margin-top: 8px;
+  border-radius: 999px;
+  background: var(--crf-steel-pressed);
+  overflow: hidden;
+}
+.crf-map__barfill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--crf-steel-deep);
+}
 .crf-map__label {
   margin: 2px 0 0;
   font-size: 11px;
@@ -2107,6 +2126,11 @@
    run into it: the line marks chapters, and this is a control. */
 .crf-map__more--done::after {
   content: none;
+}
+/* The count, hard right, the way the bar at the other end carries its own.
+   It is the tag the cards it stands in for are wearing. */
+.crf-map__more-tag {
+  margin-left: auto;
 }
 /* ⚠ THE BLURB ON THE ROWS LAYOUT TOO, because the toggle is a question about
    content and the arm is a question about shape — see `compass-course-blurb`.

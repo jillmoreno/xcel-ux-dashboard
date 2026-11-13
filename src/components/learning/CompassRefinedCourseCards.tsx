@@ -232,8 +232,22 @@ export function CompassRefinedCourseCards({
               aria-hidden
               style={{ transform: showDone ? 'rotate(180deg)' : undefined }}
             />
-            {showDone ? 'Hide' : 'Show'} {doneCount} completed{' '}
+            {showDone ? 'Hide' : 'Show'} completed{' '}
             {doneCount === 1 ? 'module' : 'modules'}
+            {/* ⚠ THE COUNT AS THE CARDS' OWN TAG — 2026-11-13: "have there
+                be a tag indicating the completed modules in the right side".
+                It had been a number inside the sentence. On the right it
+                mirrors the bar at the other end of the list, which carries
+                its count there too, and it is drawn as the tag those eleven
+                cards wear — same green, same shape, mark then dot then word
+                — so the bar reads as the pile it is standing in for. */}
+            <span className="crf-map__state crf-map__state--done crf-map__more-tag">
+              <span className="crf-map__mark" aria-hidden>
+                {doneCount}
+              </span>
+              <span aria-hidden className="crf-map__dot" />
+              Completed
+            </span>
           </button>
         ) : null}
 
@@ -335,6 +349,25 @@ export function CompassRefinedCourseCards({
                           conditions differ. */}
                       {chapterParts(c) ? (
                         <p className="crf-map__label">{chapterParts(c)}</p>
+                      ) : null}
+                      {/* ⚠ A BAR ON THE OPEN CHAPTER — 2026-11-13: "in
+                          progress should show a progress bar." Only there:
+                          a finished chapter's bar would be a full track
+                          saying what the tick already says, and a locked
+                          one's an empty track under a padlock. The figure is
+                          the chapter's own span — its lessons AND its exam
+                          — so finishing the lessons reads 50, not 100. */}
+                      {c.state === 'current' ? (
+                        <span
+                          className="crf-map__bar"
+                          role="img"
+                          aria-label={`${c.title} ${c.pct}% complete`}
+                        >
+                          <span
+                            className="crf-map__barfill"
+                            style={{ width: `${c.pct}%` }}
+                          />
+                        </span>
                       ) : null}
                     </div>
                     {/* ⚠ THE WORD, AHEAD OF THE CONTROLS — 2026-11-13,

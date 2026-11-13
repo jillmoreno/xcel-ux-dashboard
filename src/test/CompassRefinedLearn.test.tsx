@@ -522,14 +522,18 @@ describe('the completed run folds at the top', () => {
 
   it('opens on the chapter the learner is in, not on what they have finished', () => {
     const { container } = halfway()
-    const bar = screen.getByRole('button', { name: /Show \d+ completed modules/ })
+    /* ⚠ THE COUNT LEFT THE SENTENCE on 2026-11-13 — it is the tag on the
+       right of the bar now ("have there be a tag indicating the completed
+       modules in the right side"), so the accessible name is the label plus
+       that tag's words. */
+    const bar = screen.getByRole('button', { name: /Show completed modules/ })
     expect(bar).toBeTruthy()
     /* ⚠ THE POINT OF THE FOLD: the first card is not a finished one. */
     expect(container.querySelector('.crf-map__card--done')).toBeNull()
 
     fireEvent.click(bar)
     expect(container.querySelector('.crf-map__card--done')).not.toBeNull()
-    expect(screen.getByRole('button', { name: /Hide \d+ completed modules/ })).toBeTruthy()
+    expect(screen.getByRole('button', { name: /Hide completed modules/ })).toBeTruthy()
   })
 
   it('counts the leading run, and says it in the bar', () => {
@@ -651,5 +655,76 @@ describe('the roadmap mark — number or icon', () => {
       (e) => e.textContent,
     )
     expect(wordsB).toEqual(wordsA)
+  })
+})
+
+describe('the open chapter shows its own progress', () => {
+  it('counts the chapter AND its exam, so finished lessons read half', () => {
+    /* ⚠ THE SPAN IS WHAT A LEARNER MEANS BY "this chapter": finishing the
+       lessons is half of it and the exam is the other half. A chapter whose
+       lesson row is done and whose exam is not reads 50, which is the
+       difference between "I am in it" and "I am through it". */
+    const view = refinedCourseView(refinedProgressAt(journeyStage('q3').prog?.pct))
+    const open = view.chapters.find((c) => c.state === 'current')!
+    expect(open.pct).toBeGreaterThan(0)
+    expect(open.pct).toBeLessThan(100)
+  })
+
+  it('is 100 behind the learner and 0 ahead of them', () => {
+    const view = refinedCourseView(refinedProgressAt(journeyStage('q3').prog?.pct))
+    for (const c of view.chapters) {
+      if (c.state === 'done') expect(c.pct, c.title).toBe(100)
+      if (c.state === 'locked') expect(c.pct, c.title).toBe(0)
+    }
+  })
+
+  it('never runs backwards as the learner advances', () => {
+    let last = -1
+    for (let pct = 0; pct <= 100; pct += 1) {
+      const view = refinedCourseView(refinedProgressAt(pct))
+      const total = view.chapters.reduce((a, c) => a + c.pct, 0)
+      expect(total, `${pct}%`).toBeGreaterThanOrEqual(last)
+      last = total
+    }
+  })
+
+  it('draws a bar on the open chapter and on no other', () => {
+    const { container } = render(
+      <MemoryRouter>
+        <AccountProvider>
+          <FeatureFlagProvider>
+            <CompassRefinedLearn
+              stage="q3"
+              course={{ ...COURSE_DEFAULTS, rows: 'cards', fold: false }}
+            />
+          </FeatureFlagProvider>
+        </AccountProvider>
+      </MemoryRouter>,
+    )
+    const bars = container.querySelectorAll('.crf-map__bar')
+    expect(bars).toHaveLength(1)
+    expect(bars[0].closest('.crf-map__card')?.className).toContain('--current')
+  })
+})
+
+describe('the completed fold carries its count as a tag', () => {
+  it('puts the cards’ own tag on the right of the bar', () => {
+    const { container } = render(
+      <MemoryRouter>
+        <AccountProvider>
+          <FeatureFlagProvider>
+            <CompassRefinedLearn stage="q3" course={{ ...COURSE_DEFAULTS, rows: 'cards' }} />
+          </FeatureFlagProvider>
+        </AccountProvider>
+      </MemoryRouter>,
+    )
+    const bar = container.querySelector('.crf-map__more--done')!
+    const tag = bar.querySelector('.crf-map__more-tag')!
+    /* The green a completed card wears, and the count it stands in for. */
+    expect(tag.className).toContain('crf-map__state--done')
+    expect(tag.textContent).toContain('Completed')
+    const n = Number(tag.querySelector('.crf-map__mark')!.textContent)
+    fireEvent.click(bar)
+    expect(container.querySelectorAll('.crf-map__card--done')).toHaveLength(n)
   })
 })

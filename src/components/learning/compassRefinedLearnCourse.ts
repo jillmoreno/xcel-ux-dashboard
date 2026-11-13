@@ -65,6 +65,17 @@ export type RefinedChapter = {
   /** Whether there is anything behind the chevron. See finding 8. */
   expandable: boolean
   /**
+   * ⚠ HOW FAR THROUGH THE CHAPTER'S OWN SPAN — 0–100. 2026-11-13: "in
+   * progress should show a progress bar."
+   *
+   * ⚠ THE SPAN IS THE CHAPTER AND ITS EXAM, which is what a learner means by
+   * "this chapter": finishing the lessons is half of it, and the exam is the
+   * other half. A chapter whose lesson row is done and whose exam is not
+   * reads 50, not 100 — which is the difference between "I am in it" and "I
+   * am through it".
+   */
+  pct: number
+  /**
    * ⚠ WHETHER THE OPEN CHAPTER HAS BEEN STARTED — 2026-11-12: "we should
    * have Up Next for courses that are ready to start, and we should have in
    * progress for courses that have progress." Only ever true of the chapter
@@ -177,6 +188,16 @@ function buildChapters(progress: RefinedProgress): RefinedChapter[] {
      Locked with nothing in between and an empty "Where you left off" card
      above them. A learner taking a chapter's exam is in that chapter. */
   const span = next?.kind === 'exam' ? next.n : s.n
+  /* ⚠ COUNTED IN ROWS, PLUS THE REMAINDER. `done` is whole rows finished and
+     `intoCurrent` is the part of the next one read, so the two together are
+     the learner's position on a continuous scale; subtracting the chapter's
+     own start puts it inside the span, and clamping holds a chapter that is
+     behind or ahead at 0 or 100. */
+  const spanLen = span - s.n + 1
+  const through = Math.min(
+    Math.max(progress.done + progress.intoCurrent - (s.n - 1), 0),
+    spanLen,
+  )
   const state =
     span < progress.currentN ? 'done' : s.n <= progress.currentN ? 'current' : 'locked'
 
@@ -223,6 +244,7 @@ function buildChapters(progress: RefinedProgress): RefinedChapter[] {
        Her upload has no lesson-level detail for that row, and until it does
        the honest row is one that does not offer to expand. */
     expandable: lessons.length > 0 || next?.kind === 'exam',
+    pct: Math.round((through / spanLen) * 100),
     started: state === 'current' && (progress.done >= s.n || progress.intoCurrent > 0),
     number,
     /* ⚠ THE EXAM IS THE COURSE'S NEXT ROW, named as the course names it.
