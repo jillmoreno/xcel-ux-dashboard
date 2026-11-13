@@ -35,16 +35,31 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
-const out = join(root, 'public', 'demos', 'compass-course-test.html')
 
-const src = process.argv[2]
+/* Usage:
+     node scripts/build-compass-test-html.mjs <export.html> [--out <name>.html]
+       [--keep Main,Learn,Course] [--start Main] [--stage q1]
+   Defaults are the course-content session of 2026-11-13. A second session is
+   a second --out beside the first — static files, so one test branch can
+   carry several participant links at once, each frozen on its own. */
+const argv = process.argv.slice(2)
+const src = argv.find((a) => !a.startsWith('--') && !argv[argv.indexOf(a) - 1]?.startsWith('--'))
+const opt = (name, dflt) => {
+  const i = argv.indexOf('--' + name)
+  return i >= 0 && argv[i + 1] ? argv[i + 1] : dflt
+}
 if (!src) {
-  console.error('usage: node scripts/build-compass-test-html.mjs <export.html>')
+  console.error('usage: node scripts/build-compass-test-html.mjs <export.html> [--out name.html] [--keep A,B] [--start A] [--stage q1]')
   process.exit(1)
 }
-
-const KEEP = ['Main.dc.html', 'Learn.dc.html', 'Course.dc.html']
-const START = 'Main.dc.html'
+const out = join(root, 'public', 'demos', opt('out', 'compass-course-test.html'))
+const KEEP = opt('keep', 'Main,Learn,Course').split(',').map((p) => p.trim() + '.dc.html')
+const START = opt('start', KEEP[0].replace('.dc.html', '')) + '.dc.html'
+const STAGE = opt('stage', 'q1')
+if (!KEEP.includes(START)) {
+  console.error(`--start ${START} is not in --keep`)
+  process.exit(1)
+}
 
 const text = readFileSync(src, 'utf8')
 const pagesLine = text.split('\n').find((l) => l.startsWith('var PAGES = '))
@@ -102,7 +117,7 @@ for (const k of KEEP) {
    load — the iframe is srcdoc, so it shares the wrapper's origin and storage. */
 const RESET = `
 try {
-  localStorage.setItem('compass-stage-v1', 'q1');
+  localStorage.setItem('compass-stage-v1', ${JSON.stringify(STAGE)});
   ['compassB.demo','compass-msg-v1','compass-toc-v1','compass-rubinudge-v1','compass-fc-sel','compass-exam-provider']
     .forEach(function (k) { localStorage.removeItem(k); });
 } catch (e) {}`
@@ -156,4 +171,4 @@ go(${JSON.stringify(START)});
 
 mkdirSync(dirname(out), { recursive: true })
 writeFileSync(out, doc)
-console.log(`wrote ${out} — ${(doc.length / 1024).toFixed(0)} KB, pages: ${KEEP.join(', ')}`)
+console.log(`wrote ${out} — ${(doc.length / 1024).toFixed(0)} KB, pages: ${KEEP.join(', ')}, start ${START}, stage ${STAGE}`)
