@@ -7723,6 +7723,9 @@ a.cre-library-card-title::after {
   /* V3's modal fields ring in blue when focused, not the brick the CTAs use
      (2026-11-13, Afsana). 5.2:1 on white. */
   --color-e2e-field-focus-v3: #2563eb;
+  /* Email verified's ring fill — paler than success-100, from the reference
+     (2026-11-13, Afsana). */
+  --color-e2e-verified-fill: #eef8f2;
   --color-e2e-form-text: #4a5568;
   --color-e2e-form-placeholder: #4b5563;
   --color-e2e-form-shadow: rgb(0 0 0 / 0.05);

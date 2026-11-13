@@ -305,7 +305,7 @@ export function isOcdCartFlow(id: InviteFlowV3Id | undefined): boolean {
  *  linked with an atlas account, they are prompted to sign in. if is not,
  *  they have to enter the one time code". The established modals: Log in to
  *  continue, then the checkout filled from the account and Start course; or
- *  Enter your one-time code, the full checkout, then a password. */
+ *  Verify your email (the one-time code), the full checkout, then a password. */
 export function directEmailFlowV3(flow: InviteFlowV3, email: V3EmailAccount): InviteFlowV3 {
   const start = ['email', 'pdp']
   return {

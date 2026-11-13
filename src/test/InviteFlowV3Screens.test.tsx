@@ -143,13 +143,13 @@ describe('Invite Flow V3 — the Direct Email invitation', () => {
   it('after Purchase, asks for the email first when the supplied address has no Atlas, then sends the code', async () => {
     renderAt(CHECKOUT, `${DIRECT},invite-v3-email-account:no-atlas`)
     /* No code goes out until the learner says where (2026-11-13). */
-    expect(screen.queryByRole('dialog', { name: 'Enter your one-time code' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('dialog', { name: 'Verify your email' })).not.toBeInTheDocument()
     const ask = screen.getByRole('dialog', { name: 'Enter your email to continue' })
     expect(ask).toHaveAccessibleDescription('Provide your email address. We will use it to find your existing account or create one.')
     /* Filled with the invitation's address. */
     expect(within(ask).getByLabelText(/Email address/)).toHaveValue(E2E_LEARNER_EMAIL)
     await userEvent.click(within(ask).getByRole('button', { name: 'Continue' }))
-    const dialog = screen.getByRole('dialog', { name: 'Enter your one-time code' })
+    const dialog = screen.getByRole('dialog', { name: 'Verify your email' })
     expect(dialog).toHaveTextContent(E2E_LEARNER_EMAIL)
     /* The partner named the address, so there is no other to go back for. */
     expect(within(dialog).queryByRole('button', { name: 'Use a different email' })).not.toBeInTheDocument()
@@ -161,9 +161,10 @@ describe('Invite Flow V3 — the Direct Email invitation', () => {
     expect(screen.queryByAltText('Locked')).not.toBeInTheDocument()
     expect(screen.queryAllByDisplayValue(E2E_LEARNER_EMAIL).filter((el) => el.closest('[role="dialog"]') === null)).toHaveLength(0)
     await userEvent.click(screen.getByRole('button', { name: 'Continue' }))
-    const dialog = screen.getByRole('dialog', { name: 'Enter your one-time code' })
+    const dialog = screen.getByRole('dialog', { name: 'Verify your email' })
     await userEvent.type(within(dialog).getByLabelText('Digit 1 of 6'), '111111')
     await userEvent.click(within(dialog).getByRole('button', { name: 'Confirm' }))
+    await screen.findByRole('dialog', { name: 'Enter your name to continue' }, { timeout: 3000 })
     await userEvent.type(screen.getByLabelText(/First name/), 'Jordan')
     await userEvent.type(screen.getByLabelText(/Last name/), 'Navarro')
     await userEvent.click(screen.getByRole('button', { name: 'Continue' }))
@@ -196,7 +197,7 @@ describe('Invite Flow V3 — the Direct Email invitation', () => {
     expect(field).toHaveValue(E2E_LEARNER_EMAIL)
     expect(field).toBeEnabled()
     expect(within(dialog).queryByAltText('Locked')).not.toBeInTheDocument()
-    expect(screen.queryByRole('dialog', { name: 'Enter your one-time code' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('dialog', { name: 'Verify your email' })).not.toBeInTheDocument()
   })
 })
 
@@ -263,8 +264,10 @@ describe('Invite Flow V3 — the email check', () => {
 
       const dialog = screen.getByRole('dialog')
       expect(within(dialog).getByAltText(/XCEL/)).toBeInTheDocument()
-      expect(dialog).toHaveTextContent('To verify your email address, enter the 6-digit code we sent to sam@example.com.')
-      expect(dialog).toHaveTextContent('Be sure to check your spam or junk folders. This code will expire in 10 minutes.')
+      expect(dialog).toHaveTextContent('We sent a 6-digit code to sam@example.com. Be sure to check your spam or junk folders.')
+      expect(within(dialog).getByText('sam@example.com').tagName).toBe('STRONG')
+      /* The expiry, under the boxes (2026-11-13). */
+      expect(dialog).toHaveTextContent('The code expires in 10 minutes')
       expect(dialog).toHaveTextContent('Didn’t receive the code? Resend code in 10:00')
       expect(within(dialog).queryByRole('button', { name: 'Resend code' })).not.toBeInTheDocument()
       expect(within(dialog).getByRole('button', { name: 'Use a different email' })).toBeInTheDocument()
@@ -274,7 +277,7 @@ describe('Invite Flow V3 — the email check', () => {
       /* A light green banner over the lead, not a line under the countdown. */
       const banner = within(dialog).getByRole('status')
       expect(banner).toHaveTextContent(/^A new code has been sent\.$/)
-      expect(banner.compareDocumentPosition(within(dialog).getByText(/^To verify your email address/)) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+      expect(banner.compareDocumentPosition(within(dialog).getByText(/^We sent a 6-digit code/)) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
       expect(dialog).not.toHaveTextContent('We sent a new code')
       expect(dialog).toHaveTextContent('Resend code in 10:00')
     } finally {
@@ -287,15 +290,20 @@ describe('Invite Flow V3 — the email check', () => {
     await userEvent.type(screen.getByLabelText(/Email address/), 'sam@example.com')
     await userEvent.click(screen.getByRole('button', { name: 'Continue' }))
 
-    expect(screen.getByRole('heading', { name: 'Enter your one-time code' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Verify your email' })).toBeInTheDocument()
     const confirm = screen.getByRole('button', { name: 'Confirm' })
     expect(confirm).toBeDisabled()
     await userEvent.type(screen.getByLabelText('Digit 1 of 6'), '111111')
     expect(confirm).toBeEnabled()
     await userEvent.click(confirm)
 
+    /* Email verified holds for two seconds, then moves on by itself (2026-11-13). */
+    const verified = screen.getByRole('dialog', { name: 'Email verified' })
+    expect(verified).toHaveAccessibleDescription('Thanks! Continuing…')
+    expect(within(verified).queryByRole('button')).not.toBeInTheDocument()
+
     /* No Atlas account: the name is asked before the checkout (2026-11-13). */
-    const named = screen.getByRole('dialog', { name: 'Enter your name to continue' })
+    const named = await screen.findByRole('dialog', { name: 'Enter your name to continue' }, { timeout: 3000 })
     const go = within(named).getByRole('button', { name: 'Continue' })
     expect(go).toBeDisabled()
     await userEvent.type(within(named).getByLabelText(/First name/), 'Sam')
@@ -339,7 +347,7 @@ describe('Invite Flow V3 — the email check', () => {
 
     const error = screen.getByRole('alert')
     expect(error).toHaveTextContent('Invalid code. Please try again.')
-    expect(screen.getByRole('heading', { name: 'Enter your one-time code' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Verify your email' })).toBeInTheDocument()
     expect(screen.getByLabelText('Digit 1 of 6')).toHaveAttribute('aria-describedby', 'code-invalid')
     /* The red stroke along the bottom of every box. */
     for (let i = 1; i <= 6; i++) {

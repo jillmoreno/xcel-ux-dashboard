@@ -13,7 +13,7 @@ import {
   type VerifiedIdentity,
 } from '@/data/inviteVerification'
 import { looksLikeEmail } from '@/data/inviteFlows'
-import { CircleCheckSolid } from '@/icons'
+import { Check, CircleCheckSolid } from '@/icons'
 import { V3_EXPIRED_DEMO_CODE, V3_INVALID_DEMO_CODE, V3_WRONG_DEMO_PASSWORD } from '@/data/inviteFlowsV3'
 import { E2E_LEARNER_EMAIL, E2E_LEARNER_FIRST, E2E_LEARNER_LAST } from '@/pages/endToEndDemo'
 import { LOADING_HANDOFF_MS } from '@/components/e2e/XcelLoadingPage'
@@ -38,7 +38,7 @@ import '@/pages/inviteFlow.css'
  *   - 460 wide, with Continue, Confirm and Log in full width, OFF until the
  *     step is complete (V2's are always on and explain on press);
  *   - the code boxes are 54 × 66 and centred. Since 2026-11-03 (Afsana) the
- *     code step carries the XCEL logo over "Enter your one-time code", and
+ *     code step carries the XCEL logo over "Verify your email" (was "Enter your one-time code" until 2026-11-13), and
  *     under Confirm: "Didn't receive the code? Resend code in 10:00",
  *     counting down until Resend unlocks, then Use a different email;
  *   - ANY six digits are accepted, as in the file — there is no wrong code and
@@ -78,7 +78,7 @@ export function VerifyEmailModalV3({
      no longer goes straight to the code (2026-11-13, Afsana): the email step
      comes first, filled with the invitation's address, so no code is sent
      before the learner says where. */
-  const [step, setStep] = useState<'email' | 'code' | 'name' | 'login' | 'signing-in'>(() =>
+  const [step, setStep] = useState<'email' | 'code' | 'verified' | 'name' | 'login' | 'signing-in'>(() =>
     suppliedEmail && second === 'login' ? 'login' : 'email',
   )
   const layer = useV3DialogLayer()
@@ -97,6 +97,13 @@ export function VerifyEmailModalV3({
   useEffect(() => {
     document.getElementById('verify-email-modal')?.focus()
   }, [])
+
+  /* Email verified holds, then the name (2026-11-13, Afsana). */
+  useEffect(() => {
+    if (step !== 'verified') return
+    const timer = window.setTimeout(() => setStep('name'), VERIFIED_HOLD_MS)
+    return () => window.clearTimeout(timer)
+  }, [step])
 
   /* The second step is done: hold on "Signing you in" first where the flow
      has it, the flow's usual three seconds. */
@@ -193,9 +200,11 @@ export function VerifyEmailModalV3({
         ) : step === 'code' ? (
           <CodeStep
             identity={identity}
-            onVerified={() => setStep('name')}
+            onVerified={() => setStep('verified')}
             onChangeEmail={suppliedEmail ? undefined : () => setStep('email')}
           />
+        ) : step === 'verified' ? (
+          <EmailVerified />
         ) : step === 'name' ? (
           <NameStep first={first} last={last} onFirst={setFirst} onLast={setLast} onDone={done} />
         ) : step === 'login' ? (
@@ -312,7 +321,7 @@ function CodeStep({
       <img src="/brand/xcel-logo.webp" alt="XCEL Insurance Training by Colibri" style={CODE_LOGO} />
       <div style={HEAD}>
         <h2 id="verify-email-title" style={TITLE}>
-          Enter your one-time code
+          Verify your email
         </h2>
         <div aria-hidden style={RULE} />
         {/* Code resent — a light green banner over the lead (2026-11-05,
@@ -325,9 +334,10 @@ function CodeStep({
           </p>
         ) : null}
         <p id="verify-email-lead" style={LEAD}>
-          To verify your email address, enter the 6-digit code we sent to{' '}
-          <strong style={{ fontWeight: 800 }}>{identity.email.trim()}</strong>. Be sure to check your spam or junk
-          folders. This code will expire in 10 minutes.
+          {/* Shorter, with the expiry moved under the boxes (2026-11-13,
+              Afsana). */}
+          We sent a 6-digit code to <strong style={{ fontWeight: 800 }}>{identity.email.trim()}</strong>. Be sure to
+          check your spam or junk folders.
         </p>
       </div>
 
@@ -362,6 +372,7 @@ function CodeStep({
             {codeError === 'expired' ? 'The code has expired. Request another code.' : 'Invalid code. Please try again.'}
           </p>
         ) : null}
+        <p style={NOTE}>The code expires in 10 minutes</p>
       </div>
 
       <div style={ACTIONS}>
@@ -411,6 +422,31 @@ function CodeStep({
 }
 
 const RESEND_AFTER_S = 10 * 60
+
+/* How long Email verified shows before the name step. */
+const VERIFIED_HOLD_MS = 2000
+
+/** "Email verified" — 2026-11-13, Afsana, from a reference image: a green
+ *  check in a pale green ring, "Email verified", "Thanks! Continuing…". Shown
+ *  after a code is accepted, then the modal moves on by itself. */
+function EmailVerified() {
+  return (
+    <div style={VERIFIED} role="status">
+      <span aria-hidden style={VERIFIED_RING}>
+        {/* The light icon, stroked heavier to match the reference. */}
+        <Check size={34} style={{ stroke: 'currentColor', strokeWidth: 28 }} />
+      </span>
+      <div style={{ ...HEAD, alignItems: 'center', gap: 6 }}>
+        <h2 id="verify-email-title" style={TITLE}>
+          Email verified
+        </h2>
+        <p id="verify-email-lead" style={{ ...LEAD, color: 'var(--color-text-secondary)' }}>
+          Thanks! Continuing…
+        </p>
+      </div>
+    </div>
+  )
+}
 
 /* How long Resend link stays off after a reset link is sent — the demo's
    stand-in for whatever the system allows (2026-11-05). */
@@ -1176,6 +1212,26 @@ const FORGOT: CSSProperties = {
    (2026-11-03, Afsana). */
 /* Smaller than the loading page's 72 (2026-11-03, Afsana). */
 const SIGNING_SPINNER = 48
+
+const VERIFIED: CSSProperties = {
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  gap: 20,
+  padding: '16px 0 12px',
+  textAlign: 'center',
+}
+
+const VERIFIED_RING: CSSProperties = {
+  display: 'grid',
+  placeItems: 'center',
+  width: 88,
+  height: 88,
+  borderRadius: '50%',
+  border: '3px solid var(--color-success-600)',
+  background: 'var(--color-e2e-verified-fill)',
+  color: 'var(--color-success-600)',
+}
 
 const SIGNING_IN: CSSProperties = {
   display: 'flex',

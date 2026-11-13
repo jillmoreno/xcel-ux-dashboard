@@ -37,6 +37,7 @@ const STATE_IMAGES: Record<string, Record<string, string>> = {
     'Code resent': `${MODALS}/one-time-code--resent.png`,
     'Invalid code': `${MODALS}/one-time-code--invalid.png`,
     'Expired code': `${MODALS}/one-time-code--expired.png`,
+    'Email verified': `${MODALS}/email-verified.png`,
     'With Use a different email': `${MODALS}/one-time-code--empty.png`,
     'Without Use a different email': `${MODALS}/one-time-code--direct-email.png`,
   },
