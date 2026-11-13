@@ -167,7 +167,8 @@ describe('Invite Flow V3 — the Direct Email invitation', () => {
     await userEvent.type(screen.getByLabelText(/First name/), 'Jordan')
     await userEvent.type(screen.getByLabelText(/Last name/), 'Navarro')
     await userEvent.click(screen.getByRole('button', { name: 'Continue' }))
-    expect(screen.getByAltText('Locked')).toBeInTheDocument()
+    /* Grey, no lock icon (2026-11-13). */
+    expect(screen.queryByAltText('Locked')).not.toBeInTheDocument()
     expect(screen.getByDisplayValue(E2E_LEARNER_EMAIL)).toBeDisabled()
     expect(screen.getByText('This is the address you verified. Your account will be created with it.')).toBeInTheDocument()
   })
@@ -270,9 +271,10 @@ describe('Invite Flow V3 — the email check', () => {
     expect(screen.getByTestId('where').textContent).toContain('verified=1')
     expect(screen.getByDisplayValue('sam@example.com')).toBeDisabled()
     expect(screen.getByText(/This is the address you verified/)).toBeInTheDocument()
-    /* The checkout arrives with the name filled — not asked twice. */
-    expect(screen.getByDisplayValue('Sam')).toBeInTheDocument()
-    expect(screen.getByDisplayValue('Rivera')).toBeInTheDocument()
+    /* The checkout arrives with the name filled — not asked twice — and
+       disabled, like the address (2026-11-13). */
+    expect(screen.getByDisplayValue('Sam')).toBeDisabled()
+    expect(screen.getByDisplayValue('Rivera')).toBeDisabled()
   })
 
   it('never asks for the name after a log-in — the account has it', async () => {
@@ -933,7 +935,8 @@ describe('Invite Flow V3 — the OCD flows’ checkout after an Atlas log-in', (
         expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
         expect(screen.getByDisplayValue('Jordan')).toBeInTheDocument()
         expect(screen.getByDisplayValue('sam@example.com')).toBeDisabled()
-        expect(screen.getByAltText('Locked')).toBeInTheDocument()
+        /* Grey says it — no lock icon (2026-11-13). */
+        expect(screen.queryByAltText('Locked')).not.toBeInTheDocument()
         /* The phone too, so payment is open — nothing left to fill. */
         expect(screen.getByDisplayValue('555 010 0199')).toBeInTheDocument()
         expect(screen.queryByText(/Complete your student information/)).not.toBeInTheDocument()

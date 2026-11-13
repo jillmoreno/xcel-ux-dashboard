@@ -24,7 +24,7 @@ const feature: PrototypeFeature = {
   devStatus: 'not-ready',
   surface: 'invite',
   owner: 'Afsana',
-  lastUpdated: '2026-11-13T14:19:23Z',
+  lastUpdated: '2026-11-13T14:39:21Z',
   accent: 'gold',
   icon: 'flag',
   brands: ['xcel'],
@@ -195,19 +195,19 @@ const feature: PrototypeFeature = {
         badgeDate: '2026-11-13',
         location: 'Over the checkout, after a correct one-time code — only for a learner with no Atlas account. src/components/e2e/VerifyEmailModalV3.tsx — NameStep.',
         summary:
-          'The XCEL logo, "Enter your name to continue", "Your email is verified. Enter your first and last name to continue to checkout.", First name and Last name (both required) and Continue. The checkout then opens with the email locked and the name already filled in the student information.',
+          'The XCEL logo, "Enter your name to continue", "Your email is verified. Enter your first and last name to continue to checkout.", First name and Last name (both required) and Continue. The checkout then opens with the email, First Name and Last Name filled and disabled — grey, no lock icon.',
         variants: [
           { name: 'Empty', when: 'On open, straight after the code is confirmed. First name has focus; Continue is off.' },
           { name: 'Complete', when: 'Both names are filled. Continue turns on.' },
         ],
         ctas: [
           { name: 'First name and Last name', does: 'Required. Continue stays off until both have something in them.' },
-          { name: 'Continue', does: 'Off until both names are in. Then creates the account with the verified email and the name, and opens the checkout with both filled.' },
+          { name: 'Continue', does: 'Off until both names are in. Then creates the account with the verified email and the name, and opens the checkout with all three filled and disabled.' },
         ],
         statesMatrix: [
           { question: 'Who sees it?', answer: 'Only a new learner — the email has no Atlas account. A learner who logs in never sees it; their name is on the account.' },
           { question: 'Can the learner close it or go back?', answer: 'No. There is no ✕, no Escape and no Back — the email is already verified.' },
-          { question: 'Is the name asked again at checkout?', answer: 'No. The checkout’s First name and Last name arrive filled with what was entered here, and stay editable.' },
+          { question: 'Is the name asked again at checkout?', answer: 'No. The checkout’s First Name and Last Name arrive filled with what was entered here and disabled, like the email — grey, no lock icon. The account is created with this name, so it is not changed at checkout.' },
         ],
         edgeCases: [
           'Demo only: an invisible corner bottom right fills Jordan Navarro.',
@@ -513,6 +513,11 @@ const feature: PrototypeFeature = {
           decision: 'Open. The code step states its expiry ("This code will expire in 10 minutes."), and it tells a learner who finds the email later why the link stopped working. The expiry itself is the system’s; the copy follows it.',
           status: 'Needs weigh-in',
           owner: 'Design and Engineering',
+        },
+        {
+          question: 'How does the checkout show a field the learner cannot change?',
+          decision: 'Grey, with no lock icon: the field is disabled and filled with --color-e2e-form-locked-v3, and the text turns secondary. The grey alone tells the learner at a glance which fields are fixed. This covers the email after the check, and First Name and Last Name after a new learner gives them following the code. (2026-11-13.)',
+          status: 'Decided',
         },
         {
           question: 'Why is the email asked first, and the name only after the code?',
