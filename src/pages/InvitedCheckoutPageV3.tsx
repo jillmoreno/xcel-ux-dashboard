@@ -522,6 +522,9 @@ export function InvitedCheckoutPageV3() {
                 confirmLabel="Confirm student information"
                 onConfirm={() => {}}
                 hideConfirm
+                /* The name given after the code is the account's, like the
+                   address it was verified with (2026-11-13, Afsana). */
+                nameLocked={verifiesFirst && emailVerified && v3Check.second === 'code'}
                 afterName={
                   <EmailBlock
                     typesTwice={typesEmailTwice}
@@ -1067,20 +1070,9 @@ function EmailBlock({
                   disabled
                   readOnly
                   aria-describedby={lockedNote ? 'checkout-email-note' : undefined}
-                  style={{
-                    ...FIELD,
-                    paddingRight: 36,
-                    background: 'var(--color-e2e-form-locked-v3)',
-                    color: 'var(--color-text-secondary)',
-                    cursor: 'not-allowed',
-                  }}
-                />
-                <img
-                  src="/brand/confirmation/lock.svg"
-                  alt="Locked"
-                  width={16}
-                  height={16}
-                  style={{ position: 'absolute', right: 11, top: 11, display: 'block' }}
+                  /* Grey says it cannot be changed — no lock icon
+                     (2026-11-13, Afsana). */
+                  style={{ ...FIELD, ...FIELD_DISABLED }}
                 />
               </>
             ) : (
@@ -1176,6 +1168,7 @@ function AddressForm({
   saveAdditional = false,
   hideConfirm = false,
   divider = true,
+  nameLocked = false,
   afterName,
   afterAddress,
   actions,
@@ -1184,6 +1177,9 @@ function AddressForm({
    *  parts the form from its option row; off for the student form (V3,
    *  2026-10-30, Afsana's file), where nothing sits above it. */
   divider?: boolean
+  /** First and Last Name disabled and grey — the student form after a new
+   *  learner gave their name with the one-time code (2026-11-13). */
+  nameLocked?: boolean
   value: PostalAddress
   onChange: (next: PostalAddress) => void
   isDefault?: boolean
@@ -1226,8 +1222,8 @@ function AddressForm({
   return (
     <div style={divider ? OPTION_BODY : { ...OPTION_BODY, borderTop: undefined }}>
       <div style={TWO_UP}>
-        <TextField label="First Name" value={value.first} onChange={set('first')} />
-        <TextField label="Last Name" value={value.last} onChange={set('last')} />
+        <TextField label="First Name" value={value.first} onChange={set('first')} disabled={nameLocked} />
+        <TextField label="Last Name" value={value.last} onChange={set('last')} disabled={nameLocked} />
       </div>
       {afterName}
       <SelectField label="Country" options={['United States of America']} />
@@ -1373,12 +1369,14 @@ function TextField({
   onChange,
   placeholder,
   optional = false,
+  disabled = false,
 }: {
   label: string
   value: string
   onChange: (v: string) => void
   placeholder?: string
   optional?: boolean
+  disabled?: boolean
 }) {
   return (
     <label style={{ display: 'flex', flexDirection: 'column', gap: 6, minWidth: 0 }}>
@@ -1391,7 +1389,9 @@ function TextField({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        style={{ ...FIELD, paddingRight: 10, cursor: 'text' }}
+        disabled={disabled}
+        readOnly={disabled}
+        style={disabled ? { ...FIELD, paddingRight: 10, ...FIELD_DISABLED } : { ...FIELD, paddingRight: 10, cursor: 'text' }}
       />
     </label>
   )
@@ -1571,6 +1571,14 @@ const FIELD: CSSProperties = {
   borderRadius: 5,
   border: '1px solid var(--color-e2e-card-outline)',
   background: 'var(--color-e2e-field)',
+}
+
+/* A field the learner cannot change — grey, no icon (2026-11-13, Afsana:
+   the grey alone says it). */
+const FIELD_DISABLED: CSSProperties = {
+  background: 'var(--color-e2e-form-locked-v3)',
+  color: 'var(--color-text-secondary)',
+  cursor: 'not-allowed',
 }
 
 /* ── Guest Checkout's closed Payment column (2026-10-22) ── */
