@@ -390,13 +390,24 @@ describe('Invite Flow V3 — the email check', () => {
       expect(within(dialog).getByText('jordan@example.com').tagName).toBe('STRONG')
       expect(within(dialog).queryByLabelText(/^Password/)).not.toBeInTheDocument()
 
-      /* A link just went out, so Resend link waits — and again after each resend. */
+      /* The address, in a field nobody can change (2026-11-13). */
+      const field = within(dialog).getByLabelText('Email address')
+      expect(field).toHaveValue('jordan@example.com')
+      expect(field).toBeDisabled()
+
+      /* A link just went out, so Resend link waits, counting down under the
+         button — and again after each resend. */
       const resend = within(dialog).getByRole('button', { name: 'Resend link' })
       expect(resend).toBeDisabled()
-      for (let i = 0; i < 30; i++) await act(() => vi.advanceTimersByTimeAsync(1000))
+      expect(within(dialog).getByRole('timer')).toHaveTextContent('You can resend the link in 0:30')
+      await act(() => vi.advanceTimersByTimeAsync(1000))
+      expect(within(dialog).getByRole('timer')).toHaveTextContent('You can resend the link in 0:29')
+      for (let i = 0; i < 29; i++) await act(() => vi.advanceTimersByTimeAsync(1000))
       expect(resend).toBeEnabled()
+      expect(within(dialog).queryByRole('timer')).not.toBeInTheDocument()
       await userEvent.click(resend)
       expect(resend).toBeDisabled()
+      expect(within(dialog).getByRole('timer')).toHaveTextContent('You can resend the link in 0:30')
       expect(within(dialog).queryByRole('status')).not.toBeInTheDocument()
 
       await userEvent.click(within(dialog).getByRole('button', { name: 'Back to sign in' }))

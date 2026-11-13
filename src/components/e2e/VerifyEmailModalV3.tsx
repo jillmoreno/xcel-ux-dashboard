@@ -593,6 +593,13 @@ function LoginStep({
             instructions in the email to reset your password. Be sure to check your spam or junk folders.
           </p>
         </div>
+        {/* The address the link went to, in a field the learner cannot change
+            — grey, no lock, as the checkout's fixed fields (2026-11-13,
+            Afsana). */}
+        <label htmlFor="reset-email" style={FIELD_GROUP}>
+          <span style={FIELD_LABEL}>Email address</span>
+          <input id="reset-email" type="email" value={email.trim()} disabled readOnly style={{ ...FIELD, ...FIELD_DISABLED }} />
+        </label>
         {/* Resend link, primary, over Back to sign in, secondary (2026-11-05,
             Afsana). Back is the way out — the modal has no ✕. */}
         <div style={ACTIONS}>
@@ -606,6 +613,12 @@ function LoginStep({
           >
             Resend link
           </button>
+          {/* The wait, counted down under the button (2026-11-13, Afsana). */}
+          {canResend ? null : (
+            <p role="timer" aria-live="off" style={{ ...NOTE, alignSelf: 'stretch', textAlign: 'center' }}>
+              You can resend the link in {formatCountdown(linkWait)}
+            </p>
+          )}
           <button
             type="button"
             style={CTA_SECONDARY}
@@ -958,6 +971,14 @@ const FIELD: CSSProperties = {
   fontSize: 14,
   color: 'var(--color-text-primary)',
   border: '1px solid var(--color-e2e-card-outline)',
+}
+
+/* A field the learner cannot change: grey, no lock — the checkout's
+   FIELD_DISABLED (2026-11-13, Afsana). */
+const FIELD_DISABLED: CSSProperties = {
+  background: 'var(--color-e2e-form-locked-v3)',
+  color: 'var(--color-text-secondary)',
+  cursor: 'not-allowed',
 }
 
 /* Code resent — light green, the success scale's lightest fill. */
