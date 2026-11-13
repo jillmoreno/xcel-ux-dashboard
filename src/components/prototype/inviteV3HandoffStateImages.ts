@@ -39,6 +39,10 @@ const STATE_IMAGES: Record<string, Record<string, string>> = {
     'With Use a different email': `${MODALS}/one-time-code--empty.png`,
     'Without Use a different email': `${MODALS}/one-time-code--direct-email.png`,
   },
+  'v3-enter-name': {
+    Empty: `${MODALS}/enter-name--empty.png`,
+    Complete: `${MODALS}/enter-name--complete.png`,
+  },
   'v3-log-in': {
     'Empty password': `${MODALS}/log-in--empty.png`,
     'Password entered': `${MODALS}/log-in--entered.png`,

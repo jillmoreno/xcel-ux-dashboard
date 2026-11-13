@@ -15,7 +15,7 @@ import {
 import { looksLikeEmail } from '@/data/inviteFlows'
 import { CircleCheckSolid } from '@/icons'
 import { V3_EXPIRED_DEMO_CODE, V3_INVALID_DEMO_CODE, V3_WRONG_DEMO_PASSWORD } from '@/data/inviteFlowsV3'
-import { E2E_LEARNER_EMAIL, E2E_LEARNER_FIRST } from '@/pages/endToEndDemo'
+import { E2E_LEARNER_EMAIL, E2E_LEARNER_FIRST, E2E_LEARNER_LAST } from '@/pages/endToEndDemo'
 import { LOADING_HANDOFF_MS } from '@/components/e2e/XcelLoadingPage'
 import { XcelLoadingStatus } from '@/components/e2e/XcelLoadingStatus'
 import { useV3DialogLayer } from '@/components/e2e/useV3DialogLayer'
@@ -78,14 +78,18 @@ export function VerifyEmailModalV3({
      no longer goes straight to the code (2026-11-13, Afsana): the email step
      comes first, filled with the invitation's address, so no code is sent
      before the learner says where. */
-  const [step, setStep] = useState<'email' | 'code' | 'login' | 'signing-in'>(() =>
+  const [step, setStep] = useState<'email' | 'code' | 'name' | 'login' | 'signing-in'>(() =>
     suppliedEmail && second === 'login' ? 'login' : 'email',
   )
   const layer = useV3DialogLayer()
   const [email, setEmail] = useState(suppliedEmail ?? '')
   const ready = looksLikeEmail(email)
-  /* Email only — the name is asked at checkout, so it is empty here. */
-  const identity: VerifiedIdentity = { first: '', last: '', email }
+  /* The name — asked after the code, for a learner with no Atlas account
+     (2026-11-13, Afsana); the log-in finds it on the account, so it stays
+     empty there. The checkout's student form arrives with it filled. */
+  const [first, setFirst] = useState('')
+  const [last, setLast] = useState('')
+  const identity: VerifiedIdentity = { first, last, email }
 
   useEffect(() => {
     document.getElementById('verify-email-modal')?.focus()
@@ -183,9 +187,11 @@ export function VerifyEmailModalV3({
         ) : step === 'code' ? (
           <CodeStep
             identity={identity}
-            onVerified={done}
+            onVerified={() => setStep('name')}
             onChangeEmail={suppliedEmail ? undefined : () => setStep('email')}
           />
+        ) : step === 'name' ? (
+          <NameStep first={first} last={last} onFirst={setFirst} onLast={setLast} onDone={done} />
         ) : step === 'login' ? (
           /* Log in always holds on "Signing you in" (2026-11-05, Afsana),
              whether or not the flow's `signsIn` does. */
@@ -405,6 +411,109 @@ const RESEND_AFTER_S = 10 * 60
 const RESEND_LINK_AFTER_S = 30
 
 /** 600 → "10:00", 59 → "0:59". */
+/** "Enter your name to continue" — 2026-11-13, Afsana. After the one-time
+ *  code, for a learner with no Atlas account: first and last name, both
+ *  required, before the checkout. Continue stays off until both are in. */
+function NameStep({
+  first,
+  last,
+  onFirst,
+  onLast,
+  onDone,
+}: {
+  first: string
+  last: string
+  onFirst: (value: string) => void
+  onLast: (value: string) => void
+  onDone: () => void
+}) {
+  const ready = first.trim() !== '' && last.trim() !== ''
+  useEffect(() => {
+    document.getElementById('verify-first')?.focus()
+  }, [])
+  return (
+    <form
+      style={BODY}
+      onSubmit={(e) => {
+        e.preventDefault()
+        if (ready) onDone()
+      }}
+      noValidate
+    >
+      <img src="/brand/xcel-logo.webp" alt="XCEL Insurance Training by Colibri" style={CODE_LOGO} />
+      <div style={HEAD}>
+        <h2 id="verify-email-title" style={TITLE}>
+          Enter your name to continue
+        </h2>
+        <div aria-hidden style={RULE} />
+        <p id="verify-email-lead" style={LEAD}>
+          Your email is verified. Enter your first and last name to continue to checkout.
+        </p>
+      </div>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <label htmlFor="verify-first" style={FIELD_GROUP}>
+          <span style={FIELD_LABEL}>
+            First name <span aria-hidden>*</span>
+          </span>
+          <input
+            id="verify-first"
+            type="text"
+            required
+            autoComplete="given-name"
+            placeholder="First name"
+            value={first}
+            onChange={(e) => onFirst(e.target.value)}
+            className="cre-e2e-input"
+            style={FIELD}
+          />
+        </label>
+        <label htmlFor="verify-last" style={FIELD_GROUP}>
+          <span style={FIELD_LABEL}>
+            Last name <span aria-hidden>*</span>
+          </span>
+          <input
+            id="verify-last"
+            type="text"
+            required
+            autoComplete="family-name"
+            placeholder="Last name"
+            value={last}
+            onChange={(e) => onLast(e.target.value)}
+            className="cre-e2e-input"
+            style={FIELD}
+          />
+        </label>
+      </div>
+
+      <div style={ACTIONS}>
+        <button
+          type="submit"
+          className="cre-e2e-cta"
+          disabled={!ready}
+          aria-disabled={!ready}
+          style={ready ? CTA : CTA_OFF}
+        >
+          Continue
+        </button>
+      </div>
+
+      {/* The demo fill — the same invisible, labelled corner as the email
+          step's. */}
+      <button
+        type="button"
+        aria-label="Fill in the demo learner’s name"
+        title="Demo shortcut: fill in the demo learner’s name"
+        style={DEMO_FILL}
+        onClick={() => {
+          onFirst(E2E_LEARNER_FIRST)
+          onLast(E2E_LEARNER_LAST)
+        }}
+      />
+    </form>
+  )
+}
+
 function formatCountdown(seconds: number): string {
   return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`
 }

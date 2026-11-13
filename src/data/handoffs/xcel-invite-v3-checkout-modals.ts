@@ -24,7 +24,7 @@ const feature: PrototypeFeature = {
   devStatus: 'not-ready',
   surface: 'invite',
   owner: 'Afsana',
-  lastUpdated: '2026-11-13T14:10:40Z',
+  lastUpdated: '2026-11-13T14:19:23Z',
   accent: 'gold',
   icon: 'flag',
   brands: ['xcel'],
@@ -143,7 +143,7 @@ const feature: PrototypeFeature = {
         ],
         ctas: [
           { name: 'Digit boxes', does: 'One digit each. Typing moves to the next box, Backspace on an empty box goes back, the arrow keys move between boxes, and a pasted code fills all six. Anything that is not a digit is dropped.' },
-          { name: 'Confirm', does: 'Off until all six digits are in. Then checks the code: right → the email is verified and the checkout opens with it locked; wrong → Invalid code; after 10 minutes → Expired code.' },
+          { name: 'Confirm', does: 'Off until all six digits are in. Then checks the code: right → the email is verified and Enter your name to continue opens; wrong → Invalid code; after 10 minutes → Expired code.' },
           { name: 'Resend code', does: 'Only once the countdown ends. Sends a new code, shows the green Code resent banner, clears the boxes and any error, and restarts the 10 minutes.' },
           { name: 'Use a different email', does: 'Back to Enter your email to continue. Not shown on Direct Email.' },
         ],
@@ -186,9 +186,55 @@ const feature: PrototypeFeature = {
         },
       },
       {
+        id: 'v3-enter-name',
+        thumbnail: '/prototype-thumbs/components/xcel-invite-v3-checkout-modals-v3-enter-name.png',
+        order: 3,
+        name: 'Enter your name to continue',
+        tabLabel: 'Enter your name',
+        badge: 'NEW',
+        badgeDate: '2026-11-13',
+        location: 'Over the checkout, after a correct one-time code — only for a learner with no Atlas account. src/components/e2e/VerifyEmailModalV3.tsx — NameStep.',
+        summary:
+          'The XCEL logo, "Enter your name to continue", "Your email is verified. Enter your first and last name to continue to checkout.", First name and Last name (both required) and Continue. The checkout then opens with the email locked and the name already filled in the student information.',
+        variants: [
+          { name: 'Empty', when: 'On open, straight after the code is confirmed. First name has focus; Continue is off.' },
+          { name: 'Complete', when: 'Both names are filled. Continue turns on.' },
+        ],
+        ctas: [
+          { name: 'First name and Last name', does: 'Required. Continue stays off until both have something in them.' },
+          { name: 'Continue', does: 'Off until both names are in. Then creates the account with the verified email and the name, and opens the checkout with both filled.' },
+        ],
+        statesMatrix: [
+          { question: 'Who sees it?', answer: 'Only a new learner — the email has no Atlas account. A learner who logs in never sees it; their name is on the account.' },
+          { question: 'Can the learner close it or go back?', answer: 'No. There is no ✕, no Escape and no Back — the email is already verified.' },
+          { question: 'Is the name asked again at checkout?', answer: 'No. The checkout’s First name and Last name arrive filled with what was entered here, and stay editable.' },
+        ],
+        edgeCases: [
+          'Demo only: an invisible corner bottom right fills Jordan Navarro.',
+        ],
+        designSpec: {
+          tokens: [
+            { role: 'Card', token: '--color-fixed-light' },
+            { role: 'Scrim', token: '--color-e2e-scrim' },
+            { role: 'Field', token: '--color-e2e-field' },
+            { role: 'Field border', token: '--color-e2e-card-outline' },
+            { role: 'Heading and body text', token: '--color-text-primary' },
+            { role: 'Primary button', token: '--color-xcel-brick-600' },
+            { role: 'Disabled button', token: '--color-e2e-form-locked' },
+            { role: 'Font', token: '--font-e2e-avenir' },
+          ],
+          states: ['Continue: disabled (grey) until both names are in, then the brick primary.'],
+          responsive: ['The same 460px modal as Enter your email to continue; the two fields stack, 16px apart.'],
+          sources: [
+            'The final prototype is the source of truth — the first Live Preview route.',
+            'Implemented in src/components/e2e/VerifyEmailModalV3.tsx.',
+          ],
+        },
+      },
+      {
         id: 'v3-log-in',
         thumbnail: '/prototype-thumbs/components/xcel-invite-v3-checkout-modals-v3-log-in.png',
-        order: 3,
+        order: 4,
         name: 'Log in to continue',
         tabLabel: 'Log in',
         location: 'Over the checkout, after Enter your email when the email has an Atlas account — or first, on Direct Email, with the address pre-filled in an editable field. src/components/e2e/VerifyEmailModalV3.tsx — LoginStep.',
@@ -252,7 +298,7 @@ const feature: PrototypeFeature = {
       {
         id: 'v3-signing-in',
         thumbnail: '/prototype-thumbs/components/xcel-invite-v3-checkout-modals-v3-signing-in.png',
-        order: 4,
+        order: 5,
         name: 'Signing you in…',
         tabLabel: 'Signing you in',
         location: 'The same modal, after Log in. src/components/e2e/VerifyEmailModalV3.tsx — the signing-in step.',
@@ -281,7 +327,7 @@ const feature: PrototypeFeature = {
       {
         id: 'v3-partner-code',
         thumbnail: '/prototype-thumbs/components/xcel-invite-v3-checkout-modals-v3-partner-code.png',
-        order: 5,
+        order: 6,
         name: 'Partner code? (Yes / No)',
         tabLabel: 'Partner code',
         location: 'B2C guest, after Checkout is clicked: over the cart on the two OCD flows, over the checkout on the other B2C flows. src/components/e2e/PartnerCodeAsk.tsx.',
@@ -314,7 +360,7 @@ const feature: PrototypeFeature = {
       {
         id: 'v3-not-supported',
         thumbnail: '/prototype-thumbs/components/xcel-invite-v3-checkout-modals-v3-not-supported.png',
-        order: 6,
+        order: 7,
         name: '1 item in your cart is not supported',
         tabLabel: 'Not supported',
         location: 'Over the cart on the two OCD flows, after No to the partner code, when the cart mixes supported and unsupported SKUs. src/components/e2e/SignedInCartDialogs.tsx — UnsupportedItemDialog.',
@@ -348,7 +394,7 @@ const feature: PrototypeFeature = {
       {
         id: 'v3-signing-out',
         thumbnail: '/prototype-thumbs/components/xcel-invite-v3-checkout-modals-v3-signing-out.png',
-        order: 7,
+        order: 8,
         name: 'Signing you out…',
         tabLabel: 'Signing you out',
         location: 'Over the cart, Signed in to XCEL (OCD) only, after No to the partner code (and after Proceed on a mixed cart). src/components/e2e/SigningOutDialog.tsx.',
@@ -378,7 +424,7 @@ const feature: PrototypeFeature = {
       {
         id: 'v3-placing-order',
         thumbnail: '/prototype-thumbs/components/xcel-invite-v3-checkout-modals-v3-placing-order.png',
-        order: 8,
+        order: 9,
         name: 'Placing your order…',
         tabLabel: 'Placing your order',
         location: 'Over the checkout, after Place your order. src/pages/InvitedCheckoutPageV3.tsx — PlacingOrderDialog.',
@@ -467,6 +513,11 @@ const feature: PrototypeFeature = {
           decision: 'Open. The code step states its expiry ("This code will expire in 10 minutes."), and it tells a learner who finds the email later why the link stopped working. The expiry itself is the system’s; the copy follows it.',
           status: 'Needs weigh-in',
           owner: 'Design and Engineering',
+        },
+        {
+          question: 'Why is the email asked first, and the name only after the code?',
+          decision: 'The email decides the path: the system looks it up to tell an existing learner (Log in to continue) from a new one (the one-time code). Only a new learner is then asked for first and last name, in its own modal after the code, because a new account is created in Keycloak first and then in the downstream systems — Magento and Atlas — and it needs the name to do that. An existing learner’s name is already on the account. (Swati, 2026-11-13.)',
+          status: 'Decided',
         },
         {
           question: 'Does Enter your email to continue promise a code before the email is known?',
