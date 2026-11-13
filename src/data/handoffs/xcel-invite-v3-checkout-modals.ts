@@ -24,7 +24,7 @@ const feature: PrototypeFeature = {
   devStatus: 'not-ready',
   surface: 'invite',
   owner: 'Afsana',
-  lastUpdated: '2026-11-13T17:45:14Z',
+  lastUpdated: '2026-11-13T17:57:57Z',
   accent: 'gold',
   icon: 'flag',
   brands: ['xcel'],
@@ -293,7 +293,7 @@ const feature: PrototypeFeature = {
           ],
           responsive: [
             'The same 460px modal and spacing as Enter your email. Error line 12px / 16px under the field; Forgot password? 13px under that.',
-            'Check your email: the disabled Email address field under the text, then Resend link, the countdown line (13px / 18px, secondary text, centred) and Back to sign in, full width, stacked 14px apart.',
+            'Check your email: the disabled Email address field under the text, then Resend link, the countdown line (13px / 18px, secondary text, left-aligned) and Back to sign in, full width, stacked 14px apart.',
           ],
           sources: [
             'The final prototype is the source of truth — the second Live Preview route.',
