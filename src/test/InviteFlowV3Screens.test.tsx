@@ -164,6 +164,9 @@ describe('Invite Flow V3 — the Direct Email invitation', () => {
     const dialog = screen.getByRole('dialog', { name: 'Enter your one-time code' })
     await userEvent.type(within(dialog).getByLabelText('Digit 1 of 6'), '111111')
     await userEvent.click(within(dialog).getByRole('button', { name: 'Confirm' }))
+    await userEvent.type(screen.getByLabelText(/First name/), 'Jordan')
+    await userEvent.type(screen.getByLabelText(/Last name/), 'Navarro')
+    await userEvent.click(screen.getByRole('button', { name: 'Continue' }))
     expect(screen.getByAltText('Locked')).toBeInTheDocument()
     expect(screen.getByDisplayValue(E2E_LEARNER_EMAIL)).toBeDisabled()
     expect(screen.getByText('This is the address you verified. Your account will be created with it.')).toBeInTheDocument()
@@ -253,10 +256,39 @@ describe('Invite Flow V3 — the email check', () => {
     expect(confirm).toBeEnabled()
     await userEvent.click(confirm)
 
+    /* No Atlas account: the name is asked before the checkout (2026-11-13). */
+    const named = screen.getByRole('dialog', { name: 'Enter your name to continue' })
+    const go = within(named).getByRole('button', { name: 'Continue' })
+    expect(go).toBeDisabled()
+    await userEvent.type(within(named).getByLabelText(/First name/), 'Sam')
+    expect(go).toBeDisabled()
+    await userEvent.type(within(named).getByLabelText(/Last name/), 'Rivera')
+    expect(go).toBeEnabled()
+    await userEvent.click(go)
+
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
     expect(screen.getByTestId('where').textContent).toContain('verified=1')
     expect(screen.getByDisplayValue('sam@example.com')).toBeDisabled()
     expect(screen.getByText(/This is the address you verified/)).toBeInTheDocument()
+    /* The checkout arrives with the name filled — not asked twice. */
+    expect(screen.getByDisplayValue('Sam')).toBeInTheDocument()
+    expect(screen.getByDisplayValue('Rivera')).toBeInTheDocument()
+  })
+
+  it('never asks for the name after a log-in — the account has it', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true })
+    try {
+      renderAt(CHECKOUT, `${V3_B2B},invite-v3-flow-b2b:qr-atlas-login`)
+      await userEvent.type(screen.getByLabelText(/Email address/), 'sam@example.com')
+      await userEvent.click(screen.getByRole('button', { name: 'Continue' }))
+      await userEvent.type(screen.getByLabelText(/^Password/), 'anything')
+      await userEvent.click(screen.getByRole('button', { name: 'Log in' }))
+      expect(screen.queryByRole('dialog', { name: 'Enter your name to continue' })).not.toBeInTheDocument()
+      await act(() => vi.advanceTimersByTimeAsync(LOADING_HANDOFF_MS))
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    } finally {
+      vi.useRealTimers()
+    }
   })
 
   it('turns down the demo’s wrong code under the boxes, and clears it when a digit changes', async () => {
