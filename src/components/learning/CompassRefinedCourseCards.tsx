@@ -151,6 +151,7 @@ export function CompassRefinedCourseCards({
   openLesson,
   blurb,
   chapterMark,
+  status,
   finish,
 }: CourseListProps) {
   /**
@@ -160,6 +161,12 @@ export function CompassRefinedCourseCards({
    * of eleven completed chapters behind a "Show all" control would be
    * answering a question they did not ask. All modules is the folded view.
    */
+  /* ⚠ THE TAG IS MARK-ONLY WHENEVER THE WORD IS NOT IN IT — on the icon
+     arms, and on `under`, where the word has moved beneath the title. It
+     decides three things that have to agree: the tag's padding, the width
+     every title is aligned to (`--crf-map-tag`), and where the spine is
+     drawn. */
+  const markOnly = chapterMark !== 'number' || status === 'under'
   const [filter, setFilter] = useState<RoadmapFilter>('all')
   /**
    * ⚠ THE COMPLETED RUN FOLDS AT THE TOP — 2026-11-13: "i want to do
@@ -240,7 +247,7 @@ export function CompassRefinedCourseCards({
 
       {/* ⚠ THE ARM IS ON THE LIST, because the spine is drawn per card and
           has to follow the mark's centre — see `.crf-map__card::after`. */}
-      <div className={`crf-map${chapterMark === 'number' ? '' : ' crf-map--icon'}`}>
+      <div className={`crf-map${markOnly ? ' crf-map--icon' : ''}`}>
         {/* ⚠ THE SAME BAR AS THE ONE AT THE FOOT, pointing the other way —
             the count is the point, and the control says which way it goes so
             it is not a one-way door. */}
@@ -324,7 +331,7 @@ export function CompassRefinedCourseCards({
                   <div className="crf-map__top">
                     <span
                       className={`crf-map__state crf-map__state--${pill.tone}${
-                        chapterMark === 'number' ? '' : ' crf-map__state--markonly'
+                        markOnly ? ' crf-map__state--markonly' : ''
                       }`}
                     >
                       {/* ⚠ THREE ARMS — `compass-course-mark`. `number` is
@@ -349,7 +356,7 @@ export function CompassRefinedCourseCards({
                           a glyph and a word in one capsule is a wide tag
                           saying one thing; split, the mark leads the row and
                           the word joins the controls it belongs with. */}
-                      {chapterMark === 'number' ? (
+                      {chapterMark === 'number' && status === 'tag' ? (
                         <>
                           {/* The drawn circle this page separates two
                               phrases with. */}
@@ -377,6 +384,34 @@ export function CompassRefinedCourseCards({
                       {chapterParts(c) ? (
                         <p className="crf-map__label">{chapterParts(c)}</p>
                       ) : null}
+                      {/* ⚠ THE STATUS UNDER THE DETAILS — 2026-11-14, the
+                          `under` arm of `compass-course-status`: "the
+                          status … directly under the Course details. In
+                          progress, the progress bar will be to the right of
+                          it." The bar comes with it, because it is a fact
+                          about the same state; the row's own bar is not
+                          drawn on this arm, two bars for one chapter being
+                          audit finding 4 in miniature. */}
+                      {status === 'under' ? (
+                        <div className="crf-map__status">
+                          <span className={`crf-map__state crf-map__state--${pill.tone}`}>
+                            {chapterMark === 'kind' ? <StateMark state={c.state} /> : null}
+                            {pill.word}
+                          </span>
+                          {c.state === 'current' ? (
+                            <span
+                              className="crf-map__bar"
+                              role="img"
+                              aria-label={`${c.title} ${c.pct}% complete`}
+                            >
+                              <span
+                                className="crf-map__barfill"
+                                style={{ width: `${c.pct}%` }}
+                              />
+                            </span>
+                          ) : null}
+                        </div>
+                      ) : null}
                     </div>
                     {/* ⚠ A BAR ON THE OPEN CHAPTER — 2026-11-13: "in
                         progress should show a progress bar." Only there: a
@@ -392,7 +427,7 @@ export function CompassRefinedCourseCards({
                         taller than every other one; in the row it sits
                         between the name and the controls, centred with
                         them, and the card keeps its height. */}
-                    {c.state === 'current' ? (
+                    {c.state === 'current' && status === 'tag' ? (
                       <span
                         className="crf-map__bar"
                         role="img"
@@ -406,7 +441,7 @@ export function CompassRefinedCourseCards({
                         the action rather than between it and the chevron:
                         the two buttons are one group and a label driven
                         between them separates what the hand goes to. */}
-                    {chapterMark !== 'number' ? (
+                    {chapterMark !== 'number' && status === 'tag' ? (
                       <span
                         className={`crf-map__state crf-map__state--${pill.tone} crf-map__state--word`}
                       >
@@ -607,13 +642,13 @@ export function CompassRefinedCourseCards({
                     <div className="crf-map__top">
                       <span
                         className={`crf-map__state crf-map__state--${FINISH_TONE[f.state]}${
-                          chapterMark === 'number' ? '' : ' crf-map__state--markonly'
+                          markOnly ? ' crf-map__state--markonly' : ''
                         }`}
                       >
                         <span className="crf-map__mark" aria-hidden>
                           <KindMark kind={f.kind} />
                         </span>
-                        {chapterMark === 'number' ? (
+                        {chapterMark === 'number' && status === 'tag' ? (
                           <>
                             <span aria-hidden className="crf-map__dot" />
                             {FINISH_WORD[f.state]}
@@ -625,8 +660,18 @@ export function CompassRefinedCourseCards({
                         <p className="crf-map__label">
                           {f.eyebrow} · {f.note}
                         </p>
+                        {status === 'under' ? (
+                          <div className="crf-map__status">
+                            <span
+                              className={`crf-map__state crf-map__state--${FINISH_TONE[f.state]}`}
+                            >
+                              {chapterMark === 'kind' ? <StateMark state={f.state} /> : null}
+                              {FINISH_WORD[f.state]}
+                            </span>
+                          </div>
+                        ) : null}
                       </div>
-                      {chapterMark !== 'number' ? (
+                      {chapterMark !== 'number' && status === 'tag' ? (
                         <span
                           className={`crf-map__state crf-map__state--${FINISH_TONE[f.state]} crf-map__state--word`}
                         >

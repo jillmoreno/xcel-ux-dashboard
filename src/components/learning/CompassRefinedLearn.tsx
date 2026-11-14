@@ -122,6 +122,7 @@ export function CompassRefinedLearn({
     openLesson,
     blurb: options.blurb,
     chapterMark: options.chapterMark,
+    status: options.status,
   }
 
   return (

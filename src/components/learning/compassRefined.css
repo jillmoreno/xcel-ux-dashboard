@@ -2150,6 +2150,25 @@
    again rather than three. */
 /* The expanded half sits inside the card, ruled off rather than boxed — a
    second border inside a card reads as a card inside a card. */
+/* ⚠ THE STATUS UNDER THE DETAILS — 2026-11-14, `compass-course-status:
+   under`. The word and, for an open chapter, its bar: "In progress, the
+   progress bar will be to the right of it."
+
+   ⚠ THE BAR IS CENTRED ON THE WORD, not on its baseline. They are the same
+   height class — a 23px capsule and a 4px rule — so aligning their boxes is
+   the only thing that reads as one statement. */
+.crf-map__status {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 8px;
+}
+/* The bar does not stretch to the column's width here: it sits next to the
+   word, so it is as wide as it is on the row. */
+.crf-map__status .crf-map__bar {
+  flex: 0 0 120px;
+}
+
 /* ⚠ THE CHAPTER EXAM, AS THE OUTLINE'S LAST ROW — 2026-11-14. It is a
    lesson row in every respect but one: a hairline above it, because the
    exam is what FOLLOWS the lessons rather than one more of them, and the

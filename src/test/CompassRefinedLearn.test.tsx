@@ -1013,3 +1013,54 @@ describe('the chapter exam is a row of the outline', () => {
     expect(container.querySelector('.crf-exam')).not.toBeNull()
   })
 })
+
+describe('the status can sit under the details', () => {
+  const draw = (status: 'tag' | 'under', chapterMark: 'number' | 'icon' | 'kind' = 'number') =>
+    render(
+      <MemoryRouter>
+        <AccountProvider>
+          <FeatureFlagProvider>
+            <CompassRefinedLearn
+              stage="q3"
+              course={{ ...COURSE_DEFAULTS, rows: 'cards', fold: false, status, chapterMark }}
+            />
+          </FeatureFlagProvider>
+        </AccountProvider>
+      </MemoryRouter>,
+    )
+
+  it('moves the word out of the mark’s capsule and under the title', () => {
+    const { container } = draw('under')
+    const card = container.querySelector(CHAPTER_CARDS)!
+    /* The capsule keeps the number and loses the word. */
+    expect(card.querySelector('.crf-map__state')?.textContent).toMatch(/^\d*$/)
+    expect(card.querySelector('.crf-map__name .crf-map__status')).not.toBeNull()
+  })
+
+  it('brings the progress bar with it, and leaves none in the row', () => {
+    /* ⚠ "In progress, the progress bar will be to the right of it." Two bars
+       for one chapter would be audit finding 4 in miniature. */
+    const { container } = draw('under')
+    const open = container.querySelector('.crf-map__card--current')!
+    expect(open.querySelector('.crf-map__status .crf-map__bar')).not.toBeNull()
+    expect(open.querySelector('.crf-map__top > .crf-map__bar')).toBeNull()
+    expect(container.querySelectorAll('.crf-map__bar')).toHaveLength(1)
+  })
+
+  it('combines with every mark arm, and never draws the word twice', () => {
+    for (const mark of ['number', 'icon', 'kind'] as const) {
+      const { container, unmount } = draw('under', mark)
+      const card = container.querySelector(CHAPTER_CARDS)!
+      expect(card.querySelectorAll('.crf-map__status').length, mark).toBe(1)
+      expect(card.querySelector('.crf-map__state--word'), mark).toBeNull()
+      unmount()
+    }
+  })
+
+  it('leaves the tag arm as it was', () => {
+    const { container } = draw('tag')
+    const card = container.querySelector(CHAPTER_CARDS)!
+    expect(card.querySelector('.crf-map__status')).toBeNull()
+    expect(card.querySelector('.crf-map__state')?.textContent).toMatch(/Completed|In Progress|Up Next|Locked/)
+  })
+})

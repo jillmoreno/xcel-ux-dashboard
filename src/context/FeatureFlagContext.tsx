@@ -1842,6 +1842,43 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'compass-course-status',
+    /* WHERE THE STATUS WORD SITS ON A ROADMAP CARD — 2026-11-14, Jillienne:
+       "i want a variant of this where the status, Locked, In Progress, Not
+       Started, Completed are directly under the Course details. In progress,
+       the progress bar will be to the right of it."
+
+       ⚠ IT IS A DIFFERENT QUESTION FROM `compass-course-mark`. That arm
+       decides what the MARK carries — a number, the state's glyph, the
+       module's type. This decides where the WORD goes, and the two combine:
+       the word can sit beside the mark, or under the title, whichever mark
+       is drawn.
+
+       ⚠ `tag` IS WHERE IT HAS BEEN. On the Number arm the word rides in the
+       same capsule as the number; on the others it is its own tag over by
+       the controls. `under` takes it out of both and puts it beneath the
+       title and its label, with the progress bar — which is a fact about the
+       same state — beside it rather than out in the row.
+
+       ⚠ ON THAT ARM THE ROW'S OWN BAR GOES. Two bars for one chapter would
+       be the two-rings problem of audit finding 4 in miniature. */
+    surface: 'design',
+    owner: 'anjani',
+    versions: ['hybrid-pacing', 'eric-atlas-e2e'],
+    surfaces: ['compass:refined:learn'],
+    group: 'Widgets',
+    label: 'Status position',
+    description:
+      'Where a roadmap card states what it is: Beside the mark, which is where it has been — in the same capsule as the number, or as its own tag by the controls on the icon arms — or Under the details, beneath the title and its label, with the progress bar for an open chapter sitting beside the word rather than out in the row. It combines with Roadmap mark: the mark keeps carrying whatever that arm says.',
+    variants: [
+      { value: 'tag', label: 'Beside the mark', description: 'Where it has been' },
+      { value: 'under', label: 'Under the details', description: 'Beneath the title' },
+    ],
+    defaultVariant: 'tag',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'compass-course-mark',
     /* WHAT THE ROADMAP'S TAG LEADS WITH — 2026-11-13, Jillienne: "the number
        of modules is 21, but the numbers are correllating to the chapter
