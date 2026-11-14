@@ -208,17 +208,23 @@
    Checked against Overview, Learn, Practice and Readiness: identical. The
    first pass guessed 28/40/64 on 1180 and left-aligned, which was close
    enough to look deliberate and wrong on all four counts. */
-/* ⚠ NO TOP PADDING — 2026-11-12: "remove top padding. this page and all
-   other pages." It was 38px above the eyebrow on every Refined page, which
-   put the course name a third of the way down the first screen. The sides
-   and the floor are unchanged; this is the gap between the app's header and
-   the page's own, and the app header already ends in a rule. */
+/* ⚠ 24px, HAVING BEEN 38 AND THEN 0 — 2026-11-12 "remove top padding. this
+   page and all other pages", then twice on 2026-11-13/14: "whats happening
+   with the padding above the eyebrow", and the same question again on the
+   Overview. Measured both times: zero, the eyebrow's box flush against the
+   product header's bottom edge, with only the ~2px of its own line-height
+   between the rule and the type.
+
+   ⚠ 38 WAS TOO MUCH AND 0 IS TOO LITTLE. The first put the course name a
+   third of the way down the first screen; the second leaves the page's first
+   words sitting on the header's rule. 24 clears the rule without pushing the
+   content down. The sides and the floor have not moved through any of it. */
 .crf-page {
   position: relative;
   flex: 999 1 560px;
   min-width: 0;
   box-sizing: border-box;
-  padding: 0 44px 72px;
+  padding: 24px 44px 72px;
 }
 .crf-page__col {
   width: 100%;
