@@ -2204,11 +2204,15 @@
    ⚠ THE BAR IS CENTRED ON THE WORD, not on its baseline. They are the same
    height class — a 23px capsule and a 4px rule — so aligning their boxes is
    the only thing that reads as one statement. */
+/* ⚠ NO GAP ABOVE IT — 2026-11-14: "remove the top padding here." The three
+   lines of the name block are one statement about one module — what it is,
+   what it costs, where the learner stands on it — and an 8px step before the
+   last of them read as a separate band. They stack on their own line heights
+   now. */
 .crf-map__status {
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-top: 8px;
 }
 /* ⚠ THE WORD ON ITS OWN — 2026-11-14, "Just have the word 'Completed' under
    the text." It had been the capsule the tag arm draws, which put a second
@@ -2235,6 +2239,23 @@
    word, so it is as wide as it is on the row. */
 .crf-map__status .crf-map__bar {
   flex: 0 0 120px;
+}
+
+/* ⚠ THE ROADMAP CARD'S ACTION HAS NO GROUND — 2026-11-14: "have the button
+   have no background so its the beige color." A white button on the beige
+   completed card was the only white shape on it, which made Review the
+   loudest thing on a module the learner has already finished; letting the
+   card show through leaves the border doing the work.
+
+   ⚠ SCOPED TO THE CARD, NOT TO `.crf-btn`. That class is the page's button
+   everywhere — the exam strip, the rows layout, the next-step card — and
+   those sit on white, where "transparent" and "white" look identical right
+   up until one of them is moved onto a tinted ground.
+
+   ⚠ NOT THE PRIMARY. Resume is the one thing on this page that should carry
+   a fill. */
+.crf-map__card .crf-btn:not(.crf-btn--primary) {
+  background: transparent;
 }
 
 /* ⚠ THE CHAPTER EXAM, AS THE OUTLINE'S LAST ROW — 2026-11-14. It is a
