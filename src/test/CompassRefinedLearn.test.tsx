@@ -946,3 +946,62 @@ describe('the expanded contents start where the title does', () => {
     expect(open.closest('.crf-map__body')).not.toBeNull()
   })
 })
+
+describe('the chapter exam is a row of the outline', () => {
+  const open = () => {
+    const r = render(
+      <MemoryRouter>
+        <AccountProvider>
+          <FeatureFlagProvider>
+            <CompassRefinedLearn
+              stage="q3"
+              course={{ ...COURSE_DEFAULTS, rows: 'cards', fold: false }}
+            />
+          </FeatureFlagProvider>
+        </AccountProvider>
+      </MemoryRouter>,
+    )
+    for (const chev of r.container.querySelectorAll('.crf-chev:not(.crf-chev--none)')) {
+      fireEvent.click(chev)
+    }
+    return r
+  }
+
+  it('is the last item of the lesson list, not a strip under it', () => {
+    /* ⚠ "no need for a separate section like this." `ExamRow` is a bordered
+       card with its own tile, eyebrow and note — a card inside a card, under
+       the list it belongs to. */
+    const { container } = open()
+    expect(container.querySelector('.crf-map__open .crf-exam')).toBeNull()
+    const exam = container.querySelector('.crf-lesson--exam')!
+    expect(exam.parentElement?.className).toContain('crf-lessons')
+    expect(exam.nextElementSibling).toBeNull()
+  })
+
+  it('takes the lessons’ rules — no action until it opens', () => {
+    const { container } = open()
+    for (const exam of container.querySelectorAll('.crf-lesson--exam')) {
+      const locked = exam.className.includes('crf-lesson--todo')
+      expect(!!exam.querySelector('.crf-lesson__act'), exam.textContent ?? '').toBe(!locked)
+    }
+  })
+
+  it('and the rows layout keeps its own strip', () => {
+    /* That layout is the audited baseline and has no outline to fold it
+       into — its exam still sits in `ExamRow`. */
+    const { container } = render(
+      <MemoryRouter>
+        <AccountProvider>
+          <FeatureFlagProvider>
+            <CompassRefinedLearn
+              stage="q3"
+              course={{ ...COURSE_DEFAULTS, rows: 'list', fold: false }}
+            />
+          </FeatureFlagProvider>
+        </AccountProvider>
+      </MemoryRouter>,
+    )
+    fireEvent.click(container.querySelector('.crf-ch .crf-chev')!)
+    expect(container.querySelector('.crf-exam')).not.toBeNull()
+  })
+})

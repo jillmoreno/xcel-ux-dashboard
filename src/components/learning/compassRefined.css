@@ -2150,6 +2150,17 @@
    again rather than three. */
 /* The expanded half sits inside the card, ruled off rather than boxed — a
    second border inside a card reads as a card inside a card. */
+/* ⚠ THE CHAPTER EXAM, AS THE OUTLINE'S LAST ROW — 2026-11-14. It is a
+   lesson row in every respect but one: a hairline above it, because the
+   exam is what FOLLOWS the lessons rather than one more of them, and the
+   list would otherwise read as seven lessons where there are six and a
+   test. */
+.crf-lesson--exam {
+  margin-top: 4px;
+  padding-top: 10px;
+  border-top: 1px solid var(--crf-ch-rule);
+}
+
 /* ⚠ FLUSH WITH THE TITLE, BY NESTING RATHER THAN BY A FIGURE — 2026-11-14:
    "these should be vertically aligned with the left side of the title above
    it." This block now lives INSIDE the name column, so it starts where the

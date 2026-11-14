@@ -27,7 +27,7 @@ import { useState } from 'react'
 import { BookOpenRegular, Check, ChevronDown, LockRegular } from '@/icons'
 import { JEFF_MVP_LEARN_COPY as COPY } from '@/data/compassJeffMvpFixtures'
 import { REFINED_CHAPTER_BLURBS, REFINED_ROADMAP } from '@/data/compassRefinedCopy'
-import { ExamRow, LessonMark } from './CompassRefinedCourseParts'
+import { LessonMark } from './CompassRefinedCourseParts'
 import { SECTION_ICON } from './compassRefinedSectionIcons'
 import type { RefinedSectionKind } from '@/data/compassRefinedCourse'
 import type { CourseListProps, RoadmapFilter } from './compassRefinedCourseModel'
@@ -514,15 +514,48 @@ export function CompassRefinedCourseCards({
                         ) : null}
                       </li>
                     ))}
+                    {/* ⚠ THE CHAPTER EXAM IS A ROW OF THE OUTLINE —
+                        2026-11-14: "this should be part of the outline above
+                        it, no need for a separate section like this." It was
+                        `ExamRow`, a bordered strip with its own tile, eyebrow
+                        and note — a card inside a card, under a list it
+                        belongs to. The course lists it as the row after the
+                        chapter's lessons, and that is what it is here.
+
+                        ⚠ ITS NAME ALREADY SAYS WHAT IT IS. "Chapter 11 Exam:
+                        Retirement Plans" made the strip's EXAM eyebrow a
+                        second label on one line.
+
+                        ⚠ AND IT TAKES THE LESSONS' OWN RULES: the state's
+                        mark, and no action until it opens — which is what
+                        the todo lessons above it do, and what the closing
+                        modules settled on the day before. The "opens after
+                        all 6 lessons" note goes with the strip: the six rows
+                        directly above it say so better. */}
+                    {c.exam ? (
+                      <li
+                        className={`crf-lesson crf-lesson--${
+                          c.exam.done ? 'done' : c.exam.locked ? 'todo' : 'current'
+                        } crf-lesson--exam`}
+                      >
+                        <span className="crf-lesson__mark" aria-hidden>
+                          <LessonMark
+                            state={c.exam.done ? 'done' : c.exam.locked ? 'todo' : 'current'}
+                          />
+                        </span>
+                        <span className="crf-lesson__label">{c.exam.title}</span>
+                        {c.exam.done ? (
+                          <button type="button" className="crf-lesson__act">
+                            {COPY.examReviewCta}
+                          </button>
+                        ) : !c.exam.locked ? (
+                          <button type="button" className="crf-lesson__act">
+                            {COPY.examCta}
+                          </button>
+                        ) : null}
+                      </li>
+                    ) : null}
                   </ul>
-                  {c.exam ? (
-                    <ExamRow
-                      title={c.exam.title}
-                      note={c.exam.note ?? ''}
-                      locked={c.exam.locked ?? c.state === 'locked'}
-                      done={c.exam.done ?? false}
-                    />
-                  ) : null}
                     </div>
                   ) : null}
                 </div>
