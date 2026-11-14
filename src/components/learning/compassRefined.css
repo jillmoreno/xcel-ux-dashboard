@@ -1854,8 +1854,25 @@
   border-color: var(--crf-steel-deep);
   background: var(--crf-steel-wash);
 }
+/* ⚠ A GROUND PER STATE — 2026-11-14: "if locked, can we show the cards with
+   this dashed no background look, if completed, can we show the cards with a
+   beige background."
+
+   ⚠ LOCKED IS THE FOLD CONTROL'S OWN TREATMENT. That bar is dashed on no
+   ground because it stands for cards that are not there; a locked chapter is
+   the same kind of thing — present on the page, not yet present to the
+   learner — so it borrows the look rather than inventing a second one.
+
+   ⚠ COMPLETED TAKES HER BEIGE RAMP at 100 (#f3f1ed), the value she gave with
+   the Overview ask. It is the warm half of the pairing this page has used
+   since: warm for what is behind you, cool for what is in front. */
 .crf-map__card--locked {
-  background: var(--crf-white);
+  border-style: dashed;
+  background: transparent;
+}
+.crf-map__card--done {
+  background: var(--crf-beige-100);
+  border-color: var(--crf-beige-300);
 }
 /* ⚠ HOVER, ON THE CARDS THAT DO SOMETHING — 2026-11-12: "need to show a
    hover effect on the card". Only the expandable ones get it; a card with
