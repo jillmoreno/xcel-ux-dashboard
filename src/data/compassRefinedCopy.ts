@@ -396,14 +396,24 @@ export const REFINED_RUBI_INTRO = {
  * Your Course count the course. It is also the course's own: its instruction
  * reads "Complete all lessons in the list below".
  *
- * ⚠ THE DURATION IS NOT INVENTED. It is the first segment of his own meta
- * line, reused rather than retyped, so the time on screen stays whatever his
- * fixture says for that state.
+ * ⚠ THE DURATION IS TYPED NOW, AND IT USED NOT TO BE — 2026-11-14: "change
+ * to about 30 min". It was the first segment of his own meta line
+ * (`durationOf`), so the time on screen was whatever the stage fixture said
+ * for that state — 1h 40m on the one she was reading. That is a figure about
+ * the STAGE's recommended practice, not about the next section of the
+ * course, which is why it could sit under a lesson title and be an hour out.
+ *
+ * ⚠ SO IT IS A PLACEHOLDER AGAIN, honestly: one estimate for every section,
+ * because the course list carries no durations at all. The same caveat the
+ * invented section count carried before it was replaced by a real figure —
+ * when the course gives per-section times, this is the string they land in.
  */
 export const REFINED_NEXT_META = {
   parts: `${REFINED_COURSE_TOTALS.lessons} Lessons`,
-  /** Prefixes the duration lifted from the stage's own meta line. */
+  /** Prefixes the duration. */
   approx: 'about',
+  /** ⚠ INVENTED — see above. Hers: "about 30 min". */
+  duration: '30 min',
 } as const
 
 /**

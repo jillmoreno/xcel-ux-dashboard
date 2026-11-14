@@ -1,8 +1,8 @@
 import { CompassRefinedNextStep } from './CompassRefinedNextStep'
 import { refinedNextStep } from './compassRefinedNextStepModel'
 import { refinedCourseView } from './compassRefinedLearnCourse'
-import { durationOf } from './compassRefinedFocusDuration'
 import {
+  REFINED_NEXT_META,
   REFINED_PACE,
   REFINED_PROGRESS_LINES,
   REFINED_RING_LABEL,
@@ -268,7 +268,11 @@ function FocusNext({
     <div className="crf-focus__next">
       <CompassRefinedNextStep
         step={{
-          ...refinedNextStep(progress, durationOf(hero.meta)),
+          /* ⚠ THE COURSE'S OWN ESTIMATE, NOT THE STAGE'S — 2026-11-14.
+             `durationOf(hero.meta)` read the stage's recommended-practice
+             time, which is a figure about something else and was an hour out
+             under a lesson title. See `REFINED_NEXT_META.duration`. */
+          ...refinedNextStep(progress, REFINED_NEXT_META.duration),
           /* ⚠ THE STAGE'S OWN NEXT STILL WINS WHERE THE COURSE HAS NOTHING
              TO SAY — a finished course has no row after the last, and the
              hero's copy is the honest thing to show there. */

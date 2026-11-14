@@ -1,7 +1,7 @@
 import { refinedCourseView, type RefinedChapter } from './compassRefinedLearnCourse'
 import { refinedProgressAt } from '@/data/compassRefinedCourse'
 import { journeyStage } from './compassReadinessModel'
-import { REFINED_PAGE_TITLES } from '@/data/compassRefinedCopy'
+import { REFINED_NEXT_META, REFINED_PAGE_TITLES } from '@/data/compassRefinedCopy'
 import { useState } from 'react'
 import { RubiLogo } from '@/icons'
 import {
@@ -13,7 +13,6 @@ import { CompassRefinedCourseCards } from './CompassRefinedCourseCards'
 import { CompassRefinedCourseRows } from './CompassRefinedCourseRows'
 import { CourseHeadCard } from './CompassRefinedCourseParts'
 import { refinedNextStep } from './compassRefinedNextStepModel'
-import { durationOf } from './compassRefinedFocusDuration'
 import { COURSE_DEFAULTS, type CourseListProps, type CourseOptions } from './compassRefinedCourseModel'
 import './compassRefined.css'
 
@@ -67,8 +66,7 @@ export function CompassRefinedLearn({
   /* ⚠ THE SAME CARD THE OVERVIEW DRAWS, from the same model — "This should
      be a 1:1". The stage supplies the duration, as it does there; the words
      and the bar follow `intoCurrent`. */
-  const m = journeyStage(stage ?? '')
-  const step = refinedNextStep(progress, durationOf(m.hero?.meta))
+  const step = refinedNextStep(progress, REFINED_NEXT_META.duration)
   /* ⚠ RESUME OPENS THE LESSON — `CompassJeffCourse`, which is this same
      designer's lesson ported from his earlier file. See the shell's note on
      why there is one component for it rather than two. */
