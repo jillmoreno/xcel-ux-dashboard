@@ -1922,11 +1922,17 @@
 }
 /* The keyboard route is the Details button, which is focusable; its focus
    ring is the browser's. The card is not a tab stop — see the component. */
+/* ⚠ 12px TOP AND BOTTOM, NOT 18 — 2026-11-14: "reduce top and bottom
+   padding." The card's tallest column is the three-line name block (65px);
+   at 18 the band came to 103px and twenty-four of them is a column the
+   learner scrolls rather than scans. The sides keep 20: the ask was about
+   vertical rhythm, and narrowing the gutters would pull the title off the
+   line the heading above it sets. */
 .crf-map__body {
   display: flex;
   align-items: flex-start;
   gap: 16px;
-  padding: 18px 20px;
+  padding: 12px 20px;
 }
 /* ⚠ THE NUMBER AND THE WORD IN ONE TAG — 2026-11-12: "made these a
    connected component with a little dot inbetween." They had been a 30px
