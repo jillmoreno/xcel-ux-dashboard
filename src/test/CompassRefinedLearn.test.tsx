@@ -1034,7 +1034,14 @@ describe('the status can sit under the details', () => {
     const card = container.querySelector(CHAPTER_CARDS)!
     /* The capsule keeps the number and loses the word. */
     expect(card.querySelector('.crf-map__state')?.textContent).toMatch(/^\d*$/)
-    expect(card.querySelector('.crf-map__name .crf-map__status')).not.toBeNull()
+    const status = card.querySelector('.crf-map__name .crf-map__status')
+    expect(status).not.toBeNull()
+    /* ⚠ THE WORD, NOT A TAG — 2026-11-14: "Just have the word 'Completed'
+       under the text." A second capsule on a card that already has one at
+       the head of the row. */
+    expect(status!.querySelector('.crf-map__word')).not.toBeNull()
+    expect(status!.querySelector('.crf-map__state')).toBeNull()
+    expect(status!.querySelector('svg')).toBeNull()
   })
 
   it('brings the progress bar with it, and leaves none in the row', () => {
@@ -1053,6 +1060,9 @@ describe('the status can sit under the details', () => {
       const card = container.querySelector(CHAPTER_CARDS)!
       expect(card.querySelectorAll('.crf-map__status').length, mark).toBe(1)
       expect(card.querySelector('.crf-map__state--word'), mark).toBeNull()
+      /* Plain on every mark arm — the glyph belongs to the mark, not to the
+         word under the title. */
+      expect(card.querySelector('.crf-map__status svg'), mark).toBeNull()
       unmount()
     }
   })

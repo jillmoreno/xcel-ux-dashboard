@@ -394,8 +394,13 @@ export function CompassRefinedCourseCards({
                           audit finding 4 in miniature. */}
                       {status === 'under' ? (
                         <div className="crf-map__status">
-                          <span className={`crf-map__state crf-map__state--${pill.tone}`}>
-                            {chapterMark === 'kind' ? <StateMark state={c.state} /> : null}
+                          {/* ⚠ THE WORD, NOT A TAG — 2026-11-14: "Just have
+                              the word 'Completed' under the text." Under the
+                              title it had been the same capsule it is beside
+                              the mark, which put a second boxed thing on a
+                              card that already has one. It keeps the state's
+                              ink; the box and the glyph go. */}
+                          <span className={`crf-map__word crf-map__word--${pill.tone}`}>
                             {pill.word}
                           </span>
                           {c.state === 'current' ? (
@@ -663,9 +668,8 @@ export function CompassRefinedCourseCards({
                         {status === 'under' ? (
                           <div className="crf-map__status">
                             <span
-                              className={`crf-map__state crf-map__state--${FINISH_TONE[f.state]}`}
+                              className={`crf-map__word crf-map__word--${FINISH_TONE[f.state]}`}
                             >
-                              {chapterMark === 'kind' ? <StateMark state={f.state} /> : null}
                               {FINISH_WORD[f.state]}
                             </span>
                           </div>

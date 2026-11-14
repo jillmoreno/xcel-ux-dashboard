@@ -2180,6 +2180,27 @@
   gap: 12px;
   margin-top: 8px;
 }
+/* ⚠ THE WORD ON ITS OWN — 2026-11-14, "Just have the word 'Completed' under
+   the text." It had been the capsule the tag arm draws, which put a second
+   boxed thing on a card that already has one at the head of the row. The
+   state's ink is kept, at the label's size and a step heavier so it reads as
+   a status rather than as more of the label above it. */
+.crf-map__word {
+  font-size: 11px;
+  font-weight: 600;
+}
+.crf-map__word--done {
+  color: var(--color-pass-600);
+}
+.crf-map__word--progress {
+  color: var(--crf-steel-deep);
+}
+.crf-map__word--next {
+  color: var(--crf-body);
+}
+.crf-map__word--locked {
+  color: var(--crf-locked-ink);
+}
 /* The bar does not stretch to the column's width here: it sits next to the
    word, so it is as wide as it is on the row. */
 .crf-map__status .crf-map__bar {
