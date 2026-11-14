@@ -1897,11 +1897,12 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     /* ⚠ THE COURSE'S PICTURE, BESIDE ITS NAME — 2026-11-12: "add a toggle
        that shows the course image to the left of the course details".
 
-       ⚠ A TOGGLE AND NOT A DEFAULT, because what it answers is a question
-       about the card's weight rather than about its content. The header is
-       the page's summary — a name, what kind of course it is, how far
+       ⚠ IT WAS A TOGGLE AND NOT A DEFAULT, on the argument that it answers
+       a question about the card's weight rather than its content: the header
+       is the page's summary — a name, what kind of course it is, how far
        through, and a ring — and an image makes it the first thing the eye
-       lands on. Worth seeing both ways before anyone decides.
+       lands on. That was worth seeing both ways, and it has been; the answer
+       is on.
 
        ⚠ THE ART IS NOT NEW. `/courses/fl-life-health.webp` is the file the
        Atlas dashboard's course card already draws, so the two surfaces show
@@ -1915,8 +1916,11 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     group: 'Widgets',
     label: 'Course image',
     description:
-      'Draws the course’s own art to the left of its name in the Your Course header — the same file the Atlas dashboard’s course card uses, so a learner sees one picture of one course across the two surfaces. Off shows the header as it is audited: eyebrow, name, kind and count, with the ring on the right.',
-    defaultEnabled: false,
+      'Draws the course’s own art to the left of its name in the Course Roadmap header — the same file the Atlas dashboard’s course card uses, so a learner sees one picture of one course across the two surfaces. On by default since 2026-11-14. Off shows the header without it: eyebrow, name, kind and count, with the ring on the right.',
+    /* ⚠ ON SINCE 2026-11-14 — "default course image on". It arrived off
+       because an addition's baseline is the page without it; two days of
+       looking at it both ways settled that. */
+    defaultEnabled: true,
     page: 'dashboard-rebrand',
   },
   {

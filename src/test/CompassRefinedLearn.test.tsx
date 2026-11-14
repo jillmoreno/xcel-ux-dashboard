@@ -311,10 +311,18 @@ describe('the next step’s two states follow the data, not the page', () => {
 })
 
 describe('the course image toggle', () => {
-  it('draws nothing by default', () => {
+  it('draws by default, and the two defaults agree', () => {
+    /* ⚠ ON SINCE 2026-11-14 — "default course image on". The component
+       default and the flag's own have to say the same thing, or a card
+       rendered without options draws something the bar never shows. */
     const { container } = wrapWith({})
+    expect(COURSE_DEFAULTS.image).toBe(true)
+    expect(container.querySelector('.crf-course__art')).not.toBeNull()
+  })
+
+  it('and draws nothing when it is off', () => {
+    const { container } = wrapWith({ image: false })
     expect(container.querySelector('.crf-course__art')).toBeNull()
-    expect(COURSE_DEFAULTS.image).toBe(false)
   })
 
   it('puts the course’s own art left of its name when it is on', () => {

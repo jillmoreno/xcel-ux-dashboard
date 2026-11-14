@@ -57,7 +57,10 @@ export const COURSE_DEFAULTS: CourseOptions = {
      something the bar never shows. */
   blurb: false,
   fold: true,
-  image: false,
+  /* ⚠ AGREES WITH `compass-course-image`'s own default — on since
+     2026-11-14 — or a card rendered without options draws something the bar
+     never shows. */
+  image: true,
   chapterMark: 'number',
   /* Agrees with `FOCUS_DEFAULTS.nextMark`, or a card rendered without
      options draws a shape the bar never shows. */
