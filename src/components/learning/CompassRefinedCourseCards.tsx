@@ -24,7 +24,7 @@
  */
 
 import { useState } from 'react'
-import { BookOpenRegular, Check, ChevronDown, LockRegular } from '@/icons'
+import { BookOpenRegular, Check, ChevronDown, CircleCheckRegular, LockRegular } from '@/icons'
 import { JEFF_MVP_LEARN_COPY as COPY } from '@/data/compassJeffMvpFixtures'
 import { REFINED_CHAPTER_BLURBS, REFINED_ROADMAP } from '@/data/compassRefinedCopy'
 import { LessonMark } from './CompassRefinedCourseParts'
@@ -115,9 +115,23 @@ const FINISH_WORD: Record<string, string> = {
   locked: 'Locked',
 }
 
-/** What the module IS — the `kind` arm's mark. The same map the next-step
- *  card draws from, so a thing marked an exam there is marked an exam here. */
-function KindMark({ kind }: { kind: RefinedSectionKind }) {
+/**
+ * What the module IS — the `kind` arm's mark. The same map the next-step card
+ * draws from, so a thing marked an exam there is marked an exam here.
+ *
+ * ⚠ EXCEPT WHEN IT IS DONE — 2026-11-14: "when completed, make this a
+ * circle-checkmark icon". A finished module's TYPE is the least useful thing
+ * its mark could say; what the learner is scanning for down a column of
+ * twenty-four is which ones are behind them.
+ *
+ * ⚠ `CircleCheckRegular` IS THE DEFAULT PICK, not the only one. It is the
+ * weight every other mark in `SECTION_ICON` already uses — BookOpenRegular,
+ * BallotCheckRegular, FileCertificateRegular — so the column stays one
+ * family. The four alternatives are in the registry and shown side by side
+ * in the scratchpad's `completed-mark-options.html`.
+ */
+function KindMark({ kind, state }: { kind: RefinedSectionKind; state?: string }) {
+  if (state === 'done') return <CircleCheckRegular size={12} />
   const Icon = SECTION_ICON[kind] ?? SECTION_ICON.lesson
   return <Icon size={12} />
 }
@@ -345,7 +359,7 @@ export function CompassRefinedCourseCards({
                         {chapterMark === 'number' && c.number ? (
                           String(c.number).padStart(2, '0')
                         ) : chapterMark === 'kind' ? (
-                          <KindMark kind="lesson" />
+                          <KindMark kind="lesson" state={c.state} />
                         ) : (
                           <StateMark state={c.state} />
                         )}
@@ -651,7 +665,7 @@ export function CompassRefinedCourseCards({
                         }`}
                       >
                         <span className="crf-map__mark" aria-hidden>
-                          <KindMark kind={f.kind} />
+                          <KindMark kind={f.kind} state={f.state} />
                         </span>
                         {chapterMark === 'number' && status === 'tag' ? (
                           <>
