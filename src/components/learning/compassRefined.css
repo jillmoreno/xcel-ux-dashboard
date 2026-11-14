@@ -1900,6 +1900,28 @@
    ⚠ THE MARK IS A FIXED WIDTH so the dot lands in the same place down the
    column whether the row shows "01", "21" or a glyph. Tabular numerals for
    the same reason. */
+/* ⚠ ONE WIDTH FOR EVERY TAG IN THE COLUMN — 2026-11-14. The tag is as wide
+   as its own word, so the title beside it started at a different x on every
+   card: measured 146 next to "Completed", 147 next to "In Progress" and 126
+   next to "Locked". Twenty-four titles on twenty-four left edges.
+
+   ⚠ THE FIGURE IS THE WIDEST TAG, measured in the running build: "11 · In
+   Progress" at 114px. `--crf-map-tag` is it, and the expanded block below
+   reads the same variable so the lessons line up with the title above them
+   — one number, two alignments, instead of two numbers that drift apart.
+
+   ⚠ THE `markonly` AND `word` TAGS ARE EXEMPT. One is a glyph in a box and
+   the other sits over by the controls; neither is the column this is
+   about. */
+.crf-map__card {
+  --crf-map-tag: 114px;
+}
+.crf-map--icon .crf-map__card {
+  --crf-map-tag: 30px;
+}
+.crf-map__state:not(.crf-map__state--word) {
+  min-width: var(--crf-map-tag);
+}
 .crf-map__state {
   display: inline-flex;
   align-items: center;
@@ -2128,13 +2150,27 @@
    again rather than three. */
 /* The expanded half sits inside the card, ruled off rather than boxed — a
    second border inside a card reads as a card inside a card. */
-/* ⚠ FLUSH WITH THE TITLE ABOVE IT — 2026-11-12. The chip left the card's
-   left column when it joined the state tag, so there is no gutter to clear
-   any more: the title starts at the body's own 20px padding and so does
-   this. It has been 80 and then 66, each time chasing a chip that has since
-   moved. */
+/* ⚠ FLUSH WITH THE TITLE, BY NESTING RATHER THAN BY A FIGURE — 2026-11-14:
+   "these should be vertically aligned with the left side of the title above
+   it." This block now lives INSIDE the name column, so it starts where the
+   title starts whatever the state tag's width happens to be — 61px on the
+   icon arm, more on the numbered one. It had been a sibling of the body
+   with its own left padding, which is a number that was right for one arm.
+
+   ⚠ THE RULE NO LONGER CROSSES THE WHOLE CARD, and that follows: it marks
+   where the chapter's contents begin, and they begin at the title. The
+   figures it chased before — 80, then 66, then 20 — were each correct for a
+   mark that has since changed size.
+
+   ⚠ THE INSET IS THE TAG'S OWN WIDTH PLUS THE ROW'S GAP, read from the same
+   variable the tag is sized by. Nesting alone was not enough: this block is
+   inside the name COLUMN, but the title is indented within the row by the
+   tag beside it, so the two only share an edge if this clears the same
+   distance. */
 .crf-map__open {
-  padding: 4px 20px 18px 20px;
+  margin-top: 14px;
+  padding-top: 12px;
+  padding-left: calc(var(--crf-map-tag) + 12px);
   border-top: 1px solid var(--crf-ch-rule);
 }
 .crf-map__open .crf-lessons {

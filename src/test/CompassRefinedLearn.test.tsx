@@ -917,3 +917,32 @@ describe('a closing module’s button', () => {
     expect(byTitle('Certificate').querySelector('.crf-btn')?.textContent).toBe('Download')
   })
 })
+
+describe('the expanded contents start where the title does', () => {
+  it('nests the open block inside the name column', () => {
+    /* ⚠ GEOMETRY IS NOT TESTABLE HERE — jsdom has no layout, so the figures
+       (all titles at one x, the lessons starting there too) were measured in
+       the browser. What a test can hold is the STRUCTURE that makes it
+       possible: the block is inside the column, and its inset is read from
+       the same variable the state tag is sized by. */
+    const { container } = render(
+      <MemoryRouter>
+        <AccountProvider>
+          <FeatureFlagProvider>
+            <CompassRefinedLearn
+              stage="q3"
+              course={{ ...COURSE_DEFAULTS, rows: 'cards', fold: false }}
+            />
+          </FeatureFlagProvider>
+        </AccountProvider>
+      </MemoryRouter>,
+    )
+    const chev = container.querySelector('.crf-map__card .crf-chev:not(.crf-chev--none)')!
+    fireEvent.click(chev)
+    const open = container.querySelector('.crf-map__open')!
+    expect(open.parentElement?.className).toContain('crf-map__main')
+    /* It was a sibling of the body, with a left padding that was right for
+       one arm and wrong for the other. */
+    expect(open.closest('.crf-map__body')).not.toBeNull()
+  })
+})

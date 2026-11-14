@@ -485,11 +485,17 @@ export function CompassRefinedCourseCards({
                       ⚠ THE ROWS LAYOUT KEEPS IT. That is where finding 2 was
                       raised and fixed, and the row has no pill — "Locked" on
                       its own was the thing the finding objected to. */}
-                </div>
-              </div>
 
-              {expanded ? (
-                <div className="crf-map__open">
+                  {/* ⚠ INSIDE THE NAME COLUMN — 2026-11-14: "these should be
+                      vertically aligned with the left side of the title
+                      above it." It was a sibling of the body, so the lessons
+                      started at the card's own padding (21px) while the
+                      title starts after the state tag — 61px on the icon
+                      arm, further on the numbered one. Nesting it here makes
+                      the two share a left edge BY CONSTRUCTION rather than
+                      by a figure that would be wrong on the other arm. */}
+                  {expanded ? (
+                    <div className="crf-map__open">
                   <ul className="crf-lessons">
                     {c.lessons.map((l) => (
                       <li key={l.label} className={`crf-lesson crf-lesson--${l.state}`}>
@@ -517,8 +523,10 @@ export function CompassRefinedCourseCards({
                       done={c.exam.done ?? false}
                     />
                   ) : null}
+                    </div>
+                  ) : null}
                 </div>
-              ) : null}
+              </div>
             </article>
           )
         })}
