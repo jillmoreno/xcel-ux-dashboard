@@ -493,11 +493,85 @@ describe('clicking a roadmap card expands it', () => {
   })
 })
 
+describe('the status-under-the-title arm, when the module is locked', () => {
+  /* ⚠ 2026-11-14: "If Locked, return that to the 'tag' style, and put it
+     where the cta normally would be for that module." Every other state on
+     this arm has something in the card's right-hand corner — Review, Resume,
+     Start — and a locked one had an empty corner plus a grey word under its
+     title, which is the state most worth saying sitting in the quietest
+     place on the card. */
+  const under = { rows: 'cards' as const, fold: false, status: 'under' as const }
+
+  it('wears the tag, not the plain word', () => {
+    const { container } = wrapWith(under)
+    for (const card of container.querySelectorAll('.crf-map__card--locked')) {
+      expect(card.querySelector('.crf-map__word'), 'no word under the title').toBe(null)
+      expect(card.querySelector('.crf-map__state--word')?.textContent).toContain('Locked')
+    }
+  })
+
+  /* ⚠ SAID ONCE. The tag appearing and the word standing down are halves of
+     one decision (`underLock`); computed apart they drift, and the card then
+     says its state twice or not at all. */
+  it('leaves every OTHER state’s word exactly where it was', () => {
+    const { container } = wrapWith(under)
+    for (const card of container.querySelectorAll('.crf-map__card')) {
+      const locked = card.classList.contains('crf-map__card--locked')
+      expect(!!card.querySelector('.crf-map__word'), card.className).toBe(!locked)
+      expect(!!card.querySelector('.crf-map__state--word'), card.className).toBe(locked)
+    }
+  })
+
+  /* ⚠ THE CTA'S SLOT, which on this card is "before the chevron" — the
+     chevron is always last, held empty when there is nothing to open. */
+  it('sits where the action would, ahead of the chevron', () => {
+    const { container } = wrapWith(under)
+    const card = container.querySelector('.crf-map__card--locked')!
+    const kids = [...card.querySelector('.crf-map__top')!.children]
+    const tag = kids.findIndex((e) => e.classList.contains('crf-map__state--word'))
+    const chev = kids.findIndex((e) => e.className.includes('crf-chev'))
+    expect(tag).toBeGreaterThan(-1)
+    expect(chev).toBe(kids.length - 1)
+    expect(tag).toBeLessThan(chev)
+  })
+
+  /* ⚠ INCLUDING THE THREE CLOSING MODULES, which show no button at all when
+     they are shut — so without this the list ended on three empty corners. */
+  it('does the same for the exam, the survey and the certificate', () => {
+    const { container } = wrapWith(under)
+    const finish = [...container.querySelectorAll('.crf-map__card--finish.crf-map__card--locked')]
+    expect(finish.length).toBeGreaterThan(0)
+    for (const card of finish) {
+      expect(card.querySelector('.crf-map__word')).toBe(null)
+      expect(card.querySelector('.crf-map__state--word')?.textContent).toContain('Locked')
+    }
+  })
+})
+
 describe('a roadmap card’s label says what is inside the chapter', () => {
-  it('reads “Chapter 1 · 7 Lessons · 1 Chapter Quiz” where the course knows', () => {
+  /* ⚠ THE CHAPTER'S NAME IS NOT IN IT — 2026-11-14: "Should just have the
+     number of lessons - quiz - and appx time to complete module." The line
+     is what the module COSTS; which module it is, is the title above it. */
+  it('reads “7 Lessons · 1 Chapter Quiz · about 3h 45m” where the course knows', () => {
     const { container } = wrapWith({ rows: 'cards', fold: false })
     const labels = [...container.querySelectorAll('.crf-map__label')].map((e) => e.textContent)
-    expect(labels).toContain('Chapter 1 · 7 Lessons · 1 Chapter Quiz')
+    expect(labels).toContain('7 Lessons · 1 Chapter Quiz · about 3h 45m')
+    expect(labels.some((l) => l?.startsWith('Chapter 1 ·'))).toBe(false)
+  })
+
+  /* ⚠ THE TIME RIDES WITH THE COUNT, both ways. A chapter with no lessons
+     has no honest estimate, and one with lessons must not be missing it —
+     the pair is what keeps `refinedModuleTime`'s guard from silently
+     becoming "never". */
+  it('carries a time estimate exactly where it carries a lesson count', () => {
+    const { container } = wrapWith({ rows: 'cards', fold: false })
+    for (const card of container.querySelectorAll(CHAPTER_CARDS)) {
+      const label = card.querySelector('.crf-map__label')?.textContent ?? ''
+      const title = card.querySelector('.crf-map__title')?.textContent ?? ''
+      expect(/about (\d+h( \d+m)?|\d+ min)$/.test(label), title).toBe(
+        /\d+ Lessons/.test(label),
+      )
+    }
   })
 
   it('says only what it knows — no “0 Lessons” on a chapter without them', () => {

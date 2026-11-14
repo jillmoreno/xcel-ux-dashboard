@@ -659,3 +659,42 @@ export const REFINED_CHAPTER_BLURBS: Record<string, string> = {
   'Florida Life and Health Laws, Rules, and Regulations':
     'Florida statutes, DFS oversight, licensing and appointment, and unfair trade practice rules.',
 }
+
+/**
+ * HOW LONG A MODULE TAKES — 2026-11-14: the roadmap card's detail line
+ * "should just have the number of lessons - quiz - and appx time to complete
+ * module."
+ *
+ * ⚠ INVENTED, AND DERIVED RATHER THAN TYPED. The course list carries no
+ * durations at all, so there is no honest per-chapter figure to read. What
+ * there IS is the one estimate this build already states out loud — a lesson
+ * is `REFINED_NEXT_META.duration`, "about 30 min", on the next-step card —
+ * so a module is its lessons at that rate plus its quiz, and the two numbers
+ * on screen cannot disagree. Change the per-lesson estimate in one place and
+ * the roadmap follows.
+ *
+ * ⚠ IT SAYS NOTHING WHEN IT KNOWS NOTHING. Eleven of the twenty-one chapters
+ * have no lesson-level detail (see `chapterParts`), and a chapter with no
+ * lessons and one quiz would otherwise read "about 15m" — a precise-looking
+ * figure for a module whose contents are unknown. Those cards get no time,
+ * the same way they get no lesson count.
+ */
+export const REFINED_MODULE_TIME = {
+  /** ⚠ INVENTED — the next-step card's own "about 30 min", as a number. */
+  perLessonMin: 30,
+  /** ⚠ INVENTED — a chapter quiz, at half a lesson. */
+  perQuizMin: 15,
+} as const
+
+/** `(2, true)` → `"1h 15m"`; `(0, true)` → `''`. See the note above. */
+export function refinedModuleTime(lessons: number, quiz: boolean): string {
+  if (!lessons) return ''
+  const mins =
+    lessons * REFINED_MODULE_TIME.perLessonMin + (quiz ? REFINED_MODULE_TIME.perQuizMin : 0)
+  /* Under the hour it is the next-step card's own unit, "30 min"; over it,
+     the "3h 15m" the reference card uses. */
+  if (mins < 60) return `${mins} min`
+  const h = Math.floor(mins / 60)
+  const m = mins % 60
+  return m ? `${h}h ${m}m` : `${h}h`
+}

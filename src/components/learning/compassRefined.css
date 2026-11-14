@@ -60,6 +60,15 @@
   --crf-body: var(--color-compass-page-body);
   --crf-muted: var(--color-compass-page-muted);
   --crf-faint: var(--color-text-tertiary);
+  /* ⚠ LIGHTER THAN ANY TEXT ON THE PAGE, and only for `aria-hidden` glyphs
+     — 2026-11-14, the lesson list's padlocks. `--crf-faint` is a TEXT token
+     held at 4.5:1 on purpose (audit finding 6 darkened it for exactly that
+     reason), so asking it to read as "lighter grey" gets #737373 against
+     the muted #706b63 it replaced: a third of a step, invisible on screen.
+     This is the stop below, ~3.5:1 on white — comfortably over the 3:1
+     non-text minimum, and the dark theme re-pins it like every other
+     neutral. Never put words on it. */
+  --crf-dim: var(--color-neutral-600);
   --crf-hairline: var(--color-compass-page-rule);
   --crf-edge: #c3bba5;
   --crf-white: var(--color-surface-card);
@@ -1353,6 +1362,21 @@
 }
 .crf-lesson--current .crf-lesson__mark {
   color: var(--crf-steel-deep);
+}
+/* ⚠ A STEP LIGHTER THAN THE ROW'S OWN TEXT — 2026-11-14: "make these solid
+   lock icons, but lighter gray." The glyph went solid in `LessonMark`, which
+   roughly doubles the ink in those 12 pixels; left on `--crf-muted` (the
+   label's own colour) the padlock became the thing the eye landed on down a
+   column of six unavailable lessons. `--crf-faint` puts it behind the words
+   it qualifies. */
+/* ⚠ `--todo` IS THE STATE'S NAME, not `--locked`. The class is built from
+   the lesson's own `state`, which the model spells `todo`; the
+   `.crf-lesson--locked` rule two below has therefore never matched anything
+   — left alone here because changing WHICH rule colours that label is a
+   visual change nobody asked for, but it is worth knowing about. Both are
+   named so this one keeps working if the state is ever renamed. */
+:is(.crf-lesson--todo, .crf-lesson--locked) .crf-lesson__mark {
+  color: var(--crf-dim);
 }
 .crf-lesson__label {
   flex: 1 1 auto;

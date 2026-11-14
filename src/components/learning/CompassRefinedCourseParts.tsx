@@ -22,6 +22,7 @@ import {
   FileCertificateRegular,
   FileText,
   LockRegular,
+  LockSolid,
 } from '@/icons'
 import { JEFF_MVP_LEARN_COPY as COPY } from '@/data/compassJeffMvpFixtures'
 import type {
@@ -128,6 +129,10 @@ export function FinishRow({ step }: { step: RefinedFinishStep }) {
 export function ChapterMark({ state }: { state: string }) {
   if (state === 'done') return <Check size={15} />
   if (state === 'current') return <ChevronRight size={15} />
+  /* ⚠ STILL REGULAR, where `LessonMark` below went solid. That change was
+     asked for on the ROADMAP's lesson list; this is the ROWS layout's own
+     state mark, a different arm she is not comparing, and at 14px beside
+     his tick and chevron it is already one weight with them. */
   return <LockRegular size={14} />
 }
 
@@ -135,7 +140,17 @@ export function ChapterMark({ state }: { state: string }) {
 export function LessonMark({ state }: { state: string }) {
   if (state === 'done') return <Check size={13} />
   if (state === 'current') return <CircleSolid size={8} />
-  return <LockRegular size={12} />
+  /* ⚠ SOLID, AND LIGHTER — 2026-11-14: "make these solid lock icons, but
+     lighter gray." At 12px the regular padlock's shackle is a hairline
+     against a body with a hole in it, and down a list of six it reads as
+     noise rather than as a shape. Solid gives it one silhouette, and the
+     colour drops a step (`--crf-dim`, see `.crf-lesson--todo
+     .crf-lesson__mark`) so the heavier glyph does not become the loudest
+     thing on a row whose whole point is that it is not available yet.
+
+     ⚠ BOTH LAYOUTS. This leaf is drawn by the roadmap AND by the rows, and
+     the lesson list behind a chevron is the same list either way. */
+  return <LockSolid size={12} />
 }
 
 /**

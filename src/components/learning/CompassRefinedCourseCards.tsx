@@ -26,7 +26,12 @@
 import { useState } from 'react'
 import { BookOpenRegular, Check, ChevronDown, CircleCheckRegular, LockRegular } from '@/icons'
 import { JEFF_MVP_LEARN_COPY as COPY } from '@/data/compassJeffMvpFixtures'
-import { REFINED_CHAPTER_BLURBS, REFINED_ROADMAP } from '@/data/compassRefinedCopy'
+import {
+  REFINED_CHAPTER_BLURBS,
+  REFINED_NEXT_META,
+  REFINED_ROADMAP,
+  refinedModuleTime,
+} from '@/data/compassRefinedCopy'
 import { LessonMark } from './CompassRefinedCourseParts'
 import { SECTION_ICON } from './compassRefinedSectionIcons'
 import type { RefinedSectionKind } from '@/data/compassRefinedCourse'
@@ -92,12 +97,26 @@ function statusPill(c: RefinedChapter) {
  *
  * ⚠ "Chapter Quiz", HER WORD. The course calls the row "Chapter 1 Exam" and
  * the exam strip below says EXAM; this line is hers verbatim.
+ *
+ * ⚠ THE CHAPTER'S OWN NAME IS GONE FROM IT — 2026-11-14: "Should just have
+ * the number of lessons - quiz - and appx time to complete module." It had
+ * led with `c.label`, which on the Health chapters is the course's full
+ * double designation — "Life & Health Chapter 18 | Health Chapter 9" — so
+ * the line under a twenty-character title ran to seventy, and the three
+ * figures a learner is actually weighing sat at the end of it. The label
+ * says WHICH module this is, and the title above it already does.
+ *
+ * ⚠ SO THIS LINE IS NOW ONE KIND OF THING: what the module costs. Count,
+ * quiz, time — and see `refinedModuleTime` for why the time is only there
+ * when the lesson count is.
  */
 function chapterParts(c: RefinedChapter): string {
   return [
-    c.label,
     c.lessons.length ? `${c.lessons.length} Lessons` : '',
     c.exam ? '1 Chapter Quiz' : '',
+    refinedModuleTime(c.lessons.length, !!c.exam)
+      ? `${REFINED_NEXT_META.approx} ${refinedModuleTime(c.lessons.length, !!c.exam)}`
+      : '',
   ]
     .filter(Boolean)
     .join(' · ')
@@ -181,6 +200,23 @@ export function CompassRefinedCourseCards({
      every title is aligned to (`--crf-map-tag`), and where the spine is
      drawn. */
   const markOnly = chapterMark !== 'number' || status === 'under'
+  /**
+   * ⚠ A LOCKED MODULE ON THE `under` ARM WEARS THE TAG, IN THE ACTION'S SLOT
+   * — 2026-11-14: "If Locked, return that to the 'tag' style, and put it
+   * where the cta normally would be for that module."
+   *
+   * ⚠ THE ARM, NOT THE MODULE — pair it with the module's own state at each
+   * use site (`underLock && c.state === 'locked'`). It is one named thing
+   * for the same reason `markOnly` is: the tag appearing and the word
+   * disappearing are halves of one decision, and spelled out separately in
+   * four places they can drift — which on a card means the state said twice,
+   * or not at all.
+   *
+   * ⚠ ALL THREE MARK ARMS. On `under` the left capsule is mark-only whatever
+   * the mark is (see `markOnly` above), so there is no left-hand tag
+   * anywhere on this arm for this one to duplicate.
+   */
+  const underLock = status === 'under'
   const [filter, setFilter] = useState<RoadmapFilter>('all')
   /**
    * ⚠ THE COMPLETED RUN FOLDS AT THE TOP — 2026-11-13: "i want to do
@@ -406,7 +442,7 @@ export function CompassRefinedCourseCards({
                           about the same state; the row's own bar is not
                           drawn on this arm, two bars for one chapter being
                           audit finding 4 in miniature. */}
-                      {status === 'under' ? (
+                      {status === 'under' && c.state !== 'locked' ? (
                         <div className="crf-map__status">
                           {/* ⚠ THE WORD, NOT A TAG — 2026-11-14: "Just have
                               the word 'Completed' under the text." Under the
@@ -459,8 +495,21 @@ export function CompassRefinedCourseCards({
                         "put it on the right next to the cta area". Before
                         the action rather than between it and the chevron:
                         the two buttons are one group and a label driven
-                        between them separates what the hand goes to. */}
-                    {chapterMark !== 'number' && status === 'tag' ? (
+                        between them separates what the hand goes to.
+
+                        ⚠ AND ON THE `under` ARM WHEN THE MODULE IS LOCKED —
+                        2026-11-14: "If Locked, return that to the 'tag'
+                        style, and put it where the cta normally would be for
+                        that module." Every other state on that arm has
+                        something in this corner — Review, Resume, Start —
+                        and a locked one had an empty corner plus a grey word
+                        under its title, which puts the state that most needs
+                        saying in the quietest place on the card. The tag
+                        goes back, in the slot the action would occupy, and
+                        the word under the title stands down (`lockedTag`) so
+                        the card says it once. */}
+                    {(underLock && c.state === 'locked') ||
+                    (chapterMark !== 'number' && status === 'tag') ? (
                       <span
                         className={`crf-map__state crf-map__state--${pill.tone} crf-map__state--word`}
                       >
@@ -470,7 +519,7 @@ export function CompassRefinedCourseCards({
                             left indicates what the type of module is". The
                             left mark is saying what the row IS there, so
                             the state has nowhere else to be. */}
-                        {chapterMark === 'kind' ? <StateMark state={c.state} /> : null}
+                        {chapterMark !== 'icon' ? <StateMark state={c.state} /> : null}
                         {pill.word}
                       </span>
                     ) : null}
@@ -679,7 +728,7 @@ export function CompassRefinedCourseCards({
                         <p className="crf-map__label">
                           {f.eyebrow} · {f.note}
                         </p>
-                        {status === 'under' ? (
+                        {status === 'under' && f.state !== 'locked' ? (
                           <div className="crf-map__status">
                             <span
                               className={`crf-map__word crf-map__word--${FINISH_TONE[f.state]}`}
@@ -689,11 +738,18 @@ export function CompassRefinedCourseCards({
                           </div>
                         ) : null}
                       </div>
-                      {chapterMark !== 'number' && status === 'tag' ? (
+                      {/* ⚠ A LOCKED CLOSING MODULE WEARS THE TAG TOO, and
+                          in the same corner — it is the same card and the
+                          same instruction. These three have no button when
+                          they are shut (see below), so without this the exam,
+                          the survey and the certificate ended the list with
+                          three empty right-hand corners. */}
+                      {(underLock && f.state === 'locked') ||
+                      (chapterMark !== 'number' && status === 'tag') ? (
                         <span
                           className={`crf-map__state crf-map__state--${FINISH_TONE[f.state]} crf-map__state--word`}
                         >
-                          {chapterMark === 'kind' ? <StateMark state={f.state} /> : null}
+                          {chapterMark !== 'icon' ? <StateMark state={f.state} /> : null}
                           {FINISH_WORD[f.state]}
                         </span>
                       ) : null}
