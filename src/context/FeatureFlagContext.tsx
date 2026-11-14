@@ -1702,7 +1702,16 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     surface: 'design',
     owner: 'anjani',
     versions: ['hybrid-pacing', 'eric-atlas-e2e'],
-    surfaces: ['compass:jeff-mvp', 'compass:refined', 'compass:overview'],
+    /* ⚠ ALL THREE REFINED IDS. A reviewer has to be able to leave Refined
+       from wherever they got to, so this is the one control that names every
+       page of it — see `DesignSurfaceId`. */
+    surfaces: [
+      'compass:jeff-mvp',
+      'compass:refined',
+      'compass:refined:overview',
+      'compass:refined:learn',
+      'compass:overview',
+    ],
     group: 'Widgets',
     label: 'Compass version',
     description:
@@ -1745,7 +1754,9 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     surface: 'design',
     owner: 'anjani',
     versions: ['hybrid-pacing', 'eric-atlas-e2e'],
-    surfaces: ['compass:refined'],
+    /* ⚠ THE OVERVIEW'S CARD — 2026-11-14, scoped off Your Course, which
+       draws no such card and carried the three arms for nothing. */
+    surfaces: ['compass:refined:overview'],
     group: 'Widgets',
     label: 'Progress + next step',
     description:
@@ -1786,7 +1797,9 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     surface: 'design',
     owner: 'anjani',
     versions: ['hybrid-pacing', 'eric-atlas-e2e'],
-    surfaces: ['compass:refined'],
+    /* ⚠ YOUR COURSE'S LIST — 2026-11-14, scoped off the Overview, which
+       draws no chapter list. */
+    surfaces: ['compass:refined:learn'],
     group: 'Widgets',
     label: 'Course list',
     description:
@@ -1818,7 +1831,9 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     surface: 'design',
     owner: 'anjani',
     versions: ['hybrid-pacing', 'eric-atlas-e2e'],
-    surfaces: ['compass:refined'],
+    /* ⚠ YOUR COURSE'S LIST — 2026-11-14, scoped off the Overview, which
+       draws no chapter list. */
+    surfaces: ['compass:refined:learn'],
     group: 'Widgets',
     label: 'Chapter blurbs',
     description:
@@ -1861,7 +1876,9 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     surface: 'design',
     owner: 'anjani',
     versions: ['hybrid-pacing', 'eric-atlas-e2e'],
-    surfaces: ['compass:refined'],
+    /* ⚠ YOUR COURSE'S LIST — 2026-11-14, scoped off the Overview, which
+       draws no chapter list. */
+    surfaces: ['compass:refined:learn'],
     group: 'Widgets',
     label: 'Roadmap mark',
     description:
@@ -1892,7 +1909,9 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     surface: 'design',
     owner: 'anjani',
     versions: ['hybrid-pacing', 'eric-atlas-e2e'],
-    surfaces: ['compass:refined'],
+    /* ⚠ YOUR COURSE'S LIST — 2026-11-14, scoped off the Overview, which
+       draws no chapter list. */
+    surfaces: ['compass:refined:learn'],
     group: 'Widgets',
     label: 'Course image',
     description:
@@ -1917,7 +1936,9 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     surface: 'design',
     owner: 'anjani',
     versions: ['hybrid-pacing', 'eric-atlas-e2e'],
-    surfaces: ['compass:refined'],
+    /* ⚠ YOUR COURSE'S LIST — 2026-11-14, scoped off the Overview, which
+       draws no chapter list. */
+    surfaces: ['compass:refined:learn'],
     group: 'Widgets',
     label: 'Fold the runs',
     description:
@@ -1948,7 +1969,8 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     surface: 'design',
     owner: 'anjani',
     versions: ['hybrid-pacing', 'eric-atlas-e2e'],
-    surfaces: ['compass:refined'],
+    /* The Overview's card — see `compass-overview-focus`. */
+    surfaces: ['compass:refined:overview'],
     group: 'Widgets',
     label: 'Swap the halves',
     description:
@@ -1982,7 +2004,8 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     surface: 'design',
     owner: 'anjani',
     versions: ['hybrid-pacing', 'eric-atlas-e2e'],
-    surfaces: ['compass:refined'],
+    /* The Overview's card — see `compass-overview-focus`. */
+    surfaces: ['compass:refined:overview'],
     group: 'Widgets',
     label: 'Pace note action',
     description:
@@ -2021,7 +2044,11 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     surface: 'design',
     owner: 'anjani',
     versions: ['hybrid-pacing', 'eric-atlas-e2e'],
-    surfaces: ['compass:refined'],
+    /* ⚠ BOTH PAGES, AND IT IS THE ONLY ONE. The next-step card is one
+       component drawn on the Overview and on Your Course since
+       2026-11-12, so a shape flag reaching only one of them would be the
+       first thing to break that. */
+    surfaces: ['compass:refined:overview', 'compass:refined:learn'],
     group: 'Widgets',
     label: 'Next step mark',
     description:
@@ -2150,7 +2177,16 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        `CompassRefinedPrepPage`), so the control has to be reachable from
        there or the sixteen states are only switchable from the version the
        reviewer just left. */
-    surfaces: ['compass:overview', 'compass:refined'],
+    /* ⚠ EVERY REFINED PAGE THAT READS A LEARNER. The stage drives the
+       Overview, Your Course (since 2026-11-12, audit finding 4) and Prep
+       Review, so it names all three ids — scoping it to one would leave the
+       others showing a learner nobody can change. */
+    surfaces: [
+      'compass:overview',
+      'compass:refined',
+      'compass:refined:overview',
+      'compass:refined:learn',
+    ],
     group: 'Widgets',
     label: 'Readiness stage',
     description:

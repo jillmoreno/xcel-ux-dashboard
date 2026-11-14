@@ -179,8 +179,23 @@ export function CompassLearningPage({
        component on two pages; see `CourseOptions.nextMark`. */
     nextMark: useFeatureFlag('compass-overview-next-mark').variant as NextMarkStyle,
   }
+  /* ⚠ REFINED'S TWO CONTROL-CARRYING PAGES NAME THEMSELVES — 2026-11-14:
+     "can we only show the design tools for the actual page they should be
+     on". The Overview's card arrangements and Your Course's list controls
+     were all on one surface, so each page carried the other's. See
+     `DesignSurfaceId`. */
   useDeclareDesignSurface(
-    refined ? 'compass:refined' : jeffMvp ? 'compass:jeff-mvp' : (`compass:${page}` as DesignSurfaceId),
+    refined
+      ? /* ⚠ `jeffPage`, NOT `page`. Refined runs inside his shell, whose own
+           page state is `jeffPage`; `page` is Anjani's rail and stays
+           whatever it was when the reviewer switched versions. Reading the
+           wrong one would scope the bar to a page nobody is looking at. */
+        jeffPage === 'overview' || jeffPage === 'learn'
+        ? (`compass:refined:${jeffPage}` as DesignSurfaceId)
+        : 'compass:refined'
+      : jeffMvp
+        ? 'compass:jeff-mvp'
+        : (`compass:${page}` as DesignSurfaceId),
   )
   /* ⚠ ANJANI'S COMPASS IS A FLAG, NOT A VERSION — 2026-10-15. From 2026-10-08
      her rail and course landing were gated on `isHybridVersion`, which was
