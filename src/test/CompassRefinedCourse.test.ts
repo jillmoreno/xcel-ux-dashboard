@@ -23,6 +23,7 @@ import {
 import {
   REFINED_COURSE,
   REFINED_NEXT_META,
+  REFINED_ROADMAP,
   refinedAccessDaysLabel,
 } from '@/data/compassRefinedCopy'
 
@@ -193,17 +194,35 @@ describe('the Your Course page is built from the course list', () => {
   it('counts its header off the course, not off a typed figure', () => {
     expect(REFINED_COURSE_HEADER.sections).toBe(44)
     expect(REFINED_COURSE_HEADER.chapters).toBe(REFINED_CHAPTERS.length)
-    /* ⚠ THE EYEBROW NAMES THE ENDING — 2026-11-12: "21 Sections - Final
-       Course Exam - Survey - Certificate", the word changed to Lessons the
-       same day ("Use Lessons instead of sections"). The tail is one label per
-       closing row, so a fourth would appear here without an edit; pinned
-       against the course rather than against the string. */
+    /* ⚠ THE EYEBROW COUNTS MODULES — 2026-11-15: "update to 24 Modules". It
+       had named the ending instead ("21 Lessons · Final Course Exam · Survey
+       · Certificate"), which was the right line while those three steps were
+       not on the page; they are cards in the roadmap now, so the card above
+       counts them rather than listing them.
+
+       ⚠ PINNED AGAINST THE TWO ARRAYS, NOT THE STRING — a fourth closing row
+       moves this figure without an edit here, which is what the enumeration
+       guaranteed before it. */
     expect(REFINED_COURSE_HEADER.eyebrow).toBe(
-      '21 Lessons · Final Course Exam · Survey · Certificate',
+      `${REFINED_CHAPTERS.length + REFINED_FINISH_STEPS.length} Modules`,
     )
-    expect(REFINED_COURSE_HEADER.eyebrow.split(' · ')).toHaveLength(
-      1 + REFINED_FINISH_STEPS.length,
-    )
+    expect(REFINED_COURSE_HEADER.eyebrow).toBe('24 Modules')
+    expect(REFINED_COURSE_HEADER.modules).toBe(24)
+  })
+
+  /* ⚠ ONE UNIT ON ONE LINE. The card reads "24 Modules · 13 of 24 modules
+     completed"; a total counted over chapters+ending beside a progress
+     figure counted over chapters alone is audit finding 3 in six words. */
+  it('counts done in the same unit as the total, the ending included', () => {
+    for (const pct of [0, 19, 50, 81, 100]) {
+      const view = refinedCourseView(refinedProgressAt(pct))
+      expect(view.header.modules).toBe(view.chapters.length + view.finish.length)
+      expect(view.header.modulesDone).toBe(
+        view.chapters.filter((c) => c.state === 'done').length +
+          view.finish.filter((f) => f.state === 'done').length,
+      )
+      expect(view.header.modulesDone).toBeLessThanOrEqual(view.header.modules)
+    }
   })
 })
 
@@ -362,8 +381,17 @@ describe('the course counts in lessons', () => {
     expect(REFINED_NEXT_META.parts).not.toMatch(/section/i)
   })
 
-  it('and says the same figure the Your Course eyebrow leads with', () => {
-    expect(REFINED_COURSE_HEADER.eyebrow.startsWith(REFINED_NEXT_META.parts)).toBe(true)
+  /* ⚠ THE TWO LINES PARTED ON 2026-11-15, deliberately. The next-step card's
+     `parts` still counts LESSONS, because what it describes is a lesson; the
+     course card's eyebrow counts MODULES, because what it describes is the
+     roadmap below it. What must stay true is that each names the figure its
+     own list contains — so this pins the eyebrow to the roadmap's unit
+     rather than to the next step's. */
+  it('leaves the course card counting the roadmap, in the roadmap’s own word', () => {
+    expect(REFINED_COURSE_HEADER.eyebrow).toBe(
+      `${REFINED_COURSE_HEADER.modules} ${REFINED_ROADMAP.unit}`,
+    )
+    expect(REFINED_ROADMAP.total.startsWith(REFINED_ROADMAP.unit)).toBe(true)
   })
 })
 
@@ -395,9 +423,16 @@ describe('lessons finished, out of twenty-one', () => {
     expect(last).toBe(21)
   })
 
-  it('is the eyebrow’s own number — one word, one total', () => {
+  /* ⚠ `lessons` / `lessonsDone` ARE STILL THE CHAPTERS' OWN FIGURES and are
+     still derived; what changed on 2026-11-15 is that the EYEBROW no longer
+     names them. They stay because the chapter list is still twenty-one
+     things, and anything counting chapters should read these rather than
+     subtracting the ending from the module count. */
+  it('stays the chapters’ own count, now that the eyebrow names modules', () => {
     const view = refinedCourseView(refinedProgressAt(19))
-    expect(view.header.eyebrow.startsWith(`${view.header.lessons} Lessons`)).toBe(true)
+    expect(view.header.lessons).toBe(view.chapters.length)
+    expect(view.header.eyebrow).not.toMatch(/lesson/i)
+    expect(view.header.modules).toBe(view.header.lessons + view.finish.length)
   })
 })
 

@@ -296,7 +296,11 @@ export function CourseHeadCard({
           <p className="crf-course__sub">
             {header.eyebrow}
             <span aria-hidden className="crf-step__sep" />
-            {header.lessonsDone} of {header.lessons} lessons completed
+            {/* ⚠ MODULES ON BOTH HALVES — 2026-11-15. The eyebrow became
+                "24 Modules" and this said "13 of 21 lessons completed" next
+                to it: two units in one sentence, which is audit finding 3
+                exactly, in a line six words long. */}
+            {header.modulesDone} of {header.modules} modules completed
           </p>
         </div>
         {/* ⚠ NO STATUS WORD — 2026-11-12: "remove". The stat column held "In

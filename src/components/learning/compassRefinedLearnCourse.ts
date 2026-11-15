@@ -6,7 +6,7 @@ import {
   type RefinedProgress,
   type RefinedSectionKind,
 } from '@/data/compassRefinedCourse'
-import { REFINED_FINISH_COPY } from '@/data/compassRefinedCopy'
+import { REFINED_FINISH_COPY, REFINED_ROADMAP } from '@/data/compassRefinedCopy'
 
 /**
  * THE YOUR COURSE PAGE, BUILT FROM THE REAL COURSE — 2026-11-11: "update
@@ -326,13 +326,7 @@ function buildHeader(
    * resolved, because which number the word names is hers to decide. The
    * Overview's next-step line reads this one.
    */
-  eyebrow: [
-    /* ⚠ "Lessons", NOT "Sections" — 2026-11-12: "Use Lessons instead of
-       sections." It is the course's own word: its instruction reads
-       "Complete all lessons in the list below". */
-    `${chapters.length} Lessons`,
-    ...finish.map((f) => REFINED_FINISH_COPY.summaryLabel[f.kind] ?? f.title),
-  ].join(' · '),
+  eyebrow: `${chapters.length + finish.length} ${REFINED_ROADMAP.unit}`,
   /** ⚠ NOTHING DRAWS THIS SINCE 2026-11-12 ("remove"), and it is kept
    *  because it is one line and because the rule it encodes is the one worth
    *  not re-deriving: the header once read "Completed" beside "1 of 41
@@ -363,6 +357,24 @@ function buildHeader(
    */
   lessonsDone: chapters.filter((c) => c.state === 'done').length,
   lessons: chapters.length,
+  /**
+   * ⚠ MODULES, WHICH IS WHAT THE PAGE BELOW COUNTS — 2026-11-15: "update to
+   * 24 Modules". The eyebrow said "21 Lessons" over a roadmap headed "24
+   * Modules Total" with filters reading "All Modules"; one card, two names
+   * for the same list, four inches apart.
+   *
+   * ⚠ 24 IS THE CHAPTERS PLUS THE ENDING, derived from the two arrays rather
+   * than typed, so a fourth closing row moves this figure with it — the same
+   * rule the eyebrow's enumeration followed before it.
+   *
+   * ⚠ AND DONE COUNTS THE ENDING TOO. A learner who has finished the survey
+   * but not the certificate is 23 of 24, and a count that only looked at
+   * chapters would stick at 21 while two cards below it read Completed.
+   */
+  modules: chapters.length + finish.length,
+  modulesDone:
+    chapters.filter((c) => c.state === 'done').length +
+    finish.filter((f) => f.state === 'done').length,
   }
 }
 

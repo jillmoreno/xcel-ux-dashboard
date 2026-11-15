@@ -1906,8 +1906,26 @@
 }
 .crf-map__card--done {
   background: var(--crf-beige-50);
-  border-color: var(--crf-beige-200);
+  --crf-map-edge: var(--crf-beige-200);
 }
+/* ⚠ THE EDGE IS A HOVER AFFORDANCE, NOT A PERMANENT LINE — 2026-11-15:
+   "this existing stroke, have that be the hover stroke, on default, show no
+   stroke outline."
+
+   ⚠ TRANSPARENT, NOT `border: 0`. The 1px stays in the box so nothing moves
+   by a pixel when the stroke appears; a card that resizes on hover is a card
+   that twitches down a column of twenty-four.
+
+   ⚠ THE TWO STATES THAT USE THE STROKE TO SAY SOMETHING KEEP IT. Locked's
+   dashes ARE the locked treatment — with no ground and no edge the card
+   would not be on the page at all — and the open chapter's steel ring is
+   what marks it in a column where everything else has gone quiet. The rule
+   below names the states that give the edge up rather than taking it from
+   every card and handing it back twice. */
+.crf-map__card--done {
+  border-color: transparent;
+}
+
 /* ⚠ HOVER, ON THE CARDS THAT DO SOMETHING — 2026-11-12: "need to show a
    hover effect on the card". Only the expandable ones get it; a card with
    nothing behind its chevron (the Introduction, the Florida laws row) would
@@ -1929,6 +1947,20 @@
 .crf-map__card.is-clickable:hover {
   border-color: var(--crf-steel);
   box-shadow: 0 2px 10px rgb(31 29 24 / 0.07);
+}
+/* ⚠ AND ON A COMPLETED CARD THE STROKE THAT APPEARS IS ITS OWN, not the
+   steel above. Her words were "this EXISTING stroke, have that be the hover
+   stroke" — the beige edge, moved from always to on demand; the lift still
+   comes from the shadow.
+
+   ⚠ IT SITS BELOW THE RULE IT OVERRIDES BECAUSE IT CANNOT OUTRANK IT.
+   `.crf-map__card--done.is-clickable:hover` and
+   `.crf-map__card.is-clickable:hover` are both three class-level
+   selectors — a `--done` modifier is still one class — so they tie, and a
+   tie goes to the later rule. Written above, this looked right in the diff
+   and painted steel on screen. Measured, not assumed. */
+.crf-map__card--done.is-clickable:hover {
+  border-color: var(--crf-map-edge);
 }
 /* The keyboard route is the Details button, which is focusable; its focus
    ring is the browser's. The card is not a tab stop — see the component. */

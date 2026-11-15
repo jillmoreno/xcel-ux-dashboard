@@ -520,11 +520,21 @@ export const REFINED_ROADMAP = {
    * does not count the list.
    *
    * ⚠ IT IS THE FILTER'S OWN NOUN. The pills above read "All Modules", and
-   * a certificate is not a lesson. The course card's eyebrow keeps "21
-   * Lessons · Final Course Exam · Survey · Certificate", which says what the
-   * course is MADE of; this says how many rows are below it.
+   * a certificate is not a lesson.
+   *
+   * ⚠ AND SINCE 2026-11-15 THE COURSE CARD'S EYEBROW READS IT TOO — "update
+   * to 24 Modules". That line had kept "21 Lessons · Final Course Exam ·
+   * Survey · Certificate", on the argument that it said what the course is
+   * MADE of while this said how many rows are below it. Four inches apart on
+   * one screen that is a distinction nobody makes: one card, two names and
+   * two numbers for the same list. The enumeration is no loss now that the
+   * ending's three steps are cards in the roadmap itself — they are three of
+   * the twenty-four, visible rather than named.
    */
   total: 'Modules Total',
+  /** The noun on its own, for the course card's eyebrow — "24 Modules". One
+   *  place, so the card and the heading below it cannot drift apart. */
+  unit: 'Modules',
 } as const
 
 export const REFINED_FINISH_COPY = {
