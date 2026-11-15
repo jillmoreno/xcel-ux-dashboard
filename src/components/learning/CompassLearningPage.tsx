@@ -220,6 +220,11 @@ export function CompassLearningPage({
      and the Variants deck can put two of them side by side. */
   /* HIS READINESS PROTOTYPE — 2026-11-05. Read here with the other Compass
      controls so the body stays a plain function of its props. */
+  /* ⚠ THE GROUND IS THE SHELL'S, NOT A PAGE'S — 2026-11-15, "add a toggle to
+     change the background to white." The tint is painted once on the flex
+     box below, which holds the rail and the page column; read here with the
+     other Compass controls for the same reason they are. */
+  const refinedWhite = useFeatureFlag('compass-refined-ground').enabled
   const overviewV2 = useFeatureFlag('compass-overview-version').variant === 'v2'
   const readinessStage = useFeatureFlag('compass-readiness-stage').variant ?? 'p2'
   const workspaceOn = useFeatureFlag('compass-workspace').enabled
@@ -265,7 +270,22 @@ export function CompassLearningPage({
         seam; every slot in it still points at his component, so nothing moved
         on screen the day it landed. See `compassRefinedPages.ts`. */}
     {jeffMvp ? (
-      <div style={pageStyle}>
+      /* ⚠ THE OVERRIDE IS SPREAD, NOT A SECOND STYLE OBJECT — `pageStyle` is
+         the shape both branches share (flex, stretch, `minHeight: 0`) and it
+         is a shared module constant, so the ground is the only key this
+         changes and only while the flag is on. */
+      <div
+        style={
+          refined && refinedWhite
+            ? /* ⚠ THE CARD TOKEN, NOT A HEX. `--color-surface-card` is the
+                 white the cards on this page already sit on, so "white
+                 background" means the ground stops being a shade behind
+                 them and becomes the same surface — and the dark theme
+                 re-pins it with everything else. */
+              { ...pageStyle, background: 'var(--color-surface-card)' }
+            : pageStyle
+        }
+      >
         {refined ? (
           <CompassRefinedShell
             page={jeffPage}

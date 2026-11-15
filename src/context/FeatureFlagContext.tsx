@@ -1930,6 +1930,39 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'compass-refined-ground',
+    /* ⚠ THE PAGE'S GROUND — 2026-11-15: "add a toggle to change the
+       background to white."
+
+       ⚠ IT IS THE WHOLE SURFACE'S, NOT THE ROADMAP'S, which is why it sits
+       beside `compass-refined-readiness-hero` rather than with the
+       `compass-course-*` arms. The tint is painted once, on the flex box
+       that holds the rail and the page column together (`pageStyle` in
+       `CompassLearningPage`); every Refined page sits on it, so a toggle
+       that changed only the Roadmap would be a toggle that puts two
+       different grounds one rail-click apart.
+
+       ⚠ AND SO IT IS DECLARED ON BOTH REFINED SURFACES. Scoped to the
+       Roadmap alone it could be turned on there and not turned off from the
+       Overview, while still changing the Overview — a control that is
+       invisible exactly where its effect is unexplained.
+
+       ⚠ OFF IS THE BASELINE. `--color-surface-page` (#fbfbfb) is what every
+       Compass page has sat on; this answers whether the cards need any tint
+       behind them at all now that the completed ones carry beige and the
+       locked ones carry nothing. */
+    surface: 'design',
+    owner: 'anjani',
+    versions: ['hybrid-pacing', 'eric-atlas-e2e'],
+    surfaces: ['compass:refined:overview', 'compass:refined:learn'],
+    group: 'Widgets',
+    label: 'White background',
+    description:
+      'Paints the Refined surface — the rail and the page column together — plain white instead of the #fbfbfb the Compass pages have always sat on. Both Refined pages at once, because the ground is painted once behind them. Off is the baseline.',
+    defaultEnabled: false,
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'compass-course-image',
     /* ⚠ THE COURSE'S PICTURE, BESIDE ITS NAME — 2026-11-12: "add a toggle
        that shows the course image to the left of the course details".
