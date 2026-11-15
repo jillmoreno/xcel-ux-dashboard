@@ -1904,6 +1904,24 @@
   border-style: dashed;
   background: transparent;
 }
+/* ⚠ EXCEPT WHEN IT OPENS — 2026-11-15: "because these can be
+   expanded/collapsed, the outline of this needs to be a solid line to help
+   indicate the user can click on it. keep it a light gray style."
+
+   ⚠ SO THE DASHES NOW MEAN ONE THING ONLY: there is nothing behind this. A
+   locked chapter still has its lessons and its exam to show, and the card
+   was telling a learner the opposite of what its chevron offers. The colour
+   does not move — `--crf-card-edge` (#dcdee1) is the light grey it was
+   already drawn in; only the stroke becomes continuous.
+
+   ⚠ IT IS KEYED ON `is-clickable`, WHICH IS THE SAME CONDITION THE CHEVRON
+   IS. The three closing modules — the Final Exam, the Survey, the
+   Certificate — hold nothing and draw no chevron, so they keep the dashes
+   and the rule reads straight off the page: a dashed card is one you cannot
+   open. Nothing has to be remembered to keep the two in step. */
+.crf-map__card--locked.is-clickable {
+  border-style: solid;
+}
 .crf-map__card--done {
   background: var(--crf-beige-50);
   --crf-map-edge: var(--crf-beige-200);
