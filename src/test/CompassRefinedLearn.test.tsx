@@ -616,18 +616,20 @@ describe('the completed run folds at the top', () => {
 
   it('opens on the chapter the learner is in, not on what they have finished', () => {
     const { container } = halfway()
-    /* ⚠ THE COUNT LEFT THE SENTENCE on 2026-11-13 — it is the tag on the
-       right of the bar now ("have there be a tag indicating the completed
-       modules in the right side"), so the accessible name is the label plus
-       that tag's words. */
-    const bar = screen.getByRole('button', { name: /Show completed modules/ })
+    /* ⚠ THE COUNT IS BACK IN THE SENTENCE — 2026-11-15, when the bar took a
+       card's three columns ("the chevron should be in the same place as the
+       other items"). The capsule moved to the mark column and the words
+       moved with the verb, so the name reads "Show 13 completed modules".
+       Matched loosely on purpose: this test is about which cards are drawn,
+       not about the wording. */
+    const bar = screen.getByRole('button', { name: /Show \d+ completed modules/ })
     expect(bar).toBeTruthy()
     /* ⚠ THE POINT OF THE FOLD: the first card is not a finished one. */
     expect(container.querySelector('.crf-map__card--done')).toBeNull()
 
     fireEvent.click(bar)
     expect(container.querySelector('.crf-map__card--done')).not.toBeNull()
-    expect(screen.getByRole('button', { name: /Hide completed modules/ })).toBeTruthy()
+    expect(screen.getByRole('button', { name: /Hide \d+ completed modules/ })).toBeTruthy()
   })
 
   it('counts the leading run, and says it in the bar', () => {
@@ -801,25 +803,82 @@ describe('the open chapter shows its own progress', () => {
   })
 })
 
-describe('the completed fold carries its count as a tag', () => {
-  it('puts the cards’ own tag on the right of the bar', () => {
-    const { container } = render(
+/* ⚠ THE BAR WEARS A CARD'S THREE COLUMNS — 2026-11-15: "the chevron should
+   be in the same place as the other items. and the completed icon should be
+   in the same place as when the items are expanded." It had them reversed —
+   chevron first, tag pinned right — so opening the run swapped the positions
+   of both landmarks. */
+describe('the completed fold is laid out like the cards it stands for', () => {
+  const foldedCards = (course: Partial<CourseOptions> = {}) =>
+    render(
       <MemoryRouter>
         <AccountProvider>
           <FeatureFlagProvider>
-            <CompassRefinedLearn stage="q3" course={{ ...COURSE_DEFAULTS, rows: 'cards' }} />
+            <CompassRefinedLearn
+              stage="q3"
+              course={{ ...COURSE_DEFAULTS, rows: 'cards', ...course }}
+            />
           </FeatureFlagProvider>
         </AccountProvider>
       </MemoryRouter>,
     )
+
+  it('carries the cards’ own tag, in the mark column, with the count', () => {
+    const { container } = foldedCards()
     const bar = container.querySelector('.crf-map__more--done')!
-    const tag = bar.querySelector('.crf-map__more-tag')!
+    const tag = bar.querySelector('.crf-map__state')!
     /* The green a completed card wears, and the count it stands in for. */
     expect(tag.className).toContain('crf-map__state--done')
-    expect(tag.textContent).toContain('Completed')
     const n = Number(tag.querySelector('.crf-map__mark')!.textContent)
     fireEvent.click(bar)
     expect(container.querySelectorAll('.crf-map__card--done')).toHaveLength(n)
+  })
+
+  /* ⚠ THE ORDER IS THE WHOLE ASK. Mark first, sentence, chevron last — the
+     same three children, in the same order, a card's row has. */
+  it('puts the mark first and the chevron last, as a card does', () => {
+    const { container } = foldedCards()
+    for (const bar of container.querySelectorAll('.crf-map__more')) {
+      const kids = [...bar.children]
+      expect(kids.at(-1)!.className, bar.textContent!).toContain('crf-chev')
+      const mark = kids.findIndex((e) => e.classList.contains('crf-map__state'))
+      const text = kids.findIndex((e) => e.classList.contains('crf-map__moretext'))
+      if (mark > -1) expect(mark).toBeLessThan(text)
+      expect(text).toBeLessThan(kids.length - 1)
+    }
+  })
+
+  /* ⚠ THE CAPSULE FOLLOWS THE ARM, exactly as the cards' marks do — 114px
+     with its word on the Number arm, mark-only on the other two. The three
+     cannot disagree because they read one condition (`markOnly`) and one
+     variable (`--crf-map-tag`, now declared on the list so the bar can see
+     it). */
+  it('wears the arm’s own mark treatment, like the cards below it', () => {
+    for (const [mark, word] of [
+      ['number', true],
+      ['icon', false],
+      ['kind', false],
+    ] as const) {
+      const { container, unmount } = foldedCards({ chapterMark: mark })
+      const tag = container.querySelector('.crf-map__more--done .crf-map__state')!
+      expect(tag.className.includes('crf-map__state--markonly'), mark).toBe(!word)
+      expect(tag.textContent!.includes('Completed'), mark).toBe(word)
+      unmount()
+    }
+  })
+
+  /* ⚠ AND THE COUNT IS SAID ONCE. The foot bar used to end in "5 more,
+     locked" while its capsule now carries the same 5; two of one figure in
+     an eight-word bar reads as two different figures. */
+  it('says each count once', () => {
+    const { container } = foldedCards()
+    const foot = [...container.querySelectorAll('.crf-map__more')].find(
+      (b) => !b.classList.contains('crf-map__more--done'),
+    )
+    if (!foot) return
+    const n = foot.querySelector('.crf-map__mark')!.textContent!
+    const rest = foot.querySelector('.crf-map__moretext')!.textContent!
+    expect(rest).not.toContain(n)
   })
 })
 

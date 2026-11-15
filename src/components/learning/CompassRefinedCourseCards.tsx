@@ -315,26 +315,56 @@ export function CompassRefinedCourseCards({
             aria-expanded={showDone}
             onClick={() => setShowDone(!showDone)}
           >
-            <ChevronDown
-              size={13}
-              aria-hidden
-              style={{ transform: showDone ? 'rotate(180deg)' : undefined }}
-            />
-            {showDone ? 'Hide' : 'Show'} completed{' '}
-            {doneCount === 1 ? 'module' : 'modules'}
-            {/* ⚠ THE COUNT AS THE CARDS' OWN TAG — 2026-11-13: "have there
-                be a tag indicating the completed modules in the right side".
-                It had been a number inside the sentence. On the right it
-                mirrors the bar at the other end of the list, which carries
-                its count there too, and it is drawn as the tag those eleven
-                cards wear — same green, same shape, mark then dot then word
-                — so the bar reads as the pile it is standing in for. */}
-            <span className="crf-map__state crf-map__state--done crf-map__more-tag">
+            {/* ⚠ THE BAR WEARS A CARD'S GEOMETRY — 2026-11-15: "the chevron
+                should be in the same place as the other items. and the
+                completed icon should be in the same place as when the items
+                are expanded."
+
+                ⚠ MARK LEFT, SENTENCE, CHEVRON HARD RIGHT — the three columns
+                every card in this list has. The bar had them in the reverse
+                order (chevron first, tag last), so opening the completed run
+                moved both of its landmarks across the column: the green
+                capsule jumped from the right edge to the left, and the
+                chevron the other way. A fold that rearranges the thing it
+                folds is a fold that has to be re-read every time.
+
+                ⚠ THE CAPSULE IS THE CARDS' OWN, `markOnly` INCLUDED, so it
+                is the width and the x-position the marks below it are at on
+                whichever arm is showing — 114px with its word on the Number
+                arm, 30px without on the other two. `--crf-map-tag` is
+                declared on the LIST now rather than on the card, which is
+                what lets the bar read the same value.
+
+                ⚠ IT CARRIES THE COUNT, NOT A SECOND TICK. The place is hers;
+                the content is the one thing a folded pile has to say that an
+                open one does not. */}
+            <span
+              className={`crf-map__state crf-map__state--done${
+                markOnly ? ' crf-map__state--markonly' : ''
+              }`}
+            >
               <span className="crf-map__mark" aria-hidden>
                 {doneCount}
               </span>
-              <span aria-hidden className="crf-map__dot" />
-              Completed
+              {!markOnly ? (
+                <>
+                  <span aria-hidden className="crf-map__dot" />
+                  Completed
+                </>
+              ) : null}
+            </span>
+            <span className="crf-map__moretext">
+              {showDone ? 'Hide' : 'Show'} {doneCount} completed{' '}
+              {doneCount === 1 ? 'module' : 'modules'}
+            </span>
+            {/* ⚠ THE SAME `crf-chev` THE CARDS DRAW, as a span: this whole
+                bar is already the button, and a button inside a button is
+                invalid markup and a second tab stop for one action. */}
+            <span className="crf-chev" aria-hidden>
+              <ChevronDown
+                size={14}
+                style={{ transform: showDone ? 'rotate(180deg)' : undefined }}
+              />
             </span>
           </button>
         ) : null}
@@ -702,15 +732,44 @@ export function CompassRefinedCourseCards({
         })}
 
         {filter !== 'all' ? null : folded ? (
+          /* ⚠ THE FOOT'S BAR TAKES THE SAME THREE COLUMNS — 2026-11-15.
+             Her note was written on the completed fold; the two bars have
+             been one shape since they were built, and leaving this one
+             reversed would have made the page's two folds disagree. Its
+             capsule is the locked tone, because that is what it stands in
+             for. */
           <button type="button" className="crf-map__more" onClick={() => setShowAll(true)}>
-            <ChevronDown size={13} aria-hidden />
-            Show all {chapters.length} chapters
-            <span className="crf-ch__more-n">{hiddenCount} more, locked</span>
+            <span
+              className={`crf-map__state crf-map__state--locked${
+                markOnly ? ' crf-map__state--markonly' : ''
+              }`}
+            >
+              <span className="crf-map__mark" aria-hidden>
+                {hiddenCount}
+              </span>
+              {!markOnly ? (
+                <>
+                  <span aria-hidden className="crf-map__dot" />
+                  {COPY.lockedWord}
+                </>
+              ) : null}
+            </span>
+            {/* ⚠ THE TRAILING "{n} more, locked" IS GONE with the move. It
+                was the count pinned to the right edge, and the capsule on
+                the left now carries that number — and, on the Number arm,
+                the word with it. Two 5s in one eight-word bar is the kind of
+                duplication a learner reads as two different figures. */}
+            <span className="crf-map__moretext">Show all {chapters.length} chapters</span>
+            <span className="crf-chev" aria-hidden>
+              <ChevronDown size={14} />
+            </span>
           </button>
         ) : cutoff < chapters.length ? (
           <button type="button" className="crf-map__more" onClick={() => setShowAll(false)}>
-            <ChevronDown size={13} aria-hidden style={{ transform: 'rotate(180deg)' }} />
-            Show less
+            <span className="crf-map__moretext">Show less</span>
+            <span className="crf-chev" aria-hidden>
+              <ChevronDown size={14} style={{ transform: 'rotate(180deg)' }} />
+            </span>
           </button>
         ) : null}
 

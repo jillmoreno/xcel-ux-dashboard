@@ -2020,10 +2020,14 @@
    ⚠ THE `markonly` AND `word` TAGS ARE EXEMPT. One is a glyph in a box and
    the other sits over by the controls; neither is the column this is
    about. */
-.crf-map__card {
+/* ⚠ ON THE LIST, NOT ON THE CARD — 2026-11-15. The fold bars read this too
+   now that they wear a card's three columns, and a variable declared on
+   `.crf-map__card` is invisible to a sibling `<button>`. Declared here it is
+   one value for everything in the column, which is the whole point of it. */
+.crf-map {
   --crf-map-tag: 114px;
 }
-.crf-map--icon .crf-map__card {
+.crf-map--icon {
   --crf-map-tag: 30px;
 }
 .crf-map__state:not(.crf-map__state--word) {
@@ -2377,12 +2381,21 @@
   margin-top: 12px;
 }
 /* The fold's control, as a card of its own so the column keeps its rhythm. */
+/* ⚠ A CARD'S THREE COLUMNS — 2026-11-15: "the chevron should be in the same
+   place as the other items. and the completed icon should be in the same
+   place as when the items are expanded."
+
+   ⚠ 12px, WHICH IS `.crf-map__top`'s GAP AND NOT `.crf-map__body`'s 16. The
+   body's gap sits between the card's main block and what follows it; the one
+   that puts a title next to its mark is the row inside. Measured — 16 landed
+   the sentence 4px right of every title in the column, which is exactly the
+   kind of miss that looks like nothing in a diff. */
 .crf-map__more {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   width: 100%;
-  padding: 14px 20px;
+  padding: 8px 20px;
   border: 1px dashed var(--crf-card-edge);
   border-radius: 14px;
   background: none;
@@ -2393,6 +2406,15 @@
   text-align: left;
   cursor: pointer;
 }
+/* The sentence takes the middle column, so the chevron is pushed hard right
+   exactly as the cards' is — by the name block, not by a margin. */
+.crf-map__moretext {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
 .crf-map__more:hover {
   background: var(--crf-steel-wash);
 }
@@ -2402,11 +2424,10 @@
 .crf-map__more--done::after {
   content: none;
 }
-/* The count, hard right, the way the bar at the other end carries its own.
-   It is the tag the cards it stands in for are wearing. */
-.crf-map__more-tag {
-  margin-left: auto;
-}
+/* ⚠ `.crf-map__more-tag` IS GONE — 2026-11-15. It pinned the count to the
+   right edge, which is where the chevron belongs; the capsule moved to the
+   mark column and needs no rule of its own, because it is the cards' own
+   tag with the cards' own width. */
 /* ⚠ THE BLURB ON THE ROWS LAYOUT TOO, because the toggle is a question about
    content and the arm is a question about shape — see `compass-course-blurb`.
    Sized to sit under a 17px row title without competing with it. */
