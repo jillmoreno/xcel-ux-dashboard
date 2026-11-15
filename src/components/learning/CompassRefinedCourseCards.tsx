@@ -24,7 +24,7 @@
  */
 
 import { useState } from 'react'
-import { BookOpenRegular, Check, ChevronDown, CircleCheckRegular, LockRegular } from '@/icons'
+import { BookOpenRegular, ChevronDown, CircleCheckRegular, LockRegular } from '@/icons'
 import { JEFF_MVP_LEARN_COPY as COPY } from '@/data/compassJeffMvpFixtures'
 import {
   REFINED_CHAPTER_BLURBS,
@@ -166,7 +166,14 @@ function KindMark({ kind, state }: { kind: RefinedSectionKind; state?: string })
  * the only thing they have.
  */
 function StateMark({ state }: { state: string }) {
-  if (state === 'done') return <Check size={12} />
+  /* ⚠ A RING AROUND THE TICK — 2026-11-15, "use option 2 for the completed
+     mark". Seven treatments were drawn as three-card columns (the
+     scratchpad's `completed-mark-options.html`) and this is the one that
+     keeps the 23×30 capsule every other state wears — so the three marks
+     stay one family and the titles stay on one left edge — while making
+     this arm and the `kind` arm agree about what done looks like. A bare
+     tick at 12px can read as a stray mark; a ring survives a glance. */
+  if (state === 'done') return <CircleCheckRegular size={12} />
   if (state === 'locked') return <LockRegular size={11} />
   return <BookOpenRegular size={12} />
 }

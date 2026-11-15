@@ -2006,11 +2006,19 @@
    shades either side are derived from that one value, so the tint and the
    ink are this green's own.
 
-   ⚠ THE INK IS -600, NOT -500. Measured against BOTH stops of the gradient:
-   -500 on the -100 ground is 4.37:1, under the 4.5 floor 11px text needs,
-   and worse against -200. -600 reads 6.23 and 5.22. */
+   ⚠ FLAT, NOT A GRADIENT — 2026-11-15: "change so the background color isnt
+   a weird gradient, use a solid, light green color." The gradient was taken
+   up under the "(use gradients as needed)" half of her 11-12 note, and at
+   23px tall it needed nothing: two stops over twenty-three pixels is not a
+   gradient anybody reads as one, it is a flat tint that looks slightly
+   dirty at the bottom. `-100` is the light stop on its own.
+
+   ⚠ THE INK IS -600, NOT -500, and that is what the flat ground changes.
+   The pair used to be measured against BOTH stops — -500 was 4.37:1 on
+   -100, under the 4.5 floor 11px text needs, and worse against -200. On a
+   flat -100 there is one number to clear and -600 reads 6.23. */
 .crf-map__state--done {
-  background: linear-gradient(180deg, var(--color-pass-100), var(--color-pass-200));
+  background: var(--color-pass-100);
   color: var(--color-pass-600);
 }
 /* ⚠ NEITHER OPEN STATE IS GREEN, AMBER OR RED. Her palette assigns those to
