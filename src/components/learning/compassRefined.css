@@ -1887,16 +1887,26 @@
    the same kind of thing — present on the page, not yet present to the
    learner — so it borrows the look rather than inventing a second one.
 
-   ⚠ COMPLETED TAKES HER BEIGE RAMP at 100 (#f3f1ed), the value she gave with
-   the Overview ask. It is the warm half of the pairing this page has used
-   since: warm for what is behind you, cool for what is in front. */
+   ⚠ COMPLETED TAKES HER BEIGE RAMP, and at 50 rather than 100 since
+   2026-11-15: "lighter beige background". The 100 (#f3f1ed) she gave with
+   the Overview ask was a value for ONE card on a page; here it is the ground
+   of eighteen cards out of twenty-four, and at that count a tint chosen to
+   mark a card marks most of the page instead. 50 is the same hue mixed 55%
+   into white — still the warm half of the pairing this page has used since
+   (warm for what is behind you, cool for what is in front), at the weight a
+   majority state can carry.
+
+   ⚠ THE EDGE DROPS WITH IT, 300 to 200. A #dbd6c9 border around a fill that
+   is now most of the way to white reads as a ring drawn around the card
+   rather than as its edge — the border was in proportion to the old fill,
+   not to this one. */
 .crf-map__card--locked {
   border-style: dashed;
   background: transparent;
 }
 .crf-map__card--done {
-  background: var(--crf-beige-100);
-  border-color: var(--crf-beige-300);
+  background: var(--crf-beige-50);
+  border-color: var(--crf-beige-200);
 }
 /* ⚠ HOVER, ON THE CARDS THAT DO SOMETHING — 2026-11-12: "need to show a
    hover effect on the card". Only the expandable ones get it; a card with
