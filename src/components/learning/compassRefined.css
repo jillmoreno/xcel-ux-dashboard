@@ -2225,12 +2225,23 @@
 /* ⚠ NO GAP ABOVE IT — 2026-11-14: "remove the top padding here." The three
    lines of the name block are one statement about one module — what it is,
    what it costs, where the learner stands on it — and an 8px step before the
-   last of them read as a separate band. They stack on their own line heights
-   now. */
+   last of them read as a separate band.
+
+   ⚠ AND NO GAP INSIDE IT EITHER, since 2026-11-15 — the row is now the
+   state, a dot and the module's parts ("Have the Completed be the first item
+   in the 2nd line. use a divider dot"), and `.crf-map__dot` carries its own
+   0 7px. A flex gap on top of that would space the dot differently from
+   every other dot on the page, which are all inside running text. The bar
+   takes the gap back explicitly below, because it is not part of the
+   sentence. */
 .crf-map__status {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 0;
+}
+/* The parts sit on the state's own baseline now rather than under it. */
+.crf-map__status .crf-map__label {
+  margin: 0;
 }
 /* ⚠ THE WORD ON ITS OWN — 2026-11-14, "Just have the word 'Completed' under
    the text." It had been the capsule the tag arm draws, which put a second
@@ -2254,9 +2265,11 @@
   color: var(--crf-locked-ink);
 }
 /* The bar does not stretch to the column's width here: it sits next to the
-   word, so it is as wide as it is on the row. */
+   word, so it is as wide as it is on the row. The margin replaces the flex
+   gap the row gave up when the dot became the separator. */
 .crf-map__status .crf-map__bar {
   flex: 0 0 120px;
+  margin-left: 12px;
 }
 
 /* ⚠ THE ROADMAP CARD'S ACTION HAS NO GROUND — 2026-11-14: "have the button

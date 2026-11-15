@@ -432,24 +432,35 @@ export function CompassRefinedCourseCards({
                         height of both. */}
                     <div className="crf-map__name">
                       <p className="crf-map__title">{c.title}</p>
-                      {/* ⚠ RENDERED ON ANYTHING IT CAN SAY, not only on a
-                          chapter label. The Florida laws row has no number
-                          in the course list and does have an exam, so
-                          gating on the label alone dropped its "1 Chapter
-                          Quiz" — the one card in twenty-one where the two
-                          conditions differ. */}
-                      {chapterParts(c) ? (
-                        <p className="crf-map__label">{chapterParts(c)}</p>
-                      ) : null}
-                      {/* ⚠ THE STATUS UNDER THE DETAILS — 2026-11-14, the
-                          `under` arm of `compass-course-status`: "the
-                          status … directly under the Course details. In
-                          progress, the progress bar will be to the right of
-                          it." The bar comes with it, because it is a fact
-                          about the same state; the row's own bar is not
-                          drawn on this arm, two bars for one chapter being
-                          audit finding 4 in miniature. */}
-                      {status === 'under' && c.state !== 'locked' ? (
+                      {/* ⚠ ONE SECOND LINE, NOT TWO — 2026-11-15: "Have the
+                          Completed be the first item in the 2nd line. use a
+                          divider dot." The state and the module's cost had
+                          been stacked, which made the card three bands tall
+                          to say two short things and put the state — the
+                          fact a learner scans for — on the quietest line of
+                          the three. They are one line now, the state
+                          leading, joined by the drawn dot this page
+                          separates phrases with everywhere else.
+
+                          ⚠ THE WORD IS A SIBLING OF THE LABEL, NOT INSIDE
+                          IT. `.crf-map__label` stays exactly the module's
+                          own parts — count, quiz, time — so anything reading
+                          that line (the tests, a future export) still reads
+                          what the module costs and not a state mixed into
+                          it.
+
+                          ⚠ THE PARTS ARE RENDERED ON ANYTHING THAT CAN SAY
+                          THEM, not only on a chapter label. The Florida laws
+                          row has no number in the course list and does have
+                          an exam, so gating on the label alone dropped its
+                          "1 Chapter Quiz" — the one card in twenty-one where
+                          the two conditions differ.
+
+                          ⚠ AND A LOCKED CARD ON THE `under` ARM HAS NO WORD
+                          HERE — it wears the tag over by the controls (see
+                          `underLock`), so its second line is the parts
+                          alone. */}
+                      {status === 'under' ? (
                         <div className="crf-map__status">
                           {/* ⚠ THE WORD, NOT A TAG — 2026-11-14: "Just have
                               the word 'Completed' under the text." Under the
@@ -457,9 +468,23 @@ export function CompassRefinedCourseCards({
                               the mark, which put a second boxed thing on a
                               card that already has one. It keeps the state's
                               ink; the box and the glyph go. */}
-                          <span className={`crf-map__word crf-map__word--${pill.tone}`}>
-                            {pill.word}
-                          </span>
+                          {c.state !== 'locked' ? (
+                            <span className={`crf-map__word crf-map__word--${pill.tone}`}>
+                              {pill.word}
+                            </span>
+                          ) : null}
+                          {c.state !== 'locked' && chapterParts(c) ? (
+                            <span aria-hidden className="crf-map__dot" />
+                          ) : null}
+                          {chapterParts(c) ? (
+                            <p className="crf-map__label">{chapterParts(c)}</p>
+                          ) : null}
+                          {/* ⚠ THE BAR COMES WITH THE WORD — 2026-11-14,
+                              "In progress, the progress bar will be to the
+                              right of it." It is a fact about the same
+                              state; the row's own bar is not drawn on this
+                              arm, two bars for one chapter being audit
+                              finding 4 in miniature. */}
                           {c.state === 'current' ? (
                             <span
                               className="crf-map__bar"
@@ -473,6 +498,8 @@ export function CompassRefinedCourseCards({
                             </span>
                           ) : null}
                         </div>
+                      ) : chapterParts(c) ? (
+                        <p className="crf-map__label">{chapterParts(c)}</p>
                       ) : null}
                     </div>
                     {/* ⚠ A BAR ON THE OPEN CHAPTER — 2026-11-13: "in
