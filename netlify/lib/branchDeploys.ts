@@ -41,6 +41,26 @@ export type BranchDeploy = {
   /** Who pushed it, when Netlify has it. A LABEL, not an identity we verified
    *  — the same standing `addedBy` has on the board. */
   author: string
+  /**
+   * The state of the NEWEST deploy of this branch (2026-11-16, for the
+   * Design section). `ready` is the only state with an address that opens;
+   * `building` is a push Netlify has not finished; `failed` is a push whose
+   * build broke — the one case a designer needs told, because the alias
+   * quietly keeps serving the previous build and nothing looks wrong.
+   */
+  build: 'ready' | 'building' | 'failed'
+  /** The commit the newest deploy was built from — the sha the git facts
+   *  (`onStage`, `released`) are asked about. '' when Netlify has none. */
+  sha: string
+}
+
+/** The build state Netlify's deploy `state` maps to. Everything that is not
+ *  done and not broken is "still going" — `new`, `enqueued`, `building`,
+ *  `processing`, `preparing` are all the same thing to a designer waiting. */
+export function buildStateOf(state: string): BranchDeploy['build'] {
+  if (state === 'ready') return 'ready'
+  if (state === 'error') return 'failed'
+  return 'building'
 }
 
 /**
@@ -143,10 +163,13 @@ export function deployBranchUrl(deploy: Json, slug: string, siteHost: string): s
  */
 export function selectBranchDeploys(
   deploys: unknown,
-  opts: { siteHost: string; productionBranch?: string },
+  opts: { siteHost: string; productionBranch?: string; stageBranch?: string },
 ): BranchDeploy[] {
   if (!Array.isArray(deploys)) return []
   const production = (opts.productionBranch || 'main').toLowerCase()
+  // `stage` is not a designer's branch either — it is the OTHER build of the
+  // product (CLAUDE.md, "STAGE"), and the Prototypes switch is its door.
+  const stage = (opts.stageBranch || 'stage').toLowerCase()
   const byBranch = new Map<string, BranchDeploy>()
   const seenAt = new Map<string, string>()
 
@@ -154,10 +177,17 @@ export function selectBranchDeploys(
     if (typeof raw !== 'object' || raw === null) continue
     const d = raw as Json
     if (str(d.context) !== 'branch-deploy') continue
-    if (str(d.state) !== 'ready') continue
+    /* EVERY STATE, since 2026-11-16 — not only `ready`. The Design section
+       lists a branch from the moment it is PUSHED, so the designer sees their
+       row say "Building…" rather than nothing at all for four minutes and
+       then a link. The address is still only trusted when `build` is
+       `ready`; the client draws Open accordingly. */
+    const state = str(d.state)
 
     const branch = str(d.branch)
-    if (!branch || branch.toLowerCase() === production) continue
+    if (!branch) continue
+    const lower = branch.toLowerCase()
+    if (lower === production || lower === stage) continue
 
     const slug = slugifyBranch(branch)
     const url = deployBranchUrl(d, slug, opts.siteHost)
@@ -180,6 +210,8 @@ export function selectBranchDeploys(
       // Netlify puts the commit subject in `title` on a git-triggered deploy.
       commit: str(d.title),
       author: str(d.committer),
+      build: buildStateOf(state),
+      sha: str(d.commit_ref),
     })
   }
 

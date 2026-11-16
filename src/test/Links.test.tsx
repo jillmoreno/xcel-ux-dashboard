@@ -619,9 +619,10 @@ describe('the Links section on the gateway', () => {
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
     expect(await screen.findByRole('heading', { level: 1, name: 'Resources' })).toBeInTheDocument()
 
-    // Position: Prototypes · Refinement · Research · Resources, in that
-    // order (Research moved above it 2026-09-29; it was labelled "Other
-    // Links" until 2026-10-07). What this assertion
+    // Position: Prototypes · Design · Refinement · Research · Resources, in
+    // that order (Research moved above it 2026-09-29; it was labelled "Other
+    // Links" until 2026-10-07; Design, the derived branch list, slotted in
+    // under Prototypes 2026-11-16). What this assertion
     // is actually FOR is unchanged by that: Resources has to sit inside the
     // open group, above the gated pipeline sections — the argument being that
     // it belongs with the front door, not behind the password.
@@ -630,7 +631,7 @@ describe('the Links section on the gateway', () => {
       .map((b) => b.textContent?.replace(/\d+$/, '').trim())
     const protoAt = labels.indexOf('Prototypes')
     expect(protoAt).toBeGreaterThanOrEqual(0)
-    expect(labels.slice(protoAt, protoAt + 4)).toEqual(['Prototypes', 'Refinement', 'Research', 'Resources'])
+    expect(labels.slice(protoAt, protoAt + 5)).toEqual(['Prototypes', 'Design', 'Refinement', 'Research', 'Resources'])
   })
 
   it('a deep link into the section opens it', async () => {

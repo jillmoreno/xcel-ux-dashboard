@@ -43,11 +43,14 @@ function renderDashboard(initialPath = '/') {
 }
 
 /** The nav order is load-bearing — see `NAV_EYEBROWS` in UxDashboardPage.tsx.
- *  Twelve sections since 2026-10-15 (ten plus the two Team sections): Design is retired with the Designers group
- *  it headed, Explorations (was Exploration) moved up to sit under PRDs, and
- *  Archive and QA Notes sit under Dev Handoff, ungated. */
+ *  Thirteen sections since 2026-11-16: the twelve of 2026-10-15 (Design
+ *  retired with the Designers group it headed, Explorations moved up under
+ *  PRDs, Archive and QA Notes under Dev Handoff, ungated) plus DESIGN, back
+ *  as a different thing — derived from the branch list, between Prototypes
+ *  and Refinement. See `DesignPanel.tsx`. */
 const EXPECTED_SECTIONS = [
   'Prototypes',
+  'Design',
   'Refinement',
   'Research',
   'Resources',
@@ -355,11 +358,32 @@ describe('the Designers group is gone (2026-10-15)', () => {
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Explorations')
   })
 
-  it('draws no Designers eyebrow, and Design has no nav row', () => {
+  it('draws no Designers eyebrow; Design is a nav row again, directly under Prototypes (2026-11-16)', () => {
+    // The 2026-10-15 Design — feature rows by status, behind the Designers
+    // group — stays gone. The row that is back is the derived branch list
+    // (`DesignPanel.tsx`), and it sits under Prototypes because it answers
+    // the question between "what is the product" and "what is under
+    // discussion": what is being worked on.
     renderDashboard()
     expect(screen.queryByText(/^Designers$/i)).toBeNull()
     const nav = screen.getByRole('navigation')
-    expect(within(nav).queryByRole('button', { name: /^Design\b/ })).toBeNull()
+    const labels = within(nav)
+      .getAllByRole('button')
+      .map((b) => b.textContent ?? '')
+    // The same normalisation `OneSite.test.tsx` uses: the count is appended
+    // to the label's text.
+    const name = (l: string) => l.replace(/\d+$/, '').trim()
+    const prototypes = labels.findIndex((l) => name(l) === 'Prototypes')
+    const design = labels.findIndex((l) => name(l) === 'Design')
+    expect(design).toBe(prototypes + 1)
+  })
+
+  it('a ?section=design deep link lands on the derived section, and says why it is empty here', async () => {
+    renderDashboard('/?section=design')
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Design')
+    // No `/api/branches` under test, so the panel says so rather than
+    // drawing an empty list that looks like "no branches".
+    expect(await screen.findByText(/only on the deployed Hub/)).toBeInTheDocument()
   })
 })
 

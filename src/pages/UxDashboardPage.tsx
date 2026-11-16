@@ -23,6 +23,8 @@ import { PrototypeFeaturePage } from './PrototypeFeaturePage'
 import { ComponentPreviewThumb } from '@/components/prototype/ComponentPreviewThumb'
 import { GeneratedThumb, THUMB_W, THUMB_H } from '@/components/prototype/GeneratedThumb'
 import { HubRow, type HubRowTag } from '@/components/prototype/HubRow'
+import { useStagedScopesFromBranches, type StagedFact } from '@/data/branchStore'
+import { DesignPanel } from '@/components/prototype/DesignPanel'
 import { hubListStyle, hubMetaChipStyle, hubTagStyle } from '@/components/prototype/hubRowStyles'
 import { primaryPreviewSrc } from '@/components/prototype/featurePreviewSrc'
 import { ArchiveTable } from '@/components/prototype/ArchiveTable'
@@ -34,7 +36,7 @@ import { formatStamp, formatUpdated } from '@/components/prototype/formatUpdated
 import { useDemoCount } from '@/data/demoStore'
 import { useResearchCount } from '@/data/researchStore'
 import { usePrdCount } from '@/data/prdStore'
-import { isPrototypeScope, isTodoColumn, useStagedScopes, useTodoBoardCount, type TodoCard } from '@/data/todoBoardStore'
+import { isPrototypeScope, isTodoColumn, useStagedScopes, useTodoBoardCount } from '@/data/todoBoardStore'
 import { useQaNoteCount } from '@/data/qaNoteStore'
 import { UX_TOKEN_BRIDGE, mirrorPaletteToRoot } from '@/components/prototype/uxPaletteBridge'
 import {
@@ -123,6 +125,7 @@ import { Toast } from '@/components/ui/Toast'
 /* ── The taxonomy ─────────────────────────────────────────────────────────── */
 
 type UxSection =
+  | 'design'
   | 'demo'
   | 'links'
   | 'prds'
@@ -187,6 +190,21 @@ const SECTIONS: SectionDef[] = [
     // and a sentence over them repeated it. Empty draws no lede at all; see
     // the render site, which skips the <p> rather than drawing a blank one.
     blurb: 'The product as it is right now.',
+  },
+  {
+    /* DESIGN IS BACK (2026-11-16), and it is a different thing from the Design
+       retired on 2026-10-15. That one was a list of feature rows with a
+       status, and it listed nothing. This one is DERIVED: every branch
+       Netlify has built lately, grouped by the feature its name says it is
+       for, each row saying where the work is — building, open to look at, on
+       stage, released — read from Netlify and git, authored by nobody. It sits
+       between Prototypes (what the product is) and Refinement (what is being
+       discussed), because it answers the question in between: what is being
+       worked on. The whole designer flow is now "name the branch, push"; see
+       `DesignPanel.tsx` and `src/data/branchName.ts`. */
+    id: 'design',
+    label: 'Design',
+    blurb: 'Every branch being worked on, where it is, and who is on it.',
   },
   {
     // The REVIEW INBOX, authored on the page (2026-09-18) — labelled
@@ -417,7 +435,9 @@ const DEFAULT_SECTION: UxSection = 'prototypes'
  */
 const NAV_EYEBROWS: Partial<Record<UxSection, string>> = {
   prototypes: 'Demo',
-  demo: 'Design & Research',
+  // Design is the group's first row since 2026-11-16; the eyebrow moved up
+  // with it (one entry per group, on its first section — see Team below).
+  design: 'Design & Research',
   development: 'Dev Handoff',
   // TEAM — 2026-10-15. The fourth group, and the first that is about how the
   // team works rather than about the product: the board (who is on what) and
@@ -442,9 +462,9 @@ const LEGACY_SECTIONS: Record<string, UxSection> = {
   // Prototypes now rather than Demo.
   dashboard: 'prototypes',
   dev: 'development',
-  // Design was retired 2026-10-15; anything it would have held (a row with a
-  // status) sits on the Development board.
-  design: 'development',
+  // `design` is a real section again since 2026-11-16 (it resolved to
+  // Development between 2026-10-15 and then). No alias needed: the value
+  // matches a visible section and resolves on its own.
 }
 
 function sectionFromParam(value: string | null, tab: string | null): UxSection | null {
@@ -1420,7 +1440,14 @@ export function UxDashboardPage() {
      who ran `/share-to-stage` flipped to Stage and saw a card identical to
      the one under Main. See `useStagedScopes` for why reading a card is
      allowed where reading the stage build is not. */
-  const staged = useStagedScopes()
+  const stagedCards = useStagedScopes()
+  /* SINCE 2026-11-16 THE FACT COMES FROM GIT FIRST — `share-to-stage` files no
+     card any more; a branch every commit of which is on `stage` IS staged,
+     and `stagedScopesFromBranches` says which surface from its name. The
+     cards are the fallback for what was filed before today, and for a
+     deploy with no GITHUB_TOKEN. Same three fields either way. */
+  const stagedBranches = useStagedScopesFromBranches()
+  const staged = useMemo(() => ({ ...stagedCards, ...stagedBranches }), [stagedCards, stagedBranches])
 
   /* The other half of the share link: whatever the board is filtered to is in
      the address, so copying it copies the view. `replace` so a filter does not
@@ -1516,6 +1543,9 @@ export function UxDashboardPage() {
 
   const bySection = useMemo(() => {
     const out: Record<UxSection, PrototypeFeature[]> = {
+      // Not a list of features — derived from the branch list, see
+      // `DesignPanel`. No nav count: the number changes as Netlify builds.
+      design: [],
       // Not a list of features — the Demo panel owns its own data, so this
       // stays empty by design and the nav count comes from `useDemoCount`.
       demo: [],
@@ -1875,6 +1905,10 @@ export function UxDashboardPage() {
           <LinksPanel />
         ) : section === 'prds' ? (
           <PrdsPanel />
+        ) : section === 'design' ? (
+          // Derived from the branch list — nothing to author. See the
+          // `SectionDef` and `DesignPanel.tsx`.
+          <DesignPanel />
         ) : section === 'demo' ? (
           // The same panel as Links with a different board behind it — see
           // `LinkBoardPanel`. Read-only and filtered to public rows on the
@@ -2089,7 +2123,7 @@ type ProjectRowProps = {
    *  (2026-11-04) — the Hub's record that the owner has staged this surface
    *  and it is waiting on a release. Absent on every row outside Prototypes,
    *  and on a Prototypes row whose surface has nothing staged. */
-  staged?: TodoCard
+  staged?: StagedFact
 }
 
 function ProjectRow({

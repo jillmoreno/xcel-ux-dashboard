@@ -438,12 +438,16 @@ describe('Refinement — designer pills and the archive (2026-10-15)', () => {
     await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent('1'))
   })
 
-  it('the branch strip still treats an archived row’s URL as "already on the board"', () => {
-    // Source-level: `boardUrls` is read from the UNFILTERED index, which holds
-    // archived rows too, and the comment beside it says why. A strip that
-    // offered an archived branch straight back would undo the click.
+  it('the branch strip is gone from Refinement — it is the Design section now (2026-11-16)', () => {
+    // Source-level, the inverse of what this pinned until today: the strip
+    // (and `boardUrls`, which existed to keep an archived branch from being
+    // offered straight back) no longer lives in this panel. The list is
+    // `DesignPanel.tsx`, which offers nothing to add and so has nothing to
+    // hide — see `Branches.test.tsx`.
     const panel = readFileSync(resolve(here, '../../src/components/prototype/LinksPanel.tsx'), 'utf8')
-    expect(panel).toMatch(/const boardUrls = useMemo\(\(\) => index\.links\.map\(\(l\) => l\.url\)/)
+    expect(panel).not.toMatch(/function BranchStrip/)
+    expect(panel).not.toMatch(/const boardUrls/)
+    expect(panel).toMatch(/THE AUTOMATIC BRANCH STRIP LIVED HERE/)
   })
 
   it('the endpoint stamps archivedAt itself, keeps the one it is handed, and only on Refinement', () => {
