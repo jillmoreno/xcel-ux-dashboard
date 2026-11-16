@@ -56,6 +56,43 @@ export type ArchivedItem = {
 
 export const ARCHIVED_ITEMS: ArchivedItem[] = [
   {
+    id: 'compliance-document-modal',
+    name: 'Compliance document modal — the 24 documents, their six shapes, and the jurisdiction coverage',
+    what:
+      'A compliance-documents system built in a day on 2026-10-20: all 24 real documents read from source and grouped by the six content shapes they fall into, a modal that steps through each shape, a legal name as three fields, per-state signature ordering (Wisconsin signs in the order it is filled, proctor first; Nevada is countersigned), and a coverage table for every regulated jurisdiction with the four gaps marked Needed. Never wired into a trigger.',
+    location:
+      'Branch `feat/compliance-document-modal` — KEPT, so the build is still live at ' +
+      'https://feat-compliance-document-modal--ux-design-xceldashboard.netlify.app/compliance-documents ' +
+      '(the write-up is at /prototypes/xcel-compliance-documents.html on the same build). ' +
+      '⚠ A SNAPSHOT: a branch build renders its own old code forever and drifts from main ' +
+      'silently, so it is evidence of what was SHOWN on 2026-10-20, never of what the product ' +
+      'does now. Nothing here is on main — `src/components/courses/ComplianceDocumentModal.tsx`, ' +
+      '`src/data/complianceDocuments.ts`, `src/pages/ComplianceDocumentPreviewPage.tsx` and ' +
+      '`public/prototypes/xcel-compliance-documents.html` exist only on that branch.',
+    flag: 'Reached by route, not by flag — /compliance-documents on the branch build.',
+    dateRemoved: '2026-11-16',
+    reason:
+      'Retired from Refinement as stale, Jillienne: "compliance is done, that is a stale ' +
+      'branch." It never reached a Prototypes row — neither end to end (`xcel-dashboard`) nor ' +
+      'Compass (`xcel-compass`) — and sat four weeks without a reviewer answering either ' +
+      'question its rows asked (is the six-shape cut right, and are the four states marked ' +
+      'Needed the right four). The affidavit work that shipped on 2026-11-16 covers the ' +
+      'compliance ground the product actually needed.',
+    restoreNote:
+      'The branch is kept, so this is a cherry-pick rather than a rebuild. From ' +
+      '`feat/compliance-document-modal`: `src/data/complianceDocuments.ts` (the 24 documents and ' +
+      'the six shapes — the only place that data exists), ' +
+      '`src/components/courses/ComplianceDocumentModal.tsx`, ' +
+      '`src/pages/ComplianceDocumentPreviewPage.tsx`, the three affidavit colours added to ' +
+      '`src/styles/tokens.css`, the route in `src/App.tsx` and the row in ' +
+      '`src/data/prototypeFeatures.ts`. ⚠ DELIBERATELY NOT RESTORED: nothing ever triggered the ' +
+      'modal — it was reachable only by its own route — so a restore has to decide where it ' +
+      'opens from, which is the question that was never answered. ⚠ CHECK AGAINST THE ' +
+      'AFFIDAVIT SYSTEM FIRST (`src/components/e2e/AffidavitModalV2.tsx`, ' +
+      '`src/data/affidavitForms.ts`, on main since 2026-11-16): the two overlap, and restoring ' +
+      'this one on top of that would be two answers to one question.',
+  },
+  {
     id: 'atlas-palette-skins',
     name: 'Grasslands, Everglade, Harbor and Marigold \u2014 the four palette themes on the Brand control',
     what: 'Four colour-only skins on the Atlas Brand dropdowns, added 2026-10-08 ("add 4 additional brand themes using the colors from these screenshots"). ⚠ PALETTES, NOT BRANDS: the five above them are Colibri companies and swap the LOGO as well as the colours; these four have no company behind them, so the page kept whichever logo it had. The source named Grasslands and Everglade; Harbor and Marigold are ours.',
@@ -679,7 +716,7 @@ export const ARCHIVED_ITEMS: ArchivedItem[] = [
     reason:
       'Jillienne’s call: "Design will be removed as we no longer use it." It listed nothing — no row in `PROTOTYPE_FEATURES` carries a design-side status, and the two handoff rows that exist are both development-side — and the team does not work in a design/development split any more: a surface is a scope with an owner on Prototypes, or a branch under discussion on Refinement, or a handoff on Development.',
     restoreNote:
-      'Four edits in `src/pages/UxDashboardPage.tsx`: (1) `design` back in the `UxSection` union; (2) the `SectionDef` back at the marked spot above Development — no `gate` field exists any more, so it is just id, label and blurb; (3) `design: []` back in `bySection`, REQUIRED because the map is typed `Record<UxSection, …>`; (4) in `sectionOf`, `if (status) return development` back to `return isDevelopmentStatus(status) ? development : design` and re-import `isDevelopmentStatus` from `devHandoffStatusUtil`; decide separately whether the sandbox/fallthrough branches go back to `design` or stay on `exploration`. Then mirror (4) in `backSectionHref` in `src/pages/PrototypeFeaturePage.tsx`, put `Design` back in `EXPECTED_SECTIONS` (`UxDashboard.smoke.test.tsx`) and `ALL_SECTIONS` (`OneSite.test.tsx`), and change the `design: development` legacy alias in `LEGACY_SECTIONS` back to a real section. NOT restored, deliberately: the "Designers" divider and gate — see `designers-gate`. Explorations (the old Exploration section, renamed and moved up under PRDs the same day) was never archived.',
+      '⚠ THE NAME IS TAKEN AGAIN (2026-11-16): a NEW section with id `design` and label Design sits between Prototypes and Refinement — `src/components/prototype/DesignPanel.tsx`, derived from `/api/branches` and git, not a list of feature rows — so steps (1) and (3) below are ALREADY DONE for a different reason, and restoring THIS section means a second id (`design-rows`, say) and its own SectionDef, or replacing the derived one. Four edits in `src/pages/UxDashboardPage.tsx`: (1) `design` back in the `UxSection` union; (2) the `SectionDef` back at the marked spot above Development — no `gate` field exists any more, so it is just id, label and blurb; (3) `design: []` back in `bySection`, REQUIRED because the map is typed `Record<UxSection, …>`; (4) in `sectionOf`, `if (status) return development` back to `return isDevelopmentStatus(status) ? development : design` and re-import `isDevelopmentStatus` from `devHandoffStatusUtil`; decide separately whether the sandbox/fallthrough branches go back to `design` or stay on `exploration`. Then mirror (4) in `backSectionHref` in `src/pages/PrototypeFeaturePage.tsx`, put `Design` back in `EXPECTED_SECTIONS` (`UxDashboard.smoke.test.tsx`) and `ALL_SECTIONS` (`OneSite.test.tsx`), and change the `design: development` legacy alias in `LEGACY_SECTIONS` back to a real section. NOT restored, deliberately: the "Designers" divider and gate — see `designers-gate`. Explorations (the old Exploration section, renamed and moved up under PRDs the same day) was never archived.',
   },
   {
     id: 'designers-gate',
