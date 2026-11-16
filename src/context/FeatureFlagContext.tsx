@@ -1721,22 +1721,22 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
       { value: 'jeff', label: 'Jeff’s MVP', description: 'His thirteen-page prototype' },
       { value: 'refined', label: 'Refined', description: 'Readiness rebuilt on the research' },
     ],
-    /* ⚠ REFINED IS THE BRANCH'S DEFAULT — 2026-11-16: "look at the current
-       settings and mark those design tools as default."
+    /* ⚠ `current`, AND IT WAS `refined` FOR A DAY — decided 2026-11-16 at the
+       share to stage.
 
-       ⚠ THIS IS THE ONE WITH REACH BEYOND THE COURSE PAGE. The other four
-       set that day decide how one page draws; this decides which Compass a
-       reviewer lands in, so a Refinement link off this branch now opens on
-       Refined rather than on what ships. That is what a branch default is
-       FOR — "behind a feature flag whose default is ON on your branch" —
-       and it is also why it is the line to look at first if this branch is
-       ever merged: `release` is where the question "should everyone see
-       this?" gets asked, and the answer here is only "should a reviewer of
-       THIS branch?".
+       ⚠ THE BRANCH DEFAULT AND THE STAGE DEFAULT ARE DIFFERENT QUESTIONS,
+       and this flag is where the difference bites. On a branch, a default is
+       how your work shows itself (CLAUDE.md step 2), so `refined` was right
+       there. On STAGE the same value decides what Prototypes → Stage →
+       Compass opens into for everyone, and Compass is Anjani's surface:
+       opening it on a shell she did not decide would be this branch
+       answering a question that is hers.
 
-       ⚠ `current` IS STILL THE FIRST ARM and one click away. Nothing was
-       removed. */
-    defaultVariant: 'refined',
+       ⚠ SO REFINED LIVES ONE CLICK AWAY, on the Design bar, which is what
+       that bar is for. Everything else this branch staged — the twelve
+       Refined axes below — is unaffected: they decide how Refined draws once
+       you are in it, not whether you land there. */
+    defaultVariant: 'current',
     defaultEnabled: true,
     page: 'dashboard-rebrand',
   },

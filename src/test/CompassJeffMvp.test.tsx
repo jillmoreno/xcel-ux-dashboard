@@ -347,21 +347,17 @@ describe('Jeff’s Compass MVP — the pages not built yet', () => {
 })
 
 describe('Jeff’s Compass MVP — the control', () => {
-  /* ⚠ IT DEFAULTS TO `refined` ON THIS BRANCH — 2026-11-16, "look at the
-     current settings and mark those design tools as default." A branch's
-     flag defaults are what make its build show its work (CLAUDE.md, step 2),
-     and this is the control that decides which Compass a reviewer lands in,
-     so a Refinement link off this branch opens on Refined.
-
-     ⚠ WHICH IS A LINE TO READ AT MERGE. `release` is where "should everyone
-     see this?" is asked; this assertion is here so the question cannot be
-     answered by accident. `current` is still the first arm and one click
-     away — nothing was removed. */
-  it('is on the Design bar, defaulting to this branch’s Refined', () => {
+  /* ⚠ `current`, DECIDED AT THE SHARE TO STAGE — 2026-11-16. It was
+     `refined` for a day, which is what a branch default is for; stage is
+     where the same value stops meaning "show my work" and starts meaning
+     "this is what Compass opens into", and Compass is Anjani's surface.
+     This assertion is what stops the branch answering her question by
+     accident. */
+  it('is on the Design bar, defaulting to what ships', () => {
     const flag = FEATURE_FLAGS.find((f) => f.key === 'compass-mvp-version')
     expect(flag).toBeTruthy()
     expect(flag?.surface).toBe('design')
-    expect(flag?.defaultVariant).toBe('refined')
+    expect(flag?.defaultVariant).toBe('current')
     /* Three arms since 2026-11-09: what ships, his, and the Refined rebuild of
        his Readiness page — see `CompassReadinessRefined.test.tsx`. */
     expect(flag?.variants?.map((v) => v.value)).toEqual(['current', 'jeff', 'refined'])
