@@ -396,6 +396,7 @@ function EmailStep({
           onSaved(trimmed)
         }}
         onCancel={onCancel}
+        cancelFirst
       />
     </>
   )
