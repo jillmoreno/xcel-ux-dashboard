@@ -4775,13 +4775,11 @@ the Design bar, which is Jill's file, so for now they are dropped.
   **eliminated pre-licensing on 29 Apr 2025**, and that the state's licensing
   tab "still says 'student affidavit'". Built from the sheet; compliance to
   say whether XCEL still shows it before it counts as decided.
-- **Before course exam — Mississippi** (2026-11-11), from Afsana's
-  "Non-State Specific/before course exam" folder: *Mississippi Pre-Exam
-  Attestation.docx*, which is only a screenshot of OCD's affidavit preview,
-  so the title, text and fields were read off the image. The wording is
-  Pennsylvania's word for word, but with "the Mississippi Insurance
-  Department". Its First Name · Last Name · Today's date take the standard
-  signing (`SIGNED_FORMS`), and its button is "I Attest and Confirm".
+- **Mississippi has nothing to sign** (2026-11-16, compliance): the state
+  removed its pre-exam attestation during Covid and never had a post-exam
+  one. The before-exam form added 2026-11-11 (read off the screenshot in
+  *Mississippi Pre-Exam Attestation.docx*) is removed, with both entries and
+  the Affidavit state control's Mississippi option; git has it at `38fd59fc`.
 - **Illinois and Minnesota before the course are Terms and Conditions**
   (2026-11-16, compliance). The matrix had tagged their pre-course documents
   "privacy statements"; the forms are titled "Terms and Conditions Pre-Course
@@ -4799,8 +4797,9 @@ the Design bar, which is Jill's file, so for now they are dropped.
 `XCEL-PE_Affidavits_and_EAs.xlsx`, Regulatory Accreditation and Compliance
 Team Site → Compass Documents → Financial Services. Last checked against
 **2026-11-06** (the sheet was last edited 2026-11-04; its note says it covers
-the documents shared as of 10/29/2026). Every row is built except Mississippi
-("Still waiting on a response"). Every row the sheet marks **Affidavit State
+the documents shared as of 10/29/2026). Every row is built. Mississippi
+was on it ("Still waiting on a response"); compliance has since said it has
+no affidavit at any moment (2026-11-16). Every row the sheet marks **Affidavit State
 Form = TRUE** (CO, CT, MN after the exam, NY, WI, WV) must match its document
 **field for field, 1:1**. Two things the build has that the sheet does not:
 

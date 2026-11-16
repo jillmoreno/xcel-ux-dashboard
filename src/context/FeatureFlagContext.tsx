@@ -2909,7 +2909,6 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
       { value: 'IL', label: 'Illinois' },
       { value: 'KY', label: 'Kentucky' },
       { value: 'MN', label: 'Minnesota' },
-      { value: 'MS', label: 'Mississippi' },
       { value: 'NV', label: 'Nevada' },
       { value: 'NY', label: 'New York' },
       { value: 'OH', label: 'Ohio' },
@@ -2927,9 +2926,9 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     variantsHiddenWhen: {
       flag: 'affidavit-v2-moment',
       hide: {
-        pre: ['CO', 'CT', 'MS', 'NY', 'WI', 'WV', 'PA'],
+        pre: ['CO', 'CT', 'NY', 'WI', 'WV', 'PA'],
         exam: ['CA', 'IL', 'KY', 'NV', 'NY', 'OH', 'OR'],
-        post: ['FL', 'KY', 'MS', 'NV', 'OR', 'GEN', 'PA'],
+        post: ['FL', 'KY', 'NV', 'OR', 'GEN', 'PA'],
       },
     },
     defaultVariant: 'FL',
