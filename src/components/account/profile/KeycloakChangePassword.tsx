@@ -34,7 +34,8 @@ import { introTextStyle, panelBodyStyle } from './profileFormStyles'
  *
  * ⚠ NO HEADING OF ITS OWN (2026-11-13, Afsana). The sheet's title already
  * says Update Password, so a second "Change Password" and its rule would name
- * the step twice; the lead is the sheet step's own line, in its own size.
+ * the step twice; the lead sits in the sheet step's own size (2026-11-16,
+ * Afsana: it now says what to do rather than the old security line).
  *
  * ⚠ OPEN ITEM — WHAT HAPPENS AFTER A SUCCESSFUL CHANGE. Nobody yet knows
  * whether the learner stays signed in or is signed out to sign back in with
@@ -119,7 +120,7 @@ export function KeycloakChangePassword({
         }}
       >
         <p style={introTextStyle}>
-          Security experts generally recommend against reuse of passwords you use on other sites.
+          Enter your current password and create a new one that meets the requirements below.
         </p>
 
         <PasswordField
