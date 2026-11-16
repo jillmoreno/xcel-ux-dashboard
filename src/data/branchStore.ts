@@ -17,7 +17,8 @@
  * have to learn a second vocabulary for them. For the tick before the first
  * fetch settles, "there is no endpoint" is not yet a fact.
  */
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { parseBranch } from '@/data/branchName'
 
 export type BranchDeploy = {
   branch: string
@@ -27,7 +28,23 @@ export type BranchDeploy = {
   updated: string
   commit: string
   author: string
+  /** The newest deploy's state — see `branchDeploys.ts`. Only `ready` has an
+   *  address worth offering. */
+  build: 'ready' | 'building' | 'failed'
+  /** The git facts (2026-11-16): every commit of this branch is on `stage` /
+   *  on `main`. `null` when the endpoint has no GitHub token, or GitHub could
+   *  not answer for this branch — "unknown", which the row says, rather than
+   *  "no", which it would otherwise look like. */
+  onStage: boolean | null
+  released: boolean | null
+  /** The surfaces this branch has decided defaults for — the markers
+   *  `share-to-stage` writes under `.hub/decided/`, counted only while they
+   *  vouch for a commit main does not have (`branchGit.ts`). Sent only for a
+   *  branch on stage and not released; empty otherwise. */
+  decided: DecidedMarker[]
 }
+
+export type DecidedMarker = { scope: string; decidedAt: string; by: string; commit: string }
 
 export type BranchIndex = {
   /** The endpoint answered AND is configured to talk to Netlify. */
@@ -37,6 +54,12 @@ export type BranchIndex = {
   /** Why the list is empty, when it is empty for a reason worth saying out
    *  loud. '' when everything is fine. */
   reason: string
+  /** Whether the git facts are on. `off` = no GITHUB_TOKEN on the project;
+   *  `down` = configured and GitHub did not answer; `on` otherwise. */
+  git: 'on' | 'off' | 'down'
+  /** Stage against main — the Release page's one number. `null` while the
+   *  git facts are off or GitHub did not answer. */
+  stageAheadOfMain: number | null
   branches: BranchDeploy[]
 }
 
@@ -44,6 +67,8 @@ export const EMPTY_BRANCH_INDEX: BranchIndex = {
   available: false,
   loading: true,
   reason: '',
+  git: 'off',
+  stageAheadOfMain: null,
   branches: [],
 }
 
@@ -75,6 +100,8 @@ function normalise(raw: unknown): BranchDeploy | null {
   // blank, which is the one case the board's "render it as text so it can be
   // fixed" rule does not apply to: nobody can fix this one, it is Netlify's.
   if (!branch || !safeBranchHref(url)) return null
+  const build = r.build
+  const bool = (v: unknown) => (typeof v === 'boolean' ? v : null)
   return {
     branch,
     slug: s(r.slug),
@@ -83,6 +110,21 @@ function normalise(raw: unknown): BranchDeploy | null {
     updated: s(r.updated),
     commit: s(r.commit),
     author: s(r.author),
+    // An endpoint from before 2026-11-16 sends no `build`; everything it
+    // listed was ready, so that is the default.
+    build: build === 'building' || build === 'failed' ? build : 'ready',
+    onStage: bool(r.onStage),
+    released: bool(r.released),
+    decided: Array.isArray(r.decided)
+      ? r.decided
+          .map((m): DecidedMarker | null => {
+            if (typeof m !== 'object' || m === null) return null
+            const d = m as Record<string, unknown>
+            const scope = s(d.scope)
+            return scope ? { scope, decidedAt: s(d.decidedAt), by: s(d.by), commit: s(d.commit) } : null
+          })
+          .filter((m): m is DecidedMarker => m !== null)
+      : [],
   }
 }
 
@@ -95,7 +137,7 @@ export async function listBranches(): Promise<BranchIndex> {
     // same reason as an HTML answer: `unreachable` is reserved for the server
     // telling us IT could not reach Netlify, which is a different thing to do
     // about and the only one of the two worth saying out loud.
-    return { available: false, loading: false, reason: 'no-endpoint', branches: [] }
+    return { available: false, loading: false, reason: 'no-endpoint', git: 'off', stageAheadOfMain: null, branches: [] }
   }
 
   // An HTML answer counts as no endpoint. Under plain `npm run dev` vite serves
@@ -104,14 +146,14 @@ export async function listBranches(): Promise<BranchIndex> {
   // "this needs `netlify dev`". Same guard `LinkIndex` carries.
   const ctype = res.headers.get('content-type') || ''
   if (!ctype.includes('application/json')) {
-    return { available: false, loading: false, reason: 'no-endpoint', branches: [] }
+    return { available: false, loading: false, reason: 'no-endpoint', git: 'off', stageAheadOfMain: null, branches: [] }
   }
 
   let body: unknown
   try {
     body = await res.json()
   } catch {
-    return { available: false, loading: false, reason: 'bad-response', branches: [] }
+    return { available: false, loading: false, reason: 'bad-response', git: 'off', stageAheadOfMain: null, branches: [] }
   }
 
   const b = (body ?? {}) as Record<string, unknown>
@@ -120,7 +162,7 @@ export async function listBranches(): Promise<BranchIndex> {
   // test — and that is "no endpoint here", not "Netlify is down". Getting this
   // wrong puts a red herring above a board that is working fine.
   if (typeof b.configured !== 'boolean') {
-    return { available: false, loading: false, reason: 'no-endpoint', branches: [] }
+    return { available: false, loading: false, reason: 'no-endpoint', git: 'off', stageAheadOfMain: null, branches: [] }
   }
   const configured = b.configured === true
   const reason = typeof b.reason === 'string' ? b.reason : ''
@@ -128,7 +170,15 @@ export async function listBranches(): Promise<BranchIndex> {
     ? b.branches.map(normalise).filter((x): x is BranchDeploy => x !== null)
     : []
 
-  return { available: configured && res.ok, loading: false, reason, branches }
+  // The git facts' own status rides beside the list — see `branchGit.ts`.
+  const g = (b.git ?? {}) as Record<string, unknown>
+  const git: BranchIndex['git'] =
+    g.configured === true ? (typeof g.reason === 'string' && g.reason ? 'down' : 'on') : 'off'
+
+  const st = (b.stage ?? {}) as Record<string, unknown>
+  const stageAheadOfMain = typeof st.aheadOfMain === 'number' ? st.aheadOfMain : null
+
+  return { available: configured && res.ok, loading: false, reason, git, stageAheadOfMain, branches }
 }
 
 /**
@@ -137,7 +187,7 @@ export async function listBranches(): Promise<BranchIndex> {
  * changes without us — a designer pushes, Netlify builds — so a cached list is
  * a second copy of state we do not own.
  */
-export function useBranches(): { index: BranchIndex; refresh: () => Promise<void> } {
+export function useBranches(enabled = true): { index: BranchIndex; refresh: () => Promise<void> } {
   const [index, setIndex] = useState<BranchIndex>(EMPTY_BRANCH_INDEX)
 
   const refresh = useCallback(async () => {
@@ -146,6 +196,9 @@ export function useBranches(): { index: BranchIndex; refresh: () => Promise<void
   }, [])
 
   useEffect(() => {
+    // `enabled` false = a panel that was handed the page's index and must not
+    // fetch a second copy (each GitHub-backed answer costs seconds).
+    if (!enabled) return
     let alive = true
     void listBranches().then((next) => {
       if (alive) setIndex(next)
@@ -153,7 +206,7 @@ export function useBranches(): { index: BranchIndex; refresh: () => Promise<void
     return () => {
       alive = false
     }
-  }, [])
+  }, [enabled])
 
   return { index, refresh }
 }
@@ -202,4 +255,52 @@ export function titleFromBranch(branch: string): string {
   const words = withoutPrefix.replace(/[-_/]+/g, ' ').trim()
   if (!words) return branch
   return words.charAt(0).toUpperCase() + words.slice(1)
+}
+
+/* ── what is on stage, by surface (2026-11-16) ────────────────────────────── */
+
+/** The three things the Prototypes row's Staged tag draws — the same three
+ *  the On Stage card used to carry (`todoBoardStore.useStagedScopes`), so the
+ *  row reads either without caring which. */
+export type StagedFact = {
+  /** `yyyy-mm-dd` — the branch's newest build, which is the staged work. */
+  addedDate: string
+  owner: string
+  title: string
+}
+
+/**
+ * Which surfaces have a branch ON STAGE and not yet released, read from the
+ * branch list's git facts rather than from a card somebody filed.
+ *
+ * The scope is the first word of the branch name (`branchName.ts`), which is
+ * also what the Design section groups by — so the Prototypes row and the
+ * Design row agree about what is staged because they read one fact. Where
+ * two branches for one scope are on stage, the newest build wins the tag:
+ * the question the row answers is "since when has this surface been
+ * waiting", and the latest share is the honest answer.
+ *
+ * Empty when the git facts are off (no GITHUB_TOKEN) — the page falls back to
+ * the On Stage cards for the rows filed before today.
+ */
+export function stagedScopesFromBranches(branches: readonly BranchDeploy[]): Record<string, StagedFact> {
+  const out: Record<string, StagedFact> = {}
+  for (const b of branches) {
+    if (!b.onStage || b.released) continue
+    const parsed = parseBranch(b.branch)
+    if (!parsed.scope) continue
+    const held = out[parsed.scope]
+    if (held && held.addedDate >= b.updated) continue
+    out[parsed.scope] = {
+      addedDate: b.updated,
+      owner: b.author,
+      title: parsed.variant ? `${parsed.feature} — ${parsed.variant}` : parsed.feature,
+    }
+  }
+  return out
+}
+
+export function useStagedScopesFromBranches(): Readonly<Record<string, StagedFact>> {
+  const { index } = useBranches()
+  return useMemo(() => stagedScopesFromBranches(index.branches), [index.branches])
 }

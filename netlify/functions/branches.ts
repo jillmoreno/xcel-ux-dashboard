@@ -52,6 +52,7 @@
  * draws between `loading` and `available`, which is the same distinction.
  */
 import { selectBranchDeploys } from '../lib/branchDeploys'
+import { gitFactsFor } from '../lib/branchGit'
 
 export const config = {
   path: '/api/branches',
@@ -138,8 +139,23 @@ export default async function handler(req: Request): Promise<Response> {
     return json({ configured: true, branches: [], reason: 'bad-response' }, 502)
   }
 
+  const stageBranch = (process.env.STAGE_BRANCH || 'stage').trim()
+  const branches = selectBranchDeploys(deploys, { siteHost, productionBranch, stageBranch })
+
+  /* THE GIT FACTS (2026-11-16) — on stage? released? — asked of GitHub for
+     exactly the branches Netlify has built, which is what keeps the call
+     count small: the deploy window is the active set. See `branchGit.ts`.
+     Unconfigured is reported, not failed: the list is still the list. */
+  const git = await gitFactsFor(
+    branches.map((b) => b.branch),
+    process.env as Record<string, string | undefined>,
+  )
+
   return json({
     configured: true,
-    branches: selectBranchDeploys(deploys, { siteHost, productionBranch }),
+    git: git.status,
+    // Stage against main — the Release page's one number (2026-11-16).
+    stage: git.stage,
+    branches: branches.map((b) => ({ ...b, ...(git.facts[b.branch] ?? {}) })),
   })
 }
