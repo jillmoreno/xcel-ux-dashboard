@@ -1414,6 +1414,30 @@ const AUTHORED_FEATURES: PrototypeFeature[] = [
     brands: ['xcel'],
   },
   {
+    /* THE COMPARE ROW (2026-11-16) — V1 beside Refined, widget by widget, on
+       `/compare/compass-readiness`. ⚠ AN EXPLORATION, NOT A PROTOTYPE, for the
+       same reason as the three version rows above it: it is a view OF the
+       product, not a door into it — a route of this build that sets each
+       Readiness block from Jeff's page next to the Refined one, with the
+       layout, the hero arm and the open/closed states on switches, and a
+       note under every widget saved for everyone. `src/data/compareDecks.ts`
+       lists the decks; adding a page there is what adds a second row here. */
+    id: 'xcel-compass-compare-readiness',
+    title: 'Compass Readiness — V1 beside Refined',
+    accent: 'teal',
+    icon: 'grid',
+    blurb:
+      "Jeff's Readiness page (V1) and the Refined rebuild set side by side, widget by widget — the score, Do this next, the trend, Readiness by topic, the footnote — each drawn by the real component at full size, nothing scaled. A layout switch (side by side · one version · stacked), the Refined hero's two arms on a toggle, the levels panel and the topic rows lined up open or closed on both sides, and a notes box under each widget that saves for everyone who opens the page. Where the refined version gets decided; the Compass Version Map under Hub Resources is the reference beside it.",
+    tileBlurb:
+      'Every Readiness widget, V1 next to Refined, with the variants on switches and a note under each.',
+    kind: 'explore',
+    status: 'ready',
+    inProgress: true,
+    category: 'exploration',
+    to: '/compare/compass-readiness',
+    brands: ['xcel'],
+  },
+  {
     id: 'xcel-compass-mvp',
     title: "Compass MVP — Jeff's version (13 pages)",
     accent: 'blue',

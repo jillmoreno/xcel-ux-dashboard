@@ -204,6 +204,8 @@ describe('section routing (sectionOf)', () => {
     'xcel-compass-v-anjani': 'exploration',
     'xcel-compass-v-jeff': 'exploration',
     'xcel-compass-v-refined': 'exploration',
+    // The compare page (2026-11-16) — V1 beside Refined, widget by widget.
+    'xcel-compass-compare-readiness': 'exploration',
     // `xcel-course-entry` (the repo's first authored dev handoff, 2026-09-24)
     // stood here until 2026-10-15 — archived, `course-entry-handoff`. Both
     // handoffs were removed as "not ready"; Development lists nothing now.
@@ -622,9 +624,14 @@ describe('the Prototypes row opens the committed configuration', () => {
     // step. They are `explore` rows, so the guided-row trap above does not
     // reach them. What this assertion still catches is the thing it was
     // written for: any OTHER row growing a `to` by accident.
+    //
+    // ⚠ AND THE COMPARE ROW SINCE 2026-11-16 — `/compare/compass-readiness`,
+    // a route of this build that draws two versions' widgets side by side.
+    // An exploration for the same reason as the three above it.
     expect(PROTOTYPE_FEATURES.filter((f) => f.to).map((f) => f.id).sort()).toEqual([
       'xcel-atlas-learning',
       'xcel-compass',
+      'xcel-compass-compare-readiness',
       'xcel-compass-v-anjani',
       'xcel-compass-v-jeff',
       'xcel-compass-v-refined',

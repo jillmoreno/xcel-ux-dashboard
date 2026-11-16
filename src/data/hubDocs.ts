@@ -41,7 +41,7 @@ export const HUB_DOCS: HubDoc[] = [
     title: 'Compass Version Map',
     audience: 'Anyone · when you need to find a thing',
     blurb:
-      'Compass Learning section by section, page by page, with the exact Design-controls selection that puts each block on screen — its copy, its data, its states, and any flag that changes it. Jeff’s MVP first; the Refined column joins each page as it is mapped. Readiness so far.',
+      'Compass Learning section by section, page by page, with the exact Design-controls selection that puts each block on screen — its copy, its data, its states, and any flag that changes it. V1 (Jeff’s MVP) first; the Refined column joins each page as it is mapped. Readiness so far, with a link to /compare/compass-readiness — the two versions live, side by side, widget by widget, with notes.',
     href: '/compass-version-map/',
     pdf: '',
     updated: '2026-11-16',

@@ -52,6 +52,9 @@
   .copy b { color: var(--ink); }
   .status { display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; border-radius: 999px; padding: 2px 9px; border: 1px solid var(--line); color: var(--ink-3); margin-left: 6px; vertical-align: middle; }
   .status.done { background: var(--good-soft); color: var(--good-ink); border-color: transparent; }
+  .cmpl { margin-left: auto; font-size: 12px; font-weight: 600; color: var(--accent); text-decoration: none; white-space: nowrap; }
+  .cmpl:hover { text-decoration: underline; }
+  @media print { .cmpl { display: none; } }
   @media print { .block { break-inside: avoid; } }
 </style>
 </head>
@@ -68,9 +71,14 @@
       <a class="btn ghost noprint" href="/">← Back to the Hub</a>
     </div>
   </div>
-  <p class="lede">Every section of Compass Learning, page by page, with the exact design-controls selection that puts it on screen. Jeff's MVP first; the Refined version joins each page as a second column as it is mapped. Use it to find the thing you were shown, to pin a Refinement row at the right version, or to compare the two before a release.</p>
-  <p class="meta">Last updated 16 November 2026 · Owner: Jill Moreno, UX Design — the design lead · Mapped so far: Readiness (Jeff's MVP)</p>
+  <p class="lede">Every section of Compass Learning, page by page, with the exact design-controls selection that puts it on screen. Jeff's MVP (V1) first; the Refined version joins each page as a second column as it is mapped, and the two are set side by side, live, on the compare page. Use it to find the thing you were shown, to pin a Refinement row at the right version, or to compare the two before a release.</p>
+  <p class="meta">Last updated 16 November 2026 · Owner: Jill Moreno, UX Design — the design lead · Mapped so far: Readiness (V1, Jeff's MVP)</p>
 </header>
+
+<div class="callout good">
+  <span class="lab">See them side by side</span>
+  <p><a href="/compare/compass-readiness"><strong>Compare Readiness: V1 beside Refined →</strong></a> — every widget on this page drawn by the real component, V1 on the left and Refined on the right, with a layout switch (side by side · one version · stacked), the Refined hero's two arms on a toggle, the levels panel and topic rows lined up open or closed on both sides, and a notes box under each widget that saves for everyone. This map is the reference; that page is where the refining happens.</p>
+</div>
 
 <nav class="toc" aria-label="Contents">
   <p>Contents</p>
@@ -142,7 +150,7 @@
 
   <!-- 1 -->
   <div class="block">
-    <h3><span class="n">1</span>Ask Rubi</h3>
+    <h3><span class="n">1</span>Ask Rubi <a class="cmpl" href="/compare/compass-readiness#head">compare ↗</a></h3>
     <p class="where">Top right of the content column, above the page title.</p>
     <figure class="half"><img src="shots/01-ask-rubi.png" alt="The Ask Rubi button" /></figure>
     <div class="ui">
@@ -156,7 +164,7 @@
 
   <!-- 2 -->
   <div class="block">
-    <h3><span class="n">2</span>Page head</h3>
+    <h3><span class="n">2</span>Page head <a class="cmpl" href="/compare/compass-readiness#head">compare ↗</a></h3>
     <p class="where">Title, lead paragraph, and the live chip at the right, over a rule.</p>
     <figure><img src="shots/02-head.png" alt="The page head: Your readiness, the lead, and the Live chip" /></figure>
     <div class="ui">
@@ -174,7 +182,7 @@
 
   <!-- 3 -->
   <div class="block">
-    <h3><span class="n">3</span>Do this next · Readiness — the card</h3>
+    <h3><span class="n">3</span>Do this next · Readiness — the card <a class="cmpl" href="/compare/compass-readiness#next">compare ↗</a></h3>
     <p class="where">First block under the head. Three columns: the ring, the recommendation, the recommended set.</p>
     <figure><img src="shots/03-do-this-next.png" alt="The Do this next card: the readiness ring, Practice Variable Annuities, and the Recommended set column" /></figure>
     <div class="ui">
@@ -194,7 +202,7 @@
 
   <!-- 4 -->
   <div class="block">
-    <h3><span class="n">4</span>The readiness ring</h3>
+    <h3><span class="n">4</span>The readiness ring <a class="cmpl" href="/compare/compass-readiness#hero">compare ↗</a></h3>
     <p class="where">Left column of block 3.</p>
     <figure class="half"><img src="shots/04-ring.png" alt="The two-ring readiness gauge: 62% Readiness, 46% Coverage" /></figure>
     <div class="ui">
@@ -212,7 +220,7 @@
 
   <!-- 5 -->
   <div class="block">
-    <h3><span class="n">5</span>Also worth a look</h3>
+    <h3><span class="n">5</span>Also worth a look <a class="cmpl" href="/compare/compass-readiness#next">compare ↗</a></h3>
     <p class="where">The footer strip of the Do this next card.</p>
     <figure><img src="shots/05-also.png" alt="The Also worth a look row: Settlement options in Policy Provisions hasn't been retested in 9 days" /></figure>
     <div class="ui">
@@ -228,7 +236,7 @@
 
   <!-- 6 -->
   <div class="block">
-    <h3><span class="n">6</span>Readiness trend</h3>
+    <h3><span class="n">6</span>Readiness trend <a class="cmpl" href="/compare/compass-readiness#trend">compare ↗</a></h3>
     <p class="where">Second card. Text and three stats on the left, the chart on the right.</p>
     <figure><img src="shots/06-trend.png" alt="The Readiness trend card with three stats and the three-week line chart" /></figure>
     <div class="ui">
@@ -249,7 +257,7 @@
 
   <!-- 7 -->
   <div class="block">
-    <h3><span class="n">7</span>Readiness by topic — the header</h3>
+    <h3><span class="n">7</span>Readiness by topic — the header <a class="cmpl" href="/compare/compass-readiness#topics">compare ↗</a></h3>
     <p class="where">Opens the topics section. Title and sub-line on the left, the Overall pill on the right.</p>
     <figure><img src="shots/07-topics-head.png" alt="Readiness by topic header with the Overall 62 · Developing pill" /></figure>
     <div class="ui">
@@ -268,7 +276,7 @@
 
   <!-- 8 -->
   <div class="block">
-    <h3><span class="n">8</span>Legend and the levels panel</h3>
+    <h3><span class="n">8</span>Legend and the levels panel <a class="cmpl" href="/compare/compass-readiness#topics">compare ↗</a></h3>
     <p class="where">Between the header and the first topic row. The panel drops down under the legend when opened.</p>
     <figure><img src="shots/08-levels-closed.png" alt="The You are here today legend and the What do these levels mean? toggle, closed" /><figcaption>Closed, as it opens.</figcaption></figure>
     <figure><img src="shots/08-levels-open.png" alt="The levels panel open: Beginner, Developing, Proficient, Ready with their ranges" /><figcaption>Open, after clicking the toggle.</figcaption></figure>
@@ -289,7 +297,7 @@
 
   <!-- 9 -->
   <div class="block">
-    <h3><span class="n">9</span>Topic rows</h3>
+    <h3><span class="n">9</span>Topic rows <a class="cmpl" href="/compare/compass-readiness#topics">compare ↗</a></h3>
     <p class="where">Five rows, weakest first. Each is a name, the exam weight, a delta, a band pill, a four-segment track with the marker, a gap note, a Practice button and a chevron.</p>
     <figure><img src="shots/09-topic-rows.png" alt="The five topic rows: Annuities expanded, the other four collapsed" /><figcaption>As it opens: Annuities expanded, the rest collapsed.</figcaption></figure>
     <figure><img src="shots/09-topic-row-collapsed.png" alt="A single collapsed topic row, Policy Provisions" /><figcaption>One collapsed row, for the anatomy.</figcaption></figure>
@@ -311,7 +319,7 @@
 
   <!-- 10 -->
   <div class="block">
-    <h3><span class="n">10</span>Sub-topic list</h3>
+    <h3><span class="n">10</span>Sub-topic list <a class="cmpl" href="/compare/compass-readiness#topics">compare ↗</a></h3>
     <p class="where">Inside an expanded topic row. Each sub-topic is a name, a note, a segmented bar, the band and score, and a Practice button.</p>
     <figure><img src="shots/10-subtopics.png" alt="Annuities' sub-topics: Variable annuities (Weakest, About 12 min, Start here), Annuity taxation, Fixed and indexed annuities" /></figure>
     <div class="ui">
@@ -331,7 +339,7 @@
 
   <!-- 11 -->
   <div class="block">
-    <h3><span class="n">11</span>Footnote</h3>
+    <h3><span class="n">11</span>Footnote <a class="cmpl" href="/compare/compass-readiness#footnote">compare ↗</a></h3>
     <p class="where">Last line of the page.</p>
     <figure><img src="shots/11-footnote.png" alt="The footnote under the topic rows" /></figure>
     <div class="ui">
@@ -361,7 +369,7 @@
       <tr><td>Practice</td><td>Exam prep · Practice</td><td><code>practice</code></td><td>to map</td><td>to map</td></tr>
       <tr><td>Flashcards</td><td>Exam prep · Flashcards</td><td><code>flashcards</code></td><td>to map</td><td>to map</td></tr>
       <tr><td>Exam Simulator</td><td>Exam prep · Exam Simulator</td><td><code>exam-simulator</code></td><td>to map</td><td>to map</td></tr>
-      <tr><td><strong>Your readiness</strong></td><td>Exam prep · Readiness</td><td><code>readiness</code></td><td><strong>mapped</strong> (§03)</td><td>to map — one control: <code>compass-refined-readiness-hero</code> (Three rings / Single ring)</td></tr>
+      <tr><td><strong>Your readiness</strong></td><td>Exam prep · Readiness</td><td><code>readiness</code></td><td><strong>mapped</strong> (§03)</td><td><strong>on the compare page</strong> — <a href="/compare/compass-readiness">/compare/compass-readiness</a>; one control, <code>compass-refined-readiness-hero</code> (Three rings / Single ring). Its block-by-block column here is still to write.</td></tr>
     </tbody>
   </table>
   </div>
