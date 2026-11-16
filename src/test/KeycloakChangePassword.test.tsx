@@ -66,7 +66,7 @@ describe('Keycloak change password', () => {
     /* The sheet's title names the step; the widget adds no heading of its own. */
     expect(screen.getByRole('heading', { name: 'Update Password' })).toBeTruthy()
     expect(screen.queryByRole('heading', { name: 'Change Password' })).toBeNull()
-    expect(screen.getByText(/Security experts generally recommend against reuse/)).toBeTruthy()
+    expect(screen.getByText(/Enter your current password and create a new one that meets the requirements below/)).toBeTruthy()
     expect(screen.getByRole('button', { name: 'Back to Edit Account Details' })).toBeTruthy()
     expect(screen.getByRole('meter', { name: 'Password strength' })).toBeTruthy()
     expect(screen.getByText('Password must:')).toBeTruthy()
