@@ -107,12 +107,16 @@ export const MOMENTS: { id: AffidavitMoment; label: string }[] =[{id:'pre',label
    spaces in "a  course"; one is kept. */
 export const SSN_REASON =
   'This information will enable the Commissioner to properly identify and assign credit to students who have completed a course.'
-export const DOCS: { id: string; label: string }[] =[{id:'privacy',label:'Privacy statement'},{id:'enroll',label:'Enrollment agreement'},{id:'reg',label:'Registration form'},{id:'manual',label:'Study-manual notice'},{id:'terms',label:'Terms and conditions'}];
+/* No "Privacy statement" kind since 2026-11-16: compliance confirmed that
+   Illinois's and Minnesota's pre-course documents — the only two tagged
+   privacy — are Terms and Conditions, as their titles and compliance's list
+   say. Only the tag was wrong; the forms' text and titles were already right. */
+export const DOCS: { id: string; label: string }[] =[{id:'enroll',label:'Enrollment agreement'},{id:'reg',label:'Registration form'},{id:'manual',label:'Study-manual notice'},{id:'terms',label:'Terms and conditions'}];
 export const STATES: Record<string, string> ={CA:'California',CO:'Colorado',CT:'Connecticut',FL:'Florida',IL:'Illinois',KY:'Kentucky',MN:'Minnesota',MS:'Mississippi',NV:'Nevada',NY:'New York',OH:'Ohio',OR:'Oregon',WI:'Wisconsin',WV:'West Virginia'};
 export const STATUS: Record<string, string> ={ready:'In the explorer',received:'Doc received, not added yet',missing:'Doc not available yet'};
 export const ENTRIES: AffEntry[] =[
-  {m:'pre',doc:'privacy',st:'IL',status:'ready',form:'IL_PRE'},
-  {m:'pre',doc:'privacy',st:'MN',status:'ready',form:'MN_PRE'},
+  {m:'pre',doc:'terms',st:'IL',status:'ready',form:'IL_PRE'},
+  {m:'pre',doc:'terms',st:'MN',status:'ready',form:'MN_PRE'},
   {m:'pre',doc:'enroll',st:'KY',status:'ready',form:'KY_PRE'},
   {m:'pre',doc:'enroll',st:'NV',status:'ready',form:'NV_PRE'},
   {m:'pre',doc:'enroll',st:'OR',status:'ready',form:'OR_PRE'},

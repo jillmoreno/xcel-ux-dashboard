@@ -7,7 +7,7 @@ import { AffidavitModalV2, LinkedDocument } from '@/components/e2e/AffidavitModa
 import { resolveAffidavit, withoutMiddle } from '@/components/e2e/affidavitModalV2Util'
 import { MemoryRouter } from 'react-router-dom'
 import { FEATURE_FLAGS, FeatureFlagProvider, designControlsFor, useFeatureFlags } from '@/context/FeatureFlagContext'
-import { ENTRIES, FORMS, NAMED_FORMS, SIGNED_FORMS, COMPLETION_DATE_NOTE, PROCTOR_FORMS, SSN_REASON, STATE_SPECIFIC_FORMS, STATES, type AffField, type AffidavitMoment } from '@/data/affidavitForms'
+import { DOCS, ENTRIES, FORMS, NAMED_FORMS, SIGNED_FORMS, COMPLETION_DATE_NOTE, PROCTOR_FORMS, SSN_REASON, STATE_SPECIFIC_FORMS, STATES, type AffField, type AffidavitMoment } from '@/data/affidavitForms'
 
 /**
  * AFFIDAVIT V2 — 2026-11-03, Afsana. The first change V2 makes: the modal
@@ -791,6 +791,14 @@ describe('AffidavitModalV2 — the explorer’s forms', () => {
     expect(screen.getByLabelText(/^Today's Date/)).toBeTruthy()
     expect(screen.getByLabelText(/I confirm that the above information is accurate/)).toBeTruthy()
     expect(screen.getByRole('button', { name: 'I Attest and Confirm' })).toBeTruthy()
+  })
+
+  /* Compliance, 2026-11-16: IL and MN's pre-course documents are Terms and
+     Conditions, not privacy statements. */
+  it('tags Illinois and Minnesota before the course as terms and conditions, and has no privacy kind', () => {
+    for (const st of ['IL', 'MN']) expect(ENTRIES.find((e) => e.m === 'pre' && e.st === st)!.doc, st).toBe('terms')
+    expect(DOCS.map((d) => d.id)).not.toContain('privacy')
+    expect(ENTRIES.every((e) => e.doc == null || DOCS.some((d) => d.id === e.doc))).toBe(true)
   })
 
   it('resolves every ready entry in the explorer to a form', () => {

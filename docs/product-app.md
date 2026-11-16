@@ -4782,6 +4782,12 @@ the Design bar, which is Jill's file, so for now they are dropped.
   Pennsylvania's word for word, but with "the Mississippi Insurance
   Department". Its First Name · Last Name · Today's date take the standard
   signing (`SIGNED_FORMS`), and its button is "I Attest and Confirm".
+- **Illinois and Minnesota before the course are Terms and Conditions**
+  (2026-11-16, compliance). The matrix had tagged their pre-course documents
+  "privacy statements"; the forms are titled "Terms and Conditions Pre-Course
+  Affidavit", as compliance's list has them. Both entries are now
+  `doc: 'terms'`, and the privacy kind is gone from `DOCS`. Only the tag was
+  wrong: the text the learner signs, and the titles, are unchanged.
 - **The SSN wording** (2026-11-06) — the sheet's "SSN Veribage" column:
   *"This information will enable the Commissioner to properly identify and
   assign credit to students who have completed a course."* It replaces
