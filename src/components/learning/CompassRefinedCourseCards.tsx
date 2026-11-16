@@ -192,12 +192,7 @@ function StateMark({ state }: { state: string }) {
 
 export function CompassRefinedCourseCards({
   chapters,
-  shown,
-  folded,
   fold,
-  hiddenCount,
-  cutoff,
-  setShowAll,
   isOpen,
   toggle,
   openLesson,
@@ -257,7 +252,24 @@ export function CompassRefinedCourseCards({
    */
   const [showDone, setShowDone] = useState(false)
   const DONE_FOLD_MIN = 2
-  const base = filter === 'all' ? shown : chapters.filter((c) => c.state === FILTER_STATE[filter])
+  /**
+   * ⚠ THE LOCKED RUN DOES NOT FOLD ON THIS LAYOUT — 2026-11-16: "remove this.
+   * only hide the chapters when they are completed."
+   *
+   * ⚠ SO `shown` AND `cutoff` ARE NOT READ HERE ANY MORE; the roadmap lists
+   * every chapter the filter keeps. The props stay on `CourseListProps`
+   * because the ROWS layout still folds — that fold is audit finding 1,
+   * raised and measured against those rows, and nineteen locked rows of wall
+   * is still what it fixes there.
+   *
+   * ⚠ THE TWO FOLDS ANSWERED THE SAME COMPLAINT FROM OPPOSITE ENDS, and only
+   * one of them survives a card layout. What is ahead of a learner is the
+   * roadmap — a card each, locked, is the thing they came to look at. What is
+   * behind them is a pile they have already read, which is the one worth
+   * standing in for with a bar.
+   */
+  const base =
+    filter === 'all' ? chapters : chapters.filter((c) => c.state === FILTER_STATE[filter])
   /* The leading run only — a chapter finished out of order further down the
      list is not part of "what I have already been through". */
   const doneRun = filter === 'all' ? base.findIndex((c) => c.state !== 'done') : -1
@@ -684,15 +696,20 @@ export function CompassRefinedCourseCards({
                           <LessonMark state={l.state} />
                         </span>
                         <span className="crf-lesson__label">{l.label}</span>
-                        {l.state === 'done' ? (
-                          <button type="button" className="crf-lesson__act">
-                            Review
-                          </button>
-                        ) : l.state === 'current' ? (
-                          <button type="button" className="crf-lesson__act">
-                            Resume
-                          </button>
-                        ) : null}
+                        {/* ⚠ NO PER-LESSON LINK — 2026-11-16: "remove this.
+                            there is a main resume cta button, no need for
+                            this random link." Review and Resume on a lesson
+                            row said what the card's own action already says,
+                            one line higher and in the same words: a chapter
+                            you can resume has Resume in its top-right corner,
+                            and a finished one has Review. Expanding a module
+                            is for seeing WHAT IS IN IT; the list is a list,
+                            not six more copies of the button above it.
+
+                            ⚠ THE CHAPTER EXAM KEEPS ITS BUTTON, below. The
+                            card's action opens the chapter; that one opens
+                            the exam, which nothing else on this page reaches.
+                            It is the only row here that is not a duplicate. */}
                       </li>
                     ))}
                     {/* ⚠ THE CHAPTER EXAM IS A ROW OF THE OUTLINE —
@@ -745,47 +762,9 @@ export function CompassRefinedCourseCards({
           )
         })}
 
-        {filter !== 'all' ? null : folded ? (
-          /* ⚠ THE FOOT'S BAR TAKES THE SAME THREE COLUMNS — 2026-11-15.
-             Her note was written on the completed fold; the two bars have
-             been one shape since they were built, and leaving this one
-             reversed would have made the page's two folds disagree. Its
-             capsule is the locked tone, because that is what it stands in
-             for. */
-          <button type="button" className="crf-map__more" onClick={() => setShowAll(true)}>
-            <span
-              className={`crf-map__state crf-map__state--locked${
-                markOnly ? ' crf-map__state--markonly' : ''
-              }`}
-            >
-              <span className="crf-map__mark" aria-hidden>
-                {hiddenCount}
-              </span>
-              {!markOnly ? (
-                <>
-                  <span aria-hidden className="crf-map__dot" />
-                  {COPY.lockedWord}
-                </>
-              ) : null}
-            </span>
-            {/* ⚠ THE TRAILING "{n} more, locked" IS GONE with the move. It
-                was the count pinned to the right edge, and the capsule on
-                the left now carries that number — and, on the Number arm,
-                the word with it. Two 5s in one eight-word bar is the kind of
-                duplication a learner reads as two different figures. */}
-            <span className="crf-map__moretext">Show all {chapters.length} chapters</span>
-            <span className="crf-chev" aria-hidden>
-              <ChevronDown size={14} />
-            </span>
-          </button>
-        ) : cutoff < chapters.length ? (
-          <button type="button" className="crf-map__more" onClick={() => setShowAll(false)}>
-            <span className="crf-map__moretext">Show less</span>
-            <span className="crf-chev" aria-hidden>
-              <ChevronDown size={14} style={{ transform: 'rotate(180deg)' }} />
-            </span>
-          </button>
-        ) : null}
+        {/* ⚠ NO "Show all N chapters" BAR — 2026-11-16: "remove this. only
+            hide the chapters when they are completed." The locked run is the
+            roadmap; see `base` above. */}
 
         {/* ⚠ THE COURSE'S CLOSING STEPS ARE MODULES — 2026-11-13: "Exam,
             Survey, and Certificate should all be their own modules." They

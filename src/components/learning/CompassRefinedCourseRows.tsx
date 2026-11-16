@@ -140,15 +140,14 @@ export function CompassRefinedCourseRows({
                           <LessonMark state={l.state} />
                         </span>
                         <span className="crf-lesson__label">{l.label}</span>
-                        {l.state === 'done' ? (
-                          <button type="button" className="crf-lesson__act">
-                            Review
-                          </button>
-                        ) : l.state === 'current' ? (
-                          <button type="button" className="crf-lesson__act">
-                            Resume
-                          </button>
-                        ) : null}
+                        {/* ⚠ NO PER-LESSON LINK — 2026-11-16: "remove this.
+                            there is a main resume cta button, no need for
+                            this random link." Said on the ROADMAP, applied
+                            here too: this is the same lesson list, and the
+                            row above it carries the same action in the same
+                            words. Two layouts that disagree about what a
+                            lesson row holds would make the flag a comparison
+                            of two things at once. */}
                       </li>
                     ))}
                   </ul>
