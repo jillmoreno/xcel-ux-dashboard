@@ -4677,15 +4677,23 @@ the Design bar, which is Jill's file, so for now they are dropped.
   `language` prop still reaches them for the tests; the restore steps are
   in the comment where the flag was, in `FeatureFlagContext.tsx`. Not yet in
   the Archive table — `archivedItems.ts` is Jillienne's.
-  ⚠ **OPEN (2026-11-16): the linked document is still one language.** Amrita
-  also said there will be no language-specific version of anything — and no
+  **One document, both languages (2026-11-16, Amrita via Afsana).** Amrita
+  also said there is no language-specific version of anything — and no
   Spanish or other-language course — until a full translation strategy is
-  mapped out and carried out. So there should be no English form and Spanish
-  form at all: the link (Florida before the course begins, Life & Health or
-  Property & Casualty; the Non-state specific terms) should open the whole
-  original document, English and Spanish together, as compliance holds it.
-  Today it opens only the English half (`FL_LH_EN`, `FL_PC_EN`,
-  `GEN_PRE_EN`). Not built yet.
+  mapped out and carried out. So there is no English form and Spanish form:
+  Florida's two pre-course notices (`FL_LH`, `FL_PC`) and the generic terms
+  (`GEN_PRE`) are one form each, and the link opens the Word doc's whole
+  text, the English then the Spanish (marked `lang="es"`), whatever the
+  course language. The halves stay in the data file as the source of the
+  text, unwired. **Sarah confirmed (2026-11-16)** that these three notices
+  must be given in both languages at once. **The documents' button wording
+  stays:** each half still says "By clicking the "I Agree" button below" /
+  "Al seleccionar el botón "Acepto"" while the button reads Confirm, and
+  Sarah says there is no regulatory requirement on how we display it — so,
+  with Amrita's rule that the legal documents are not modified, the text is
+  left as written (West Virginia's and Wisconsin's "the button below" too).
+  ⚠ Still open: Florida's Property & Casualty Spanish is the Life & Health
+  wording — in the Word doc too, so it was copied faithfully.
 - **The Student Certification Statement ends the student's page (2026-11-11,
   Afsana: "to streamline UX").** On CO, CT, WV and WI after the exam it was a
   third page of its own, which sent the student back after the exam
@@ -4790,7 +4798,7 @@ the Design bar, which is Jill's file, so for now they are dropped.
   Minnesota's student Company & Address, Business and Mailing addresses
   (split into City, State and Zip Code, no Line 2).
 - **Non-state specific** (`GEN`) — XCEL's Generic Terms and Conditions (before
-  the course begins, English or Spanish by Affidavit language) and its PE
+  the course begins, English and Spanish in one document) and its PE
   General Attestation (before the course exam), from Afsana's "Non-State
   Specific" folder.
 - **Before course exam — Pennsylvania** (2026-11-06), from the compliance

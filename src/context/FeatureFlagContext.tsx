@@ -2953,8 +2953,10 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
      documents are kept as they are, and a document that carries both
      languages is shown whole; the learner reads whichever they need,
      whatever the course language. So the modal is always English and there
-     is nothing to choose. The Spanish forms (FL_LH_ES, FL_PC_ES, GEN_PRE_ES)
-     stay in affidavitForms.ts, unwired. To restore: put this entry back here
+     is nothing to choose. Since 2026-11-16 the entries open one bilingual
+     form each (FL_LH, FL_PC, GEN_PRE); the per-language halves stay in
+     affidavitForms.ts, unwired. To restore: point the Florida and GEN entries
+     back at the halves (their 2026-11-11 shape is in git), put this entry back here
      (surface 'design', versions ['jill-atlas-main', 'eric-atlas-e2e'],
      variants English / Spanish, default English), add the key back to
      REBRAND_FLAGS in FeatureFlagPanel.tsx, and in AffidavitModalV2.tsx read

@@ -72,6 +72,8 @@ export type AffBlock = {
   h?: string; u?: boolean; h4?: string; p?: string; closing?: string; pageOnly?: boolean; plain?: boolean
   /** Smaller print, for a side note under the fields (2026-11-09). */
   fine?: boolean
+  /** The block's language, where it is not the modal's — the Spanish half of a bilingual document (2026-11-16). */
+  lang?: string
   ul?: (string | { t: string; sub: string[] })[]; ulh?: string[]; ol?: string[]; olh?: string[]
   table?: { title: string; head: string[]; rows: string[][] }
 }
@@ -123,7 +125,7 @@ export const ENTRIES: AffEntry[] =[
   {m:'pre',doc:'enroll',st:'NV',status:'ready',form:'NV_PRE'},
   {m:'pre',doc:'enroll',st:'OR',status:'ready',form:'OR_PRE'},
   {m:'pre',doc:'reg',st:'OH',status:'ready',form:'OH_PRE'},
-  {m:'pre',doc:'manual',st:'FL',status:'received',loas:['Life & Health','Property & Casualty'],variants:{'Life & Health':{English:'FL_LH_EN',Spanish:'FL_LH_ES'},'Property & Casualty':{English:'FL_PC_EN',Spanish:'FL_PC_ES'}}},
+  {m:'pre',doc:'manual',st:'FL',status:'ready',loas:['Life & Health','Property & Casualty'],variants:{'Life & Health':{English:'FL_LH'},'Property & Casualty':{English:'FL_PC'}}},
   {m:'pre',doc:'terms',st:'CA',status:'ready',form:'CA_PRE'},
   {m:'exam',st:'FL',status:'ready',form:'FL_EXAM'},{m:'exam',st:'MN',status:'ready',form:'MN_EXAM'},
   {m:'exam',st:'CO',status:'missing'},{m:'exam',st:'CT',status:'missing'},{m:'exam',st:'WV',status:'missing'},{m:'exam',st:'WI',status:'missing'},
@@ -867,7 +869,7 @@ for (const key of ['CO_POST', 'CT_POST', 'WV_POST', 'WI_POST']) {
    picks one, as it does for Florida's notices. */
 STATES.GEN = 'Non-state specific'
 ENTRIES.push(
-  {m:'pre',doc:'terms',st:'GEN',status:'ready',byLanguage:{English:'GEN_PRE_EN',Spanish:'GEN_PRE_ES'}},
+  {m:'pre',doc:'terms',st:'GEN',status:'ready',form:'GEN_PRE'},
   {m:'exam',st:'GEN',status:'ready',form:'GEN_EXAM'},
 )
 FORMS.GEN_PRE_EN={
@@ -936,6 +938,30 @@ FORMS.GEN_EXAM={
   noPrefill:['fullname'],
   note:'Not in the explorer: added 2026-11-04 from the Non-State Specific folder. The button reads "Attest", as the document has it.'
 };
+
+/* ── ONE DOCUMENT, BOTH LANGUAGES — 2026-11-16 (Amrita, via Afsana) ──────
+   The legal documents are shown as they are: a learner reads the English or
+   the Spanish as they see fit, and there is no language-specific version of
+   anything until a full translation strategy is mapped out and carried out.
+   So Florida's two pre-course notices and the generic terms are each ONE
+   form whose document is the Word doc's text in order — the English, then
+   the Spanish, as the document has them — and the link opens all of it. The
+   per-language halves above (FL_LH_EN/_ES, FL_PC_EN/_ES, GEN_PRE_EN/_ES)
+   stay as the source of the text, and nothing opens them. Each half's own
+   sentence about the button ("By clicking the "I Agree" button …", "Al
+   seleccionar el botón "Acepto" …") is the document's and stays, though the
+   button reads Confirm (open with compliance). ⚠ Florida's Property &
+   Casualty Spanish is the Life & Health wording — so in the Word doc too. */
+const bothLanguages = (en: AffForm, es: AffForm, note: string): AffForm => ({
+  ...en,
+  source: en.source!.replace(' (English section)', ''),
+  pages: [{ blocks: [...en.pages[0]!.blocks!, ...es.pages[0]!.blocks!.map((b) => ({ ...b, lang: 'es' }))] }],
+  fields: en.fields.slice(),
+  note,
+})
+FORMS.FL_LH = bothLanguages(FORMS.FL_LH_EN, FORMS.FL_LH_ES, 'The whole notice, English then Spanish, as the Word doc has it (2026-11-16).')
+FORMS.FL_PC = bothLanguages(FORMS.FL_PC_EN, FORMS.FL_PC_ES, 'The whole notice, English then Spanish, as the Word doc has it (2026-11-16). Its Spanish is the Life & Health wording, in the Word doc too.')
+FORMS.GEN_PRE = bothLanguages(FORMS.GEN_PRE_EN, FORMS.GEN_PRE_ES, 'The whole document, English then Spanish, with its one Student Full Name line, as the Word doc has it (2026-11-16).')
 
 /* ── BEFORE THE COURSE EXAM: CO, CT, WV, WI — added 2026-11-04 ───────────
    The explorer had no pre-exam document for these four ("Doc not available
@@ -1048,7 +1074,7 @@ export const SIGNED_FORMS = ['IL_PRE','OH_PRE','FL_EXAM','MN_EXAM','CA_POST','IL
    of each Word doc) — take the same name block, pre-filled,
    with no signature box. "Full Legal Name", "Full Name" and "Student Name"
    are one data point, the learner's name, so they are captured one way. */
-export const NAMED_FORMS = ['CA_PRE','GEN_PRE_EN','GEN_PRE_ES','KY_PRE','NV_PRE','OR_PRE']
+export const NAMED_FORMS = ['CA_PRE','GEN_PRE','KY_PRE','NV_PRE','OR_PRE']
 for (const key of [...SIGNED_FORMS, ...NAMED_FORMS]) {
   const form = FORMS[key]
   const sign = SIGNED_FORMS.includes(key)
@@ -1145,8 +1171,8 @@ for (const [key, form] of Object.entries(FORMS) as [string, AffForm][]) {
    called what they are. */
 const DOC_WORD: Record<string, string> = {
   KY_PRE: 'enrollment agreement', NV_PRE: 'enrollment agreement', OR_PRE: 'enrollment agreement',
-  FL_LH_EN: 'notice', FL_LH_ES: 'notice', FL_PC_EN: 'notice', FL_PC_ES: 'notice',
-  CA_PRE: 'terms and conditions', GEN_PRE_EN: 'terms and conditions', GEN_PRE_ES: 'terms and conditions',
+  FL_LH: 'notice', FL_PC: 'notice',
+  CA_PRE: 'terms and conditions', GEN_PRE: 'terms and conditions',
   OH_PRE: 'registration form',
 }
 for (const [key, word] of Object.entries(DOC_WORD)) FORMS[key].docWord = word

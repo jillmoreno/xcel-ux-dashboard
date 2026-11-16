@@ -232,12 +232,12 @@ function Blocks({ blocks, whole = false }: { blocks: AffBlock[]; whole?: boolean
     <>
       {blocks.map((b, i) => {
         if (whole && b.pageOnly) return null
-        if (b.h) return <h3 key={i} className={b.u ? 'is-u' : undefined}>{b.h}</h3>
+        if (b.h) return <h3 key={i} lang={b.lang} className={b.u ? 'is-u' : undefined}>{b.h}</h3>
         if (b.h4) return <h4 key={i}>{b.h4}</h4>
         if (b.olh) return <ol key={i}>{b.olh.map((t, k) => <li key={k} dangerouslySetInnerHTML={html(t)} />)}</ol>
         if (b.ol) return <ol key={i}>{b.ol.map((t, k) => <li key={k}>{t}</li>)}</ol>
         if (b.closing) return <p key={i} className="aff2-closing">{b.closing}</p>
-        if (b.p) return <p key={i} className={b.fine ? 'aff2-fine' : undefined} dangerouslySetInnerHTML={html(b.p)} />
+        if (b.p) return <p key={i} lang={b.lang} className={b.fine ? 'aff2-fine' : undefined} dangerouslySetInnerHTML={html(b.p)} />
         if (b.table)
           return (
             <table key={i} className="aff2-tbl">

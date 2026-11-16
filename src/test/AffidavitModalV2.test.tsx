@@ -122,10 +122,10 @@ describe('AffidavitModalV2', () => {
     for (const v of ['jill-atlas-main', 'eric-atlas-e2e'])
       expect(designControlsFor(v, v === 'jill-atlas-main' ? 'jill' : 'eric').map((f) => f.label), v).not.toContain('Affidavit language')
     render(<AffidavitModalV2 onClose={() => {}} moment="pre" state="FL" />)
-    expect(screen.getByRole('heading', { level: 2 }).textContent).toBe(FORMS.FL_LH_EN!.title)
+    expect(screen.getByRole('heading', { level: 2 }).textContent).toBe(FORMS.FL_LH!.title)
     cleanup()
     render(<AffidavitModalV2 onClose={() => {}} moment="pre" state="GEN" />)
-    expect(screen.getByRole('heading', { level: 2 }).textContent).toBe(FORMS.GEN_PRE_EN!.title)
+    expect(screen.getByRole('heading', { level: 2 }).textContent).toBe(FORMS.GEN_PRE!.title)
     // Kept, so a restore is a re-wire.
     expect([FORMS.FL_LH_ES, FORMS.FL_PC_ES, FORMS.GEN_PRE_ES].every(Boolean)).toBe(true)
   })
@@ -171,27 +171,37 @@ describe('AffidavitModalV2 — the explorer’s forms', () => {
       'GEN',
     ])
     render(<AffidavitModalV2 onClose={() => {}} />)
-    expect(screen.getByRole('heading', { level: 2 }).textContent).toBe(FORMS.FL_LH_EN!.title)
+    expect(screen.getByRole('heading', { level: 2 }).textContent).toBe(FORMS.FL_LH!.title)
   })
 
-  it('reads the Florida notice in Spanish when the course language is Spanish', () => {
-    render(<AffidavitModalV2 onClose={() => {}} language="Spanish" />)
-    expect(screen.getByRole('heading', { level: 2 }).textContent).toBe(FORMS.FL_LH_ES!.title)
-    expect(screen.getByRole('dialog').getAttribute('lang')).toBe('es')
-  })
-
-  it('picks Florida’s before-course notice by line of authority and language — all four', () => {
-    const cases: [string, string, string][] = [
-      ['Life & Health', 'English', 'FL_LH_EN'],
-      ['Life & Health', 'Spanish', 'FL_LH_ES'],
-      ['Property & Casualty', 'English', 'FL_PC_EN'],
-      ['Property & Casualty', 'Spanish', 'FL_PC_ES'],
-    ]
-    for (const [loa, language, key] of cases) {
-      render(<AffidavitModalV2 onClose={() => {}} moment="pre" state="FL" lineOfAuthority={loa} language={language} />)
-      expect(screen.getByRole('heading', { level: 2 }).textContent, key).toBe(FORMS[key]!.title)
-      cleanup()
+  /* ONE DOCUMENT, BOTH LANGUAGES (2026-11-16, Amrita): no language-specific
+     version of anything, so each bilingual Word doc is one form, and its
+     link opens all of it — English, then Spanish — whatever the course
+     language. */
+  it('picks Florida’s before-course notice by line of authority, and the course language changes nothing', () => {
+    for (const [loa, key] of [['Life & Health', 'FL_LH'], ['Property & Casualty', 'FL_PC']] as const) {
+      for (const language of ['English', 'Spanish']) {
+        expect(resolveAffidavit('pre', 'FL', language, loa).form, `${loa} ${language}`).toBe(FORMS[key])
+        render(<AffidavitModalV2 onClose={() => {}} moment="pre" state="FL" lineOfAuthority={loa} language={language} />)
+        expect(screen.getByRole('dialog').getAttribute('lang'), language).toBeNull()
+        cleanup()
+      }
     }
+  })
+
+  it.each([
+    ['pre', 'FL', 'Life & Health', /requires a study manual for life and\/or health courses/, /exige un manual de estudio/],
+    ['pre', 'FL', 'Property & Casualty', /requires a study manual for the General Lines courses/, /exige un manual de estudio/],
+    ['pre', 'GEN', 'Life & Health', /^I understand and acknowledge that the pre-licensing insurance course final exam/, /^Yo entiendo y reconozco/],
+  ] as const)('%s %s %s: the link opens the whole document, the English then the Spanish', (m, st, loa, en, es) => {
+    const { container } = render(<LinkedDocument form={resolveAffidavit(m, st, 'English', loa).form!} onBack={() => {}} />)
+    const ps = [...container.querySelectorAll('p')]
+    const e = ps.findIndex((p) => en.test(p.textContent ?? ''))
+    const sp = ps.findIndex((p) => es.test(p.textContent ?? ''))
+    expect(e).toBeGreaterThanOrEqual(0)
+    expect(sp).toBeGreaterThan(e)
+    expect(ps[sp]!.getAttribute('lang')).toBe('es')
+    expect(ps[e]!.getAttribute('lang')).toBeNull()
   })
 
   it('shows a state’s own line when it has no form for the chosen one', () => {
@@ -543,7 +553,7 @@ describe('AffidavitModalV2 — the explorer’s forms', () => {
   /* AND ONE WAY TO TAKE A NAME (2026-11-06): the forms that ask for a name
      with no signature take the same name block, and no signature box. */
   it('takes the name the same way on the forms with a name and no signature', () => {
-    expect(NAMED_FORMS).toEqual(['CA_PRE', 'GEN_PRE_EN', 'GEN_PRE_ES', 'KY_PRE', 'NV_PRE', 'OR_PRE'])
+    expect(NAMED_FORMS).toEqual(['CA_PRE', 'GEN_PRE', 'KY_PRE', 'NV_PRE', 'OR_PRE'])
     for (const key of NAMED_FORMS) {
       const ids = formFields(key).map((x) => x.id)
       for (const id of ['first', 'middle', 'last']) expect(ids, `${key} ${id}`).toContain(id)
@@ -551,7 +561,7 @@ describe('AffidavitModalV2 — the explorer’s forms', () => {
       const f = FORMS[key]!
       expect(flatAll(f.fields.concat(...f.pages.map((pg) => pg.fields ?? []))).some((x) => x.id === 'agree'), key).toBe(true)
     }
-    expect(formFields('GEN_PRE_EN').map((x) => x.id)).toEqual(['first', 'middle', 'last'])
+    expect(formFields('GEN_PRE').map((x) => x.id)).toEqual(['first', 'middle', 'last'])
   })
 
   /* MIDDLE NAME IS UNDECIDED (2026-11-06): a Design bar control. */
@@ -614,9 +624,9 @@ describe('AffidavitModalV2 — the explorer’s forms', () => {
 
   /* NON-STATE SPECIFIC (2026-11-04) — XCEL's own forms, from Afsana's
      "Non-State Specific" folder. */
-  it('Non-state specific, before the course begins, in English: the English terms only', async () => {
+  it('Non-state specific, before the course begins: the terms in both languages, one name block', async () => {
     const onClose = vi.fn()
-    render(<AffidavitModalV2 onClose={onClose} moment="pre" state="GEN" language="English" />)
+    render(<AffidavitModalV2 onClose={onClose} moment="pre" state="GEN" />)
     expect(screen.getByRole('heading', { level: 2 }).textContent).toBe('XCEL Generic Terms and Conditions')
     // The standard name block since 2026-11-06: pre-filled, so confirmed.
     expect((screen.getByLabelText(/^First Name/) as HTMLInputElement).value).toBe('Jordan')
@@ -627,19 +637,10 @@ describe('AffidavitModalV2 — the explorer’s forms', () => {
     expect(agree.disabled).toBe(true) // the document not opened yet
     const doc = openDoc('pre', 'GEN')
     expect(doc.getByText('Acknowledgement of Terms and Conditions of Pre-licensing Course Completion')).toBeTruthy()
-    expect(doc.queryByText(/Reconocimiento de los Términos y Condiciones/)).toBeNull()
+    expect(doc.getByText(/Reconocimiento de los Términos y Condiciones/)).toBeTruthy()
     expect(agree.disabled).toBe(false)
     fireEvent.click(agree)
     expect(onClose).toHaveBeenCalled()
-  })
-
-  it('Non-state specific, before the course begins, in Spanish: the Spanish terms only, as Florida’s are', async () => {
-    render(<AffidavitModalV2 onClose={() => {}} moment="pre" state="GEN" language="Spanish" />)
-    expect(screen.getByRole('dialog').getAttribute('lang')).toBe('es')
-    expect(screen.getByRole('button', { name: 'Acepto' })).toBeTruthy()
-    const doc = openDoc('pre', 'GEN', 'Spanish')
-    expect(doc.getByText(/Reconocimiento de los Términos y Condiciones/)).toBeTruthy()
-    expect(doc.queryByText('Acknowledgement of Terms and Conditions of Pre-licensing Course Completion')).toBeNull()
   })
 
   it('Non-state specific, before the course exam: the general attestation, signed with Confirm', async () => {
