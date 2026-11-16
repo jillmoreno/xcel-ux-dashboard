@@ -180,7 +180,8 @@ export function PanelFooter({
   onSave: () => void
   onCancel: () => void
   /** Cancel on the left, the primary on the right — Keycloak's Change
-   *  Password step (2026-11-13, Afsana). Every other step keeps save first. */
+   *  Password step (2026-11-13, Afsana) and Update Email Address
+   *  (2026-11-16). The other steps keep save first. */
   cancelFirst?: boolean
 }) {
   const save = (

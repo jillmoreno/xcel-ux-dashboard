@@ -82,6 +82,14 @@ describe('Keycloak change password', () => {
     expect(screen.queryByRole('button', { name: 'Change Password' })).toBeNull()
   })
 
+  it('Update Email Address also puts Cancel first and Save Changes second', () => {
+    renderPanel()
+    fireEvent.click(screen.getByText('Update Email Address'))
+    const footer = screen.getByRole('button', { name: 'Save Changes' }).closest('footer') as HTMLElement
+    const labels = Array.from(footer.querySelectorAll('button')).map((b) => b.textContent)
+    expect(labels).toEqual(['Cancel', 'Save Changes'])
+  })
+
   it('enables Save Password only once every rule is met and the two match', () => {
     renderPanel()
     fireEvent.click(screen.getByText('Update Password'))
