@@ -118,6 +118,7 @@ export function CompassRefinedLearn({
     cutoff: options.fold ? cutoff : chapters.length,
     setShowAll,
     isOpen,
+    examRow: options.examRow,
     toggle: (n, expanded) => setOpen((o) => ({ ...o, [n]: !expanded })),
     openLesson,
     blurb: options.blurb,

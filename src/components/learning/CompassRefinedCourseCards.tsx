@@ -28,8 +28,10 @@ import { BookOpenRegular, ChevronDown, CircleCheckRegular, LockRegular } from '@
 import { JEFF_MVP_LEARN_COPY as COPY } from '@/data/compassJeffMvpFixtures'
 import {
   REFINED_CHAPTER_BLURBS,
+  REFINED_EXAM_COPY,
   REFINED_NEXT_META,
   REFINED_ROADMAP,
+  refinedExamFacts,
   refinedModuleTime,
 } from '@/data/compassRefinedCopy'
 import { LessonMark } from './CompassRefinedCourseParts'
@@ -168,6 +170,36 @@ function KindMark({ kind, state }: { kind: RefinedSectionKind; state?: string })
 }
 
 /**
+ * THE EXAM AS THE LIST'S LAST ROW — the `seam` arm's half of
+ * `compass-course-exam`.
+ *
+ * ⚠ A LEAF, BECAUSE THE THREE STATES ARE THE POINT. Done takes Review exam,
+ * open takes Take exam, and LOCKED TAKES NEITHER — that third case is what
+ * the seam above it exists to cover, and spelling the ternary out twice
+ * (once per arm) is how the two arms would come to disagree about it.
+ */
+function ExamLessonRow({ exam }: { exam: NonNullable<RefinedChapter['exam']> }) {
+  const state = exam.done ? 'done' : exam.locked ? 'todo' : 'current'
+  return (
+    <li className={`crf-lesson crf-lesson--${state} crf-lesson--exam`}>
+      <span className="crf-lesson__mark" aria-hidden>
+        <LessonMark state={state} />
+      </span>
+      <span className="crf-lesson__label">{exam.title}</span>
+      {exam.done ? (
+        <button type="button" className="crf-lesson__act">
+          {COPY.examReviewCta}
+        </button>
+      ) : !exam.locked ? (
+        <button type="button" className="crf-lesson__act">
+          {COPY.examCta}
+        </button>
+      ) : null}
+    </li>
+  )
+}
+
+/**
  * The mark on a row the course does not number — the Course Introduction and
  * the Florida laws chapter.
  *
@@ -199,6 +231,7 @@ export function CompassRefinedCourseCards({
   blurb,
   chapterMark,
   status,
+  examRow,
   finish,
 }: CourseListProps) {
   /**
@@ -730,30 +763,51 @@ export function CompassRefinedCourseCards({
                         modules settled on the day before. The "opens after
                         all 6 lessons" note goes with the strip: the six rows
                         directly above it say so better. */}
-                    {c.exam ? (
-                      <li
-                        className={`crf-lesson crf-lesson--${
-                          c.exam.done ? 'done' : c.exam.locked ? 'todo' : 'current'
-                        } crf-lesson--exam`}
-                      >
-                        <span className="crf-lesson__mark" aria-hidden>
-                          <LessonMark
-                            state={c.exam.done ? 'done' : c.exam.locked ? 'todo' : 'current'}
-                          />
-                        </span>
-                        <span className="crf-lesson__label">{c.exam.title}</span>
-                        {c.exam.done ? (
-                          <button type="button" className="crf-lesson__act">
-                            {COPY.examReviewCta}
-                          </button>
-                        ) : !c.exam.locked ? (
-                          <button type="button" className="crf-lesson__act">
-                            {COPY.examCta}
-                          </button>
-                        ) : null}
-                      </li>
+                    {/* ⚠ THE SEAM ARM KEEPS THE EXAM IN THE LIST, labelled —
+                        2026-11-16, `compass-course-exam`. The rule she liked
+                        is still the rule; the word is set into it, which is
+                        the pattern the rail uses for LEARN and EXAM PREP.
+                        The row itself drops its own border, or the seam and
+                        the row would draw two lines for one break. */}
+                    {c.exam && examRow === 'seam' ? (
+                      <>
+                        <li className="crf-exam__seam" aria-hidden>
+                          {REFINED_EXAM_COPY.seam}
+                        </li>
+                        <ExamLessonRow exam={c.exam} />
+                      </>
                     ) : null}
                   </ul>
+                  {/* ⚠ THE CARD ARM LIFTS IT OUT OF THE LIST — its own
+                      bordered object under the lessons, with the line that
+                      earns the height. Both of that line's figures are
+                      invented; see `REFINED_EXAM_FACTS`. */}
+                  {c.exam && examRow === 'card' ? (
+                    <div
+                      className={`crf-exam__card crf-exam__card--${
+                        c.exam.done ? 'done' : c.exam.locked ? 'todo' : 'current'
+                      }`}
+                    >
+                      <span className="crf-exam__mark" aria-hidden>
+                        <LessonMark
+                          state={c.exam.done ? 'done' : c.exam.locked ? 'todo' : 'current'}
+                        />
+                      </span>
+                      <span className="crf-exam__name">
+                        {c.exam.title}
+                        <span className="crf-exam__facts">{refinedExamFacts()}</span>
+                      </span>
+                      {c.exam.done ? (
+                        <button type="button" className="crf-exam__go">
+                          {COPY.examReviewCta}
+                        </button>
+                      ) : !c.exam.locked ? (
+                        <button type="button" className="crf-exam__go">
+                          {COPY.examCta}
+                        </button>
+                      ) : null}
+                    </div>
+                  ) : null}
                     </div>
                   ) : null}
                 </div>

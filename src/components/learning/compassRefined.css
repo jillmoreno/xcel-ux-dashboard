@@ -2373,6 +2373,93 @@
    exam is what FOLLOWS the lessons rather than one more of them, and the
    list would otherwise read as seven lessons where there are six and a
    test. */
+/* ⚠ THE SEAM — 2026-11-16, the `seam` arm of `compass-course-exam`: a rule
+   with its label set into it, which is the pattern the rail uses over LEARN
+   and EXAM PREP. The row below it drops its own border (see
+   `.crf-exam__seam + .crf-lesson--exam`), or the break is drawn twice.
+
+   ⚠ IT IS AN `<li aria-hidden>`, NOT A HEADING. It sits inside the lesson
+   `<ul>`, where a non-`li` child is invalid; and it is decoration for a row
+   whose own title already begins "Chapter 1 Exam", so a screen reader that
+   skipped it would lose nothing and one that read it would say the word
+   twice. */
+.crf-exam__seam {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 12px 0 2px;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--crf-muted);
+}
+.crf-exam__seam::after {
+  content: '';
+  flex: 1 1 auto;
+  height: 1px;
+  background: var(--crf-hairline);
+}
+.crf-exam__seam + .crf-lesson--exam {
+  margin-top: 0;
+  border-top: 0;
+}
+
+/* ⚠ THE CARD ARM — the exam as its own object under the list. The inset is
+   the lesson list's own, so it lines up with the rows it follows rather than
+   with the card around them. */
+.crf-exam__card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 12px 0 0;
+  padding: 12px 14px;
+  border: 1px solid var(--crf-beige-200);
+  border-radius: 10px;
+  background: var(--crf-white);
+}
+.crf-exam__mark {
+  flex: 0 0 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--crf-dim);
+}
+.crf-exam__card--done .crf-exam__mark {
+  color: var(--crf-green);
+}
+.crf-exam__card--current .crf-exam__mark {
+  color: var(--crf-steel-deep);
+}
+.crf-exam__name {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--crf-ink);
+}
+/* ⚠ THE LINE THAT EARNS THE HEIGHT — and both of its figures are invented.
+   See `REFINED_EXAM_FACTS`. */
+.crf-exam__facts {
+  display: block;
+  font-size: 11.5px;
+  font-weight: 400;
+  color: var(--crf-muted);
+}
+.crf-exam__go {
+  flex: 0 0 auto;
+  padding: 8px 12px;
+  border: 1px solid var(--crf-control-edge);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--crf-ink);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
 .crf-lesson--exam {
   margin-top: 4px;
   padding-top: 10px;

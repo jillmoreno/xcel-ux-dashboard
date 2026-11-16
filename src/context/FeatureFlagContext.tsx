@@ -1997,6 +1997,48 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'compass-course-exam',
+    /* HOW THE CHAPTER EXAM SITS IN AN OPEN MODULE — 2026-11-16: "use option 5
+       as the default, but also build option 4 behind a toggle to compare."
+
+       ⚠ THE DIVIDER WAS NEVER THE QUESTION. "i like the divider line above
+       the exam, but i think we need a little more UI variation for the actual
+       exam" — both arms keep it. What they differ on is whether the exam is
+       the labelled LAST ROW of the lesson list, or an object of its own
+       below it.
+
+       ⚠ `seam` SHIPS BECAUSE IT SURVIVES THE LOCKED STATE. The exam row is
+       drawn three ways — done, open, and locked with no button at all — and
+       locked is what most of the list is. A treatment leaning on the action
+       to say "this one is a test" goes quiet exactly where it is needed. A
+       labelled rule does not, and it is the pattern the rail already uses for
+       its own group headings.
+
+       ⚠ `card` CARRIES TWO INVENTED FIGURES. Its second line — the question
+       count and the pass mark — is what earns the extra height, and the
+       course list has neither. That is the comparison: more separation, at
+       the price of saying something nothing can source. See
+       `REFINED_EXAM_FACTS`. */
+    surface: 'design',
+    owner: 'anjani',
+    versions: ['hybrid-pacing', 'eric-atlas-e2e'],
+    /* ⚠ THE ROADMAP'S ONLY. The rows layout draws its exam through `ExamRow`,
+       a different component with its own strip; this is the row inside an
+       expanded card. */
+    surfaces: ['compass:refined:learn'],
+    group: 'Widgets',
+    label: 'Chapter exam',
+    description:
+      'How a chapter exam sits inside an expanded module on the Course roadmap. Seam is a labelled rule — CHAPTER EXAM — across the list, then the exam as its last row: a word, no new surface, and it still reads when the exam is locked and draws no button. Card lifts the exam out of the list into its own bordered object with a second line stating the question count and pass mark — stronger separation, but both of those figures are invented (see REFINED_EXAM_FACTS) because the course list carries no exam facts.',
+    variants: [
+      { value: 'seam', label: 'Seam', description: 'A labelled rule, then the row' },
+      { value: 'card', label: 'Card', description: 'Its own object under the list' },
+    ],
+    defaultVariant: 'seam',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'compass-course-image',
     /* ⚠ THE COURSE'S PICTURE, BESIDE ITS NAME — 2026-11-12: "add a toggle
        that shows the course image to the left of the course details".

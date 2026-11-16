@@ -30,6 +30,26 @@ export type CourseRowStyle = 'list' | 'cards'
  * `CompassRefinedShell` and `RefinedPage`, which is the friction that stops a
  * variant being tried.
  */
+/**
+ * HOW THE CHAPTER EXAM SITS IN AN OPEN MODULE — `compass-course-exam`,
+ * 2026-11-16: "use option 5 as the default, but also build option 4 behind a
+ * toggle to compare."
+ *
+ * ⚠ BOTH ARMS KEEP THE DIVIDER. That part was already right — "i like the
+ * divider line above the exam" — and what they differ on is whether the exam
+ * is a labelled LAST ROW of the lesson list or an OBJECT of its own below it.
+ *
+ * ⚠ `seam` IS THE DEFAULT. It adds a word and no new surface, it uses the
+ * pattern the rail already has for group labels, and it keeps working in the
+ * state the exam spends most of its life in — locked, with no button to
+ * carry the difference.
+ *
+ * ⚠ `card` IS THE ONE WITH A COST TO WEIGH. Its second line is what earns it
+ * the extra height, and both of that line's figures are invented — see
+ * `REFINED_EXAM_FACTS`.
+ */
+export type ExamRowStyle = 'seam' | 'card'
+
 export type CourseOptions = {
   rows: CourseRowStyle
   /** ⚠ The invented one-sentence descriptions — see `REFINED_CHAPTER_BLURBS`. */
@@ -52,6 +72,8 @@ export type CourseOptions = {
    * Course follows it rather than getting a second one.
    */
   nextMark: NextMarkStyle
+  /** `compass-course-exam` — how the chapter exam sits in an open module. */
+  examRow: ExamRowStyle
 }
 
 export const COURSE_DEFAULTS: CourseOptions = {
@@ -81,6 +103,8 @@ export const COURSE_DEFAULTS: CourseOptions = {
   /* Agrees with `FOCUS_DEFAULTS.nextMark`, or a card rendered without
      options draws a shape the bar never shows. */
   nextMark: 'stacked',
+  /* ⚠ AGREES WITH `compass-course-exam`'s own default. */
+  examRow: 'seam',
 }
 
 /**
@@ -124,6 +148,8 @@ export type CourseListProps = {
   openLesson: () => void
   /** `compass-course-blurb` — the invented sentences. */
   blurb: boolean
+  /** `compass-course-exam` — see `ExamRowStyle`. */
+  examRow: ExamRowStyle
   /** `compass-course-mark` — see `CourseOptions`. */
   chapterMark: ChapterMarkStyle
   /** `compass-course-status` — see `CourseOptions`. */

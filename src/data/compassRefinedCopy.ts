@@ -714,3 +714,40 @@ export function refinedModuleTime(lessons: number, quiz: boolean): string {
   const m = mins % 60
   return m ? `${h}h ${m}m` : `${h}h`
 }
+
+/**
+ * WHAT A CHAPTER EXAM COSTS — 2026-11-16, built for the `card` arm of
+ * `compass-course-exam`: "build option 4 behind a toggle to compare."
+ *
+ * ⚠ BOTH FIGURES ARE INVENTED, and they are the reason this arm is a
+ * comparison rather than the default. The course list carries no exam facts
+ * at all — no question counts, no pass marks — so the inset card's second
+ * line, which is the whole argument for giving the exam its own object, is
+ * the one part of it nothing can source. The seam arm says nothing it does
+ * not know; this one says two things it does not.
+ *
+ * ⚠ SO THEY ARE TYPED ONCE, HERE, rather than built into the component. When
+ * the course gives per-chapter exam facts this is the string they land in,
+ * and until then there is one place to find what was made up.
+ *
+ * ⚠ THE PASS MARK IS THE COURSE'S OWN, at least in shape: Florida
+ * pre-licensing exams are commonly scored at 70%. The question count is not
+ * — 20 is a plausible chapter quiz and nothing more.
+ */
+export const REFINED_EXAM_FACTS = {
+  /** ⚠ INVENTED. */
+  questions: 20,
+  /** ⚠ INVENTED — see above. */
+  passPct: 70,
+} as const
+
+/** "20 questions · 70% to pass". See the note above before quoting it. */
+export function refinedExamFacts(): string {
+  return `${REFINED_EXAM_FACTS.questions} questions · ${REFINED_EXAM_FACTS.passPct}% to pass`
+}
+
+/** The `seam` arm's label — see `ExamRowStyle`. Upper-cased by the
+ *  stylesheet, the way the rail's own group headings are. */
+export const REFINED_EXAM_COPY = {
+  seam: 'Chapter exam',
+} as const

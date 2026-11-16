@@ -34,6 +34,7 @@ import type {
   ChapterMarkStyle,
   CourseOptions,
   CourseStatusStyle,
+  ExamRowStyle,
   CourseRowStyle,
 } from './compassRefinedCourseModel'
 
@@ -177,6 +178,7 @@ export function CompassLearningPage({
     image: useFeatureFlag('compass-course-image').enabled,
     chapterMark: useFeatureFlag('compass-course-mark').variant as ChapterMarkStyle,
     status: useFeatureFlag('compass-course-status').variant as CourseStatusStyle,
+    examRow: useFeatureFlag('compass-course-exam').variant as ExamRowStyle,
     /* ⚠ THE OVERVIEW'S FLAG, READ FOR BOTH — the next-step card is one
        component on two pages; see `CourseOptions.nextMark`. */
     nextMark: useFeatureFlag('compass-overview-next-mark').variant as NextMarkStyle,
