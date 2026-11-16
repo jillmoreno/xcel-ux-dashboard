@@ -1,0 +1,378 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="robots" content="noindex" />
+<title>Compass Version Map</title>
+<!--
+  THE COMPASS VERSION MAP — every section of Compass Learning, page by page,
+  with the design-controls selection that shows it. Started 2026-11-16 with
+  one page (Readiness) and one column (Jeff's MVP). The Refined column, and
+  the other eight pages, are added as they are mapped — see §04.
+
+  Why a page and not a handoff row: a handoff is one feature, written by its
+  designer for a developer. This is a MAP of a whole surface across its
+  versions, for anyone trying to find a thing they were shown — the reviewer
+  who says "the card with the ring", the designer picking which version a
+  Refinement row should pin, the design lead deciding what releases.
+
+  Self-contained: system fonts, the shared guide stylesheet
+  (../guides/guide.css), no app code. Screenshots live in ./shots/ and are
+  captured from a branch build at the URL each block names — recapture them
+  when the block changes; nothing can assert they are current.
+
+  The PDF beside this file, when there is one, is rendered FROM this file:
+
+      weasyprint public/compass-version-map/index.html public/compass-version-map/compass-version-map.pdf
+
+  Last updated 2026-11-16.
+-->
+<link rel="stylesheet" href="../guides/guide.css" />
+<style>
+  /* Block cards — one per section of the page being mapped. Everything
+     here is additive to guide.css; nothing in it is redefined. */
+  .block { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 18px 20px; margin: 0 0 16px; }
+  .block h3 { margin: 0 0 4px; display: flex; gap: 10px; align-items: baseline; }
+  .block h3 .n { flex: none; width: 24px; height: 24px; line-height: 24px; text-align: center; border-radius: 50%; background: var(--accent); color: #fff; font-size: 12px; font-weight: 700; display: inline-block; transform: translateY(-1px); }
+  @media (prefers-color-scheme: dark) { .block h3 .n { color: #0f1a26; } }
+  .block .where { font-size: 12.5px; color: var(--ink-3); margin: 0 0 12px 34px; }
+  .block figure { margin: 0 0 12px; }
+  .block figure img { display: block; width: 100%; height: auto; }
+  .block figure.half img { max-width: 420px; }
+  .block figcaption { font-size: 12px; color: var(--ink-3); margin-top: 6px; }
+  .block .ui { margin: 0; }
+  .block .ui .field { grid-template-columns: 120px 1fr; }
+  .block .ui .field code { white-space: normal; }
+  .none { color: var(--ink-3); font-style: italic; }
+  .path { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-size: 13px; margin: 8px 0 14px; }
+  .path span { background: var(--card); border: 1px solid var(--line); border-radius: 999px; padding: 4px 11px; }
+  .path i { color: var(--ink-3); font-style: normal; }
+  .copy { border-left: 3px solid var(--line); padding: 2px 0 2px 12px; margin: 4px 0; color: var(--ink-2); }
+  .copy b { color: var(--ink); }
+  .status { display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; border-radius: 999px; padding: 2px 9px; border: 1px solid var(--line); color: var(--ink-3); margin-left: 6px; vertical-align: middle; }
+  .status.done { background: var(--good-soft); color: var(--good-ink); border-color: transparent; }
+  @media print { .block { break-inside: avoid; } }
+</style>
+</head>
+<body>
+<div class="page">
+
+<header>
+  <div class="mast">
+    <div>
+      <p class="eyebrow">Compass Learning · the versions, section by section</p>
+      <h1>Compass Version Map</h1>
+    </div>
+    <div class="actions">
+      <a class="btn ghost noprint" href="/">← Back to the Hub</a>
+    </div>
+  </div>
+  <p class="lede">Every section of Compass Learning, page by page, with the exact design-controls selection that puts it on screen. Jeff's MVP first; the Refined version joins each page as a second column as it is mapped. Use it to find the thing you were shown, to pin a Refinement row at the right version, or to compare the two before a release.</p>
+  <p class="meta">Last updated 16 November 2026 · Owner: Jill Moreno, UX Design — the design lead · Mapped so far: Readiness (Jeff's MVP)</p>
+</header>
+
+<nav class="toc" aria-label="Contents">
+  <p>Contents</p>
+  <ol>
+    <li><a href="#how">How to read this map</a></li>
+    <li><a href="#open">Opening Jeff's version</a></li>
+    <li><a href="#readiness">Readiness — Jeff's MVP</a></li>
+    <li><a href="#next">What is still to map</a></li>
+  </ol>
+</nav>
+
+<!-- ───────────────────────────────────────────────────────────────────── -->
+<section id="how">
+  <h2><span class="num">01</span>How to read this map</h2>
+  <p>Compass Learning is one surface of the product with <strong>three versions</strong> behind one switch: <strong>Current</strong> (what ships today, Anjani's), <strong>Jeff's MVP</strong> (his thirteen-page prototype, ported page for page), and <strong>Refined</strong> (Readiness rebuilt on the November research, with the other pages forked from Jeff's). All three live in the same build and are picked on the <strong>Design controls</strong> bar, so a reviewer looking at any one of them is one dropdown away from the other two — and nothing on the page says which one they are on, except the bar's label.</p>
+  <p>This map goes <strong>page by page</strong>, and on each page <strong>block by block</strong>, top to bottom. For every block it records:</p>
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>Row</th><th>What it tells you</th></tr></thead>
+    <tbody>
+      <tr><td>Where</td><td>The block's position on the page, in reading order.</td></tr>
+      <tr><td>To see it</td><td>The address, the bar selection, and any click needed once you are there — "expand the Annuities row", "open the levels panel". If the row says <em>nothing extra</em>, the block is on screen the moment the page opens.</td></tr>
+      <tr><td>Copy</td><td>The words on screen, verbatim. Numbers that are typed into the template rather than computed are called out, because they are the ones that will not change when the data does.</td></tr>
+      <tr><td>Data</td><td>The fixture and field the block draws from, for whoever has to change it.</td></tr>
+      <tr><td>States</td><td>Any way the block can look other than the way the screenshot shows it — open or closed, present or absent.</td></tr>
+      <tr><td>Design controls</td><td>Any flag on the Design bar that changes this block, with its variants. Most blocks on Jeff's pages say <em>none</em>: his version is one authored state, and that is deliberate.</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="callout tip">
+    <span class="lab">Vocabulary</span>
+    <p>The <strong>Design controls bar</strong> is the light-cyan bar under the dark review bar. It starts hidden; open it from the robot's menu (UI/UX Demo Tools). Its first label names the <strong>surface</strong> you are on — <em>Compass · Jeff's MVP</em>, <em>Compass · Refined</em> — and that label is the only place the version is named on screen. The amber <strong>Demo controls</strong> bar above it is about the learner, not the design, and nothing on it picks a Compass version.</p>
+  </div>
+</section>
+
+<!-- ───────────────────────────────────────────────────────────────────── -->
+<section id="open">
+  <h2><span class="num">02</span>Opening Jeff's version</h2>
+  <p>Jeff's version is a Compass section of the dashboard, not a route of its own. The shortest way in is the address; the bar is how you get there from anywhere else.</p>
+
+  <div class="ui">
+    <div class="uihead">By address — lands on Readiness directly</div>
+    <div class="field"><b>Address</b><span><code>/dashboard-rebrand?demo=1&amp;section=compass&amp;ff=compass-mvp-version:jeff&amp;compassPage=readiness</code></span></div>
+    <div class="field"><b>Pieces</b><span><code>section=compass</code> opens Compass · <code>ff=compass-mvp-version:jeff</code> pins his version · <code>compassPage=readiness</code> opens on that page instead of Overview. Drop the last one for his Overview.</span></div>
+  </div>
+
+  <div class="ui">
+    <div class="uihead">By the bars — from any Compass page</div>
+    <div class="field"><b>1</b><span>Open the robot's menu and show the <strong>Design controls</strong> bar.</span></div>
+    <div class="field"><b>2</b><span>Set <strong>Compass version</strong> to <strong>Jeff's MVP</strong>. The bar's surface label changes to <em>Compass · Jeff's MVP</em>. The control is scoped to the e2e family of dashboard versions and Jill/Atlas-Main; on the default version it is there.</span></div>
+    <div class="field"><b>3</b><span>In his left rail, under <strong>EXAM PREP</strong>, click <strong>Readiness</strong>. It is the last row.</span></div>
+  </div>
+
+  <div class="path"><span>Design controls</span><i>→</i><span>Compass version: Jeff's MVP</span><i>→</i><span>Rail · Exam prep</span><i>→</i><span>Readiness</span></div>
+
+  <div class="callout warn">
+    <span class="lab">What the switch does and does not change</span>
+    <p>The <strong>Compass version</strong> control decides which version renders — and on Jeff's Readiness page that is the <em>only</em> flag that matters. No other design control touches a block on it. The same control at <strong>Refined</strong> opens on Readiness by default and adds one more control (the hero's ring treatment), which is why the Refined column, when it comes, will have more in its Design controls rows than this one.</p>
+  </div>
+</section>
+
+<!-- ───────────────────────────────────────────────────────────────────── -->
+<section id="readiness">
+  <h2><span class="num">03</span>Readiness — Jeff's MVP <span class="status done">mapped</span></h2>
+  <p>His Readiness page answers one question — <em>what should I do next?</em> — and puts the answer at the top before it shows anything about how it is going. Ten blocks, top to bottom. One authored learner throughout: 62%, Developing, Annuities weakest. There is no empty state and no before-the-first-exam state; the page has one shape.</p>
+  <p class="small"><strong>Files.</strong> <code>src/components/learning/CompassJeffMvpReadiness.tsx</code> renders it inside <code>CompassJeffMvpShell.tsx</code>; the data is <code>JEFF_MVP_READINESS</code> and the copy <code>JEFF_MVP_READINESS_COPY</code>, both in <code>src/data/compassJeffMvpFixtures.ts</code>; styles in <code>compassJeffMvp.css</code>, prefix <code>cjm-</code>.</p>
+
+  <figure class="shot wide"><img src="shots/readiness-full.png" alt="Jeff's Readiness page, top to bottom, at the default state" /><figcaption>The whole page as it opens. Blocks are numbered below in this order.</figcaption></figure>
+
+  <!-- 1 -->
+  <div class="block">
+    <h3><span class="n">1</span>Ask Rubi</h3>
+    <p class="where">Top right of the content column, above the page title.</p>
+    <figure class="half"><img src="shots/01-ask-rubi.png" alt="The Ask Rubi button" /></figure>
+    <div class="ui">
+      <div class="field"><b>To see it</b><span>Nothing extra.</span></div>
+      <div class="field"><b>Copy</b><span><span class="copy">Ask Rubi</span></span></div>
+      <div class="field"><b>Data</b><span><code>JEFF_MVP_READINESS_COPY.askRubi</code></span></div>
+      <div class="field"><b>States</b><span>One. The button is inert in this version.</span></div>
+      <div class="field"><b>Design controls</b><span class="none">none</span></div>
+    </div>
+  </div>
+
+  <!-- 2 -->
+  <div class="block">
+    <h3><span class="n">2</span>Page head</h3>
+    <p class="where">Title, lead paragraph, and the live chip at the right, over a rule.</p>
+    <figure><img src="shots/02-head.png" alt="The page head: Your readiness, the lead, and the Live chip" /></figure>
+    <div class="ui">
+      <div class="field"><b>To see it</b><span>Nothing extra.</span></div>
+      <div class="field"><b>Copy</b><span>
+        <span class="copy"><b>Your readiness</b></span>
+        <span class="copy">Where you stand across the full exam blueprint, how far you've come, and the topics still holding you back. The one move that will lift your Readiness most is always at the top, so this page tells you what to do next, not just how it's going.</span>
+        <span class="copy">Live · Updated just now</span>
+      </span></div>
+      <div class="field"><b>Data</b><span><code>COPY.title</code> · <code>COPY.lead</code> · <code>COPY.liveChip</code>. Rendered by the shared <code>CompassJeffMvpHead</code> (ruled, <code>leadClass="cjm-lead--readiness"</code>).</span></div>
+      <div class="field"><b>States</b><span>One.</span></div>
+      <div class="field"><b>Design controls</b><span class="none">none</span></div>
+    </div>
+  </div>
+
+  <!-- 3 -->
+  <div class="block">
+    <h3><span class="n">3</span>Do this next · Readiness — the card</h3>
+    <p class="where">First block under the head. Three columns: the ring, the recommendation, the recommended set.</p>
+    <figure><img src="shots/03-do-this-next.png" alt="The Do this next card: the readiness ring, Practice Variable Annuities, and the Recommended set column" /></figure>
+    <div class="ui">
+      <div class="field"><b>To see it</b><span>Nothing extra.</span></div>
+      <div class="field"><b>Copy</b><span>
+        <span class="copy">DO THIS NEXT · READINESS 62%</span>
+        <span class="copy"><b>Practice Variable Annuities</b></span>
+        <span class="copy">It's your lowest sub-topic at 41, inside Annuities (20% of your exam). A short practice set here is the biggest lift to your Readiness right now.</span>
+        <span class="copy">RECOMMENDED SET · <b>Variable Annuities</b> · 12 questions · about 12 min · biggest lift</span>
+        <span class="copy">[Start practice] · All practice sets</span>
+      </span></div>
+      <div class="field"><b>Data</b><span>The <strong>62%</strong> in the eyebrow is <code>RD.overall</code>. The <strong>41</strong>, <strong>20%</strong>, <strong>12 questions</strong> and <strong>12 min</strong> are typed into <code>COPY.nextBody</code> / <code>COPY.setMeta</code> — they will not follow the fixture if a topic score changes. Both buttons go to <strong>Practice</strong>.</span></div>
+      <div class="field"><b>States</b><span>One.</span></div>
+      <div class="field"><b>Design controls</b><span class="none">none</span></div>
+    </div>
+  </div>
+
+  <!-- 4 -->
+  <div class="block">
+    <h3><span class="n">4</span>The readiness ring</h3>
+    <p class="where">Left column of block 3.</p>
+    <figure class="half"><img src="shots/04-ring.png" alt="The two-ring readiness gauge: 62% Readiness, 46% Coverage" /></figure>
+    <div class="ui">
+      <div class="field"><b>To see it</b><span>Nothing extra.</span></div>
+      <div class="field"><b>Copy</b><span>
+        <span class="copy"><b>62%</b> READINESS</span>
+        <span class="copy">● Readiness 62% · ● Coverage 46%</span>
+        <span class="copy small">Screen readers: "Readiness 62%, Developing. Coverage 46%: 122 of 265 practice questions answered."</span>
+      </span></div>
+      <div class="field"><b>Data</b><span><code>RD.overall</code> 62 · <code>RD.coverage</code> 46 · <code>RD.ring</code> (amber tone, the two dash lengths). Two concentric arcs, outer Readiness, inner Coverage, 148px.</span></div>
+      <div class="field"><b>States</b><span>One. The amber tone is authored, not derived from the band.</span></div>
+      <div class="field"><b>Design controls</b><span class="none">none</span></div>
+    </div>
+  </div>
+
+  <!-- 5 -->
+  <div class="block">
+    <h3><span class="n">5</span>Also worth a look</h3>
+    <p class="where">The footer strip of the Do this next card.</p>
+    <figure><img src="shots/05-also.png" alt="The Also worth a look row: Settlement options in Policy Provisions hasn't been retested in 9 days" /></figure>
+    <div class="ui">
+      <div class="field"><b>To see it</b><span>Nothing extra.</span></div>
+      <div class="field"><b>Copy</b><span>
+        <span class="copy">↻ Also worth a look: <b>Settlement options</b> in Policy Provisions hasn't been retested in 9 days. A short round turns that into fresh evidence. · Review ›</span>
+      </span></div>
+      <div class="field"><b>Data</b><span><code>COPY.alsoLead</code> / <code>alsoStrong</code> / <code>alsoRest</code> / <code>alsoCta</code>. Only the sub-topic name is bold — a rule, not an accident. The link goes to <strong>Practice</strong>.</span></div>
+      <div class="field"><b>States</b><span>One. Always present in this version (the Refined row can disappear when nothing is stale; this one cannot).</span></div>
+      <div class="field"><b>Design controls</b><span class="none">none</span></div>
+    </div>
+  </div>
+
+  <!-- 6 -->
+  <div class="block">
+    <h3><span class="n">6</span>Readiness trend</h3>
+    <p class="where">Second card. Text and three stats on the left, the chart on the right.</p>
+    <figure><img src="shots/06-trend.png" alt="The Readiness trend card with three stats and the three-week line chart" /></figure>
+    <div class="ui">
+      <div class="field"><b>To see it</b><span>Nothing extra.</span></div>
+      <div class="field"><b>Copy</b><span>
+        <span class="copy">READINESS TREND</span>
+        <span class="copy">Your Readiness over the last 3 weeks. It has risen +6 points in that time. Steady, spaced practice is what moves this line, not cramming.</span>
+        <span class="copy">Last 3 weeks <b>+6 pts</b> · Now <b>62%</b> · Ready at <b>85%</b></span>
+        <span class="copy">Chart axis: 40 · 65 · Ready 85 — Oct 15 · Oct 22 · Oct 29 · Today</span>
+        <span class="copy">One score: the blueprint-weighted average of your topic scores, from Exam Prep practice only.</span>
+        <span class="copy small">Screen readers: "Readiness rose from 56% on October 15 to 62% today. Ready starts at 85%."</span>
+      </span></div>
+      <div class="field"><b>Data</b><span><code>COPY.trendEyebrow</code> / <code>trendBody</code> / <code>trendCaption</code> · stats from <code>RD.stats</code> (label, value, tone, ruled) · the chart's <code>linePath</code> / <code>areaPath</code> / end point from <code>RD.trend</code>, drawn in a 960×210 box. The dates and axis labels are copy strings, not computed from the trend.</span></div>
+      <div class="field"><b>States</b><span>One.</span></div>
+      <div class="field"><b>Design controls</b><span class="none">none</span></div>
+    </div>
+  </div>
+
+  <!-- 7 -->
+  <div class="block">
+    <h3><span class="n">7</span>Readiness by topic — the header</h3>
+    <p class="where">Opens the topics section. Title and sub-line on the left, the Overall pill on the right.</p>
+    <figure><img src="shots/07-topics-head.png" alt="Readiness by topic header with the Overall 62 · Developing pill" /></figure>
+    <div class="ui">
+      <div class="field"><b>To see it</b><span>Nothing extra.</span></div>
+      <div class="field"><b>Copy</b><span>
+        <span class="copy"><b>Readiness by topic</b></span>
+        <span class="copy">0 of 5 topics Ready · Annuities is the biggest lift · weakest first</span>
+        <span class="copy">Topic Readiness is how well you've shown you know each topic, scored 0 to 100 from your practice answers, not how many questions you've done. The marker shows where you stand today, and it shifts a little each day with what you practice and what you get right.</span>
+        <span class="copy">Overall 62 · Developing</span>
+      </span></div>
+      <div class="field"><b>Data</b><span><code>COPY.topicsTitle</code> / <code>topicsSub</code> / <code>topicsBody</code> · pill from <code>RD.overall</code>, <code>RD.band</code> and the three band colours <code>RD.bandBg</code> / <code>bandBorder</code> / <code>bandInk</code>.</span></div>
+      <div class="field"><b>States</b><span>One.</span></div>
+      <div class="field"><b>Design controls</b><span class="none">none</span></div>
+    </div>
+  </div>
+
+  <!-- 8 -->
+  <div class="block">
+    <h3><span class="n">8</span>Legend and the levels panel</h3>
+    <p class="where">Between the header and the first topic row. The panel drops down under the legend when opened.</p>
+    <figure><img src="shots/08-levels-closed.png" alt="The You are here today legend and the What do these levels mean? toggle, closed" /><figcaption>Closed, as it opens.</figcaption></figure>
+    <figure><img src="shots/08-levels-open.png" alt="The levels panel open: Beginner, Developing, Proficient, Ready with their ranges" /><figcaption>Open, after clicking the toggle.</figcaption></figure>
+    <div class="ui">
+      <div class="field"><b>To see it</b><span>Legend: nothing extra. Panel: click <strong>What do these levels mean?</strong></span></div>
+      <div class="field"><b>Copy</b><span>
+        <span class="copy">▲ You are here today · What do these levels mean?</span>
+        <span class="copy"><b>Beginner</b> 0–39 — Still building the basics. Learn the lessons, then practice.</span>
+        <span class="copy"><b>Developing</b> 40–64 — You know some of it. Practice the weakest sub-topics to close gaps.</span>
+        <span class="copy"><b>Proficient</b> 65–84 — Solid. A few gaps left before you're exam ready.</span>
+        <span class="copy"><b>Ready</b> 85–100 — Consistently right across the topic. Keep it fresh with spaced review.</span>
+      </span></div>
+      <div class="field"><b>Data</b><span><code>COPY.markerLegend</code> / <code>helpCta</code> · rows from <code>RD.bandHelp</code>.</span></div>
+      <div class="field"><b>States</b><span><strong>Closed</strong> (default) and <strong>open</strong>. Page state only — it resets on reload and is not in the address.</span></div>
+      <div class="field"><b>Design controls</b><span class="none">none</span></div>
+    </div>
+  </div>
+
+  <!-- 9 -->
+  <div class="block">
+    <h3><span class="n">9</span>Topic rows</h3>
+    <p class="where">Five rows, weakest first. Each is a name, the exam weight, a delta, a band pill, a four-segment track with the marker, a gap note, a Practice button and a chevron.</p>
+    <figure><img src="shots/09-topic-rows.png" alt="The five topic rows: Annuities expanded, the other four collapsed" /><figcaption>As it opens: Annuities expanded, the rest collapsed.</figcaption></figure>
+    <figure><img src="shots/09-topic-row-collapsed.png" alt="A single collapsed topic row, Policy Provisions" /><figcaption>One collapsed row, for the anatomy.</figcaption></figure>
+    <div class="ui">
+      <div class="field"><b>To see it</b><span>Nothing extra for the rows. Click a row's chevron (or its name) to expand it; click Annuities' to collapse the one that opens by default.</span></div>
+      <div class="field"><b>Copy</b><span>
+        <span class="copy"><b>Annuities</b> · 20% of exam · +5 · Developing · 52/100 · 33 points to Ready · [Practice]</span>
+        <span class="copy"><b>Policy Provisions</b> · 22% of exam · +4 · Developing · 58/100 · 27 points to Ready</span>
+        <span class="copy"><b>Insurance Regulation</b> · 18% of exam · +1 · Developing · 61/100 · 24 points to Ready</span>
+        <span class="copy"><b>Health Insurance</b> · 18% of exam · +2 · Proficient · 66/100 · 19 points to Ready</span>
+        <span class="copy"><b>Life Insurance</b> · 22% of exam · +3 · Proficient · 74/100 · 11 points to Ready</span>
+        <span class="copy small">Track segments: Beginner · Developing · Proficient · Ready (40 / 25 / 20 / 15). Screen readers get "points in 3 weeks" after each delta.</span>
+      </span></div>
+      <div class="field"><b>Data</b><span><code>RD.rows</code> — name, weight, answered, delta, band, score, gap note, <code>expanded</code>, <code>isPrimary</code>, and each row's <code>subs</code>. The marker sits at <code>left: {score}%</code>. <code>COPY.deltaSuffix</code> / <code>practiceCta</code>.</span></div>
+      <div class="field"><b>States</b><span>Each row is <strong>expanded</strong> or <strong>collapsed</strong>; only Annuities has <code>expanded: true</code> on arrival. Annuities is also <code>isPrimary</code>, which is why its Practice button is filled and the others are outlined. There is deliberately no up/down trend glyph on a row.</span></div>
+      <div class="field"><b>Design controls</b><span class="none">none</span></div>
+    </div>
+  </div>
+
+  <!-- 10 -->
+  <div class="block">
+    <h3><span class="n">10</span>Sub-topic list</h3>
+    <p class="where">Inside an expanded topic row. Each sub-topic is a name, a note, a segmented bar, the band and score, and a Practice button.</p>
+    <figure><img src="shots/10-subtopics.png" alt="Annuities' sub-topics: Variable annuities (Weakest, About 12 min, Start here), Annuity taxation, Fixed and indexed annuities" /></figure>
+    <div class="ui">
+      <div class="field"><b>To see it</b><span>Expand a topic row. Annuities is already open when the page loads.</span></div>
+      <div class="field"><b>Copy</b><span>
+        <span class="copy">READINESS BY SUB-TOPIC</span>
+        <span class="copy"><b>Variable annuities</b> · Weakest · Developing 41 · About 12 min · Start here · [Practice]</span>
+        <span class="copy">Annuity taxation · Developing 55 · Practice</span>
+        <span class="copy">Fixed and indexed annuities · Developing 58 · Practice</span>
+        <span class="copy small">Other rows: Policy Provisions — Riders 47, Nonforfeiture 55, Settlement options 63, Grace period &amp; reinstatement 67. Insurance Regulation — Florida licensing rules 54, Unfair trade practices 63, Replacement &amp; agent duties 66. Health Insurance — Disability income 59, Medical expense plans 68, Medicare &amp; supplements 71. Life Insurance — Policy types: term, whole, universal 67, and on.</span>
+      </span></div>
+      <div class="field"><b>Data</b><span><code>r.subs</code> on each row — name, note, band, number, and for the one marked <code>rubi: true</code> its <code>mins</code>. <code>COPY.subEyebrow</code> / <code>aboutMins</code> / <code>startHere</code>.</span></div>
+      <div class="field"><b>States</b><span>One per row. The page's thesis lives here: only the sub-topic marked <code>rubi</code> (Variable annuities) opens a <strong>question set</strong>; every other Practice button goes to the Practice page.</span></div>
+      <div class="field"><b>Design controls</b><span class="none">none</span></div>
+    </div>
+  </div>
+
+  <!-- 11 -->
+  <div class="block">
+    <h3><span class="n">11</span>Footnote</h3>
+    <p class="where">Last line of the page.</p>
+    <figure><img src="shots/11-footnote.png" alt="The footnote under the topic rows" /></figure>
+    <div class="ui">
+      <div class="field"><b>To see it</b><span>Scroll to the bottom.</span></div>
+      <div class="field"><b>Copy</b><span><span class="copy">Readiness comes from Exam Prep practice only. Course lessons build Progress, not Readiness. Ready means 85 or higher in every topic.</span></span></div>
+      <div class="field"><b>Data</b><span><code>COPY.footnote</code></span></div>
+      <div class="field"><b>States</b><span>One.</span></div>
+      <div class="field"><b>Design controls</b><span class="none">none</span></div>
+    </div>
+  </div>
+
+  <p class="small"><strong>Not rendered.</strong> The fixture also carries <code>RD.mobileBar</code>, which this component does not draw. It is listed here so nobody goes looking for it on screen.</p>
+</section>
+
+<!-- ───────────────────────────────────────────────────────────────────── -->
+<section id="next">
+  <h2><span class="num">04</span>What is still to map</h2>
+  <p>The Readiness page above is one of nine on Jeff's rail, and the Refined column is not started. The order below is his rail's order; each page gets the same block-by-block treatment, then its Refined column beside it.</p>
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>Page</th><th>Rail</th><th><code>compassPage=</code></th><th>Jeff's MVP</th><th>Refined</th></tr></thead>
+    <tbody>
+      <tr><td>Your learning journey</td><td>Overview</td><td><code>overview</code></td><td>to map</td><td>to map — has its own design controls (focus, next mark, pace note, ground)</td></tr>
+      <tr><td>Your Course</td><td>Learn</td><td><code>learn</code></td><td>to map</td><td>to map — has its own design controls (image, fold, rows, blurb, mark, status)</td></tr>
+      <tr><td>Study planner</td><td>Study planner</td><td><code>study-planner</code></td><td>to map</td><td>to map</td></tr>
+      <tr><td>Prep Review</td><td>Exam prep · Prep Review</td><td><code>prep-review</code></td><td>to map</td><td>to map</td></tr>
+      <tr><td>Practice</td><td>Exam prep · Practice</td><td><code>practice</code></td><td>to map</td><td>to map</td></tr>
+      <tr><td>Flashcards</td><td>Exam prep · Flashcards</td><td><code>flashcards</code></td><td>to map</td><td>to map</td></tr>
+      <tr><td>Exam Simulator</td><td>Exam prep · Exam Simulator</td><td><code>exam-simulator</code></td><td>to map</td><td>to map</td></tr>
+      <tr><td><strong>Your readiness</strong></td><td>Exam prep · Readiness</td><td><code>readiness</code></td><td><strong>mapped</strong> (§03)</td><td>to map — one control: <code>compass-refined-readiness-hero</code> (Three rings / Single ring)</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p class="small"><strong>Sub-pages</strong>, reached from a card rather than the rail, and mapped with the page that opens them: Question set (<code>practice-session</code>), Flashcards topic (<code>flashcard-topic</code>), Study session (<code>flashcard-study</code>), Simulated exam (<code>exam-session</code>, a takeover with no rail), and Lesson (<code>course</code>, also a takeover).</p>
+  <p class="small"><strong>Refined's pages are not all Refined's.</strong> Only Readiness is rebuilt; the others are forked from Jeff's page for page and may be identical to his until someone changes them. <code>src/components/learning/compassRefinedPages.ts</code> says, per page, whose page Refined currently draws — read it before writing a Refined column, or you will document Jeff's page twice.</p>
+</section>
+
+<footer>
+  <p>Compass Version Map · XCEL UX Design Hub · Jill Moreno, UX Design. Screenshots are captured by hand from a branch build and are current as of the dateline; the copy and data rows are read from the code and can be checked against it.</p>
+</footer>
+
+</div>
+</body>
+</html>

@@ -149,7 +149,7 @@ export const DESIGN_SURFACE_LABELS: Record<DesignSurfaceId, string> = {
   'compass:jeff-mvp': 'Compass · Jeff’s MVP',
   'compass:refined': 'Compass · Refined',
   'compass:refined:overview': 'Compass · Refined · Overview',
-  'compass:refined:learn': 'Compass · Refined · Course Roadmap',
+  'compass:refined:learn': 'Compass · Refined · Course',
   invite: 'Invite & Checkout',
   'invite:v3-b2b': 'Invite Flow V3 · B2B invite',
   'invite:v3-b2b-direct-email': 'Invite Flow V3 · B2B invite',

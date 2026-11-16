@@ -1986,7 +1986,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     group: 'Widgets',
     label: 'Course image',
     description:
-      'Draws the course’s own art to the left of its name in the Course Roadmap header — the same file the Atlas dashboard’s course card uses, so a learner sees one picture of one course across the two surfaces. On by default since 2026-11-14. Off shows the header without it: eyebrow, name, kind and count, with the ring on the right.',
+      'Draws the course’s own art to the left of its name in the Course page’s header — the same file the Atlas dashboard’s course card uses, so a learner sees one picture of one course across the two surfaces. On by default since 2026-11-14. Off shows the header without it: eyebrow, name, kind and count, with the ring on the right.',
     /* ⚠ ON SINCE 2026-11-14 — "default course image on". It arrived off
        because an addition's baseline is the page without it; two days of
        looking at it both ways settled that. */

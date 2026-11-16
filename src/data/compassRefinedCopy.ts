@@ -130,13 +130,18 @@ export const REFINED_OVERVIEW_TITLE = 'Overview - Your Learning Journey'
  */
 export const REFINED_PAGE_TITLES = {
   overview: REFINED_OVERVIEW_TITLE,
-  /* ⚠ "Course Roadmap" — 2026-11-12, "change both to Course Roadmap", the
-     row and the title together. It was "Your Course", which named the page
-     by what it is ABOUT; the page is a sequence of twenty-one stops with a
-     spine drawn down it, and the word for that is the one the list's own
-     header already used. Row and title are now the same string, which is
-     the agreement the rail has wanted since 2026-11-11. */
-  learn: 'Course Roadmap',
+  /* ⚠ "Course" — 2026-11-16, "Change to course", the row and the title
+     together. It has been "Your Course" → "Course" → "Course Roadmap" →
+     this; the agreement the rail wanted since 2026-11-11 holds through all
+     of it, because both strings are edited in one place and selected
+     together.
+
+     ⚠ AND "Roadmap" IS STILL ON THE PAGE, once. The list below carries
+     `REFINED_ROADMAP.title` — "Learning Roadmap" — over its own count, so
+     the word still names the thing it describes; what it stopped doing is
+     naming the page AND the list AND the rail row, three times in one
+     screen. */
+  learn: 'Course',
   'study-planner': 'Study Planner',
   'prep-review': 'Prep Review',
   practice: 'Practice',
@@ -159,13 +164,14 @@ export const REFINED_PAGE_TITLES = {
  */
 export const REFINED_RAIL_LABELS: Record<string, string> = {
   overview: 'Overview',
-  /* ⚠ "Course Roadmap" — 2026-11-12, and the SAME STRING as the page title
-     (see `REFINED_PAGE_TITLES`): "change both to Course Roadmap". It went
-     "Your Course" → "Course" → this within the hour; each step dropped a
-     word the rail does not need ("your": every row on it is this learner's)
-     and this one adds the page's actual shape. The group above went the same
-     way the same minute ("Your learning" → "Learn"). */
-  learn: 'Course Roadmap',
+  /* ⚠ "Course" — 2026-11-16, and the SAME STRING as the page title (see
+     `REFINED_PAGE_TITLES`): "Change to course", selected on the row and the
+     h1 at once. The row has been "Your Course" → "Course" → "Course
+     Roadmap" → back to "Course"; what every step has in common is dropping
+     a word the rail does not need — "your", because every row on it is this
+     learner's, and now "Roadmap", because the list below says it. The group
+     above went the same way ("Your learning" → "Learn"). */
+  learn: 'Course',
   'study-planner': 'Study Planner',
   'prep-review': 'Prep Review',
   practice: 'Practice',
