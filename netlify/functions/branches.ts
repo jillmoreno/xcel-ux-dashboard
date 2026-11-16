@@ -154,6 +154,8 @@ export default async function handler(req: Request): Promise<Response> {
   return json({
     configured: true,
     git: git.status,
+    // Stage against main — the Release page's one number (2026-11-16).
+    stage: git.stage,
     branches: branches.map((b) => ({ ...b, ...(git.facts[b.branch] ?? {}) })),
   })
 }

@@ -76,6 +76,28 @@ hand it back to the owner and do not release until it is decided. This skill
 is the merge, and the merge is the one thing on the list that is Jillienne's
 alone.
 
+**The Hub's Release page already answered this (2026-11-16).** It lists every
+branch on stage and not on main, by surface, and says *Decided* or
+*Undecided* per branch from the `.hub/decided/<scope>.json` markers
+`share-to-stage` writes — so the normal case is that Jillienne opens Release,
+reads "Ready", and says `/release`. Check the same thing here, in git, so
+the skill does not depend on the page:
+
+```bash
+for f in $(git diff --name-only origin/main..origin/stage -- .hub/decided/); do
+  c=$(git show "origin/stage:$f" | node -pe 'JSON.parse(require("fs").readFileSync(0,"utf8")).commit')
+  if git merge-base --is-ancestor "$c" origin/stage && ! git merge-base --is-ancestor "$c" origin/main; then
+    echo "decided: $f ($c)"
+  else
+    echo "STALE marker: $f"
+  fi
+done
+```
+
+A surface in the log with no `decided:` line is undecided — hand it back,
+exactly as above. The Release page and this loop read the same files by the
+same rule, so they cannot disagree.
+
 ### 2. Did the default dashboard version change?
 
 ```bash

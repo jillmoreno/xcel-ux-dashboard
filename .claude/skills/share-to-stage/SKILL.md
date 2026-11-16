@@ -1,6 +1,6 @@
 ---
 name: share-to-stage
-description: Put the branch you are on onto STAGE — the build between a Design row and main. For a surface you own, it records which of the branch's flag defaults become the surface's defaults (the flag questions — `decide-defaults`, formerly promote-to-prototype — run here if the branch has not answered them yet), merges today's `stage` into the branch, runs the checks, pushes, and fast-forwards `stage` to the branch. Since 2026-11-16 it files NO card and hands over NO link — the Hub's Design row reads "On stage" from git, and the Prototypes row's Staged tag reads the same fact. Nothing reaches main — Jillienne releases stage to main with `/release`. Trigger on "share to stage", "stage this", "put this on stage", "stage my branch", "promote to stage", "/share-to-stage".
+description: Put the branch you are on onto STAGE — the build between a Design row and main. For a surface you own, it records which of the branch's flag defaults become the surface's defaults (the flag questions — `decide-defaults`, formerly promote-to-prototype — run here if the branch has not answered them yet), writes the `.hub/decided/<scope>.json` marker the Hub's Release page and `/release` read, merges today's `stage` into the branch, runs the checks, pushes, and fast-forwards `stage` to the branch. Since 2026-11-16 it files NO card and hands over NO link — the Hub's Design row reads "On stage" from git, and the Prototypes row's Staged tag reads the same fact. Nothing reaches main — Jillienne releases stage to main with `/release`. Trigger on "share to stage", "stage this", "put this on stage", "stage my branch", "promote to stage", "/share-to-stage".
 version: 2.0.0
 author: UX Design — Colibri
 last_updated: 2026-11-16
@@ -135,6 +135,30 @@ staging yet.
 If a promotion commit already covers every changed default, say so in one
 line and move on.
 
+**Then write the marker (2026-11-16)** — the Hub's Release page reads it,
+and `/release` refuses a surface without one. One file per scope, so two
+owners staging two surfaces never touch the same file:
+
+```bash
+SCOPE=compass                                 # the scope decided in this step
+PROMO=$(git log origin/main..HEAD --grep='promote' --format=%H -1)   # the promotion commit
+[ -n "$PROMO" ] || PROMO=$(git rev-parse HEAD) # no flag changed: the branch tip vouches
+mkdir -p .hub/decided
+node -e '
+const [scope,branch,by,commit]=process.argv.slice(1);
+const m={scope,branch,decidedAt:new Date().toISOString().slice(0,10),by,commit};
+require("fs").writeFileSync(`.hub/decided/${scope}.json`,JSON.stringify(m,null,2)+"\n")
+' "$SCOPE" "$(git rev-parse --abbrev-ref HEAD)" "$(git config user.name)" "$PROMO"
+git add .hub/decided && git commit -m "decide($SCOPE): defaults decided for stage"
+```
+
+`commit` is what makes the marker honest: the Hub counts it only while that
+commit is among the branch's commits main does not have
+(`netlify/lib/branchGit.ts`, `decidedOn`). After the release the file stays
+in the tree and vouches for nothing, so the next branch cut from main is not
+"decided" by accident, and nothing has to be cleaned up. A branch that
+stages more than one scope writes one file per scope.
+
 ⚠ **The default dashboard version is Jillienne's alone**, whatever the
 scope. If `dashboardVersions.ts` changed its default and the caller is not
 Jillienne, set it back to main's value on the branch (the skill above does
@@ -172,9 +196,8 @@ smoke`. The merge in step 4 can break something neither branch broke alone —
 that is the point of running the suite AFTER it.
 
 There is no row to stamp here: the Prototypes rows' `lastUpdated` is
-maintained by `/release`, and the Hub cannot read stage from main (see
-`src/data/stageBuild.ts`), so the record of *what is on stage and since when*
-is the To Do Board card in step 8.
+maintained by `/release`. The record of *what is on stage and since when* is
+git — the Hub's **Release** page reads it (2026-11-16).
 
 ### 6. Push the branch, then move stage to it
 
@@ -205,9 +228,12 @@ reads "on stage" from git** (`netlify/lib/branchGit.ts`: every commit of the
 branch is on `stage`), so the moment the fast-forward lands:
 
 - the branch's row in **Design** changes its tag from *In design* to *On
-  stage*, on its own;
+  stage* and its caption to *waiting on Release*, on its own;
 - the surface's row in **Prototypes** draws its *Staged* tag from the same
-  fact — *Waiting on stage* under Main, *Staged ‹date› · ‹who›* under Stage.
+  fact — *Waiting on stage* under Main, *Staged ‹date› · ‹who›* under Stage;
+- the branch appears on Jillienne's **Release** page under its surface,
+  tagged *Decided* by the marker from step 3 — the page's "Ready" line is
+  what tells her `/release` will go through.
 
 There is no On Stage card to file any more. The To Do Board's column is
 still there for hand-written notes, but nothing on the Hub reads it.

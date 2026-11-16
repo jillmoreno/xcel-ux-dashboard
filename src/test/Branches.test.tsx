@@ -6,11 +6,13 @@ import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { DemoPanel } from '@/components/prototype/LinksPanel'
 import { DesignPanel } from '@/components/prototype/DesignPanel'
+import { ReleasePanel } from '@/components/prototype/ReleasePanel'
 import { groupByFeature, stageOf } from '@/data/designBranches'
+import { groupForRelease, waitingCount } from '@/data/releaseQueue'
 import { isBranchOnBoard, titleFromBranch, type BranchDeploy } from '@/data/branchStore'
 import { parseBranch } from '@/data/branchName'
 import { selectBranchDeploys, slugifyBranch, REVIEW_PATH } from '../../netlify/lib/branchDeploys'
-import { isMergedInto } from '../../netlify/lib/branchGit'
+import { decidedOn, isMergedInto, parseCompare, parseMarker } from '../../netlify/lib/branchGit'
 import type { StoredLink } from '@/data/linkStore'
 
 /**
@@ -219,6 +221,7 @@ const served = (over: Partial<BranchDeploy> & { branch: string }): BranchDeploy 
   build: 'ready' as const,
   onStage: false,
   released: false,
+  decided: [],
   ...over,
 })
 
@@ -380,7 +383,126 @@ describe('parseBranch — the only thing a designer authors', () => {
   })
 })
 
+/* ── the Release section ──────────────────────────────────────────────────── */
+
+describe('the Release section — what is on stage and not on main', () => {
+  const decidedMarker = { scope: 'compass', decidedAt: '2026-11-15', by: 'Anjani', commit: 'abc123' }
+  const ok = (branches: BranchDeploy[], aheadOfMain = 3) => ({
+    configured: true,
+    git: { configured: true, reason: '' },
+    stage: { aheadOfMain, behindMain: 0 },
+    branches,
+  })
+
+  it('lists a staged, unreleased branch under its surface, tagged Decided from its marker', async () => {
+    mockEndpoints({
+      branches: ok([served({ branch: 'feat/compass-streak', onStage: true, decided: [decidedMarker] })]),
+    })
+    const { container } = render(<ReleasePanel />)
+    expect(await screen.findByRole('heading', { name: 'Compass' })).toBeInTheDocument()
+    expect(screen.getByText('owner Anjani · decided')).toBeInTheDocument()
+    expect(container.querySelectorAll('[data-row][data-decided="yes"]')).toHaveLength(1)
+    expect(screen.getByText(/^Ready\./)).toBeInTheDocument()
+    expect(screen.getByRole('status')).toHaveTextContent(/3\s*commits on stage not on main · 1 branch from 1 surface/)
+  })
+
+  it('says Not yet when a staged branch has no marker, and counts the undecided', async () => {
+    mockEndpoints({
+      branches: ok([
+        served({ branch: 'feat/compass-streak', onStage: true, decided: [decidedMarker] }),
+        served({ branch: 'feat/atlas-home', onStage: true }),
+      ]),
+    })
+    const { container } = render(<ReleasePanel />)
+    await screen.findByRole('heading', { name: 'Atlas Learning' })
+    expect(container.querySelectorAll('[data-row][data-decided="no"]')).toHaveLength(1)
+    expect(screen.getByText(/^Not yet\./)).toBeInTheDocument()
+    expect(screen.getByRole('status')).toHaveTextContent(/1 undecided/)
+  })
+
+  it('leaves out what is in design and what is released — only the gap between stage and main', async () => {
+    mockEndpoints({
+      branches: ok(
+        [
+          served({ branch: 'feat/compass-a' }),
+          served({ branch: 'feat/compass-b', onStage: true, released: true }),
+        ],
+        0,
+      ),
+    })
+    render(<ReleasePanel />)
+    expect(await screen.findByText(/Nothing waiting/)).toBeInTheDocument()
+    expect(screen.getByRole('status')).toHaveTextContent(/Stage is level with main/)
+  })
+
+  it('a marker for another scope does not vouch for this branch', () => {
+    const g = groupForRelease([
+      served({ branch: 'feat/atlas-home', onStage: true, decided: [decidedMarker] }),
+    ])
+    expect(g).toHaveLength(1)
+    expect(g[0].rows[0].decided).toBe(false)
+    expect(g[0].ready).toBe(false)
+  })
+
+  it('counts the waiting branches for the rail', () => {
+    const index = {
+      available: true,
+      loading: false,
+      reason: '',
+      git: 'on' as const,
+      stageAheadOfMain: 2,
+      branches: [
+        served({ branch: 'feat/compass-a', onStage: true }),
+        served({ branch: 'feat/compass-b', onStage: true, released: true }),
+        served({ branch: 'feat/compass-c' }),
+      ],
+    }
+    expect(waitingCount(index)).toBe(1)
+  })
+
+  it('says the git facts are needed, once, when they are off', async () => {
+    mockEndpoints({ branches: { ...ok([]), git: { configured: false, reason: 'no-credentials' } } })
+    render(<ReleasePanel />)
+    expect(await screen.findByText(/Set GITHUB_TOKEN/)).toBeInTheDocument()
+  })
+})
+
 /* ── the git facts ────────────────────────────────────────────────────────── */
+
+describe('the decided marker — honest by construction', () => {
+  it('parses a marker and requires the commit it vouches for', () => {
+    expect(parseMarker({ scope: 'compass', decidedAt: '2026-11-15', by: 'Anjani', commit: 'abc' }, 'x')).toEqual({
+      scope: 'compass',
+      decidedAt: '2026-11-15',
+      by: 'Anjani',
+      commit: 'abc',
+    })
+    // The file name is the scope when the body does not say.
+    expect(parseMarker({ commit: 'abc' }, 'atlas')?.scope).toBe('atlas')
+    expect(parseMarker({ scope: 'compass' }, 'compass')).toBeNull()
+    expect(parseMarker('nope', 'compass')).toBeNull()
+  })
+
+  /* The rule that lets markers stay in the tree: a marker counts only while
+     its commit is among the branch's commits main does not have. One left on
+     main by the last release vouches for a commit main has, and is ignored on
+     every branch cut after it. */
+  it('counts a marker only while its commit is ahead of main', () => {
+    const m = { scope: 'compass', decidedAt: '', by: '', commit: 'abc123def' }
+    expect(decidedOn([m], ['abc123def4567890', 'zzz'])).toEqual([m])
+    expect(decidedOn([m], ['zzz'])).toEqual([])
+    expect(decidedOn([{ ...m, commit: '' }], ['abc123def'])).toEqual([])
+  })
+
+  it('reads ahead/behind and the commit shas off a compare', () => {
+    expect(parseCompare({ ahead_by: 2, behind_by: 0, commits: [{ sha: 'a' }, { sha: 'b' }] })).toEqual({
+      aheadBy: 2,
+      behindBy: 0,
+      shas: ['a', 'b'],
+    })
+    expect(parseCompare({ ahead_by: 'x' })).toBeNull()
+  })
+})
 
 describe('isMergedInto', () => {
   it('is ahead_by === 0 and nothing else', () => {

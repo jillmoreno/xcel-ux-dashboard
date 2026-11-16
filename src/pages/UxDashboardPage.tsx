@@ -23,8 +23,10 @@ import { PrototypeFeaturePage } from './PrototypeFeaturePage'
 import { ComponentPreviewThumb } from '@/components/prototype/ComponentPreviewThumb'
 import { GeneratedThumb, THUMB_W, THUMB_H } from '@/components/prototype/GeneratedThumb'
 import { HubRow, type HubRowTag } from '@/components/prototype/HubRow'
-import { useStagedScopesFromBranches, type StagedFact } from '@/data/branchStore'
+import { stagedScopesFromBranches, useBranches, type StagedFact } from '@/data/branchStore'
 import { DesignPanel } from '@/components/prototype/DesignPanel'
+import { ReleasePanel } from '@/components/prototype/ReleasePanel'
+import { waitingCount } from '@/data/releaseQueue'
 import { hubListStyle, hubMetaChipStyle, hubTagStyle } from '@/components/prototype/hubRowStyles'
 import { primaryPreviewSrc } from '@/components/prototype/featurePreviewSrc'
 import { ArchiveTable } from '@/components/prototype/ArchiveTable'
@@ -126,6 +128,7 @@ import { Toast } from '@/components/ui/Toast'
 
 type UxSection =
   | 'design'
+  | 'release'
   | 'demo'
   | 'links'
   | 'prds'
@@ -205,6 +208,17 @@ const SECTIONS: SectionDef[] = [
     id: 'design',
     label: 'Design',
     blurb: 'Every branch being worked on, where it is, and who is on it.',
+  },
+  {
+    /* RELEASE (2026-11-16) — Jillienne's inbox: what is on stage that main
+       does not have, by surface, with whether each branch's defaults are
+       decided. Jillienne, the same day: "right now I cannot tell what branch
+       is ready on stage to be pushed to main." Derived like Design;
+       `ReleasePanel.tsx` says why it is a row of its own and not a mode of
+       Prototypes. The nav count is the branches waiting, live. */
+    id: 'release',
+    label: 'Release',
+    blurb: 'What is on stage and not yet on main.',
   },
   {
     // The REVIEW INBOX, authored on the page (2026-09-18) — labelled
@@ -1446,7 +1460,17 @@ export function UxDashboardPage() {
      and `stagedScopesFromBranches` says which surface from its name. The
      cards are the fallback for what was filed before today, and for a
      deploy with no GITHUB_TOKEN. Same three fields either way. */
-  const stagedBranches = useStagedScopesFromBranches()
+  /* ONE read of `/api/branches` for the page — the Staged tags, the Release
+     count, and the Design and Release panels all draw from it. Each GitHub-
+     backed answer costs seconds, so the panels take it as a prop rather than
+     fetching their own. */
+  const { index: branchIndex } = useBranches()
+  const stagedBranches = useMemo(() => stagedScopesFromBranches(branchIndex.branches), [branchIndex.branches])
+  /* The Release row's count — branches on stage and not on main. Read here
+     rather than inside the panel because the rail draws it on every section.
+     ⚠ The same trap the archived To Do restore note names: drop this and the
+     row still draws, showing a permanent 0. */
+  const releaseWaiting = waitingCount(branchIndex)
   const staged = useMemo(() => ({ ...stagedCards, ...stagedBranches }), [stagedCards, stagedBranches])
 
   /* The other half of the share link: whatever the board is filtered to is in
@@ -1546,6 +1570,8 @@ export function UxDashboardPage() {
       // Not a list of features — derived from the branch list, see
       // `DesignPanel`. No nav count: the number changes as Netlify builds.
       design: [],
+      // Same — derived from the branch list, see `ReleasePanel`.
+      release: [],
       // Not a list of features — the Demo panel owns its own data, so this
       // stays empty by design and the nav count comes from `useDemoCount`.
       demo: [],
@@ -1733,6 +1759,8 @@ export function UxDashboardPage() {
             const count =
               s.id === 'qa-notes'
                 ? qaCount
+                : s.id === 'release'
+                  ? releaseWaiting
                 : s.id === 'links'
                   ? linkCount
                   : s.id === 'demo'
@@ -1908,7 +1936,9 @@ export function UxDashboardPage() {
         ) : section === 'design' ? (
           // Derived from the branch list — nothing to author. See the
           // `SectionDef` and `DesignPanel.tsx`.
-          <DesignPanel />
+          <DesignPanel index={branchIndex} />
+        ) : section === 'release' ? (
+          <ReleasePanel index={branchIndex} />
         ) : section === 'demo' ? (
           // The same panel as Links with a different board behind it — see
           // `LinkBoardPanel`. Read-only and filtered to public rows on the

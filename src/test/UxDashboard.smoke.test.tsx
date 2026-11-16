@@ -51,6 +51,9 @@ function renderDashboard(initialPath = '/') {
 const EXPECTED_SECTIONS = [
   'Prototypes',
   'Design',
+  // Release (2026-11-16, same day): what is on stage and not on main —
+  // Jillienne's inbox, derived like Design. See `ReleasePanel.tsx`.
+  'Release',
   'Refinement',
   'Research',
   'Resources',

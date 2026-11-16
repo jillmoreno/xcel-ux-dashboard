@@ -1782,6 +1782,28 @@ cannot see — an HTML exploration, a review deck, a note saying WHERE to look
 Add form prefilled in this tab (the same `?section=demo&add=1` door, minus
 the password wall and the copy-paste).
 
+**Release, the same day.** Jillienne: "right now I cannot tell what branch
+is ready on stage to be pushed to main." The tags answered *is this branch
+staged*; nobody could read *what is waiting on me*. So a **Release** row
+sits under Design (`ReleasePanel.tsx`, facts in `src/data/releaseQueue.ts`),
+fourteen sections now: one number at the top — `compare/main...stage`'s
+`ahead_by`, the same number `/release` step 1 prints — then, by surface,
+every branch whose commits are all on `stage` and not all on `main`, with
+owner, pusher, staged date and a *Decided / Undecided* tag. The tag is the
+marker `share-to-stage` writes in its step 3: `.hub/decided/<scope>.json`,
+one file per scope (two owners never touch one file), holding the promotion
+commit it vouches for. `branchGit.ts` reads the directory off the branch
+(contents API, only for branches on stage and not released) and counts a
+marker only while its `commit` is among the branch's commits main does not
+have (`decidedOn`) — so a marker released to main vouches for nothing on the
+next branch cut from it, and nothing is cleaned up. The page's line is
+"Ready — say `/release`" or "Not yet — N undecided"; `/release` step 1 runs
+the same check in git. The nav count is the branches waiting. It is a rail
+row rather than a mode of Prototypes because the 2026-11-01 "stage is not a
+section" rule was about the product rows, and these are not product rows.
+The Design row's caption names the next step too: *next: /share-to-stage
+(owner)* on an in-design branch, *waiting on Release* on a staged one.
+
 **What did not move.** Nothing writes. The endpoint is still read-only, the
 section POSTs nowhere, and the testing build still refuses `/api/branches`
 outright (branch names are a roadmap stakeholders were never shown). The

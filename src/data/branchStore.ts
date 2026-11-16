@@ -37,7 +37,14 @@ export type BranchDeploy = {
    *  "no", which it would otherwise look like. */
   onStage: boolean | null
   released: boolean | null
+  /** The surfaces this branch has decided defaults for — the markers
+   *  `share-to-stage` writes under `.hub/decided/`, counted only while they
+   *  vouch for a commit main does not have (`branchGit.ts`). Sent only for a
+   *  branch on stage and not released; empty otherwise. */
+  decided: DecidedMarker[]
 }
+
+export type DecidedMarker = { scope: string; decidedAt: string; by: string; commit: string }
 
 export type BranchIndex = {
   /** The endpoint answered AND is configured to talk to Netlify. */
@@ -50,6 +57,9 @@ export type BranchIndex = {
   /** Whether the git facts are on. `off` = no GITHUB_TOKEN on the project;
    *  `down` = configured and GitHub did not answer; `on` otherwise. */
   git: 'on' | 'off' | 'down'
+  /** Stage against main — the Release page's one number. `null` while the
+   *  git facts are off or GitHub did not answer. */
+  stageAheadOfMain: number | null
   branches: BranchDeploy[]
 }
 
@@ -58,6 +68,7 @@ export const EMPTY_BRANCH_INDEX: BranchIndex = {
   loading: true,
   reason: '',
   git: 'off',
+  stageAheadOfMain: null,
   branches: [],
 }
 
@@ -104,6 +115,16 @@ function normalise(raw: unknown): BranchDeploy | null {
     build: build === 'building' || build === 'failed' ? build : 'ready',
     onStage: bool(r.onStage),
     released: bool(r.released),
+    decided: Array.isArray(r.decided)
+      ? r.decided
+          .map((m): DecidedMarker | null => {
+            if (typeof m !== 'object' || m === null) return null
+            const d = m as Record<string, unknown>
+            const scope = s(d.scope)
+            return scope ? { scope, decidedAt: s(d.decidedAt), by: s(d.by), commit: s(d.commit) } : null
+          })
+          .filter((m): m is DecidedMarker => m !== null)
+      : [],
   }
 }
 
@@ -116,7 +137,7 @@ export async function listBranches(): Promise<BranchIndex> {
     // same reason as an HTML answer: `unreachable` is reserved for the server
     // telling us IT could not reach Netlify, which is a different thing to do
     // about and the only one of the two worth saying out loud.
-    return { available: false, loading: false, reason: 'no-endpoint', git: 'off', branches: [] }
+    return { available: false, loading: false, reason: 'no-endpoint', git: 'off', stageAheadOfMain: null, branches: [] }
   }
 
   // An HTML answer counts as no endpoint. Under plain `npm run dev` vite serves
@@ -125,14 +146,14 @@ export async function listBranches(): Promise<BranchIndex> {
   // "this needs `netlify dev`". Same guard `LinkIndex` carries.
   const ctype = res.headers.get('content-type') || ''
   if (!ctype.includes('application/json')) {
-    return { available: false, loading: false, reason: 'no-endpoint', git: 'off', branches: [] }
+    return { available: false, loading: false, reason: 'no-endpoint', git: 'off', stageAheadOfMain: null, branches: [] }
   }
 
   let body: unknown
   try {
     body = await res.json()
   } catch {
-    return { available: false, loading: false, reason: 'bad-response', git: 'off', branches: [] }
+    return { available: false, loading: false, reason: 'bad-response', git: 'off', stageAheadOfMain: null, branches: [] }
   }
 
   const b = (body ?? {}) as Record<string, unknown>
@@ -141,7 +162,7 @@ export async function listBranches(): Promise<BranchIndex> {
   // test — and that is "no endpoint here", not "Netlify is down". Getting this
   // wrong puts a red herring above a board that is working fine.
   if (typeof b.configured !== 'boolean') {
-    return { available: false, loading: false, reason: 'no-endpoint', git: 'off', branches: [] }
+    return { available: false, loading: false, reason: 'no-endpoint', git: 'off', stageAheadOfMain: null, branches: [] }
   }
   const configured = b.configured === true
   const reason = typeof b.reason === 'string' ? b.reason : ''
@@ -154,7 +175,10 @@ export async function listBranches(): Promise<BranchIndex> {
   const git: BranchIndex['git'] =
     g.configured === true ? (typeof g.reason === 'string' && g.reason ? 'down' : 'on') : 'off'
 
-  return { available: configured && res.ok, loading: false, reason, git, branches }
+  const st = (b.stage ?? {}) as Record<string, unknown>
+  const stageAheadOfMain = typeof st.aheadOfMain === 'number' ? st.aheadOfMain : null
+
+  return { available: configured && res.ok, loading: false, reason, git, stageAheadOfMain, branches }
 }
 
 /**
@@ -163,7 +187,7 @@ export async function listBranches(): Promise<BranchIndex> {
  * changes without us — a designer pushes, Netlify builds — so a cached list is
  * a second copy of state we do not own.
  */
-export function useBranches(): { index: BranchIndex; refresh: () => Promise<void> } {
+export function useBranches(enabled = true): { index: BranchIndex; refresh: () => Promise<void> } {
   const [index, setIndex] = useState<BranchIndex>(EMPTY_BRANCH_INDEX)
 
   const refresh = useCallback(async () => {
@@ -172,6 +196,9 @@ export function useBranches(): { index: BranchIndex; refresh: () => Promise<void
   }, [])
 
   useEffect(() => {
+    // `enabled` false = a panel that was handed the page's index and must not
+    // fetch a second copy (each GitHub-backed answer costs seconds).
+    if (!enabled) return
     let alive = true
     void listBranches().then((next) => {
       if (alive) setIndex(next)
@@ -179,7 +206,7 @@ export function useBranches(): { index: BranchIndex; refresh: () => Promise<void
     return () => {
       alive = false
     }
-  }, [])
+  }, [enabled])
 
   return { index, refresh }
 }

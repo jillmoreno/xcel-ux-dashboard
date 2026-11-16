@@ -631,7 +631,7 @@ describe('the Links section on the gateway', () => {
       .map((b) => b.textContent?.replace(/\d+$/, '').trim())
     const protoAt = labels.indexOf('Prototypes')
     expect(protoAt).toBeGreaterThanOrEqual(0)
-    expect(labels.slice(protoAt, protoAt + 5)).toEqual(['Prototypes', 'Design', 'Refinement', 'Research', 'Resources'])
+    expect(labels.slice(protoAt, protoAt + 6)).toEqual(['Prototypes', 'Design', 'Release', 'Refinement', 'Research', 'Resources'])
   })
 
   it('a deep link into the section opens it', async () => {

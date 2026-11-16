@@ -81,6 +81,7 @@ function renderAt(Page: React.ComponentType, path: string) {
 const ALL_SECTIONS = [
   'Prototypes',
   'Design',
+  'Release',
   'Refinement',
   'Research',
   'Resources',

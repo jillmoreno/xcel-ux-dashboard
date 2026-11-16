@@ -47,6 +47,7 @@ there is one site since 2026-10-15, and they are given its link.
 | **Prototypes · Main** | this IS the product — released | one per surface, all on `main` | flag defaults on `main` |
 | **Prototypes · Stage** | decided by its owner, not yet released | the same rows, all on `stage` | flag defaults on `stage` |
 | **Design** (2026-11-16) | being worked on — every pushed branch | one per branch, grouped by feature | derived from Netlify + git; nobody authors it |
+| **Release** (2026-11-16) | on stage, not on main — Jillienne's inbox | one per waiting branch, by surface, Decided / Undecided | derived from git + the `.hub/decided/` markers |
 | **Refinement** | under discussion — notes, documents, decks | as many as you like | Netlify Blobs, authored on the page |
 
 **STAGE (2026-11-01).** A third place, between a Refinement link and `main`,
@@ -85,8 +86,17 @@ project). The designer's whole job is **name the branch, push**.
 `share-to-stage` files no card; the Prototypes *Staged* tag reads git first
 and the old cards second; the branch strip under Refinement is gone.
 Refinement is for what git cannot see — a note, a document, a deck — reached
-from the Design row's **Discuss in Refinement**. `docs/gateway.md` has the
-rest. The 2026-10-15 "Design is retired" below is history: that Design was a
+from the Design row's **Discuss in Refinement**. **RELEASE, the same day**:
+Jillienne: "I cannot tell what branch is ready on stage to be pushed to
+main." A rail row under Design lists every branch on stage and not on main,
+by surface, with one number (stage is N commits ahead of main) and a
+*Decided / Undecided* tag per branch from the marker `share-to-stage` now
+writes — `.hub/decided/<scope>.json`, one file per scope, honest because the
+Hub counts it only while its `commit` is ahead of main (`decidedOn` in
+`branchGit.ts`), so nothing is cleaned up after a release. The page says
+"Ready" or "Not yet"; `/release` checks the same files by the same rule.
+The Design row's caption names the next step (*next: /share-to-stage
+(owner)* · *waiting on Release*). `docs/gateway.md` has the rest. The 2026-10-15 "Design is retired" below is history: that Design was a
 list of feature rows by status; this one is derived and authored by nobody.
 
 **THE VOCABULARY (2026-11-01).** Jillienne settled the words designers read,
@@ -248,7 +258,7 @@ It is now three things, and where a new screen belongs depends on which:
 
 | Surface | Lives in | Reached at |
 |---|---|---|
-| The UX Dashboard gateway | `src/pages/UxDashboardPage.tsx` + friends | `/`, `/prototype/:id`, `/research-rationale`, `/qa-notes`, `/links`, `/prds` (thirteen sections — Prototypes · Design · Refinement · Research · Resources · PRDs · Explorations · Development · Done · Archive · QA Notes · To Do Board · Hub Resources) |
+| The UX Dashboard gateway | `src/pages/UxDashboardPage.tsx` + friends | `/`, `/prototype/:id`, `/research-rationale`, `/qa-notes`, `/links`, `/prds` (fourteen sections — Prototypes · Design · Release · Refinement · Research · Resources · PRDs · Explorations · Development · Done · Archive · QA Notes · To Do Board · Hub Resources) |
 | The XCEL product app | `src/pages/*`, `src/components/*` | `/dashboard-rebrand` + ~28 product routes |
 | The standalone prototypes | `public/prototypes/*.html` | `/prototypes/…`, opened in a tab or iframed |
 

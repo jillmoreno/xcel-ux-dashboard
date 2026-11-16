@@ -32,7 +32,7 @@ import { ArrowUpRightFromSquare, MessageCircle, PenToSquare, Share2, User } from
 import { type ActionMenuItem } from '@/components/ui/ActionMenu'
 import { HubRow, type HubRowTag } from './HubRow'
 import { GeneratedThumb } from './GeneratedThumb'
-import { safeBranchHref, useBranches } from '@/data/branchStore'
+import { safeBranchHref, useBranches, type BranchIndex } from '@/data/branchStore'
 import { scopeLabel, scopeOwner } from '@/data/branchName'
 import { groupByFeature, stageOf, type DesignRow, type DesignStage } from '@/data/designBranches'
 import type { FeatureAccent, PrototypeScope } from '@/data/prototypeFeatures'
@@ -144,8 +144,11 @@ const emptyStyle: CSSProperties = {
 
 type Filter = 'active' | 'on-stage' | 'released' | 'all'
 
-export function DesignPanel() {
-  const { index } = useBranches()
+/** `index` is the page's one read of `/api/branches` when it has one; the
+ *  panel reads for itself when rendered alone (tests, a future route). */
+export function DesignPanel({ index: given }: { index?: BranchIndex } = {}) {
+  const own = useBranches(given === undefined)
+  const index = given ?? own.index
   const [filter, setFilter] = useState<Filter>('active')
 
   const groups = useMemo(() => groupByFeature(index.branches), [index.branches])
@@ -342,7 +345,20 @@ function DesignRowCard({ row }: { row: DesignRow }) {
       }
       titleSr={href ? ' — opens in a new tab' : stage === 'building' ? ' — still building' : ' — no build to open'}
       description={deploy.commit || undefined}
-      caption={[deploy.branch, deploy.updated && (deploy.build === 'ready' ? `built ${deploy.updated}` : `pushed ${deploy.updated}`)]
+      caption={[
+        deploy.branch,
+        deploy.updated && (deploy.build === 'ready' ? `built ${deploy.updated}` : `pushed ${deploy.updated}`),
+        /* THE NEXT STEP, on the row (2026-11-16, Jillienne: "I want the share
+           to stage to be a clearer action"). An in-design branch with a
+           surface says what moves it on and who can; a staged one says it
+           is waiting on Release. The skill is still a sentence said to
+           Claude — this is the row saying which sentence. */
+        stage === 'in-design' && parsed.scope
+          ? `next: /share-to-stage (${scopeOwner(parsed.scope)})`
+          : stage === 'on-stage'
+            ? 'waiting on Release'
+            : '',
+      ]
         .filter(Boolean)
         .join(' · ')}
       tags={tags}
