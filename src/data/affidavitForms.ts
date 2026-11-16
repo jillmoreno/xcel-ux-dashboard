@@ -17,7 +17,7 @@
  *   · 2026-11-04 — Illinois, After course exam (`IL_POST`): no "Course
  *     Completion Roster upload form" heading and no red box around the roster
  *     section. Afsana's change.
- *   · 2026-11-04 — California, After course exam (`CA_POST_LH`): no "Course
+ *   · 2026-11-04 — California, After course exam (`CA_POST`, was `CA_POST_LH`): no "Course
  *     Completion Roster upload form" heading. The heading only — its red box
  *     round the Student Legal Name stays. Afsana's change. (Both went on
  *     2026-11-09: no red box, no "Student Legal Name" heading.)
@@ -125,7 +125,7 @@ export const ENTRIES: AffEntry[] =[
   {m:'pre',doc:'terms',st:'CA',status:'ready',form:'CA_PRE'},
   {m:'exam',st:'FL',status:'ready',form:'FL_EXAM'},{m:'exam',st:'MN',status:'ready',form:'MN_EXAM'},
   {m:'exam',st:'CO',status:'missing'},{m:'exam',st:'CT',status:'missing'},{m:'exam',st:'WV',status:'missing'},{m:'exam',st:'WI',status:'missing'},
-  {m:'post',st:'CA',status:'received',loas:['Life & Health'],variants:{'Life & Health':{English:'CA_POST_LH'}}},{m:'post',st:'IL',status:'ready',form:'IL_POST'},{m:'post',st:'OH',status:'received',loas:['Property'],variants:{'Property':{English:'OH_POST_P'}}},{m:'post',st:'NY',status:'ready',form:'NY_POST'},
+  {m:'post',st:'CA',status:'ready',form:'CA_POST'},{m:'post',st:'IL',status:'ready',form:'IL_POST'},{m:'post',st:'OH',status:'ready',form:'OH_POST'},{m:'post',st:'NY',status:'ready',form:'NY_POST'},
   {m:'post',st:'CO',status:'ready',form:'CO_POST'},{m:'post',st:'CT',status:'ready',form:'CT_POST'},{m:'post',st:'MN',status:'ready',form:'MN_POST'},{m:'post',st:'WV',status:'ready',form:'WV_POST'},{m:'post',st:'WI',status:'ready',form:'WI_POST'}
 ];
 export const FORMS: Record<string, AffForm> ={
@@ -522,7 +522,11 @@ FORMS.MN_EXAM={
   noPrefill:['first','middle','last','suffix'],
   note:'The student’s typed name acts as the signature (the doc’s "Student E-Signature" heading is dropped, 2026-11-09); the doc has no separate signature line. In Link out, the Student Attestation is in the linked document only (2026-11-10). Because the typed name is the signature, the name fields are not pre-filled. The "I confirm that the above information is accurate" checkbox (highlighted in red) is the last field.'
 };
-FORMS.CA_POST_LH={
+/* ONE FORM FOR EVERY LINE (2026-11-16, compliance): California's and Ohio's
+   post-exam affidavits are not line-specific, so each entry above is a plain
+   form, not a Line of authority variant, and the keys lost their "_LH" / "_P"
+   (were CA_POST_LH, OH_POST_P). The titles are compliance's, unchanged. */
+FORMS.CA_POST={
   docHeader:'California Prelicensing Affidavit',
   title:'California Prelicensing Affidavit',
   source:'Word doc · CA PE-Post Final Affidavit',
@@ -576,7 +580,7 @@ FORMS.IL_POST={
   agreeLabel:'I Attest and Confirm',
   note:'Includes the Course Completion Roster section (full SSN) from the same Word doc. Full SSN must be 9 digits; dashes are allowed. The button reads "I Attest and Confirm". The "I confirm that the above information is accurate" checkbox comes after the roster section.'
 };
-FORMS.OH_POST_P={
+FORMS.OH_POST={
   docHeader:'Ohio Property Pre-Licensing Insurance Affidavit',
   title:'Ohio Property Pre-Licensing Insurance Affidavit',
   source:'Word doc · OH PE-Pre & Post Final Affidavit',
@@ -1048,7 +1052,7 @@ const SIGNATURE: AffField = {id:'sig',label:'Student Signature',required:true,pl
 const CONFIRM: AffField = {id:'agree',type:'checkbox',label:'I confirm that the above information is accurate',required:true}
 const NAME_IDS = ['first','middle','last','suffix','fullname','name']
 const isName = (x: AffField) => (x.id != null && NAME_IDS.includes(x.id)) || (x.row ?? []).some((y) => y.id != null && NAME_IDS.includes(y.id))
-export const SIGNED_FORMS = ['IL_PRE','OH_PRE','FL_EXAM','MN_EXAM','CA_POST_LH','IL_POST','OH_POST_P','NY_POST','CO_POST','CT_POST','MN_POST','WV_POST','WI_POST','GEN_EXAM','PA_EXAM']
+export const SIGNED_FORMS = ['IL_PRE','OH_PRE','FL_EXAM','MN_EXAM','CA_POST','IL_POST','OH_POST','NY_POST','CO_POST','CT_POST','MN_POST','WV_POST','WI_POST','GEN_EXAM','PA_EXAM']
 /* AND ONE WAY TO TAKE A NAME (2026-11-06, Afsana: "Yes, standardize"). The
    forms that ask for a name but have no signature — California's and the
    generic terms ("Student Name", "Student Full Name") and the KY, NV and OR

@@ -4545,6 +4545,13 @@ there), **state**, **pattern**, **language** and **line of authority** pick
 the form. The data file's header lists every place the forms now differ from
 the explorer; carry those over on the next port.
 
+**Line of authority is Florida's alone** (2026-11-16, compliance). California
+and Ohio sign one post-exam affidavit for every line, so their entries are
+plain forms — `CA_POST` and `OH_POST`, renamed from `CA_POST_LH` and
+`OH_POST_P` — and the control's Property arm, which only Ohio used, is gone.
+It now picks Florida's pre-course notice (Life & Health or Property &
+Casualty). The document titles are compliance's, unchanged.
+
 **Affidavit state lists only the states with a form at the chosen moment**
 (2026-11-06, Afsana) — `variantsHiddenWhen` on `affidavit-v2-state`, read
 live like `hiddenWhen`. The state already picked stays listed. Afsana asked

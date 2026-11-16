@@ -195,8 +195,12 @@ describe('AffidavitModalV2 — the explorer’s forms', () => {
   })
 
   it('shows a state’s own line when it has no form for the chosen one', () => {
-    // Ohio signs one after-exam form, for Property; asking for Life & Health still shows it.
-    expect(resolveAffidavit('post', 'OH', 'English', 'Life & Health').form).toBe(FORMS.OH_POST_P)
+    // California and Ohio sign one after-exam form for every line (compliance, 2026-11-16).
+    for (const loa of ['Life & Health', 'Property & Casualty']) {
+      expect(resolveAffidavit('post', 'CA', 'English', loa).form, loa).toBe(FORMS.CA_POST)
+      expect(resolveAffidavit('post', 'OH', 'English', loa).form, loa).toBe(FORMS.OH_POST)
+    }
+    expect(ENTRIES.filter((e) => e.variants).map((e) => `${e.m} ${e.st}`)).toEqual(['pre FL'])
     // A state with one form for every line ignores the control.
     expect(resolveAffidavit('pre', 'IL', 'English', 'Property & Casualty').form).toBe(FORMS.IL_PRE)
   })
@@ -332,7 +336,7 @@ describe('AffidavitModalV2 — the explorer’s forms', () => {
 
   it('California after the exam: no roster heading, the sheet’s SSN reason in place of the old sentence', () => {
     render(<AffidavitModalV2 onClose={() => {}} moment="post" state="CA" />)
-    const last = FORMS.CA_POST_LH!.pages.length - 1
+    const last = FORMS.CA_POST!.pages.length - 1
     for (let i = 0; i < last; i++) fireEvent.click(screen.getByRole('button', { name: 'Next' }))
     expect(screen.queryByText('Course Completion Roster upload form')).toBeNull()
     expect(screen.queryByText(/Education providers are required to collect/)).toBeNull()
@@ -683,7 +687,7 @@ describe('AffidavitModalV2 — the explorer’s forms', () => {
   /* THE SSN WORDING (2026-11-06): the compliance sheet's "SSN Veribage",
      directly above the SSN field on CA, IL and both Ohio forms. */
   it('puts the sheet’s SSN wording above every SSN field — directly above it on both Ohio forms', () => {
-    const forms = { CA_POST_LH: 'ssn4', IL_POST: 'ssn', OH_PRE: 'ssn4', OH_POST_P: 'ssn4' }
+    const forms = { CA_POST: 'ssn4', IL_POST: 'ssn', OH_PRE: 'ssn4', OH_POST: 'ssn4' }
     for (const [key, id] of Object.entries(forms)) {
       const flat = (fs: AffField[]): AffField[] => fs.flatMap((f) => (f.flagGroup ? flat(f.flagGroup) : [f]))
       const fields = flat(FORMS[key]!.fields)
@@ -831,7 +835,7 @@ describe('the quick-fill on the top of the modal', () => {
   const cases = [...new Set(ENTRIES.map((e) => `${e.m}|${e.st}`))].flatMap((k) => {
     const [m, st] = k.split('|') as [AffidavitMoment, string]
     return ['English', 'Spanish'].flatMap((language) =>
-      ['Life & Health', 'Property & Casualty', 'Property'].map((loa) => ({ m, st, language, loa, form: resolveAffidavit(m, st, language, loa).form })),
+      ['Life & Health', 'Property & Casualty'].map((loa) => ({ m, st, language, loa, form: resolveAffidavit(m, st, language, loa).form })),
     )
   }).filter((c, i, all) => c.form && all.findIndex((d) => d.form === c.form) === i)
 
