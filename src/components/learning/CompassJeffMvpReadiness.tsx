@@ -38,19 +38,25 @@ import './compassJeffMvp.css'
  * The top recommendation is one click from being done; everything else is one
  * click from being chosen.
  */
-export function CompassJeffMvpReadiness({
-  onSelectPage,
-}: {
-  onSelectPage?: (p: JeffMvpPage) => void
-}) {
-  const [open, setOpen] = useState<Record<string, boolean>>({})
-  const [help, setHelp] = useState(false)
-  const go = (p: JeffMvpPage) => () => onSelectPage?.(p)
-  /* His first row opens expanded and the rest closed; a click flips whichever
-     it is. Seeded from the fixture rather than from a second source of truth,
-     so the row that is open on arrival is the one HIS page opens. */
-  const isOpen = (name: string, fallback: boolean) => open[name] ?? fallback
+/**
+ * ⚠ THE PAGE IS SIX EXPORTED BLOCKS, 2026-11-16, so `/compare/compass-readiness`
+ * can set each one beside its Refined counterpart. The page itself composes
+ * them in his order and renders exactly what it rendered before the split —
+ * `CompassJeffMvp.test.tsx` pins the text and the DOM, and nothing in it
+ * changed. The blocks own no state the page used to share: the topic rows'
+ * open/closed and the levels panel moved INTO `JeffReadinessTopics`, which is
+ * the only block that had any. Optional props (`ring`, `also`, `footnote`,
+ * `initialHelp`, `initialOpen`) default to his page; only the compare page
+ * sets them, to isolate one piece or to line both versions up in one state.
+ */
+type Go = (p: JeffMvpPage) => () => void
+const mkGo =
+  (onSelectPage?: (p: JeffMvpPage) => void): Go =>
+  (p) =>
+  () =>
+    onSelectPage?.(p)
 
+export function CompassJeffMvpReadiness({ onSelectPage }: { onSelectPage?: (p: JeffMvpPage) => void }) {
   return (
     <div className="cjm-page">
       <button type="button" className="cjm-ask">
@@ -59,144 +65,205 @@ export function CompassJeffMvpReadiness({
       </button>
 
       <CompassJeffMvpColumn>
-      <CompassJeffMvpHead
-        title={COPY.title}
-        lead={COPY.lead}
-        ruled
-        leadClass="cjm-lead--readiness"
-        aside={
-          <p className="cjm-live">
-            <span className="cjm-live__dot" aria-hidden />
-            {COPY.liveChip}
-          </p>
-        }
-      />
+        <JeffReadinessHead />
+        <JeffReadinessNext onSelectPage={onSelectPage} />
+        <JeffReadinessTrend />
+        <JeffReadinessTopics onSelectPage={onSelectPage} />
+      </CompassJeffMvpColumn>
+    </div>
+  )
+}
 
-      {/* ---------- do this next ---------- */}
-      <section className="cjm-next" aria-label={COPY.nextTitle}>
-        <div className="cjm-next__body">
-          <ReadinessRing />
-          <div className="cjm-next__mid">
-            <p className="cjm-next__eyebrow">
-              <RubiLogo size={13} aria-hidden />
-              {COPY.nextEyebrow} {RD.overall}%
-            </p>
-            <h2 className="cjm-next__title cjm-serif">{COPY.nextTitle}</h2>
-            <p className="cjm-next__text">{COPY.nextBody}</p>
-          </div>
-          <div className="cjm-next__set">
-            <p className="cjm-eyebrow">{COPY.setEyebrow}</p>
-            <p className="cjm-set__title">{COPY.setTitle}</p>
-            <p className="cjm-set__meta">{COPY.setMeta}</p>
-            <button type="button" className="cjm-cta" onClick={go('practice')}>
-              {COPY.setCta}
-            </button>
-            <button type="button" className="cjm-link" onClick={go('practice')}>
-              {COPY.setAlt}
-            </button>
-          </div>
-        </div>
-        <div className="cjm-next__also">
-          <Clock size={14} aria-hidden />
-          <p>
-            {COPY.alsoLead} <strong>{COPY.alsoStrong}</strong> {COPY.alsoRest}
+/** Title, lead and the live chip, over the rule. */
+export function JeffReadinessHead() {
+  return (
+    <CompassJeffMvpHead
+      title={COPY.title}
+      lead={COPY.lead}
+      ruled
+      leadClass="cjm-lead--readiness"
+      aside={
+        <p className="cjm-live">
+          <span className="cjm-live__dot" aria-hidden />
+          {COPY.liveChip}
+        </p>
+      }
+    />
+  )
+}
+
+/** The "Do this next" card: ring · recommendation · recommended set, with the
+ *  "Also worth a look" strip under it. `ring` / `also` let the compare page
+ *  show the card without one or the other; his page always has both. */
+export function JeffReadinessNext({
+  onSelectPage,
+  ring = true,
+  also = true,
+}: {
+  onSelectPage?: (p: JeffMvpPage) => void
+  ring?: boolean
+  also?: boolean
+}) {
+  const go = mkGo(onSelectPage)
+  return (
+    <section className="cjm-next" aria-label={COPY.nextTitle}>
+      <div className="cjm-next__body">
+        {ring ? <JeffReadinessRing /> : null}
+        <div className="cjm-next__mid">
+          <p className="cjm-next__eyebrow">
+            <RubiLogo size={13} aria-hidden />
+            {COPY.nextEyebrow} {RD.overall}%
           </p>
+          <h2 className="cjm-next__title cjm-serif">{COPY.nextTitle}</h2>
+          <p className="cjm-next__text">{COPY.nextBody}</p>
+        </div>
+        <div className="cjm-next__set">
+          <p className="cjm-eyebrow">{COPY.setEyebrow}</p>
+          <p className="cjm-set__title">{COPY.setTitle}</p>
+          <p className="cjm-set__meta">{COPY.setMeta}</p>
+          <button type="button" className="cjm-cta" onClick={go('practice')}>
+            {COPY.setCta}
+          </button>
           <button type="button" className="cjm-link" onClick={go('practice')}>
-            {COPY.alsoCta}
+            {COPY.setAlt}
           </button>
         </div>
-      </section>
+      </div>
+      {also ? <JeffReadinessAlso onSelectPage={onSelectPage} /> : null}
+    </section>
+  )
+}
 
-      {/* ---------- the trend ---------- */}
-      <section className="cjm-card" aria-label={COPY.trendEyebrow}>
-        <div className="cjm-card__head">
-          <div style={{ minWidth: 0 }}>
-            <p className="cjm-eyebrow">{COPY.trendEyebrow}</p>
-            <p className="cjm-card__text">{COPY.trendBody}</p>
-          </div>
-          <dl className="cjm-stats">
-            {RD.stats.map((s) => (
-              <div key={s.label} style={{ borderLeft: s.ruled ? '1px solid var(--cjm-rule-warm)' : undefined }}>
-                <dt>{s.label}</dt>
-                <dd className="cjm-serif" style={{ color: `var(--cjm-${s.tone})` }}>
-                  {s.value}
-                </dd>
+/** The strip under the card. On its own it is still the card's footer
+ *  (`.cjm-next__also`), so the compare page wraps it in `.cjm-next`. */
+export function JeffReadinessAlso({ onSelectPage }: { onSelectPage?: (p: JeffMvpPage) => void }) {
+  const go = mkGo(onSelectPage)
+  return (
+    <div className="cjm-next__also">
+      <Clock size={14} aria-hidden />
+      <p>
+        {COPY.alsoLead} <strong>{COPY.alsoStrong}</strong> {COPY.alsoRest}
+      </p>
+      <button type="button" className="cjm-link" onClick={go('practice')}>
+        {COPY.alsoCta}
+      </button>
+    </div>
+  )
+}
+
+/** The three-week trend card. */
+export function JeffReadinessTrend() {
+  return (
+    <section className="cjm-card" aria-label={COPY.trendEyebrow}>
+      <div className="cjm-card__head">
+        <div style={{ minWidth: 0 }}>
+          <p className="cjm-eyebrow">{COPY.trendEyebrow}</p>
+          <p className="cjm-card__text">{COPY.trendBody}</p>
+        </div>
+        <dl className="cjm-stats">
+          {RD.stats.map((s) => (
+            <div
+              key={s.label}
+              style={{
+                borderLeft: s.ruled ? '1px solid var(--cjm-rule-warm)' : undefined,
+              }}
+            >
+              <dt>{s.label}</dt>
+              <dd className="cjm-serif" style={{ color: `var(--cjm-${s.tone})` }}>
+                {s.value}
+              </dd>
+            </div>
+          ))}
+        </dl>
+      </div>
+      <TrendChart />
+      <p className="cjm-caption">{COPY.trendCaption}</p>
+    </section>
+  )
+}
+
+/** Readiness by topic: the header and pill, the legend and levels panel, the
+ *  five rows with their sub-topics, and the footnote. Owns the open/closed
+ *  state of the rows and the panel. */
+export function JeffReadinessTopics({
+  onSelectPage,
+  initialHelp = false,
+  initialOpen,
+  footnote = true,
+}: {
+  onSelectPage?: (p: JeffMvpPage) => void
+  /** Open the levels panel on arrival (the compare page lines both versions up). */
+  initialHelp?: boolean
+  /** Which rows start open; absent, each row follows its fixture's `expanded`. */
+  initialOpen?: Record<string, boolean>
+  footnote?: boolean
+}) {
+  const [open, setOpen] = useState<Record<string, boolean>>(initialOpen ?? {})
+  const [help, setHelp] = useState(initialHelp)
+  const go = mkGo(onSelectPage)
+  /* His first row opens expanded and the rest closed; a click flips whichever
+     it is. Seeded from the fixture rather than from a second source of truth,
+     so the row that is open on arrival is the one HIS page opens. */
+  const isOpen = (name: string, fallback: boolean) => open[name] ?? fallback
+  return (
+    <section className="cjm-topics" aria-label={COPY.topicsTitle}>
+      <div className="cjm-topics__head">
+        <div style={{ minWidth: 0 }}>
+          <h2 className="cjm-h2 cjm-serif">{COPY.topicsTitle}</h2>
+          <p className="cjm-topics__sub">{COPY.topicsSub}</p>
+          <p className="cjm-card__text">{COPY.topicsBody}</p>
+        </div>
+        <p
+          className="cjm-pill"
+          style={{
+            background: `var(--cjm-${RD.bandBg})`,
+            border: `1px solid var(--cjm-${RD.bandBorder})`,
+            color: `var(--cjm-${RD.bandInk})`,
+          }}
+        >
+          Overall {RD.overall} · {RD.band}
+        </p>
+      </div>
+
+      <div className="cjm-topics__legend">
+        <span>
+          <span className="cjm-marker-key" aria-hidden />
+          {COPY.markerLegend}
+        </span>
+        <button type="button" className="cjm-help" aria-expanded={help} onClick={() => setHelp((v) => !v)}>
+          <CircleInfoRegular size={14} aria-hidden />
+          {COPY.helpCta}
+          <ChevronDown size={12} aria-hidden style={{ transform: help ? 'rotate(180deg)' : undefined }} />
+        </button>
+      </div>
+      {help ? (
+        <ul className="cjm-help__panel">
+          {RD.bandHelp.map((b) => (
+            <li key={b.name}>
+              <span className="cjm-help__name">
+                <span className="cjm-dot" style={{ background: `var(--cjm-${b.dotTone})` }} aria-hidden />
+                {b.name}
+              </span>
+              <span className="cjm-help__range">{b.range}</span>
+              <span>{b.text}</span>
+            </li>
+          ))}
+        </ul>
+      ) : null}
+
+      {RD.rows.map((r) => {
+        const expanded = isOpen(r.name, r.expanded)
+        return (
+          <article className="cjm-row" key={r.name}>
+            <div className="cjm-row__head">
+              <div style={{ minWidth: 0 }}>
+                <h3 className="cjm-row__name">{r.name}</h3>
+                <p className="cjm-row__meta">
+                  {r.weight}% of exam · {r.answered}
+                </p>
               </div>
-            ))}
-          </dl>
-        </div>
-        <TrendChart />
-        <p className="cjm-caption">{COPY.trendCaption}</p>
-      </section>
-
-      {/* ---------- readiness by topic ---------- */}
-      <section className="cjm-topics" aria-label={COPY.topicsTitle}>
-        <div className="cjm-topics__head">
-          <div style={{ minWidth: 0 }}>
-            <h2 className="cjm-h2 cjm-serif">{COPY.topicsTitle}</h2>
-            <p className="cjm-topics__sub">{COPY.topicsSub}</p>
-            <p className="cjm-card__text">{COPY.topicsBody}</p>
-          </div>
-          <p
-            className="cjm-pill"
-            style={{
-              background: `var(--cjm-${RD.bandBg})`,
-              border: `1px solid var(--cjm-${RD.bandBorder})`,
-              color: `var(--cjm-${RD.bandInk})`,
-            }}
-          >
-            Overall {RD.overall} · {RD.band}
-          </p>
-        </div>
-
-        <div className="cjm-topics__legend">
-          <span>
-            <span className="cjm-marker-key" aria-hidden />
-            {COPY.markerLegend}
-          </span>
-          <button
-            type="button"
-            className="cjm-help"
-            aria-expanded={help}
-            onClick={() => setHelp((v) => !v)}
-          >
-            <CircleInfoRegular size={14} aria-hidden />
-            {COPY.helpCta}
-            <ChevronDown
-              size={12}
-              aria-hidden
-              style={{ transform: help ? 'rotate(180deg)' : undefined }}
-            />
-          </button>
-        </div>
-        {help ? (
-          <ul className="cjm-help__panel">
-            {RD.bandHelp.map((b) => (
-              <li key={b.name}>
-                <span className="cjm-help__name">
-                  <span className="cjm-dot" style={{ background: `var(--cjm-${b.dotTone})` }} aria-hidden />
-                  {b.name}
-                </span>
-                <span className="cjm-help__range">{b.range}</span>
-                <span>{b.text}</span>
-              </li>
-            ))}
-          </ul>
-        ) : null}
-
-        {RD.rows.map((r) => {
-          const expanded = isOpen(r.name, r.expanded)
-          return (
-            <article className="cjm-row" key={r.name}>
-              <div className="cjm-row__head">
-                <div style={{ minWidth: 0 }}>
-                  <h3 className="cjm-row__name">{r.name}</h3>
-                  <p className="cjm-row__meta">
-                    {r.weight}% of exam · {r.answered}
-                  </p>
-                </div>
-                <div className="cjm-row__right">
-                  {/* ⚠ NO TREND GLYPH, AND THAT IS A DELIBERATE OMISSION.
+              <div className="cjm-row__right">
+                {/* ⚠ NO TREND GLYPH, AND THAT IS A DELIBERATE OMISSION.
                       His mark is a rising-line arrow
                       (`M22 7l-8.5 8.5-5-5L2 17M16 7h6v6`); this registry ships
                       none, and the one up-arrow it has —
@@ -206,156 +273,170 @@ export function CompassJeffMvpReadiness({
                       glyph: the green and the sign carry the direction, and
                       `compassPages.ts` rejected `Flag` for the same reason.
                       Adding a trend icon is a registry decision. */}
-                  <span className="cjm-delta">
-                    +{r.delta}
-                    <span className="cjm-sr"> {COPY.deltaSuffix}</span>
-                  </span>
-                  <p
-                    className="cjm-pill"
-                    style={{
-                      background: `var(--cjm-${r.bandBg})`,
-                      border: `1px solid var(--cjm-${r.bandBorder})`,
-                      color: `var(--cjm-${r.bandInk})`,
-                    }}
-                  >
-                    {r.band} · {r.score}/100
-                  </p>
-                </div>
+                <span className="cjm-delta">
+                  +{r.delta}
+                  <span className="cjm-sr"> {COPY.deltaSuffix}</span>
+                </span>
+                <p
+                  className="cjm-pill"
+                  style={{
+                    background: `var(--cjm-${r.bandBg})`,
+                    border: `1px solid var(--cjm-${r.bandBorder})`,
+                    color: `var(--cjm-${r.bandInk})`,
+                  }}
+                >
+                  {r.band} · {r.score}/100
+                </p>
               </div>
+            </div>
 
-              <div className="cjm-track" role="img" aria-label={r.aria}>
-                {r.track.map((t) => (
-                  <span
-                    key={t.label}
-                    className="cjm-track__seg"
+            <div className="cjm-track" role="img" aria-label={r.aria}>
+              {r.track.map((t) => (
+                <span
+                  key={t.label}
+                  className="cjm-track__seg"
+                  style={{
+                    flex: `${t.flex} 1 0`,
+                    height: t.height,
+                    borderRadius: t.radius,
+                    background: `var(--cjm-${t.tone})`,
+                  }}
+                />
+              ))}
+              <span className="cjm-track__marker" style={{ left: `${r.score}%` }} aria-hidden />
+            </div>
+            <div className="cjm-track__labels">
+              {r.track.map((t) => (
+                <span
+                  key={t.label}
+                  style={{
+                    flex: `${t.flex} 1 0`,
+                    color: `var(--cjm-${t.labelTone})`,
+                    fontWeight: t.labelWeight,
+                  }}
+                >
+                  {t.label}
+                </span>
+              ))}
+            </div>
+
+            <div className="cjm-row__foot">
+              <span className="cjm-gap">{r.gapNote}</span>
+              <span className="cjm-foot-actions">
+                <button
+                  type="button"
+                  className={r.isPrimary ? 'cjm-btn cjm-btn--primary' : 'cjm-btn'}
+                  onClick={go('practice')}
+                >
+                  {COPY.practiceCta}
+                </button>
+                <button
+                  type="button"
+                  className="cjm-chev"
+                  aria-expanded={expanded}
+                  aria-label={expanded ? r.collapseLabel : r.expandLabel}
+                  onClick={() => setOpen((o) => ({ ...o, [r.name]: !expanded }))}
+                >
+                  <ChevronDown
+                    size={14}
+                    aria-hidden
                     style={{
-                      flex: `${t.flex} 1 0`,
-                      height: t.height,
-                      borderRadius: t.radius,
-                      background: `var(--cjm-${t.tone})`,
+                      transform: expanded ? 'rotate(180deg)' : undefined,
                     }}
                   />
-                ))}
-                <span className="cjm-track__marker" style={{ left: `${r.score}%` }} aria-hidden />
-              </div>
-              <div className="cjm-track__labels">
-                {r.track.map((t) => (
-                  <span
-                    key={t.label}
-                    style={{
-                      flex: `${t.flex} 1 0`,
-                      color: `var(--cjm-${t.labelTone})`,
-                      fontWeight: t.labelWeight,
-                    }}
-                  >
-                    {t.label}
-                  </span>
-                ))}
-              </div>
+                </button>
+              </span>
+            </div>
 
-              <div className="cjm-row__foot">
-                <span className="cjm-gap">{r.gapNote}</span>
-                <span className="cjm-foot-actions">
-                  <button
-                    type="button"
-                    className={r.isPrimary ? 'cjm-btn cjm-btn--primary' : 'cjm-btn'}
-                    onClick={go('practice')}
-                  >
-                    {COPY.practiceCta}
-                  </button>
-                  <button
-                    type="button"
-                    className="cjm-chev"
-                    aria-expanded={expanded}
-                    aria-label={expanded ? r.collapseLabel : r.expandLabel}
-                    onClick={() => setOpen((o) => ({ ...o, [r.name]: !expanded }))}
-                  >
-                    <ChevronDown
-                      size={14}
-                      aria-hidden
-                      style={{ transform: expanded ? 'rotate(180deg)' : undefined }}
-                    />
-                  </button>
-                </span>
-              </div>
-
-              {expanded && r.subs.length ? (
-                <div className="cjm-subs">
-                  <p className="cjm-subs__eyebrow">{COPY.subEyebrow}</p>
-                  <ul style={{ margin: 0, padding: 0, listStyle: 'none' }}>
-                    {r.subs.map((s) => (
-                      <li className="cjm-sub" key={s.name}>
-                        <span className="cjm-sub__name">{s.name}</span>
-                        <span className="cjm-sub__note" style={{ color: `var(--cjm-${s.noteTone})` }}>
-                          {s.note}
-                        </span>
-                        <span className="cjm-sub__bar" aria-hidden>
-                          {s.segs.map((g, i) => (
-                            <span
-                              key={i}
-                              style={{
-                                flex: `${g.flex} 1 0`,
-                                height: g.height,
-                                background: `var(--cjm-${g.tone})`,
-                              }}
-                            />
-                          ))}
-                        </span>
-                        <span className="cjm-sub__band">
-                          {s.band} <b>{s.num}</b>
-                        </span>
-                        {/* ⚠ THE MINUTES AND "Start here" BELONG TO THE WEAKEST
+            {expanded && r.subs.length ? (
+              <div className="cjm-subs">
+                <p className="cjm-subs__eyebrow">{COPY.subEyebrow}</p>
+                <ul style={{ margin: 0, padding: 0, listStyle: 'none' }}>
+                  {r.subs.map((s) => (
+                    <li className="cjm-sub" key={s.name}>
+                      <span className="cjm-sub__name">{s.name}</span>
+                      <span className="cjm-sub__note" style={{ color: `var(--cjm-${s.noteTone})` }}>
+                        {s.note}
+                      </span>
+                      <span className="cjm-sub__bar" aria-hidden>
+                        {s.segs.map((g, i) => (
+                          <span
+                            key={i}
+                            style={{
+                              flex: `${g.flex} 1 0`,
+                              height: g.height,
+                              background: `var(--cjm-${g.tone})`,
+                            }}
+                          />
+                        ))}
+                      </span>
+                      <span className="cjm-sub__band">
+                        {s.band} <b>{s.num}</b>
+                      </span>
+                      {/* ⚠ THE MINUTES AND "Start here" BELONG TO THE WEAKEST
                             SUB-TOPIC ONLY (`rubi` on his row), and its Practice
                             button is the one that opens a question set. */}
-                        {s.rubi ? (
-                          <span className="cjm-sub__when">
-                            <span>
-                              {COPY.aboutMins} {s.mins}
-                            </span>
-                            {COPY.startHere}
+                      {s.rubi ? (
+                        <span className="cjm-sub__when">
+                          <span>
+                            {COPY.aboutMins} {s.mins}
                           </span>
-                        ) : (
-                          <span />
-                        )}
-                        {/* ⚠ THE WEAKEST SUB-TOPIC OPENS A QUESTION SET, every
+                          {COPY.startHere}
+                        </span>
+                      ) : (
+                        <span />
+                      )}
+                      {/* ⚠ THE WEAKEST SUB-TOPIC OPENS A QUESTION SET, every
                             other one opens the Practice page — his two hrefs,
                             `PracticeSession` against `Practice`. This page's
                             thesis in one link, and it pointed at Practice for
                             both until the question set existed to point at. */}
-                        <button
-                          type="button"
-                          className={s.rubi ? 'cjm-btn cjm-btn--primary' : 'cjm-btn'}
-                          aria-label={`Practice ${s.name}`}
-                          onClick={go(s.rubi ? 'practice-session' : 'practice')}
-                        >
-                          {COPY.practiceCta}
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ) : null}
-            </article>
-          )
-        })}
+                      <button
+                        type="button"
+                        className={s.rubi ? 'cjm-btn cjm-btn--primary' : 'cjm-btn'}
+                        aria-label={`Practice ${s.name}`}
+                        onClick={go(s.rubi ? 'practice-session' : 'practice')}
+                      >
+                        {COPY.practiceCta}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
+          </article>
+        )
+      })}
 
-        <p className="cjm-footnote">
-          <CircleInfoRegular size={14} aria-hidden />
-          {COPY.footnote}
-        </p>
-      </section>
-      </CompassJeffMvpColumn>
-    </div>
+      {footnote ? <JeffReadinessFootnote /> : null}
+    </section>
+  )
+}
+
+/** The last line of the page. */
+export function JeffReadinessFootnote() {
+  return (
+    <p className="cjm-footnote">
+      <CircleInfoRegular size={14} aria-hidden />
+      {COPY.footnote}
+    </p>
   )
 }
 
 /** The double arc. Outer is Readiness, inner is Coverage — his order, outside
  *  in, which is also the order the legend below reads. */
-function ReadinessRing() {
+export function JeffReadinessRing() {
   return (
     <div className="cjm-ring">
       <div style={{ position: 'relative', width: 148, height: 148 }}>
-        <svg viewBox="0 0 148 148" width="148" height="148" role="img" aria-label={RD.ring.aria} className="cjm-ring__svg">
+        <svg
+          viewBox="0 0 148 148"
+          width="148"
+          height="148"
+          role="img"
+          aria-label={RD.ring.aria}
+          className="cjm-ring__svg"
+        >
           <g transform="rotate(-90 74 74)">
             <circle cx="74" cy="74" r="66" fill="none" stroke="var(--cjm-ring-track)" strokeWidth="10" />
             <circle
@@ -435,15 +516,39 @@ function TrendChart() {
     <div className="cjm-chart">
       <svg viewBox="0 0 960 210" width="100%" role="img" aria-label={RD.trend.aria}>
         <line x1="0" x2="880" y1="200" y2="200" stroke="var(--cjm-grid)" strokeWidth="1" />
-        <line x1="0" x2="880" y1="173" y2="173" stroke="var(--cjm-grid)" strokeWidth="1" strokeDasharray="5 6" />
+        <line
+          x1="0"
+          x2="880"
+          y1="173"
+          y2="173"
+          stroke="var(--cjm-grid)"
+          strokeWidth="1"
+          strokeDasharray="5 6"
+        />
         <text x="892" y="177" fontSize="13" fill="var(--cjm-muted)" fontFamily="inherit">
           {COPY.axisLow}
         </text>
-        <line x1="0" x2="880" y1="105" y2="105" stroke="var(--cjm-grid)" strokeWidth="1" strokeDasharray="5 6" />
+        <line
+          x1="0"
+          x2="880"
+          y1="105"
+          y2="105"
+          stroke="var(--cjm-grid)"
+          strokeWidth="1"
+          strokeDasharray="5 6"
+        />
         <text x="892" y="109" fontSize="13" fill="var(--cjm-muted)" fontFamily="inherit">
           {COPY.axisHigh}
         </text>
-        <line x1="0" x2="880" y1="51" y2="51" stroke="var(--cjm-green)" strokeWidth="1.5" strokeDasharray="6 5" />
+        <line
+          x1="0"
+          x2="880"
+          y1="51"
+          y2="51"
+          stroke="var(--cjm-green)"
+          strokeWidth="1.5"
+          strokeDasharray="6 5"
+        />
         <text x="892" y="55" fontSize="13" fontWeight="600" fill="var(--cjm-ready-ink)" fontFamily="inherit">
           {COPY.axisReady}
         </text>

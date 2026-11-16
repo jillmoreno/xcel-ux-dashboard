@@ -1721,7 +1721,22 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
       { value: 'jeff', label: 'Jeff’s MVP', description: 'His thirteen-page prototype' },
       { value: 'refined', label: 'Refined', description: 'Readiness rebuilt on the research' },
     ],
-    defaultVariant: 'current',
+    /* ⚠ REFINED IS THE BRANCH'S DEFAULT — 2026-11-16: "look at the current
+       settings and mark those design tools as default."
+
+       ⚠ THIS IS THE ONE WITH REACH BEYOND THE COURSE PAGE. The other four
+       set that day decide how one page draws; this decides which Compass a
+       reviewer lands in, so a Refinement link off this branch now opens on
+       Refined rather than on what ships. That is what a branch default is
+       FOR — "behind a feature flag whose default is ON on your branch" —
+       and it is also why it is the line to look at first if this branch is
+       ever merged: `release` is where the question "should everyone see
+       this?" gets asked, and the answer here is only "should a reviewer of
+       THIS branch?".
+
+       ⚠ `current` IS STILL THE FIRST ARM and one click away. Nothing was
+       removed. */
+    defaultVariant: 'refined',
     defaultEnabled: true,
     page: 'dashboard-rebrand',
   },
@@ -1808,7 +1823,12 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
       { value: 'list', label: 'Rows', description: 'The audited list' },
       { value: 'cards', label: 'Roadmap', description: 'A card per chapter' },
     ],
-    defaultVariant: 'list',
+    /* ⚠ DEFAULT SET FROM THE PAGE — 2026-11-16: "look at the current
+       settings and mark those design tools as default." The arm below is
+       what the Course page had been built to all week and what every
+       screenshot since 2026-11-13 shows; it was still opening on the
+       baseline it was compared against. */
+    defaultVariant: 'cards',
     defaultEnabled: true,
     page: 'dashboard-rebrand',
   },
@@ -1874,7 +1894,12 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
       { value: 'tag', label: 'Beside the mark', description: 'Where it has been' },
       { value: 'under', label: 'Under the details', description: 'Beneath the title' },
     ],
-    defaultVariant: 'tag',
+    /* ⚠ DEFAULT SET FROM THE PAGE — 2026-11-16: "look at the current
+       settings and mark those design tools as default." The arm below is
+       what the Course page had been built to all week and what every
+       screenshot since 2026-11-13 shows; it was still opening on the
+       baseline it was compared against. */
+    defaultVariant: 'under',
     defaultEnabled: true,
     page: 'dashboard-rebrand',
   },
@@ -1925,7 +1950,12 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
       { value: 'icon', label: 'State', description: 'The state’s glyph on every row' },
       { value: 'kind', label: 'Type', description: 'What the module is' },
     ],
-    defaultVariant: 'number',
+    /* ⚠ DEFAULT SET FROM THE PAGE — 2026-11-16: "look at the current
+       settings and mark those design tools as default." The arm below is
+       what the Course page had been built to all week and what every
+       screenshot since 2026-11-13 shows; it was still opening on the
+       baseline it was compared against. */
+    defaultVariant: 'icon',
     defaultEnabled: true,
     page: 'dashboard-rebrand',
   },
@@ -1959,7 +1989,11 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     label: 'White background',
     description:
       'Paints the Refined surface — the rail and the page column together — plain white instead of the #fbfbfb the Compass pages have always sat on. Both Refined pages at once, because the ground is painted once behind them. Off is the baseline.',
-    defaultEnabled: false,
+    /* ⚠ ON SINCE 2026-11-16 — "look at the current settings and mark those
+       design tools as default." It arrived off on 2026-11-15 because an
+       addition's baseline is the page without it; a day of looking at it
+       both ways settled it, the same way the course image did. */
+    defaultEnabled: true,
     page: 'dashboard-rebrand',
   },
   {

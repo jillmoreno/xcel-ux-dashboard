@@ -127,6 +127,13 @@
   to = "/.netlify/functions/row-archive"
   status = 200
 
+# The per-widget notes on a comparison page — `/compare/compass-readiness`
+# (2026-11-16, netlify/functions/compare-notes.ts). One record per comparison.
+[[redirects]]
+  from = "/api/compare-notes/*"
+  to = "/.netlify/functions/compare-notes/:splat"
+  status = 200
+
 # The automatic branch list behind the Refinement strip. Read-only, and it
 # refuses outright on the public build (see netlify/functions/branches.ts).
 [[redirects]]

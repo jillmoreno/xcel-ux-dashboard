@@ -55,9 +55,18 @@ export type CourseOptions = {
 }
 
 export const COURSE_DEFAULTS: CourseOptions = {
-  /* ⚠ THE AUDITED LAYOUT IS THE BASELINE. Findings 1, 2, 3, 6, 7 and 8 were
-     measured against `list` and fixed on it. */
-  rows: 'list',
+  /* ⚠ THESE FOLLOW THE FLAG CATALOG, ALWAYS. A component rendered without
+     options must draw what the bar's defaults draw, or a test pins a shape
+     nobody can see on the page — which is the whole reason this object
+     carries notes rather than values alone.
+
+     ⚠ SO THREE OF THEM MOVED ON 2026-11-16: "look at the current settings
+     and mark those design tools as default." The audited `list` layout was
+     the baseline because findings 1, 2, 3, 6, 7 and 8 were measured against
+     it and fixed on it; the roadmap is what the page has been built to all
+     week, and it is now what opens. `list` is still an arm of
+     `compass-course-rows` and the findings are still fixed on it. */
+  rows: 'cards',
   /* ⚠ OFF, BECAUSE THE SENTENCES ARE INVENTED. These defaults have to agree
      with the flag catalog or a component rendered without options draws
      something the bar never shows. */
@@ -67,8 +76,8 @@ export const COURSE_DEFAULTS: CourseOptions = {
      2026-11-14 — or a card rendered without options draws something the bar
      never shows. */
   image: true,
-  chapterMark: 'number',
-  status: 'tag',
+  chapterMark: 'icon',
+  status: 'under',
   /* Agrees with `FOCUS_DEFAULTS.nextMark`, or a card rendered without
      options draws a shape the bar never shows. */
   nextMark: 'stacked',

@@ -34,7 +34,12 @@ import { PLANNER_PACES, PLANNER_PLAN } from '@/data/compassStudyPlannerFixtures'
  */
 
 afterEach(() => window.history.replaceState({}, '', '/'))
-const arm = (ff: string) => window.history.replaceState({}, '', `/dashboard-rebrand?ff=${ff}`)
+/* ⚠ EVERY ARM PINS THE VERSION — 2026-11-16. `compass-mvp-version` defaults
+   to `refined` on this branch; the planner under test is the CURRENT
+   Compass's, so each arm says which Compass it means rather than inheriting
+   whatever the branch's default happens to be. */
+const arm = (ff: string) =>
+  window.history.replaceState({}, '', `/dashboard-rebrand?ff=compass-mvp-version:current,${ff}`)
 
 function renderPlanner() {
   return render(
@@ -49,7 +54,19 @@ function renderPlanner() {
     </MemoryRouter>,
   )
 }
+/* ⚠ AND THE TESTS THAT RENDER WITHOUT AN ARM PIN IT TOO. `arm()` writes the
+   whole query, so this adds the version only when nothing has already said
+   which Compass it means — the arm wins where there is one. */
+function pinCurrentCompass() {
+  const url = new URL(window.location.href)
+  const ff = url.searchParams.get('ff')
+  if (ff?.includes('compass-mvp-version')) return
+  url.searchParams.set('ff', ff ? `compass-mvp-version:current,${ff}` : 'compass-mvp-version:current')
+  window.history.replaceState({}, '', `${url.pathname}${url.search}`)
+}
+
 function renderCompass() {
+  pinCurrentCompass()
   render(
     <MemoryRouter initialEntries={['/dashboard-rebrand?demo=1&section=compass']}>
       <AccountProvider>

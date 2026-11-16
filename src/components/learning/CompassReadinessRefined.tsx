@@ -104,24 +104,23 @@ import './compassReadinessRefined.css'
  */
 export type RefinedHeroStyle = 'single' | 'rings'
 
+/**
+ * ⚠ THE PAGE IS EXPORTED BLOCKS, 2026-11-16, for `/compare/compass-readiness`,
+ * which sets each one beside Jeff's. The page composes them in the same order
+ * and renders what it rendered before; `CompassReadinessRefined.test.tsx` is
+ * unchanged. State moved into the block that uses it: the levels panel and
+ * the open rows live in `RefinedReadinessTopics`. Every block takes `data`
+ * (defaulting to the fixture) so a second learner can be compared later.
+ */
+type Props = { data?: RefinedReadiness; onSelectPage?: (p: JeffMvpPage) => void }
+const mkGo = (onSelectPage?: (p: JeffMvpPage) => void) => (p: JeffMvpPage) => () => onSelectPage?.(p)
+
 export function CompassReadinessRefined({
   data = REFINED_READINESS,
   hero = 'rings',
   onSelectPage,
-}: {
-  data?: RefinedReadiness
-  hero?: RefinedHeroStyle
-  onSelectPage?: (p: JeffMvpPage) => void
-}) {
-  const go = (p: JeffMvpPage) => () => onSelectPage?.(p)
-  const band = bandFor(data.overall)
-  const weakest = weakestSubTopic(data)
-  const stalest = stalestSubTopic(data)
-  const topics = topicsWeakestFirst(data)
-  const ready = topicsReady(data)
-  const [open, setOpen] = useState<Record<string, boolean>>({ [topics[0].name]: true })
-  const [levelsOpen, setLevelsOpen] = useState(false)
-
+}: Props & { hero?: RefinedHeroStyle }) {
+  const go = mkGo(onSelectPage)
   return (
     <div className="cre-rdr">
       <button type="button" className="cre-rdr-ask" onClick={go('overview')}>
@@ -130,295 +129,374 @@ export function CompassReadinessRefined({
       </button>
 
       <div className="cre-rdr-col">
-        <header className="cre-rdr-head">
-          <div>
-            {/* ⚠ THE COURSE EYEBROW — 2026-11-10, "the eyebrow should exist on
-                EVERY page". This page has its own header rather than the
-                shared `CompassRefinedHead`, because it is the one page that
-                was refined before the fork; so the eyebrow is repeated here
-                rather than inherited. Two copies of four lines, against
-                routing this page's header through a component built for a
-                different layout — the markup is the same shape and the
-                stylesheet below gives it the same rules. */}
-            <p className="cre-rdr-eyebrow">
-              <span>{REFINED_COURSE.name}</span>
-              <span className="cre-rdr-eyebrow__dot" aria-hidden>
-                ·
-              </span>
-              <span className="cre-rdr-eyebrow__access">{REFINED_COURSE.access}</span>
-            </p>
-            <h1 className="cre-rdr-h1 serif">{REFINED_PAGE_TITLES.readiness}</h1>
-          </div>
-        </header>
-        {/* ⚠ OUTSIDE THE HEADER — 2026-11-10, "there should never be copy
-            between the eyebrow and title - or after it. every page should
-            have eyebrow/title, and everything else is separate from that
-            component." The lead and the exam-date chip were inside it; they
-            are page content and they keep their row, so the chip still sits
-            to the right of the lead. */}
-        <div className="cre-rdr-pagelead">
-          <p className="cre-rdr-lead">
-            How likely you are to pass, based on your practice answers across every exam topic — and
-            the one thing to do next.
-          </p>
-          <p className="cre-rdr-exam">
-            <CalendarRegular size={14} aria-hidden />
-            Exam {formatExamDate(data.plannedExamOn)} · {weeksToExam(data)} weeks away
-          </p>
-        </div>
-
-        {/* ---------- the score ---------- */}
-        <section className="cre-rdr-hero" aria-label="Readiness to pass" data-hero={hero}>
-          {hero === 'rings' ? (
-            <ThreeRings data={data} bandKey={band.key} bandLabel={band.label} />
-          ) : (
-            <ReadinessRing score={data.overall} bandKey={band.key} bandLabel={band.label} />
-          )}
-
-          <div className="cre-rdr-hero__read">
-            <p className="cre-rdr-eyebrow">Readiness to pass</p>
-            <h2 className="cre-rdr-h2">
-              You’re {band.label}. Ready starts at {READY_AT}.
-            </h2>
-            <p className="cre-rdr-body">
-              <PaceSentence data={data} />
-            </p>
-
-            <dl className="cre-rdr-facts">
-              <div>
-                <dt>Ready at</dt>
-                <dd data-tone="ready">
-                  {READY_AT}
-                </dd>
-              </div>
-              <div>
-                <dt>Last {data.trendWeeks} weeks</dt>
-                <dd data-tone="steel">
-                  {data.delta > 0 ? '+' : ''}
-                  {data.delta} pts
-                </dd>
-              </div>
-              <div>
-                <dt>Your pace</dt>
-                <dd data-tone="steel">
-                  {formatPace(pacePerWeek(data))} / week
-                </dd>
-              </div>
-            </dl>
-
-            {hero === 'rings' ? (
-              /* THE KEY. Three rows for three rings, outside in, each with the
-                 ring's own colour — so a reader can run a finger from arc to
-                 line. The research's complaint was a key with MORE items than
-                 rings; the test asserts these two counts are equal. */
-              <ul className="cre-rdr-key">
-                <li>
-                  <span className="cre-rdr-dot" data-band={band.key} aria-hidden />
-                  <span className="cre-rdr-key__label">Readiness</span>
-                  <b>
-                    {data.overall} · {band.label}
-                  </b>
-                </li>
-                <li>
-                  <span className="cre-rdr-dot" data-ring="practice" aria-hidden />
-                  <span className="cre-rdr-key__label">Practice questions</span>
-                  <b>
-                    {data.questionsAnswered} of {data.questionsTotal} answered
-                  </b>
-                </li>
-                <li>
-                  <span className="cre-rdr-dot" data-ring="simulators" aria-hidden />
-                  <span className="cre-rdr-key__label">Exam simulators</span>
-                  <b>
-                    {data.simulatorsTaken} of {data.simulatorsTotal} taken
-                  </b>
-                </li>
-              </ul>
-            ) : (
-              <div className="cre-rdr-answered">
-                <div className="cre-rdr-answered__row">
-                  <span>Practice questions answered</span>
-                  <b>
-                    {data.questionsAnswered} of {data.questionsTotal}
-                  </b>
-                </div>
-                <span className="cre-rdr-answered__bar" aria-hidden>
-                  <span style={{ width: `${Math.round((data.questionsAnswered / data.questionsTotal) * 100)}%` }} />
-                </span>
-                <p className="cre-rdr-note">
-                  Your score is based only on the questions you have answered. Answering more makes it
-                  more accurate.
-                </p>
-              </div>
-            )}
-          </div>
-        </section>
-
-        {/* ---------- do this next ---------- */}
-        <section className="cre-rdr-next" aria-label="Do this next">
-          <div className="cre-rdr-next__main">
-            <p className="cre-rdr-eyebrow cre-rdr-eyebrow--rubi">
-              <RubiLogo size={13} aria-hidden />
-              Do this next
-            </p>
-            <h2 className="cre-rdr-h2">Practice {weakest.sub.name}</h2>
-            <p className="cre-rdr-body">
-              It is your lowest sub-topic, scoring <strong>{weakest.sub.score}</strong>, inside{' '}
-              {weakest.topic.name} ({weakest.topic.weight}% of the exam). Raising it is the fastest way
-              to move your overall score.
-            </p>
-            <div className="cre-rdr-actions">
-              <button type="button" className="cre-rdr-primary" onClick={go('practice')}>
-                Start practice · {weakest.sub.questions} questions, about {weakest.sub.minutes} min
-              </button>
-              <button type="button" className="cre-rdr-link" onClick={go('learn')}>
-                <BookOpenRegular size={14} aria-hidden />
-                Read the lesson first
-              </button>
-            </div>
-          </div>
-          {stalest ? (
-            <div className="cre-rdr-next__also">
-              <Clock size={14} aria-hidden />
-              <p>
-                Also: <strong>{stalest.sub.name}</strong> in {stalest.topic.name} —{' '}
-                {lastPracticedLabel(stalest.sub.lastPracticedDaysAgo).toLowerCase()}. A short round
-                keeps it fresh.
-              </p>
-              <button type="button" className="cre-rdr-link" onClick={go('practice')}>
-                Review
-              </button>
-            </div>
-          ) : null}
-        </section>
-
-        {/* ---------- the trend ---------- */}
-        <section className="cre-rdr-card" aria-label="Readiness over time">
-          <div className="cre-rdr-card__head">
-            <div>
-              <p className="cre-rdr-eyebrow">Readiness over time</p>
-              <p className="cre-rdr-body">
-                Up {data.delta} points in {data.trendWeeks} weeks. A little practice most days moves this
-                line more than a long session once a week.
-              </p>
-            </div>
-          </div>
-          <TrendChart data={data} />
-          <p className="cre-rdr-caption">
-            Your overall score is the average of your topic scores, weighted by how much of the exam
-            each topic is. Only practice counts toward it.
-          </p>
-        </section>
-
-        {/* ---------- by topic ---------- */}
-        <section className="cre-rdr-topics" aria-label="Readiness by topic">
-          <div className="cre-rdr-topics__head">
-            <div>
-              <h2 className="cre-rdr-h2">Readiness by topic</h2>
-              <p className="cre-rdr-subline">
-                {ready} of {data.topics.length} topics Ready · weakest first
-              </p>
-            </div>
-            <button
-              type="button"
-              className="cre-rdr-help"
-              aria-expanded={levelsOpen}
-              onClick={() => setLevelsOpen((v) => !v)}
-            >
-              <CircleInfoRegular size={14} aria-hidden />
-              What the levels mean
-              <ChevronDown size={12} aria-hidden style={{ transform: levelsOpen ? 'rotate(180deg)' : undefined }} />
-            </button>
-          </div>
-
-          {levelsOpen ? (
-            <ul className="cre-rdr-levels">
-              {READINESS_BANDS.map((b) => (
-                <li key={b.key}>
-                  <span className="cre-rdr-levels__name">
-                    <span className="cre-rdr-dot" data-band={b.key} aria-hidden />
-                    {b.label}
-                  </span>
-                  <span className="cre-rdr-levels__range">
-                    {b.min}–{b.max}
-                  </span>
-                  <span>{b.text}</span>
-                </li>
-              ))}
-            </ul>
-          ) : null}
-
-          <ScaleHeader />
-
-          {topics.map((t) => {
-            const expanded = !!open[t.name]
-            const tb = bandFor(t.score)
-            const rowWeakest = [...t.subTopics].sort((a, b) => a.score - b.score)[0]
-            return (
-              <article className="cre-rdr-row" key={t.name}>
-                <div className="cre-rdr-row__grid">
-                  <div className="cre-rdr-row__name">
-                    <h3>{t.name}</h3>
-                    <p>
-                      {t.weight}% of the exam · {t.answered} of {t.total} questions answered
-                    </p>
-                  </div>
-                  <ScoreBar score={t.score} label={`${t.name}: ${t.score} out of 100, ${tb.label}`} />
-                  <span className="cre-rdr-score" data-band={tb.key}>
-                    {t.score}
-                  </span>
-                  <span className="cre-rdr-level" data-band={tb.key}>
-                    {tb.label}
-                  </span>
-                  <span className="cre-rdr-delta" data-up={t.delta > 0 || undefined}>
-                    {t.delta > 0 ? '+' : ''}
-                    {t.delta}
-                    <span className="cre-rdr-sr"> points in {data.trendWeeks} weeks</span>
-                  </span>
-                  <span className="cre-rdr-row__actions">
-                    <button type="button" className="cre-rdr-link" onClick={go('practice')}>
-                      Practice this topic
-                    </button>
-                    <button
-                      type="button"
-                      className="cre-rdr-chev"
-                      aria-expanded={expanded}
-                      aria-label={expanded ? `Hide ${t.name} sub-topics` : `Show ${t.name} sub-topics`}
-                      onClick={() => setOpen((o) => ({ ...o, [t.name]: !expanded }))}
-                    >
-                      <ChevronDown size={14} aria-hidden style={{ transform: expanded ? 'rotate(180deg)' : undefined }} />
-                    </button>
-                  </span>
-                </div>
-
-                {expanded ? (
-                  <ul className="cre-rdr-subs">
-                    {[...t.subTopics]
-                      .sort((a, b) => a.score - b.score)
-                      .map((s) => (
-                        <SubTopicRow
-                          key={s.name}
-                          topic={t}
-                          sub={s}
-                          isWeakest={s === rowWeakest}
-                          onPractice={go('practice')}
-                          onRead={go('learn')}
-                        />
-                      ))}
-                  </ul>
-                ) : null}
-              </article>
-            )
-          })}
-
-          <p className="cre-rdr-foot">
-            <CircleInfoRegular size={14} aria-hidden />
-            Only practice counts toward Readiness. Finishing lessons moves your course progress, not
-            this score. Ready means {READY_AT} or higher in every topic.
-          </p>
-        </section>
+        <RefinedReadinessHead data={data} />
+        <RefinedReadinessHero data={data} hero={hero} />
+        <RefinedReadinessNext data={data} onSelectPage={onSelectPage} />
+        <RefinedReadinessTrend data={data} />
+        <RefinedReadinessTopics data={data} onSelectPage={onSelectPage} />
       </div>
     </div>
+  )
+}
+
+/** Eyebrow and title, then the lead and the exam-date chip as page content. */
+export function RefinedReadinessHead({ data = REFINED_READINESS }: { data?: RefinedReadiness }) {
+  return (
+    <>
+      <header className="cre-rdr-head">
+        <div>
+          {/* ⚠ THE COURSE EYEBROW — 2026-11-10, "the eyebrow should exist on
+            EVERY page". This page has its own header rather than the
+            shared `CompassRefinedHead`, because it is the one page that
+            was refined before the fork; so the eyebrow is repeated here
+            rather than inherited. Two copies of four lines, against
+            routing this page's header through a component built for a
+            different layout — the markup is the same shape and the
+            stylesheet below gives it the same rules. */}
+          <p className="cre-rdr-eyebrow">
+            <span>{REFINED_COURSE.name}</span>
+            <span className="cre-rdr-eyebrow__dot" aria-hidden>
+              ·
+            </span>
+            <span className="cre-rdr-eyebrow__access">{REFINED_COURSE.access}</span>
+          </p>
+          <h1 className="cre-rdr-h1 serif">{REFINED_PAGE_TITLES.readiness}</h1>
+        </div>
+      </header>
+      {/* ⚠ OUTSIDE THE HEADER — 2026-11-10, "there should never be copy
+        between the eyebrow and title - or after it. every page should
+        have eyebrow/title, and everything else is separate from that
+        component." The lead and the exam-date chip were inside it; they
+        are page content and they keep their row, so the chip still sits
+        to the right of the lead. */}
+      <div className="cre-rdr-pagelead">
+        <p className="cre-rdr-lead">
+          How likely you are to pass, based on your practice answers across every exam topic — and the one
+          thing to do next.
+        </p>
+        <p className="cre-rdr-exam">
+          <CalendarRegular size={14} aria-hidden />
+          Exam {formatExamDate(data.plannedExamOn)} · {weeksToExam(data)} weeks away
+        </p>
+      </div>
+    </>
+  )
+}
+
+/** "Readiness to pass" — the ring(s), the verdict in time, the three facts. */
+export function RefinedReadinessHero({
+  data = REFINED_READINESS,
+  hero = 'rings',
+}: {
+  data?: RefinedReadiness
+  hero?: RefinedHeroStyle
+}) {
+  const band = bandFor(data.overall)
+  return (
+    <section className="cre-rdr-hero" aria-label="Readiness to pass" data-hero={hero}>
+      {hero === 'rings' ? (
+        <ThreeRings data={data} bandKey={band.key} bandLabel={band.label} />
+      ) : (
+        <ReadinessRing score={data.overall} bandKey={band.key} bandLabel={band.label} />
+      )}
+
+      <div className="cre-rdr-hero__read">
+        <p className="cre-rdr-eyebrow">Readiness to pass</p>
+        <h2 className="cre-rdr-h2">
+          You’re {band.label}. Ready starts at {READY_AT}.
+        </h2>
+        <p className="cre-rdr-body">
+          <PaceSentence data={data} />
+        </p>
+
+        <dl className="cre-rdr-facts">
+          <div>
+            <dt>Ready at</dt>
+            <dd data-tone="ready">{READY_AT}</dd>
+          </div>
+          <div>
+            <dt>Last {data.trendWeeks} weeks</dt>
+            <dd data-tone="steel">
+              {data.delta > 0 ? '+' : ''}
+              {data.delta} pts
+            </dd>
+          </div>
+          <div>
+            <dt>Your pace</dt>
+            <dd data-tone="steel">{formatPace(pacePerWeek(data))} / week</dd>
+          </div>
+        </dl>
+
+        {hero === 'rings' ? (
+          /* THE KEY. Three rows for three rings, outside in, each with the
+             ring's own colour — so a reader can run a finger from arc to
+             line. The research's complaint was a key with MORE items than
+             rings; the test asserts these two counts are equal. */
+          <ul className="cre-rdr-key">
+            <li>
+              <span className="cre-rdr-dot" data-band={band.key} aria-hidden />
+              <span className="cre-rdr-key__label">Readiness</span>
+              <b>
+                {data.overall} · {band.label}
+              </b>
+            </li>
+            <li>
+              <span className="cre-rdr-dot" data-ring="practice" aria-hidden />
+              <span className="cre-rdr-key__label">Practice questions</span>
+              <b>
+                {data.questionsAnswered} of {data.questionsTotal} answered
+              </b>
+            </li>
+            <li>
+              <span className="cre-rdr-dot" data-ring="simulators" aria-hidden />
+              <span className="cre-rdr-key__label">Exam simulators</span>
+              <b>
+                {data.simulatorsTaken} of {data.simulatorsTotal} taken
+              </b>
+            </li>
+          </ul>
+        ) : (
+          <div className="cre-rdr-answered">
+            <div className="cre-rdr-answered__row">
+              <span>Practice questions answered</span>
+              <b>
+                {data.questionsAnswered} of {data.questionsTotal}
+              </b>
+            </div>
+            <span className="cre-rdr-answered__bar" aria-hidden>
+              <span
+                style={{ width: `${Math.round((data.questionsAnswered / data.questionsTotal) * 100)}%` }}
+              />
+            </span>
+            <p className="cre-rdr-note">
+              Your score is based only on the questions you have answered. Answering more makes it more
+              accurate.
+            </p>
+          </div>
+        )}
+      </div>
+    </section>
+  )
+}
+
+/** "Do this next" — derived from the weakest sub-topic, with the Also row. */
+export function RefinedReadinessNext({
+  data = REFINED_READINESS,
+  onSelectPage,
+  also = true,
+}: Props & { also?: boolean }) {
+  const go = mkGo(onSelectPage)
+  const weakest = weakestSubTopic(data)
+  return (
+    <section className="cre-rdr-next" aria-label="Do this next">
+      <div className="cre-rdr-next__main">
+        <p className="cre-rdr-eyebrow cre-rdr-eyebrow--rubi">
+          <RubiLogo size={13} aria-hidden />
+          Do this next
+        </p>
+        <h2 className="cre-rdr-h2">Practice {weakest.sub.name}</h2>
+        <p className="cre-rdr-body">
+          It is your lowest sub-topic, scoring <strong>{weakest.sub.score}</strong>, inside{' '}
+          {weakest.topic.name} ({weakest.topic.weight}% of the exam). Raising it is the fastest way to move
+          your overall score.
+        </p>
+        <div className="cre-rdr-actions">
+          <button type="button" className="cre-rdr-primary" onClick={go('practice')}>
+            Start practice · {weakest.sub.questions} questions, about {weakest.sub.minutes} min
+          </button>
+          <button type="button" className="cre-rdr-link" onClick={go('learn')}>
+            <BookOpenRegular size={14} aria-hidden />
+            Read the lesson first
+          </button>
+        </div>
+      </div>
+      {also ? <RefinedReadinessAlso data={data} onSelectPage={onSelectPage} /> : null}
+    </section>
+  )
+}
+
+/** The Also row. Absent when nothing is stale — the compare page shows that. */
+export function RefinedReadinessAlso({ data = REFINED_READINESS, onSelectPage }: Props) {
+  const go = mkGo(onSelectPage)
+  const stalest = stalestSubTopic(data)
+  if (!stalest) return null
+  return (
+    <div className="cre-rdr-next__also">
+      <Clock size={14} aria-hidden />
+      <p>
+        Also: <strong>{stalest.sub.name}</strong> in {stalest.topic.name} —{' '}
+        {lastPracticedLabel(stalest.sub.lastPracticedDaysAgo).toLowerCase()}. A short round keeps it fresh.
+      </p>
+      <button type="button" className="cre-rdr-link" onClick={go('practice')}>
+        Review
+      </button>
+    </div>
+  )
+}
+
+/** "Readiness over time." */
+export function RefinedReadinessTrend({ data = REFINED_READINESS }: { data?: RefinedReadiness }) {
+  return (
+    <section className="cre-rdr-card" aria-label="Readiness over time">
+      <div className="cre-rdr-card__head">
+        <div>
+          <p className="cre-rdr-eyebrow">Readiness over time</p>
+          <p className="cre-rdr-body">
+            Up {data.delta} points in {data.trendWeeks} weeks. A little practice most days moves this line
+            more than a long session once a week.
+          </p>
+        </div>
+      </div>
+      <TrendChart data={data} />
+      <p className="cre-rdr-caption">
+        Your overall score is the average of your topic scores, weighted by how much of the exam each topic
+        is. Only practice counts toward it.
+      </p>
+    </section>
+  )
+}
+
+/** "Readiness by topic" — header, the levels panel, the scale, the rows and
+ *  their sub-topics, and the footnote. Owns the open/closed state. */
+export function RefinedReadinessTopics({
+  data = REFINED_READINESS,
+  onSelectPage,
+  initialLevelsOpen = false,
+  initialOpen,
+  footnote = true,
+}: Props & {
+  initialLevelsOpen?: boolean
+  /** Which rows start open; absent, the weakest row opens as the page does. */
+  initialOpen?: Record<string, boolean>
+  footnote?: boolean
+}) {
+  const go = mkGo(onSelectPage)
+  const topics = topicsWeakestFirst(data)
+  const ready = topicsReady(data)
+  const [open, setOpen] = useState<Record<string, boolean>>(initialOpen ?? { [topics[0].name]: true })
+  const [levelsOpen, setLevelsOpen] = useState(initialLevelsOpen)
+  return (
+    <section className="cre-rdr-topics" aria-label="Readiness by topic">
+      <div className="cre-rdr-topics__head">
+        <div>
+          <h2 className="cre-rdr-h2">Readiness by topic</h2>
+          <p className="cre-rdr-subline">
+            {ready} of {data.topics.length} topics Ready · weakest first
+          </p>
+        </div>
+        <button
+          type="button"
+          className="cre-rdr-help"
+          aria-expanded={levelsOpen}
+          onClick={() => setLevelsOpen((v) => !v)}
+        >
+          <CircleInfoRegular size={14} aria-hidden />
+          What the levels mean
+          <ChevronDown
+            size={12}
+            aria-hidden
+            style={{ transform: levelsOpen ? 'rotate(180deg)' : undefined }}
+          />
+        </button>
+      </div>
+
+      {levelsOpen ? (
+        <ul className="cre-rdr-levels">
+          {READINESS_BANDS.map((b) => (
+            <li key={b.key}>
+              <span className="cre-rdr-levels__name">
+                <span className="cre-rdr-dot" data-band={b.key} aria-hidden />
+                {b.label}
+              </span>
+              <span className="cre-rdr-levels__range">
+                {b.min}–{b.max}
+              </span>
+              <span>{b.text}</span>
+            </li>
+          ))}
+        </ul>
+      ) : null}
+
+      <ScaleHeader />
+
+      {topics.map((t) => {
+        const expanded = !!open[t.name]
+        const tb = bandFor(t.score)
+        const rowWeakest = [...t.subTopics].sort((a, b) => a.score - b.score)[0]
+        return (
+          <article className="cre-rdr-row" key={t.name}>
+            <div className="cre-rdr-row__grid">
+              <div className="cre-rdr-row__name">
+                <h3>{t.name}</h3>
+                <p>
+                  {t.weight}% of the exam · {t.answered} of {t.total} questions answered
+                </p>
+              </div>
+              <ScoreBar score={t.score} label={`${t.name}: ${t.score} out of 100, ${tb.label}`} />
+              <span className="cre-rdr-score" data-band={tb.key}>
+                {t.score}
+              </span>
+              <span className="cre-rdr-level" data-band={tb.key}>
+                {tb.label}
+              </span>
+              <span className="cre-rdr-delta" data-up={t.delta > 0 || undefined}>
+                {t.delta > 0 ? '+' : ''}
+                {t.delta}
+                <span className="cre-rdr-sr"> points in {data.trendWeeks} weeks</span>
+              </span>
+              <span className="cre-rdr-row__actions">
+                <button type="button" className="cre-rdr-link" onClick={go('practice')}>
+                  Practice this topic
+                </button>
+                <button
+                  type="button"
+                  className="cre-rdr-chev"
+                  aria-expanded={expanded}
+                  aria-label={expanded ? `Hide ${t.name} sub-topics` : `Show ${t.name} sub-topics`}
+                  onClick={() => setOpen((o) => ({ ...o, [t.name]: !expanded }))}
+                >
+                  <ChevronDown
+                    size={14}
+                    aria-hidden
+                    style={{ transform: expanded ? 'rotate(180deg)' : undefined }}
+                  />
+                </button>
+              </span>
+            </div>
+
+            {expanded ? (
+              <ul className="cre-rdr-subs">
+                {[...t.subTopics]
+                  .sort((a, b) => a.score - b.score)
+                  .map((s) => (
+                    <SubTopicRow
+                      key={s.name}
+                      topic={t}
+                      sub={s}
+                      isWeakest={s === rowWeakest}
+                      onPractice={go('practice')}
+                      onRead={go('learn')}
+                    />
+                  ))}
+              </ul>
+            ) : null}
+          </article>
+        )
+      })}
+
+      {footnote ? <RefinedReadinessFootnote /> : null}
+    </section>
+  )
+}
+
+/** The last line of the page. */
+export function RefinedReadinessFootnote() {
+  return (
+    <p className="cre-rdr-foot">
+      <CircleInfoRegular size={14} aria-hidden />
+      Only practice counts toward Readiness. Finishing lessons moves your course progress, not this score.
+      Ready means {READY_AT} or higher in every topic.
+    </p>
   )
 }
 
@@ -457,15 +535,23 @@ export function PaceSentence({ data }: { data: RefinedReadiness }) {
     case 'no-pace':
       return (
         <>
-          Your score has not moved lately. Gaining about {v.neededPerWeek} points a week would make you
-          Ready by your exam in {v.weeksToExam} weeks.
+          Your score has not moved lately. Gaining about {v.neededPerWeek} points a week would make you Ready
+          by your exam in {v.weeksToExam} weeks.
         </>
       )
   }
 }
 
 /** One ring, the number and the level inside it, coloured by band. */
-function ReadinessRing({ score, bandKey, bandLabel }: { score: number; bandKey: ReadinessBandKey; bandLabel: string }) {
+function ReadinessRing({
+  score,
+  bandKey,
+  bandLabel,
+}: {
+  score: number
+  bandKey: ReadinessBandKey
+  bandLabel: string
+}) {
   const r = 66
   const c = 2 * Math.PI * r
   const readyAngle = (READY_AT / 100) * 360
@@ -511,7 +597,15 @@ function ReadinessRing({ score, bandKey, bandLabel }: { score: number; bandKey: 
  * ring only, because only that ring is a score with a threshold; a count has
  * no "ready at".
  */
-function ThreeRings({ data, bandKey, bandLabel }: { data: RefinedReadiness; bandKey: ReadinessBandKey; bandLabel: string }) {
+function ThreeRings({
+  data,
+  bandKey,
+  bandLabel,
+}: {
+  data: RefinedReadiness
+  bandKey: ReadinessBandKey
+  bandLabel: string
+}) {
   const rings = [
     { r: 70, pct: data.overall / 100, cls: 'cre-rdr-ring__arc' },
     { r: 55, pct: data.questionsAnswered / data.questionsTotal, cls: 'cre-rdr-ring__arc--practice' },
@@ -532,7 +626,14 @@ function ThreeRings({ data, bandKey, bandLabel }: { data: RefinedReadiness; band
             const c = 2 * Math.PI * ring.r
             return (
               <g key={ring.r}>
-                <circle cx="80" cy="80" r={ring.r} fill="none" className="cre-rdr-ring__track" strokeWidth="10" />
+                <circle
+                  cx="80"
+                  cy="80"
+                  r={ring.r}
+                  fill="none"
+                  className="cre-rdr-ring__track"
+                  strokeWidth="10"
+                />
                 <circle
                   cx="80"
                   cy="80"
@@ -592,15 +693,40 @@ function TrendChart({ data }: { data: RefinedReadiness }) {
               strokeWidth={b.key === 'ready' ? 1.5 : 1}
               strokeDasharray={b.key === 'ready' ? '6 5' : '4 6'}
             />
-            <text x={w + 14} y={y(b.min) + 4} fontSize="13" className="cre-rdr-chart__label" data-band={b.key}>
+            <text
+              x={w + 14}
+              y={y(b.min) + 4}
+              fontSize="13"
+              className="cre-rdr-chart__label"
+              data-band={b.key}
+            >
               {b.label} {b.min}
             </text>
           </g>
         ))}
         <path d={area} className="cre-rdr-chart__area" />
-        <path d={line} fill="none" className="cre-rdr-chart__line" strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" />
-        <circle cx={pts[pts.length - 1][0]} cy={pts[pts.length - 1][1]} r="6" className="cre-rdr-chart__end" strokeWidth="2.5" />
-        <text x={pts[pts.length - 1][0] + 12} y={pts[pts.length - 1][1] - 10} fontSize="14" fontWeight="700" className="cre-rdr-chart__now">
+        <path
+          d={line}
+          fill="none"
+          className="cre-rdr-chart__line"
+          strokeWidth="2.5"
+          strokeLinejoin="round"
+          strokeLinecap="round"
+        />
+        <circle
+          cx={pts[pts.length - 1][0]}
+          cy={pts[pts.length - 1][1]}
+          r="6"
+          className="cre-rdr-chart__end"
+          strokeWidth="2.5"
+        />
+        <text
+          x={pts[pts.length - 1][0] + 12}
+          y={pts[pts.length - 1][1] - 10}
+          fontSize="14"
+          fontWeight="700"
+          className="cre-rdr-chart__now"
+        >
           {last.score}
         </text>
       </svg>
@@ -641,7 +767,12 @@ function ScoreBar({ score, label, thin }: { score: number; label: string; thin?:
     <span className={thin ? 'cre-rdr-bar cre-rdr-bar--thin' : 'cre-rdr-bar'} role="img" aria-label={label}>
       <span className="cre-rdr-bar__fill" data-band={b.key} style={{ width: `${score}%` }} />
       {READINESS_BANDS.filter((x) => x.min > 0).map((x) => (
-        <span key={x.key} className="cre-rdr-bar__tick" data-ready={x.key === 'ready' || undefined} style={{ left: `${x.min}%` }} />
+        <span
+          key={x.key}
+          className="cre-rdr-bar__tick"
+          data-ready={x.key === 'ready' || undefined}
+          style={{ left: `${x.min}%` }}
+        />
       ))}
     </span>
   )

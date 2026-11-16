@@ -43,12 +43,19 @@ const CHAPTER_CARDS = '.crf-map__card:not(.crf-map__card--finish)'
  * would have passed on every one of them.
  */
 
+/* ⚠ THE AUDIT'S FOUR FINDINGS ARE PINNED TO THE ROWS LAYOUT, EXPLICITLY —
+   2026-11-16. They were raised against `list` and fixed on it, and this
+   helper used to get it by rendering with no options at all; the page's
+   default became the roadmap the day the design bar's settings were adopted
+   ("look at the current settings and mark those design tools as default"),
+   which would have quietly re-pointed four findings at a layout they were
+   never measured on. Naming the layout is what they always meant. */
 function wrap() {
   return render(
     <MemoryRouter>
       <AccountProvider>
         <FeatureFlagProvider>
-          <CompassRefinedLearn />
+          <CompassRefinedLearn course={{ ...COURSE_DEFAULTS, rows: 'list' }} />
         </FeatureFlagProvider>
       </AccountProvider>
     </MemoryRouter>,
@@ -142,8 +149,11 @@ function wrapWith(course: Partial<CourseOptions>) {
 }
 
 describe('the roadmap layout', () => {
+  /* ⚠ THE NUMBER ARM, NAMED. It was the default until 2026-11-16 and this
+     test inherited it; a test about what the chips READ has to say which arm
+     draws chips. */
   it('numbers the chapters the way the course does, and marks what is not one', () => {
-    const { container } = wrapWith({ rows: 'cards', fold: false })
+    const { container } = wrapWith({ rows: 'cards', fold: false, chapterMark: 'number' })
     /* ⚠ THE CHIP JOINED THE STATE TAG on 2026-11-12 ("made these a connected
        component with a little dot inbetween"); the number is the tag's mark
        now, and the selector moved with it. */
@@ -433,8 +443,11 @@ describe('the open chapter’s badge says whether it has been started', () => {
     }
   })
 
+  /* ⚠ THE `tag` ARM, NAMED — the word rides in the capsule there. On `under`
+     (the default since 2026-11-16) it is a plain word beneath the title, and
+     that arm has its own describe block below. */
   it('draws the word on the card', () => {
-    const { container } = wrapWith({ rows: 'cards' })
+    const { container } = wrapWith({ rows: 'cards', chapterMark: 'number', status: 'tag' })
     const open = container.querySelector('.crf-map__card--current')
     if (!open) return
     /* The tag reads "04 · In Progress"; the word is what follows the mark. */
@@ -693,6 +706,11 @@ describe('the completed run folds at the top', () => {
 })
 
 describe('the roadmap mark — number or icon', () => {
+  /* ⚠ `status: 'tag'`, NAMED — 2026-11-16. This block is about the capsule:
+     what its mark carries on each arm, and that the WORD beside it is the
+     same either way. `under` (the default since the bar's settings were
+     adopted) takes the word out of the capsule entirely, so these would be
+     testing a tag that is not drawn. */
   const draw = (chapterMark: 'number' | 'icon') =>
     render(
       <MemoryRouter>
@@ -700,7 +718,13 @@ describe('the roadmap mark — number or icon', () => {
           <FeatureFlagProvider>
             <CompassRefinedLearn
               stage="q3"
-              course={{ ...COURSE_DEFAULTS, rows: 'cards', fold: false, chapterMark }}
+              course={{
+                ...COURSE_DEFAULTS,
+                rows: 'cards',
+                fold: false,
+                status: 'tag',
+                chapterMark,
+              }}
             />
           </FeatureFlagProvider>
         </AccountProvider>
@@ -859,7 +883,11 @@ describe('the completed fold is laid out like the cards it stands for', () => {
       ['icon', false],
       ['kind', false],
     ] as const) {
-      const { container, unmount } = foldedCards({ chapterMark: mark })
+      /* ⚠ `status: 'tag'` — `markOnly` is `chapterMark !== 'number' ||
+         status === 'under'`, so on the default `under` arm every mark is
+         mark-only and the Number row of this table could not differ. The
+         condition under test is the MARK's half of it. */
+      const { container, unmount } = foldedCards({ chapterMark: mark, status: 'tag' })
       const tag = container.querySelector('.crf-map__more--done .crf-map__state')!
       expect(tag.className.includes('crf-map__state--markonly'), mark).toBe(!word)
       expect(tag.textContent!.includes('Completed'), mark).toBe(word)
@@ -890,7 +918,11 @@ describe('the progress bar is a column, not a third line', () => {
           <FeatureFlagProvider>
             <CompassRefinedLearn
               stage="q3"
-              course={{ ...COURSE_DEFAULTS, rows: 'cards', fold: false }}
+              /* ⚠ `status: 'tag'` — this is the ROW's bar. On `under` the bar
+                 moves in beside the status word under the title and the row
+                 draws none, which is deliberate (two bars for one chapter is
+                 audit finding 4 in miniature) and has its own test above. */
+              course={{ ...COURSE_DEFAULTS, rows: 'cards', fold: false, status: 'tag' }}
             />
           </FeatureFlagProvider>
         </AccountProvider>
@@ -984,7 +1016,15 @@ describe('the Type arm', () => {
           <FeatureFlagProvider>
             <CompassRefinedLearn
               stage="q3"
-              course={{ ...COURSE_DEFAULTS, rows: 'cards', fold: false, chapterMark: 'kind' }}
+              /* ⚠ `status: 'tag'` — the second half of this assertion is
+                 about the WORD TAG, which only that arm draws. */
+              course={{
+                ...COURSE_DEFAULTS,
+                rows: 'cards',
+                fold: false,
+                status: 'tag',
+                chapterMark: 'kind',
+              }}
             />
           </FeatureFlagProvider>
         </AccountProvider>

@@ -26,7 +26,17 @@ import { COMPASS_ASSIGNMENTS } from '@/data/compassLearningFixtures'
    stayed hers. The version pin is kept so the Overview body is still Eric's;
    the arm pin is what keeps the sidebar shared. Her rail is pinned in
    `AtlasTopNav.test.tsx`; her planner in `CompassStudyPlanner.test.tsx`. */
-beforeEach(() => window.history.replaceState({}, '', '/dashboard-rebrand?ff=compass-surface:atlas'))
+/* ⚠ THE VERSION IS PINNED, NOT ASSUMED — 2026-11-16. `compass-mvp-version`
+   defaults to `refined` on this branch, which is what a branch default is
+   for; these are tests of the CURRENT Compass, so they say so rather than
+   depending on a default any branch may flip. */
+beforeEach(() =>
+  window.history.replaceState(
+    {},
+    '',
+    '/dashboard-rebrand?ff=compass-surface:atlas,compass-mvp-version:current',
+  ),
+)
 afterEach(() => window.history.replaceState({}, '', '/'))
 function renderPage() {
   return render(
