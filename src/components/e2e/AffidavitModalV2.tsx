@@ -12,7 +12,7 @@ import {
 } from 'react'
 import { createPortal } from 'react-dom'
 import { acquireBodyScrollLock } from '@/utils/bodyScrollLock'
-import { ArrowUpRightFromSquare, Check, FileText, TriangleExclamation, User, X } from '@/icons'
+import { ArrowUpRightFromSquare, Check, ChevronDown, FileText, TriangleExclamation, User, X } from '@/icons'
 import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import {
   DOCS,
@@ -325,10 +325,15 @@ function Field({ x, ctx }: { x: AffField; ctx: FieldCtx }) {
     return (
       <div>
         <label htmlFor={id}>{label}</label>
-        <select id={id} value={v} autoComplete={x.ac} onChange={(e) => set(e.target.value)}>
-          <option value="">{x.placeholder}</option>
-          {(x.options ?? []).map((o) => <option key={o}>{o}</option>)}
-        </select>
+        {/* Our chevron, inset from the right as far as the text is from the
+            left — the browser's own sat against the edge (2026-11-16, Afsana). */}
+        <span className="aff2-sel">
+          <select id={id} value={v} autoComplete={x.ac} onChange={(e) => set(e.target.value)}>
+            <option value="">{x.placeholder}</option>
+            {(x.options ?? []).map((o) => <option key={o}>{o}</option>)}
+          </select>
+          <ChevronDown size={14} aria-hidden className="aff2-sel-chev" />
+        </span>
       </div>
     )
   const ro = !!x.id && ctx.readOnly.includes(x.id)

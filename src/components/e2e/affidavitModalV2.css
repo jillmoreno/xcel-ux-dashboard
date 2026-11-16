@@ -121,6 +121,11 @@
   color: var(--color-aff-ink);
 }
 .aff2-fld input::placeholder { color: var(--color-aff-placeholder); }
+/* A select draws our chevron, 12px in from the right like the text from the
+   left, in place of the browser's arrow (2026-11-16, Afsana). */
+.aff2-sel { position: relative; display: block; }
+.aff2-fld .aff2-sel select { appearance: none; padding-right: 36px; cursor: pointer; }
+.aff2-sel-chev { position: absolute; top: 50%; right: 12px; transform: translateY(-50%); color: var(--color-aff-muted-ink); pointer-events: none; }
 .aff2-fld input:focus,
 .aff2-fld select:focus { outline: 2px solid var(--color-aff-navy); outline-offset: 1px; }
 .aff2-fld input.is-ro { background: var(--color-aff-chip); color: var(--color-aff-muted-ink); }
