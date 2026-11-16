@@ -814,6 +814,15 @@ describe('AffidavitModalV2 — the explorer’s forms', () => {
     }
   })
 
+  /* OHIO, BEFORE AND AFTER (2026-11-16, compliance): one document at both
+     moments, because of the combined Life & Health exam. */
+  it('opens Ohio’s one final affidavit before the course exam as well as after it', () => {
+    expect(resolveAffidavit('exam', 'OH', 'English').form).toBe(FORMS.OH_POST)
+    expect(resolveAffidavit('post', 'OH', 'English').form).toBe(FORMS.OH_POST)
+    render(<AffidavitModalV2 onClose={() => {}} moment="exam" state="OH" />)
+    expect(screen.getByRole('heading', { level: 2 }).textContent).toBe(FORMS.OH_POST!.title)
+  })
+
   it('resolves every ready entry in the explorer to a form', () => {
     for (const e of ENTRIES) {
       const r = resolveAffidavit(e.m, e.st, 'English')

@@ -4809,6 +4809,11 @@ the Design bar, which is Jill's file, so for now they are dropped.
   **eliminated pre-licensing on 29 Apr 2025**, and that the state's licensing
   tab "still says 'student affidavit'". Built from the sheet; compliance to
   say whether XCEL still shows it before it counts as decided.
+- **Ohio signs its final affidavit before the exam too** (2026-11-16,
+  compliance). Its one document, "OH PE-Pre & Post Final Affidavit", opens at
+  Before course exam as well as After (the same `OH_POST` form), because of
+  the combined Life & Health exam. If Life and Health are ever examined
+  separately, the pre-exam entry comes out again.
 - **Mississippi has nothing to sign** (2026-11-16, compliance): the state
   removed its pre-exam attestation during Covid and never had a post-exam
   one. The before-exam form added 2026-11-11 (read off the screenshot in

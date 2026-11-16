@@ -939,6 +939,14 @@ FORMS.GEN_EXAM={
   note:'Not in the explorer: added 2026-11-04 from the Non-State Specific folder. The button reads "Attest", as the document has it.'
 };
 
+/* ── OHIO BEFORE THE EXAM TOO — 2026-11-16 (compliance) ──────────────────
+   Ohio's one document, "OH PE-Pre & Post Final Affidavit", is signed at two
+   points: before the course exam as well as after. The reason is the
+   combined Life & Health exam. If Life and Health are ever examined
+   separately, this pre-exam entry comes out again. Same form (OH_POST) at both
+   moments. */
+ENTRIES.push({m:'exam',st:'OH',status:'ready',form:'OH_POST'})
+
 /* ── ONE DOCUMENT, BOTH LANGUAGES — 2026-11-16 (Amrita, via Afsana) ──────
    The legal documents are shown as they are: a learner reads the English or
    the Spanish as they see fit, and there is no language-specific version of
