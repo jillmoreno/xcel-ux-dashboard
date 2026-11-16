@@ -147,8 +147,8 @@ describe('Invite Flow V3 — B2C is guest checkout, not an invite', () => {
     expect(flag(INVITE_V3_FLOW_FLAGS.b2c)?.label).toBe('Guest checkout')
     expect(flag(INVITE_V3_FLOW_FLAGS.b2b)?.label).toBe('Invite flow')
     expect(flag(INVITE_V3_MODEL_FLAG)?.variants?.map((v) => v.label)).toEqual([
-      'B2B invite',
-      'B2C guest',
+      'B2B2C',
+      'B2C',
     ])
   })
 

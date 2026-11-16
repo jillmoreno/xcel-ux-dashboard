@@ -230,6 +230,19 @@ export type FeatureFlagDefinition = {
    *  two Jump Back In versions (standard vs. quick-links) so only one
    *  ever renders. */
   mutexGroup?: string
+  /** Optional: leave this control OFF the Design bar while another control
+   *  is on one of these arms — a control that means nothing in that case
+   *  should not be there to be clicked. Read by `designControlsFor` from the
+   *  live flag values (see `liveFlagsForDesignBarRef`). 2026-11-04, Afsana:
+   *  Line of authority goes when Affidavit state is Non-state specific. */
+  hiddenWhen?: { flag: string; variants: string[] }
+  /** Optional: leave some of this control's VARIANTS off the Design bar
+   *  while another control is on an arm — `hide[arm]` lists them. The one
+   *  currently picked always stays, so the bar never shows a value it does
+   *  not list. Read live, like `hiddenWhen`. 2026-11-06, Afsana: each
+   *  Affidavit moment lists only the states that have a form at it. (Greying
+   *  them out instead needs a disabled option on the bar, which is Jill's.) */
+  variantsHiddenWhen?: { flag: string; hide: Record<string, string[]> }
 }
 
 /* ─── pages ────────────────────────────────────────────────────────── */
@@ -299,7 +312,34 @@ export const FLAG_DESIGNERS: { id: DesignerId; label: string }[] = [
  * design control is adding a flag and nothing else. That is the point: the bar
  * itself is protected chrome that nobody needs to edit.
  */
+/* THE LIVE FLAG VALUES, for `hiddenWhen` (2026-11-04). `designControlsFor`
+   is a catalog filter and `DesignControlsBar` — protected chrome — calls it
+   with a version and a surface, not with the flags. Rather than change the
+   bar, the provider leaves its current values here on every render; the bar
+   reads `useFeatureFlags()`, so it re-renders, and re-picks, after every
+   change. Null outside a provider, where `hiddenWhen` falls back to defaults. */
+const liveFlagsForDesignBarRef: { current: Record<string, FeatureFlagState> | null } = { current: null }
+
 export function designControlsFor(
+  versionId: string,
+  versionOwner: DesignerId,
+  surface?: string | null,
+): FeatureFlagDefinition[] {
+  /* `variantsHiddenWhen` — some arms off the bar while another control is on
+     a named arm (2026-11-06). The picked arm stays, whatever the rule says. */
+  return designControlsUnnarrowed(versionId, versionOwner, surface).map((def) => {
+    if (!def.variantsHiddenWhen || !def.variants) return def
+    const { flag, hide } = def.variantsHiddenWhen
+    const other = FEATURE_FLAGS.find((f) => f.key === flag)
+    const arm = liveFlagsForDesignBarRef.current?.[flag]?.variant ?? other?.defaultVariant
+    const gone = (arm != null && hide[arm]) || []
+    if (!gone.length) return def
+    const picked = liveFlagsForDesignBarRef.current?.[def.key]?.variant ?? def.defaultVariant
+    return { ...def, variants: def.variants.filter((v) => v.value === picked || !gone.includes(v.value)) }
+  })
+}
+
+function designControlsUnnarrowed(
   versionId: string,
   versionOwner: DesignerId,
   /* The surface on screen (`DesignSurfaceContext`), or null off a declared
@@ -308,6 +348,14 @@ export function designControlsFor(
 ): FeatureFlagDefinition[] {
   return FEATURE_FLAGS.filter((def) => {
     if (def.surface !== 'design') return false
+    /* `hiddenWhen` — off the bar while another control is on a named arm.
+       Outside a provider (tests) the other control reads as its default. */
+    if (def.hiddenWhen) {
+      const { flag, variants } = def.hiddenWhen
+      const other = FEATURE_FLAGS.find((f) => f.key === flag)
+      const arm = liveFlagsForDesignBarRef.current?.[flag]?.variant ?? other?.defaultVariant
+      if (arm != null && variants.includes(arm)) return false
+    }
     /* ⚠ A DECLARED SURFACE IS EXCLUSIVE IN BOTH DIRECTIONS — 2026-10-16,
        second pass, and the first one only did half of it.
 
@@ -3270,8 +3318,14 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        ⚠ `?affidavit=1` STILL WORKS. Arriving from Confirmation & Password
        opens the pre-course one, as it has since 2026-10-15 — this control is
        a second way in, not a replacement, and closing the modal clears both
-       so it does not spring back. */
-    surface: 'design',
+       so it does not spring back.
+
+       ⚠ OFF THE DESIGN BAR SINCE 2026-11-04 (`feat/affidavits`, Afsana) —
+       `affidavit-v2-moment` replaced it there, with an Off arm and the
+       explorer's three moments. Still in the Feature Flag panel, and both
+       Homes still honour it when Moment is Off, so `?ff=atlas-affidavit:pre`
+       links keep working. Restoring it to the bar is putting
+       `surface: 'design'` back on this row. */
     owner: 'eric',
     versions: ['eric-atlas-e2e'],
     group: 'Widgets',
@@ -3284,6 +3338,215 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
       { value: 'post', label: 'Post-course', description: 'Study-manual Notice Affidavit' },
     ],
     defaultVariant: 'off',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'affidavit-modal-house-style',
+    /* HOW THE AFFIDAVIT LOOKS (2026-11-10) — Afsana's original skin, read off
+       her Affidavit Explorer's XCEL mock, or Jill's house style: the serif
+       title on white instead of the navy bar, the close aligned to the
+       button's glyph, an eyebrow naming who must act over the document's own
+       sentence, no rule above the footer, a #3d5a73 primary.
+
+       ⚠ A SKIN, NOT A SECOND MODAL. It is one class on `.aff2-modal` and a
+       block of scoped CSS; `AffidavitModalV2` renders the same markup either
+       way, for all sixteen states. The Ohio-only `AffidavitModalHouseStyle`
+       on `feat/affidavit-modal-v2` was the spec this came from and is not
+       carried forward.
+
+       ⚠ WHICH affidavit opens is `affidavit-v2-moment` and `-state`; whether
+       V2 opens at all is `atlas-affidavit-v2`, below. This is only how it
+       looks, and it reads nothing else.
+
+       ⚠ DEFAULT House style, the "flags default ON on your branch" rule, so
+       the branch build shows the work. Whether it stays is decided at
+       share-to-stage. */
+    surface: 'design',
+    /* ⚠ NO `owner`, like the affidavit flags around it. `afsana` is not in
+       `DesignerId` on this branch — that entry is on Jill's
+       `feat/affidavit-modal-house-style` and would have to arrive with it.
+       `versions` is what puts a control on the bar; `owner` is a label. */
+    versions: ['jill-atlas-main', 'eric-atlas-e2e'],
+    group: 'Widgets',
+    label: 'Affidavit modal',
+    description: 'How the affidavit looks: Afsana’s original skin, or Jill’s house style.',
+    variants: [
+      { value: 'current', label: 'Current', description: 'The navy header and the centred banner.' },
+      { value: 'house-style', label: 'House style', description: 'Serif title on white, an eyebrow naming who must act, a #3d5a73 primary.' },
+    ],
+    defaultVariant: 'house-style',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'atlas-affidavit-v2',
+    /* AFFIDAVIT V2 — 2026-11-03, Afsana (`feat/affidavits`). On: the
+       End-to-End Home opens `AffidavitModalV2`; off: V1, untouched. Its first
+       change is that the modal no longer covers the review bar, the demo
+       controls or the design controls — see the V2 file's header.
+
+       ⚠ DEFAULT ON, the "flags default ON on your branch" rule, so the branch
+       link shows V2. Whether it stays on is `decide-defaults`' question at
+       share-to-stage, not this branch's. Scoped to BOTH Homes that open the
+       modal: `jill-atlas-main` is `END_TO_END_VERSION`, the Home the invite
+       flow lands on with `?affidavit=1` and the one the Prototypes rows open;
+       `eric-atlas-e2e` is where the Affidavit control it modifies lives. No
+       `owner`, so the panel files it under Jill rather than adding a row to
+       Eric's pinned list. */
+    surface: 'design',
+    versions: ['jill-atlas-main', 'eric-atlas-e2e'],
+    group: 'Widgets',
+    label: 'Affidavit V2',
+    description:
+      'Which affidavit modal the End-to-End Demo’s Home opens. On: V2 — the forms from the Affidavit Explorer, every state and moment, in Pagination or Link out; the page dims below the review bar and the demo and design controls, which stay usable while the modal is open. Off: V1, which covers the whole window.',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  /* AFFIDAVIT V2'S FOUR CONTROLS — 2026-11-03, Afsana. The Affidavit
+     Explorer's own filters, moved onto the Design bar so the modal can stand
+     where it lives in the product. Read by `AffidavitModalV2` and nothing
+     else, so they only do anything while Affidavit V2 is on and the modal is
+     open (Eric's Affidavit control or `?affidavit=1` opens it). Variants and
+     names are the explorer's: `MOMENTS` and `STATES` in `affidavitForms.ts`.
+     Florida is the default state because it is the demo course's. */
+  {
+    key: 'affidavit-v2-moment',
+    surface: 'design',
+    versions: ['jill-atlas-main', 'eric-atlas-e2e'],
+    group: 'Widgets',
+    /* ⚠ IT REPLACED THE AFFIDAVIT CONTROL ON THE BAR (2026-11-04, Afsana:
+       "the affidavit control … is not there anymore, and is instead replaced
+       by affidavit moment"). Off is Home as it lands; any moment opens the
+       modal over it and adds the Study Journey's affidavit row, the two jobs
+       `atlas-affidavit` did. Both Homes read this first and fall back to
+       `atlas-affidavit`, which left the bar but is still in the Feature Flag
+       panel. With Affidavit V2 off, V1 opens: After course exam as its
+       post-course affidavit, the other two as its pre-course one. */
+    label: 'Affidavit moment',
+    description:
+      'Opens the affidavit modal over Home, and says which of the three affidavits it shows: the one signed before the course begins, before the course exam, or after it. Each state has its own form for each moment, or none. Off: Home as it lands. Replaced the Affidavit control on the Design bar.',
+    variants: [
+      { value: 'off', label: 'Off' },
+      { value: 'pre', label: 'Before course begins' },
+      { value: 'exam', label: 'Before course exam' },
+      { value: 'post', label: 'After course exam' },
+    ],
+    defaultVariant: 'off',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'affidavit-v2-state',
+    surface: 'design',
+    versions: ['jill-atlas-main', 'eric-atlas-e2e'],
+    group: 'Widgets',
+    label: 'Affidavit state',
+    description:
+      'Whose affidavit V2 shows. A state with no form at the chosen moment says so in the modal, as the explorer does. Non-state specific: XCEL\u2019s generic Terms and Conditions before the course begins, and its general attestation before the course exam.',
+    variants: [
+      { value: 'CA', label: 'California' },
+      { value: 'CO', label: 'Colorado' },
+      { value: 'CT', label: 'Connecticut' },
+      { value: 'FL', label: 'Florida' },
+      { value: 'IL', label: 'Illinois' },
+      { value: 'KY', label: 'Kentucky' },
+      { value: 'MN', label: 'Minnesota' },
+      { value: 'MS', label: 'Mississippi' },
+      { value: 'NV', label: 'Nevada' },
+      { value: 'NY', label: 'New York' },
+      { value: 'OH', label: 'Ohio' },
+      { value: 'OR', label: 'Oregon' },
+      // 2026-11-06: on the compliance team's affidavit sheet; see affidavitForms.ts for the PRD question.
+      { value: 'PA', label: 'Pennsylvania' },
+      { value: 'WV', label: 'West Virginia' },
+      { value: 'WI', label: 'Wisconsin' },
+      // Not a state (2026-11-04): XCEL's generic forms — `GEN` in affidavitForms.ts.
+      { value: 'GEN', label: 'Non-state specific' },
+    ],
+    /* N/A AT A MOMENT IS OFF THE LIST (2026-11-06, Afsana): each moment lists
+       the states with a form at it. Worked out from affidavitForms.ts, and
+       AffidavitModalV2.test.tsx fails if the forms and this list part. */
+    variantsHiddenWhen: {
+      flag: 'affidavit-v2-moment',
+      hide: {
+        pre: ['CO', 'CT', 'MS', 'NY', 'WI', 'WV', 'PA'],
+        exam: ['CA', 'IL', 'KY', 'NV', 'NY', 'OH', 'OR'],
+        post: ['FL', 'KY', 'MS', 'NV', 'OR', 'GEN', 'PA'],
+      },
+    },
+    defaultVariant: 'FL',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'affidavit-v2-pattern',
+    surface: 'design',
+    versions: ['jill-atlas-main', 'eric-atlas-e2e'],
+    group: 'Widgets',
+    label: 'Affidavit pattern',
+    description:
+      'How V2 presents the affidavit: Link out — the document as a link, an “I have read” checkbox and the fields. The only pattern since 2026-11-10 (Afsana): Pagination is no longer a choice, only part of the forms that need it — where the student and the exam monitor each have a page (after the course exam in CO, CT, MN, WV and WI), the form shows in full, a page at a time.',
+    variants: [{ value: 'link', label: 'Link out' }],
+    defaultVariant: 'link',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  /* `affidavit-v2-language` — "Affidavit language", English / Spanish — LEFT
+     THE DESIGN BAR on 2026-11-11 (Afsana, on Amrita's word): the legal
+     documents are kept as they are, and a document that carries both
+     languages is shown whole; the learner reads whichever they need,
+     whatever the course language. So the modal is always English and there
+     is nothing to choose. The Spanish forms (FL_LH_ES, FL_PC_ES, GEN_PRE_ES)
+     stay in affidavitForms.ts, unwired. To restore: put this entry back here
+     (surface 'design', versions ['jill-atlas-main', 'eric-atlas-e2e'],
+     variants English / Spanish, default English), add the key back to
+     REBRAND_FLAGS in FeatureFlagPanel.tsx, and in AffidavitModalV2.tsx read
+     it again: `const languageFlag = useFeatureFlag('affidavit-v2-language').variant`
+     and `language = languageProp ?? languageFlag ?? 'English'`. */
+  {
+    key: 'affidavit-v2-middle',
+    /* UNDECIDED (2026-11-06, Afsana): is Middle Name part of the legal name
+       a signature captures? On every form that has a signature, the name
+       sits above it as First / Middle / Last, pre-filled; Off drops Middle. */
+    surface: 'design',
+    versions: ['jill-atlas-main', 'eric-atlas-e2e'],
+    group: 'Widgets',
+    label: 'Affidavit middle name',
+    description:
+      'Whether the name above every affidavit signature includes Middle Name (pre-filled, optional) — undecided. First and Last Name are always there.',
+    variants: [
+      { value: 'show', label: 'Shown' },
+      { value: 'hide', label: 'Off' },
+    ],
+    defaultVariant: 'show',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'affidavit-v2-loa',
+    /* THE EXPLORER'S LINE OF AUTHORITY — 2026-11-04, Afsana: "you forgot to
+       pull in … line of authority". Some states sign a different form per
+       line: Florida before the course (Life & Health, Property & Casualty,
+       each in English and Spanish), California after the exam (Life &
+       Health) and Ohio after it (Property). The arms are every line those
+       forms name. A state that has no form for the chosen line shows its
+       first one, as the explorer's own picker falls back, and every state
+       that signs one form for all lines ignores this. */
+    surface: 'design',
+    versions: ['jill-atlas-main', 'eric-atlas-e2e'],
+    // XCEL's generic forms sign the same for every line (2026-11-04, Afsana).
+    hiddenWhen: { flag: 'affidavit-v2-state', variants: ['GEN'] },
+    group: 'Widgets',
+    label: 'Affidavit line of authority',
+    description:
+      'For the states with a form per line of authority — Florida before the course begins (Life & Health or Property & Casualty), California and Ohio after the course exam. A state without a form for the chosen line shows its own; every other state ignores this.',
+    variants: [
+      { value: 'Life & Health', label: 'Life & Health' },
+      { value: 'Property & Casualty', label: 'Property & Casualty' },
+      { value: 'Property', label: 'Property' },
+    ],
+    defaultVariant: 'Life & Health',
     defaultEnabled: true,
     page: 'dashboard-rebrand',
   },
@@ -3619,8 +3882,8 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        `archivedInviteFlowsV3.ts`, with the two automatic sign-in flows and
        the Go to Cart alternative. */
     variants: [
-      { value: 'b2b', label: 'B2B invite', description: 'A partner’s QR code. Partner pricing; the learner proves their email by code.' },
-      { value: 'b2c', label: 'B2C guest', description: 'Direct from the public site’s cart. No partner.' },
+      { value: 'b2b', label: 'B2B2C', description: 'A partner’s QR code. Partner pricing; the learner proves their email by code.' },
+      { value: 'b2c', label: 'B2C', description: 'Direct from the public site’s cart. No partner.' },
     ],
     page: 'dashboard-rebrand',
   },
@@ -6270,6 +6533,15 @@ export function FeatureFlagProvider({ children }: { children: ReactNode }) {
       clearUrlOverrides,
     ],
   )
+
+  /* For `designControlsFor`'s `hiddenWhen` — see `liveFlagsForDesignBarRef`.
+     ⚠ A RENDER-TIME WRITE, ON PURPOSE. It has to be current when the bar
+     re-picks its controls in this same render; an effect would land one
+     change late. It is idempotent (the values this provider is handing out
+     anyway), and the rule-abiding fix is for the protected `DesignControlsBar`
+     to pass its `flags` to `designControlsFor` — Jillienne's file. */
+  // eslint-disable-next-line react-hooks/immutability -- see the note above
+  liveFlagsForDesignBarRef.current = readFlags
 
   return (
     <FeatureFlagContext.Provider value={value}>

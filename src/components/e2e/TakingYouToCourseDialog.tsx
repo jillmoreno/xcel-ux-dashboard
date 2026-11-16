@@ -9,8 +9,18 @@ import { useV3DialogLayer } from '@/components/e2e/useV3DialogLayer'
  * spinner, loading for as long as it is open. There is no course to land in,
  * so it never hands off; for the demo, a click outside the card closes it and
  * leaves the reviewer on the page they came from.
+ *
+ * `message` — 2026-11-11, Afsana: V3's ending now opens it as "Setting up
+ * your account", after both Confirm and Start Course. The default is kept
+ * for anything that still wants the original wording.
  */
-export function TakingYouToCourseDialog({ onClose }: { onClose: () => void }) {
+export function TakingYouToCourseDialog({
+  onClose,
+  message = 'Taking you to your course',
+}: {
+  onClose: () => void
+  message?: string
+}) {
   const layer = useV3DialogLayer()
   return createPortal(
     <div
@@ -19,10 +29,10 @@ export function TakingYouToCourseDialog({ onClose }: { onClose: () => void }) {
         if (e.target === e.currentTarget) onClose()
       }}
     >
-      <div role="dialog" aria-modal="true" aria-label="Taking you to your course" style={{ ...CARD, ...layer.card }}>
+      <div role="dialog" aria-modal="true" aria-label={message} style={{ ...CARD, ...layer.card }}>
         <img src="/brand/xcel-logo.webp" alt="XCEL Insurance Training by Colibri" style={LOGO} />
         {/* 48, as Signing you in / out. */}
-        <XcelLoadingStatus message="Taking you to your course" size={48} />
+        <XcelLoadingStatus message={message} size={48} />
       </div>
     </div>,
     document.body,

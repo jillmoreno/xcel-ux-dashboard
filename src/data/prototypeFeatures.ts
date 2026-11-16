@@ -966,7 +966,7 @@ const AUTHORED_FEATURES: PrototypeFeature[] = [
     // All four opening rows re-stamped at the 2026-10-15 ship that retired the
     // demo site: the shared chrome every row renders — the demo bar, the
     // version picker, the prototype bar — changed under all of them.
-    lastUpdated: '2026-11-05T02:22:02Z',
+    lastUpdated: '2026-11-16T19:25:06Z',
     pinned: true,
     // An in-app route, not a document. `to` is what makes the tile navigate
     // rather than open a new tab, and it is also what the row's live preview
@@ -1093,7 +1093,7 @@ const AUTHORED_FEATURES: PrototypeFeature[] = [
     status: 'ready',
     category: 'prototype',
     prototypeScope: 'invite',
-    lastUpdated: '2026-10-27T13:58:58Z',
+    lastUpdated: '2026-11-16T19:25:06Z',
     pinned: true,
     // ⚠ `/find`, THE GUEST'S FIRST SCREEN — 2026-10-23: "clicking on this
     // should default to the guest view but the wrong screen is showing
@@ -1145,7 +1145,7 @@ const AUTHORED_FEATURES: PrototypeFeature[] = [
     status: 'ready',
     category: 'prototype',
     prototypeScope: 'atlas',
-    lastUpdated: '2026-11-03T14:34:45Z',
+    lastUpdated: '2026-11-16T19:25:06Z',
     pinned: true,
     to: '/dashboard-rebrand?demo=1&section=dashboard',
     brands: ['xcel'],
@@ -1190,7 +1190,7 @@ const AUTHORED_FEATURES: PrototypeFeature[] = [
     status: 'ready',
     category: 'prototype',
     prototypeScope: 'compass',
-    lastUpdated: '2026-11-05T02:22:02Z',
+    lastUpdated: '2026-11-16T19:25:06Z',
     pinned: true,
     // Same-origin product route at the committed baseline — the smoke test
     // asserts every Prototypes row has this shape. `section=compass` is the

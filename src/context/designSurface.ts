@@ -151,8 +151,8 @@ export const DESIGN_SURFACE_LABELS: Record<DesignSurfaceId, string> = {
   'compass:refined:overview': 'Compass · Refined · Overview',
   'compass:refined:learn': 'Compass · Refined · Course',
   invite: 'Invite & Checkout',
-  'invite:v3-b2b': 'Invite Flow V3 · B2B invite',
-  'invite:v3-b2b-direct-email': 'Invite Flow V3 · B2B invite',
-  'invite:v3-b2c': 'Invite Flow V3 · B2C guest checkout',
-  'invite:v3-b2c-signed-in': 'Invite Flow V3 · B2C guest checkout',
+  'invite:v3-b2b': 'Invite Flow V3 · B2B2C',
+  'invite:v3-b2b-direct-email': 'Invite Flow V3 · B2B2C',
+  'invite:v3-b2c': 'Invite Flow V3 · B2C',
+  'invite:v3-b2c-signed-in': 'Invite Flow V3 · B2C',
 }

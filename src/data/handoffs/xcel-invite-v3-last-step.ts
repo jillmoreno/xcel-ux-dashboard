@@ -6,8 +6,8 @@ import type { PrototypeFeature } from '../prototypeFeatures'
  *
  * The page every V3 flow ends on after Placing your order: the receipt on the
  * left, the Last step card on the right in one of two versions, and the
- * "Taking you to your course…" hold that hands the learner to Atlas learner
- * Home. The modals before it are their own row,
+ * "Setting up your account…" hold that hands the learner to Atlas learner
+ * Home (it was "Taking you to your course…" until 2026-11-11). The modals before it are their own row,
  * `xcel-invite-v3-checkout-modals`.
  *
  * ⚠ ATLAS LEARNER HOME IS A LINK, NOT A COMPONENT. It is an existing page with
@@ -23,7 +23,7 @@ const feature: PrototypeFeature = {
   devStatus: 'not-ready',
   surface: 'invite',
   owner: 'Afsana',
-  lastUpdated: '2026-11-05T18:44:14Z',
+  lastUpdated: '2026-11-11T21:23:24Z',
   accent: 'gold',
   icon: 'flag',
   brands: ['xcel'],
@@ -31,16 +31,16 @@ const feature: PrototypeFeature = {
   blurb:
     'Where every invite checkout ends — the order receipt beside a Last step card that either starts the course or creates a password, then a short hold that lands the learner on Atlas learner Home.',
   tileBlurb:
-    'The invite flow’s ending: the receipt, the Last step card (Start Course, or Create your password then Confirm), and Taking you to your course… before Atlas Home.',
+    'The invite flow’s ending: the receipt, the Last step card (Start Course, or Finish setting up your account then Confirm), and Setting up your account… before Atlas Home.',
   pages: [
     {
-      label: 'Version B — Create your password',
-      note: 'A learner new to Atlas. The hidden corner bottom-right of the card fills a valid password into both fields; Confirm opens Taking you to your course…, and a click outside it closes it (demo only).',
+      label: 'Version B — Finish setting up your account',
+      note: 'A learner new to Atlas. The hidden corner bottom-right of the card fills a valid password into both fields; Confirm opens Setting up your account…, which lands on Atlas learner Home after four seconds (demo timing); a click outside closes it first (demo only).',
       to: '/end-to-end-demo/confirmation?demo=1&ff=invite-flow-version:v3,invite-v3-model:b2b,invite-v3-flow-b2b:qr-net-new',
     },
     {
       label: 'Version A — Start learning',
-      note: 'A learner whose email already has Atlas. Start Course opens Taking you to your course….',
+      note: 'A learner whose email already has Atlas. Start Course opens Setting up your account….',
       to: '/end-to-end-demo/confirmation?demo=1&ff=invite-flow-version:v3,invite-v3-model:b2b,invite-v3-flow-b2b:qr-atlas-login',
     },
     {
@@ -50,13 +50,13 @@ const feature: PrototypeFeature = {
     },
   ],
   featureFlags: [
-    { id: 'invite-v3-flow-b2b', label: 'Invite flow', note: 'Which version the page shows: the Has Atlas flows end on Start learning, the others on Create your password.' },
-    { id: 'invite-v3-email-account', label: 'Email belongs to', note: 'On Direct Email and the OCD flows: Atlas account → Start learning; No Atlas account → Create your password.' },
+    { id: 'invite-v3-flow-b2b', label: 'Invite flow', note: 'Which version the page shows: the Has Atlas flows end on Start learning, the others on Finish setting up your account.' },
+    { id: 'invite-v3-email-account', label: 'Email belongs to', note: 'On Direct Email and the OCD flows: Atlas account → Start learning; No Atlas account → Finish setting up your account.' },
   ],
   devHandoff: {
     flagsNote: 'Design bar controls for reaching each version in the prototype, not product settings.',
     intro:
-      'One page, two versions, decided by whether the learner’s email already has an Atlas account. Both show the same receipt on the left. A learner who already has Atlas gets Start learning; a learner new to Atlas sets a password first. Either button opens Taking you to your course…, which holds a few seconds and lands them on Atlas learner Home with the course at 0%.',
+      'One page, two versions, decided by whether the learner’s email already has an Atlas account. Both show the same receipt on the left. A learner who already has Atlas gets Start learning; a learner new to Atlas sets a password first. Either button opens Setting up your account…, which holds until the account is ready and lands them on Atlas learner Home with the course at 0%.',
     components: [],
     uiComponents: [
       {
@@ -70,7 +70,7 @@ const feature: PrototypeFeature = {
           'The XCEL header, then two halves: the order receipt on the left and, on the right over the topographic background, the Last step card. The card is one of two versions.',
         variants: [
           { name: 'Version A — Start learning', when: 'The learner’s email has an Atlas account (they logged in during checkout).' },
-          { name: 'Version B — Create your password', when: 'The email has no Atlas account (they verified it with a one-time code).', why: 'A learner new to Atlas has no way back in without a password, so setting one is the last thing the purchase asks.' },
+          { name: 'Version B — Finish setting up your account', when: 'The email has no Atlas account (they verified it with a one-time code).', why: 'A learner new to Atlas has no way back in without a password, so setting one is the last thing the purchase asks.' },
         ],
         ctas: [],
         statesMatrix: [],
@@ -130,7 +130,7 @@ const feature: PrototypeFeature = {
         location: 'The page’s right half, version A — src/pages/InvitedConfirmationPageV3.tsx.',
         summary: 'Eyebrow "Last step", heading "Start learning", a short rule, "Begin your learning journey today." and Start Course.',
         variants: [{ name: 'Ready', when: 'Always, on version A.' }],
-        ctas: [{ name: 'Start Course', does: 'Opens Taking you to your course….' }],
+        ctas: [{ name: 'Start Course', does: 'Opens Setting up your account….' }],
         statesMatrix: [],
         edgeCases: [],
         designSpec: {
@@ -153,11 +153,11 @@ const feature: PrototypeFeature = {
         id: 'v3-last-step-create-password',
         thumbnail: '/prototype-thumbs/components/xcel-invite-v3-last-step-v3-last-step-create-password.png',
         order: 4,
-        name: 'Last step — Create your password',
+        name: 'Last step — Finish setting up your account',
         tabLabel: 'Create password',
         location: 'The page’s right half, version B — src/pages/InvitedConfirmationPageV3.tsx, src/components/e2e/InvitePasswordChecklistV3.tsx, src/data/invitePasswordRulesV3.ts.',
         summary:
-          'Eyebrow "Last step", heading "Create your password". The email, locked; a password field; a strength meter and "Password must:" with seven rules; a confirm password field; and Confirm.',
+          'Eyebrow "Last step", heading "Finish setting up your account", then "Create a password to set up your account for" the email, in bold. A password field; a strength meter and "Password must:" with seven rules; a confirm password field; and Confirm.',
         variants: [
           { name: 'Empty', when: 'On arrival. No rule is met; Confirm is off.' },
           { name: 'Typing', when: 'Each rule ticks as it is met, and the meter fills — Weak, Fair, Good, Strong.' },
@@ -167,7 +167,7 @@ const feature: PrototypeFeature = {
         ctas: [
           { name: 'Password eye', does: 'Shows or hides the password.' },
           { name: 'Confirm password eye', does: 'Shows or hides the confirmation.' },
-          { name: 'Confirm', does: 'Off until all seven rules are met and both fields match. Then creates the account and opens Taking you to your course….' },
+          { name: 'Confirm', does: 'Off until all seven rules are met and both fields match. Then creates the account and opens Setting up your account….' },
         ],
         statesMatrix: [
           { question: 'What are the seven rules?', answer: 'Be 9–15 characters; include a number; an uppercase letter; a lowercase letter; one of !@#$%^&*._-; use only those special characters; be different from email.' },
@@ -176,12 +176,13 @@ const feature: PrototypeFeature = {
           { question: 'What if creating the account fails after Confirm?', answer: 'Not decided — see Questions.' },
         ],
         edgeCases: [
-          'The email is the one verified at checkout, shown locked so the learner can see which account they are creating.',
+          'The email is the one verified at checkout, in bold in the line under the heading, so the learner can see which account they are setting up. A long address wraps rather than widening the card.',
           'Demo only: a hidden corner at the card’s bottom-right fills a valid password into both fields.',
         ],
         designSpec: {
           tokens: [
-            { role: 'Locked email', token: '--color-e2e-form-locked-v3' },
+            { role: 'Line under the heading', token: '--color-text-secondary' },
+            { role: 'Email in that line (bold)', token: '--color-text-primary' },
             { role: 'Field', token: '--color-e2e-field' },
             { role: 'Field border', token: '--color-e2e-form-outline' },
             { role: 'Rule met', token: '--color-success-700' },
@@ -203,21 +204,22 @@ const feature: PrototypeFeature = {
         id: 'v3-taking-you-to-course',
         thumbnail: '/prototype-thumbs/components/xcel-invite-v3-last-step-v3-taking-you-to-course.png',
         order: 5,
-        name: 'Taking you to your course…',
-        tabLabel: 'Taking you to your course',
-        location: 'Over the page, after Start Course or Confirm — src/components/e2e/TakingYouToCourseDialog.tsx.',
+        name: 'Setting up your account…',
+        tabLabel: 'Setting up your account',
+        location: 'Over the page, after Start Course or Confirm — src/components/e2e/TakingYouToCourseDialog.tsx, and its four-second timer in src/pages/InvitedConfirmationPageV3.tsx.',
         summary:
-          'The XCEL logo over the spinner and "Taking you to your course…". In the product it holds a few seconds, then lands the learner on Atlas learner Home with the course at 0%.',
+          'The XCEL logo over the spinner and "Setting up your account…", after both Start Course and Confirm. In the product it holds until the account is set up, then lands the learner on Atlas learner Home with the course at 0%. The prototype’s four seconds is demo timing only.',
         variants: [
           { name: 'Holding', when: 'Start Course or Confirm was clicked.' },
         ],
         ctas: [],
         statesMatrix: [
           { question: 'Where does the learner land?', answer: 'Atlas learner Home, showing the course they bought at zero progress. Home is an existing page — see the third Live Preview route.' },
-          { question: 'What if it takes longer than a few seconds, or Home fails to load?', answer: 'Not decided — see Questions.' },
+          { question: 'What if setting up the account runs long, or Home fails to load?', answer: 'Not decided — see Questions.' },
         ],
         edgeCases: [
-          'Demo only: the prototype loads indefinitely and a click outside the card closes it, so a reviewer can stay on the page. The product never does either.',
+          'Demo only: the prototype holds exactly four seconds, then opens Atlas learner Home. Four seconds is a stand-in so a reviewer sees the card; the product holds for as long as setup actually takes, with no fixed time.',
+          'Demo only: a click outside the card closes it before the four seconds are up, so a reviewer can stay on the page. The product never does this.',
         ],
         designSpec: {
           tokens: [
@@ -236,6 +238,11 @@ const feature: PrototypeFeature = {
     decisions: {
       items: [
         {
+          question: 'How does the password card introduce itself, and where does the email go?',
+          decision: 'Heading "Finish setting up your account", then "Create a password to set up your account for" the email in bold. It replaces "Create your password" over a locked Email field: the step is finishing an account the purchase already made, and the address reads as part of that sentence rather than as a field the learner might think they can change. Chosen from four options compared on the Design bar, 2026-11-11.',
+          status: 'Decided',
+        },
+        {
           question: 'What does the password card’s button say?',
           decision: 'Confirm — replacing "Save Password & Log In". The learner is confirming the password they just typed twice.',
           status: 'Decided',
@@ -247,7 +254,7 @@ const feature: PrototypeFeature = {
         },
         {
           question: 'What happens after Start Course or Confirm?',
-          decision: 'Taking you to your course… for a few seconds, then Atlas learner Home with the course at 0%. The prototype’s endless loading and click-outside-to-close are for the demo only.',
+          decision: 'Setting up your account… until the account is ready, then Atlas learner Home with the course at 0%. It replaced Taking you to your course… on 2026-11-11, after both buttons — one hold, not two in a row. The prototype’s four seconds and click-outside-to-close are for the demo only; the real wait is however long setup takes.',
           status: 'Decided',
         },
         {
@@ -262,7 +269,7 @@ const feature: PrototypeFeature = {
           owner: 'Design and Engineering',
         },
         {
-          question: 'What if Taking you to your course… runs long, or Home fails to load?',
+          question: 'What if Setting up your account… runs long, or Home fails to load?',
           decision: 'Open. Not designed.',
           status: 'Needs weigh-in',
           owner: 'Design and Engineering',

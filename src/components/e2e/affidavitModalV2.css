@@ -1,0 +1,474 @@
+/* AFFIDAVIT V2 — 2026-11-03, Afsana. The desktop half of her Affidavit
+   Explorer's XCEL mock (`.desktop .modal` and the `.x-*` rules), ported class
+   for class with an `aff2-` prefix. The explorer's mobile frame and Full
+   scroll pattern were left behind on purpose. Colours are the `--color-aff-*`
+   tokens, fixed in both themes like the explorer's. */
+
+.aff2-modal {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 720px;
+  max-width: 100%;
+  /* ONE SIZE FOR EVERY AFFIDAVIT (2026-11-10, Afsana). Until then only
+     Pagination held 688px and a Link out modal shrank to its content, so CA
+     after the exam stood shorter than CT. Now every form, either pattern,
+     is 720 × 688 (less on a short window), and its text scrolls inside. */
+  height: 688px;
+  max-height: 100%;
+  overflow: hidden;
+  border-radius: 6px;
+  background: var(--color-fixed-light);
+  box-shadow: var(--shadow-aff-modal);
+  font-family: var(--font-body);
+  color: var(--color-aff-ink);
+  color-scheme: light;
+}
+
+.aff2-head {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 20px 18px 32px;
+  background: var(--color-aff-navy);
+  color: var(--color-fixed-light);
+}
+.aff2-head h2 {
+  margin: 0;
+  font-size: 19px;
+  font-weight: 500;
+  line-height: 1.3;
+  color: var(--color-fixed-light);
+}
+.aff2-close {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  /* A white X in a white outline on the navy header, no fill (2026-11-10, Afsana). */
+  border: 1.5px solid var(--color-fixed-light);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--color-fixed-light);
+  cursor: pointer;
+}
+
+.aff2-prog { flex-shrink: 0; display: grid; gap: 6px; padding: 20px 32px 0; }
+.aff2-prog i { height: 6px; border-radius: 3px; background: var(--color-aff-progress); }
+.aff2-prog i.is-on { background: var(--color-aff-navy); }
+
+.aff2-terms {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: scroll;
+  overscroll-behavior: contain; /* scrolling stops at the modal's edge, never Home's */
+  margin: 20px 32px 0;
+  padding: 22px 22px 8px;
+  border: 1px solid var(--color-aff-line);
+  border-radius: 6px;
+  color: var(--color-aff-ink);
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-aff-thumb) var(--color-aff-track);
+}
+.aff2-terms h3 { margin: 16px 0 8px; font-size: 15px; font-weight: 700; }
+.aff2-terms h3:first-child { margin-top: 0; }
+.aff2-terms h3.is-u { text-decoration: underline; }
+.aff2-terms h4 { margin: 12px 0 6px; font-size: 14.5px; font-weight: 700; }
+.aff2-terms p { margin: 0 0 13px; font-size: 15px; line-height: 1.42; }
+/* ⚠ THE MARKERS ARE SET HERE, NOT INHERITED (2026-11-04). Tailwind's reset
+   gives every `ul` / `ol` `list-style: none`, so the explorer's lists — which
+   rely on the browser's default bullets and numbers — arrived as indented
+   lines with nothing in front of them (Kentucky's "I received a copy of the
+   catalog… / I understand… / My signature…", its numbered Terms of
+   Agreement). `is-plain` is the explorer's own unbulleted list (Ohio's exam
+   details) and stays bare. The opened document below gets the same rules. */
+.aff2-terms ul,
+.aff2-terms ol,
+.aff2-docbody ul,
+.aff2-docbody ol { margin: 0 0 14px; padding-left: 22px; font-size: 15px; line-height: 1.42; }
+.aff2-terms ul,
+.aff2-docbody ul { list-style: disc; }
+.aff2-terms ol,
+.aff2-docbody ol { list-style: decimal; }
+.aff2-terms ul ul,
+.aff2-docbody ul ul { list-style: circle; margin: 4px 0 0; }
+.aff2-terms ul.is-plain,
+.aff2-docbody ul.is-plain { list-style: none; padding-left: 18px; }
+.aff2-terms a { color: var(--color-aff-ink); }
+.aff2-terms .aff2-closing { font-style: italic; font-weight: 700; text-align: center; }
+
+.aff2-tbl { border-collapse: collapse; margin: 0 0 18px; font-size: 13px; color: var(--color-aff-table-ink); }
+.aff2-tbl th,
+.aff2-tbl td { border: 1px solid var(--color-aff-table-rule); padding: 4px 10px; text-align: left; }
+.aff2-tbl th { background: var(--color-aff-table-head); font-size: 12px; font-weight: 600; text-align: center; text-transform: uppercase; }
+
+/* Fields */
+.aff2-fld { display: flex; flex-direction: column; gap: 16px; margin: 8px 0 18px; }
+.aff2-fld label { display: block; margin-bottom: 6px; font-size: 14px; font-weight: 600; color: var(--color-aff-label); }
+.aff2-fld input,
+.aff2-fld select {
+  width: 100%;
+  height: 44px;
+  box-sizing: border-box;
+  padding: 0 12px;
+  border: 1px solid var(--color-aff-input-rule);
+  border-radius: 6px;
+  background: var(--color-fixed-light);
+  font: 15px var(--font-body);
+  color: var(--color-aff-ink);
+}
+.aff2-fld input::placeholder { color: var(--color-aff-placeholder); }
+.aff2-fld input:focus,
+.aff2-fld select:focus { outline: 2px solid var(--color-aff-navy); outline-offset: 1px; }
+.aff2-fld input.is-ro { background: var(--color-aff-chip); color: var(--color-aff-muted-ink); }
+.aff2-hint { display: block; margin-top: 4px; font-size: 12.5px; color: var(--color-aff-hint); }
+.aff2-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 12px; }
+.aff2-sig { display: flex; flex-direction: column; gap: 6px; font-size: 14px; font-weight: 600; color: var(--color-aff-label); }
+.aff2-sig img { max-width: 240px; height: auto; }
+.aff2-fblock h3,
+.aff2-fblock h4 { margin: 6px 0 0; }
+.aff2-fblock p { margin: 0; }
+
+.aff2-radio { display: flex; flex-direction: column; gap: 8px; margin: 0; padding: 0; border: 0; }
+.aff2-radio legend { margin-bottom: 6px; padding: 0; font-size: 14px; font-weight: 600; color: var(--color-aff-label); }
+.aff2-fld .aff2-radio label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 32px;
+  margin: 0;
+  font-size: 14.5px;
+  font-weight: 400;
+  color: var(--color-aff-ink);
+  cursor: pointer;
+}
+.aff2-fld .aff2-radio input { width: 18px; height: 18px; margin: 0; flex-shrink: 0; accent-color: var(--color-aff-navy); }
+
+.aff2-fld label.aff2-chk {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-aff-ink);
+  cursor: pointer;
+}
+.aff2-fld .aff2-chk input { width: 20px; height: 20px; margin: 0; flex-shrink: 0; accent-color: var(--color-aff-navy); }
+
+.aff2-flag { padding: 4px 12px; border: 1px solid var(--color-aff-flag-rule); border-radius: 6px; background: var(--color-aff-flag); }
+.aff2-flag-grp { display: flex; flex-direction: column; gap: 16px; padding: 12px; }
+.aff2-dep { display: flex; flex-direction: column; gap: 16px; }
+.aff2-dep[hidden] { display: none; }
+
+/* ⚠ THE EYEBROW AND THE ICON ARE ALWAYS IN THE DOM, and hidden here rather
+   than conditionally rendered (2026-11-10). One markup for both skins means
+   the Design bar's "Affidavit modal" switch is pure CSS and cannot drift —
+   and a test reading the banner reads the same nodes either way. */
+.aff2-banner {
+  margin: 4px 0 14px;
+  padding: 10px 12px;
+  border: 1px solid var(--color-aff-banner-rule);
+  border-radius: 6px;
+  background: var(--color-aff-banner);
+  color: var(--color-aff-banner-ink);
+  text-align: center;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+.aff2-banner > svg,
+.aff2-banner__eyebrow { display: none; }
+.aff2-banner__text { display: contents; }
+/* The student's banner is cyan; the proctor's stays amber (2026-11-11, Afsana). */
+.aff2-banner.is-student {
+  border-color: var(--color-aff-banner-student-rule);
+  background: var(--color-aff-banner-student);
+  color: var(--color-aff-banner-student-ink);
+}
+
+/* Link out */
+.aff2-link {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  margin: 0 0 14px;
+  padding: 16px 18px;
+  border: 1px solid var(--color-aff-link-rule);
+  border-radius: 8px;
+  background: var(--color-aff-link-ground);
+  color: var(--color-aff-navy);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.aff2-link span { flex: 1; font-size: 15px; font-weight: 600; color: var(--color-aff-link); text-decoration: underline; }
+.aff2-link .aff2-ext { color: var(--color-aff-link); }
+.aff2-status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 14px;
+  padding: 11px 14px;
+  border-radius: 6px;
+  background: var(--color-aff-status);
+  color: var(--color-aff-status-ink);
+  font-size: 14px;
+}
+.aff2-rule { margin: 4px 0 16px; border: 0; border-top: 1px solid var(--color-aff-line); }
+
+/* The opened document, over the modal */
+.aff2-doc { position: absolute; inset: 0; z-index: 5; display: flex; flex-direction: column; background: var(--color-fixed-light); }
+.aff2-tab {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--color-aff-input-rule);
+  background: var(--color-aff-table-head);
+  font-size: 12.5px;
+  color: var(--color-aff-muted-ink);
+}
+.aff2-tab b {
+  max-width: 70%;
+  padding: 6px 12px;
+  border-radius: 6px 6px 0 0;
+  background: var(--color-fixed-light);
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.aff2-docbody {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 32px clamp(18px, 8%, 120px);
+  font-family: 'Times New Roman', Times, serif;
+  color: var(--color-aff-ink);
+}
+.aff2-docbody .aff2-dt { margin: 0 0 8px; text-align: center; font-family: var(--font-body); font-size: 15px; font-weight: 700; }
+.aff2-docbody h3 { margin: 28px 0 12px; font-size: 18px; }
+.aff2-docbody h4 { margin: 18px 0 8px; font-size: 17px; }
+.aff2-docbody p,
+.aff2-docbody li { font-size: 17px; line-height: 1.35; }
+.aff2-docbody h3.is-u { text-decoration: underline; }
+.aff2-docfoot { flex-shrink: 0; display: flex; justify-content: flex-end; padding: 14px 18px; border-top: 1px solid var(--color-aff-line); }
+
+.aff2-empty {
+  margin: 24px 32px;
+  padding: 18px;
+  border: 1px dashed var(--color-aff-disabled);
+  border-radius: 8px;
+  color: var(--color-aff-muted-ink);
+  font-size: 15px;
+  line-height: 1.45;
+}
+.aff2-empty b { display: block; margin-bottom: 4px; color: var(--color-aff-ink); }
+
+/* Footer and buttons */
+.aff2-foot {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 20px;
+  padding: 18px 28px;
+  border-top: 1px solid var(--color-aff-line);
+}
+.aff2-btn {
+  height: 44px;
+  padding: 0 26px;
+  border: 0;
+  border-radius: 6px;
+  background: var(--color-aff-navy);
+  font: 600 16px var(--font-body);
+  color: var(--color-fixed-light);
+  cursor: pointer;
+}
+.aff2-btn:disabled { background: var(--color-aff-disabled); cursor: not-allowed; }
+.aff2-btn.is-sec { border: 1px solid var(--color-aff-input-rule); background: var(--color-fixed-light); font-weight: 500; color: var(--color-aff-label); }
+.aff2-btn:focus-visible,
+.aff2-close:focus-visible,
+.aff2-link:focus-visible { outline: 2px solid var(--color-aff-focus); outline-offset: 2px; }
+/* First / Middle / Last above a signature (2026-11-06): three across. */
+.aff2-row:has(> :nth-child(3)) { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+
+/* Side notes under the fields, e.g. "The date on this affidavit is the course completion date." (2026-11-09). */
+.aff2-terms p.aff2-fine { font-size: 13px; }
+
+/* ============================================================================
+   THE HOUSE STYLE — the Design bar's "Affidavit modal" (Jill, 2026-11-10)
+
+   Everything above is Afsana's original skin, read off her Affidavit
+   Explorer's XCEL mock. Everything below is the house style, scoped to
+   `.aff2-modal.is-house` so the two are one switch apart and the original is
+   never edited to get the new one. The structure is shared: no markup differs
+   between the arms, so nothing can drift out of step.
+
+   The student banner's three teals are NOT part of the switch — they are
+   `--color-aff-banner-student-*`, and student-is-cyan is a decision both
+   skins keep. Only the layout, the header, the close and the button change.
+   ========================================================================= */
+
+/* No coloured header: the serif title on white, sharing one row with the
+   close, as every other XCEL surface does. 28px on the right matches the
+   footer so the close's glyph and the primary button line up. */
+/* THE FRAME. ⚠ 560 AND CONTENT-SIZED OVERRIDES THE ONE-SIZE RULE above
+   (Jill, 2026-11-10, asked for knowingly): Afsana pinned 720 x 688 so CA did
+   not stand shorter than CT. Under this skin heights differ by form again and
+   the long state documents are narrower. `max-height: 100%` keeps the cap, so
+   a long form still scrolls inside rather than running off the screen. */
+.aff2-modal.is-house {
+  width: 560px;
+  height: auto;
+  max-height: 100%;
+  border: 1px solid var(--color-aff-line);
+  border-radius: var(--radius-xl);
+  box-shadow: 0 4px 6px rgb(0 0 0 / 0.05), 0 12px 32px rgb(0 0 0 / 0.12);
+}
+
+/* 30px all round — the head, the scrolling body and the footer share it, so
+   the title, the document and the button line up on one edge. */
+.aff2-modal.is-house .aff2-head {
+  padding: 30px 30px 0;
+  background: var(--color-fixed-light);
+  color: var(--color-aff-label);
+}
+/* ⚠ NO INNER VIEWPORT (Jill, 2026-11-10). Afsana's document sits in a
+   bordered box with its own always-on scrollbar; under this skin the border,
+   the radius, the inset padding and the permanent bar all go, so the text
+   reads as part of the modal. Scrolling STAYS — `auto`, so the bar appears
+   only when a form is too long — because at 560 wide the long state
+   documents are not reachable without it. */
+.aff2-modal.is-house .aff2-terms {
+  margin: 20px 30px 0;
+  padding: 0;
+  overflow-y: auto;
+  border: 0;
+  border-radius: 0;
+  scrollbar-width: auto;
+}
+.aff2-modal.is-house .aff2-head h2 {
+  font: 400 20px/28px var(--font-heading-serif);
+  color: var(--color-aff-house-ink);
+}
+
+/* ⚠ THE OVERHANG IS DELIBERATE. The X is 18px centred in a 36px target, so
+   the target leans 9px into the header's 28px padding to put the VISIBLE
+   glyph flush with the button's right edge. The hit area stays 36px. */
+.aff2-modal.is-house .aff2-close {
+  width: 36px;
+  height: 36px;
+  margin-right: -9px;
+  border: 0;
+  border-radius: 50%;
+  color: var(--color-aff-hint);
+}
+.aff2-modal.is-house .aff2-close svg { width: 18px; height: 18px; }
+.aff2-modal.is-house .aff2-close:hover { background: var(--color-aff-chip); color: var(--color-aff-ink); }
+
+/* An eyebrow naming who must ACT over the document's own sentence, with a
+   person for the student and the triangle for the proctor — so the two actors
+   never read alike at a glance. */
+.aff2-modal.is-house .aff2-banner {
+  display: flex;
+  border-radius: var(--radius-md);
+  gap: 10px;
+  align-items: flex-start;
+  text-align: left;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.4;
+  letter-spacing: normal;
+  text-transform: none;
+}
+.aff2-modal.is-house .aff2-banner > svg { display: block; flex: 0 0 16px; margin-top: 2px; }
+.aff2-modal.is-house .aff2-banner__text { display: grid; gap: 2px; }
+/* The one place uppercase is allowed, because it names who must act. */
+.aff2-modal.is-house .aff2-banner__eyebrow {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.aff2-modal.is-house .aff2-banner__body { font-size: 13px; font-weight: 600; line-height: 1.4; }
+
+/* No rule above the button — it holds that edge on its own. */
+.aff2-modal.is-house .aff2-foot { margin-top: 8px; padding: 16px 30px 32px; border-top: 0; }
+.aff2-modal.is-house .aff2-btn {
+  background: var(--color-aff-cta);
+  border-radius: var(--radius-md);
+  font: 700 15px var(--font-body);
+}
+/* ⚠ The rule above outranks the base `.aff2-btn:disabled`, so until
+   2026-11-11 a disabled I Agree / Next looked exactly like an enabled one
+   under the house style — it just did nothing when clicked (Afsana: "disabled
+   until they can click"). Restated here at the same weight. */
+.aff2-modal.is-house .aff2-btn:disabled { background: var(--color-aff-disabled); cursor: not-allowed; }
+/* Back is an outlined secondary in grey (Afsana, 2026-11-11). The house
+   button rule above painted it navy too, for the same reason as :disabled. */
+.aff2-modal.is-house .aff2-btn.is-sec {
+  border: 1px solid var(--color-aff-input-rule);
+  background: var(--color-fixed-light);
+  color: var(--color-aff-muted-ink);
+}
+.aff2-modal.is-house .aff2-btn.is-sec:hover { background: var(--color-aff-chip); }
+
+/* The type scale off the exploration page: smaller labels over shorter
+   inputs, and a quieter hint. The faces are the product's own tokens —
+   `--font-heading-serif` resolves to Playfair here, NOT the DM Serif Display
+   the standalone page pulled from Google. */
+.aff2-modal.is-house .aff2-fld label { font-size: 13px; }
+.aff2-modal.is-house .aff2-fld input:not([type='checkbox']):not([type='radio']),
+.aff2-modal.is-house .aff2-fld select {
+  height: 40px;
+  border-radius: var(--radius-md);
+  font-size: 14px;
+}
+.aff2-modal.is-house .aff2-hint { font-size: 12px; }
+.aff2-modal.is-house .aff2-btn:hover:not(:disabled) { background: var(--color-aff-cta-hover); }
+
+/* THE TYPE AND DOCUMENT COLOURS (Jill, 2026-11-10). The frame and the chrome
+   were not the whole of it: the body scale, the ink, the document row and the
+   attestation square are the exploration's too. Afsana's are 15px on #111
+   with 700 labels and a pale blue link row; these are 14px on Charcoal with
+   600 labels and neutral-100 under a San Juan link. */
+.aff2-modal.is-house .aff2-terms p,
+.aff2-modal.is-house .aff2-terms ul,
+.aff2-modal.is-house .aff2-terms ol { font-size: 14px; color: var(--color-aff-house-ink); }
+.aff2-modal.is-house .aff2-fld label { font-weight: 600; color: var(--color-aff-house-ink); }
+.aff2-modal.is-house .aff2-hint { font-size: 12px; }
+
+/* The linked document: a neutral row, the name in San Juan at the body size,
+   grouped with the attestation under one hairline. */
+.aff2-modal.is-house .aff2-link {
+  gap: 12px;
+  padding: 12px 14px;
+  border-color: var(--color-aff-line);
+  border-radius: var(--radius-md);
+  background: var(--color-aff-house-row);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-aff-house-link);
+}
+
+/* An 18px square in San Juan, as the exploration draws it. */
+.aff2-modal.is-house .aff2-chk { gap: 10px; font-size: 14px; }
+.aff2-modal.is-house .aff2-fld .aff2-chk input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--color-aff-house-link);
+}
+.aff2-modal.is-house .aff2-fld .aff2-radio input { accent-color: var(--color-aff-house-link); }

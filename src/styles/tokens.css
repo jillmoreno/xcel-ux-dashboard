@@ -7731,6 +7731,60 @@ a.cre-library-card-title::after {
   /* xcelsolutions.com's Enter Partner Code box (.hero_partner_code), read
      off the live page 2026-10-15 — the price card's shadow. */
   --shadow-e2e-partner-code: 0 4px 16px 0 rgb(0 0 0 / 0.12);
+  /* Affidavit V2 (2026-11-03, Afsana) — read off her Affidavit Explorer's XCEL
+     mock, which pins them as fixed product colours, the same in both themes.
+     Used by `affidavitModalV2.css` only. */
+  --color-aff-navy: #2d4454;
+  --color-aff-ink: #111111;
+  --color-aff-label: #1e2a33;
+  --color-aff-muted-ink: #34414c;
+  --color-aff-hint: #56636f;
+  --color-aff-placeholder: #6b7680;
+  --color-aff-line: #e2e5e8;
+  --color-aff-input-rule: #c9ced3;
+  --color-aff-disabled: #b9c3cc;
+  --color-aff-chip: #f1f3f5;
+  --color-aff-progress: #dde2e7;
+  --color-aff-track: #eef1f4;
+  --color-aff-thumb: #9aa6b1;
+  --color-aff-table-rule: #9aa0a6;
+  --color-aff-table-head: #e6e8ea;
+  --color-aff-table-ink: #444444;
+  --color-aff-flag: #fbd5da;
+  --color-aff-flag-rule: #c8102e;
+  --color-aff-banner: #fff0d1;
+  --color-aff-banner-rule: #a86400;
+  --color-aff-banner-ink: #4f3000;
+  /* The student's banner, cyan (2026-11-11, Afsana) — pinned like the rest so
+     it holds in both themes. ⚠ THE VALUES ARE JILL'S, not the ramp's
+     (2026-11-10): the rule is --color-info-500 exactly, and the fill and ink
+     sit between ramp steps — #bcebf1 between info-100 and -200, #105f69
+     between -700 and -800. 5.69:1, where Afsana's ramp-step trio was 7.8:1
+     and the proctor's amber is 4.19:1. Afsana reached the same decision
+     independently, in info-100/600/800; these are the ones Jill drew. */
+  --color-aff-banner-student: #bcebf1;
+  --color-aff-banner-student-rule: #1fbdd2;
+  --color-aff-banner-student-ink: #105f69;
+  /* The house style's primary action (Jill, 2026-11-10) — not in the brand
+     ramp; hover is --color-primary-500's value, pinned like the rest. */
+  --color-aff-cta: #3d5a73;
+  --color-aff-cta-hover: #2d5872;
+  /* The house style's type and document colours, off the exploration page:
+     Charcoal ink (--color-text-primary's value), San Juan links
+     (--color-primary-500's), and neutral-100 under the document row. Pinned
+     rather than referenced, like everything else here, so the modal holds in
+     dark mode. */
+  --color-aff-house-ink: #3a3a3a;
+  --color-aff-house-link: #2d5872;
+  --color-aff-house-row: #ececec;
+  --color-aff-link: #1f5f8b;
+  --color-aff-link-ground: #f6f8fa;
+  --color-aff-link-rule: #c9d3dc;
+  --color-aff-status: #e8f4ec;
+  --color-aff-status-ink: #1e5b34;
+  --color-aff-focus: #f2a900;
+  --color-aff-scrim: rgb(32 44 56 / 0.55);
+  --shadow-aff-modal: 0 20px 60px rgb(0 0 0 / 0.35);
 }
 
 /* ── Help & Support entry cards ─────────────────────────────────────────

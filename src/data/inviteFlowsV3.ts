@@ -54,8 +54,8 @@ export type InviteFlowV3 = {
 }
 
 export const INVITE_MODELS: { id: InviteModelId; label: string; description: string }[] = [
-  { id: 'b2b', label: 'B2B invite', description: 'A partner’s QR code. Partner pricing; the learner proves their email by code.' },
-  { id: 'b2c', label: 'B2C guest', description: 'Direct from the public site’s cart. No partner.' },
+  { id: 'b2b', label: 'B2B2C', description: 'A partner’s QR code. Partner pricing; the learner proves their email by code.' },
+  { id: 'b2c', label: 'B2C', description: 'Direct from the public site’s cart. No partner.' },
 ]
 
 /* ⚠ THREE FLOWS AND A MODEL TYPE WERE TAKEN OUT ON 2026-11-05 — the two

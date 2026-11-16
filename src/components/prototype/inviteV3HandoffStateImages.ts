@@ -53,7 +53,7 @@ const STATE_IMAGES: Record<string, Record<string, string>> = {
 
   'v3-thank-you-page': {
     'Version A — Start learning': `${LAST_STEP}/page--start-learning.png`,
-    'Version B — Create your password': `${LAST_STEP}/page--create-password.png`,
+    'Version B — Finish setting up your account': `${LAST_STEP}/page--create-password.png`,
   },
   'v3-order-receipt': {
     'Partner price': `${LAST_STEP}/receipt--partner.png`,
@@ -66,7 +66,7 @@ const STATE_IMAGES: Record<string, Record<string, string>> = {
     'Passwords don’t match': `${LAST_STEP}/create-password--mismatch.png`,
     Ready: `${LAST_STEP}/create-password--ready.png`,
   },
-  'v3-taking-you-to-course': { Holding: `${LAST_STEP}/taking-you-to-course.png` },
+  'v3-taking-you-to-course': { Holding: `${LAST_STEP}/setting-up-account.png` },
 }
 
 /** The captures as the registry's renders — one `<img>` per state, at its

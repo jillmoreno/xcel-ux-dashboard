@@ -20,12 +20,13 @@
  *
  * The left panel is the same on both: the thank-you, the confirmation number,
  * the product and the total — V2 guest checkout's light receipt since
- * 2026-11-03 (`ConfirmationReceiptV3`). Either button opens "Taking you to your course"
- * over the page, loading until a click outside closes it (2026-11-05) — it
- * used to hold on the loading page and land on the learning dashboard.
+ * 2026-11-03 (`ConfirmationReceiptV3`). Either button opens a loading card
+ * over the page (2026-11-05). Since 2026-11-11 it reads "Setting up your
+ * account" (it was "Taking you to your course") and lands on Atlas learner
+ * Home after four seconds — a demo timing; a click outside closes it first.
  */
-import { useState, type CSSProperties } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useEffect, useState, type CSSProperties } from 'react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { StandaloneBrowserChrome } from '@/components/layout/BrowserChromeBar'
 import { PartnerHeader } from '@/components/e2e/PartnerHeader'
 import { TopoBackground } from '@/components/e2e/TopoBackground'
@@ -44,8 +45,11 @@ import { meetsInvitePasswordRulesV3 } from '@/data/invitePasswordRulesV3'
 import { readVerifiedIdentity } from '@/data/inviteVerification'
 import {
   useEndToEndCourseTitle,
+  E2E_JOURNEY_FULL,
+  E2E_JOURNEY_PARAM,
   E2E_LEARNER_EMAIL,
   E2E_LEARNER_FIRST,
+  END_TO_END_VERSION,
   useEndToEndDemoParams,
   useEndToEndPageChrome,
 } from './endToEndDemo'
@@ -69,10 +73,21 @@ export function InvitedConfirmationPageV3() {
   const [confirmShown, setConfirmShown] = useState(false)
   const mismatch = confirm.length > 0 && confirm !== password
   const ready = meetsInvitePasswordRulesV3(password, learnerEmail) && confirm === password
-  /* "Taking you to your course" — 2026-11-05, Afsana. Start Course and
-     Confirm both open it over the page; it loads until a click
-     outside closes it. */
+  /* The loading card — 2026-11-05, Afsana. Start Course and Confirm both
+     open it over the page. Since 2026-11-11 it lands on Atlas learner Home
+     after `SETTING_UP_MS` — demo timing only; the product waits for the
+     account. A click outside still closes it first. */
   const [signingIn, setSigningIn] = useState(false)
+  const navigate = useNavigate()
+  useEffect(() => {
+    if (!signingIn) return
+    const t = window.setTimeout(() => {
+      navigate(`/dashboard-rebrand?demo=1&version=${END_TO_END_VERSION}&${E2E_JOURNEY_PARAM}=${E2E_JOURNEY_FULL}`, {
+        replace: true,
+      })
+    }, SETTING_UP_MS)
+    return () => window.clearTimeout(t)
+  }, [signingIn, navigate])
 
   /* What was bought, and for how much — V2's ending's reading of the same
      address, so the receipt agrees with the checkout. */
@@ -112,17 +127,16 @@ export function InvitedConfirmationPageV3() {
             <p style={CARD_EYEBROW}>Last step</p>
             {ending === 'create-password' ? (
               <>
+                {/* 2026-11-11, Afsana: the step framed as finishing the account,
+                    with the address in the line rather than a locked Email
+                    field — option 3 of four tried on the Design bar. */}
                 <h2 id="sign-in" style={CARD_TITLE}>
-                  Create your password
+                  Finish setting up your account
                 </h2>
                 <div aria-hidden style={CARD_RULE} />
-                <label style={FIELD_GROUP}>
-                  <span style={FIELD_LABEL}>Email</span>
-                  <span style={{ ...INPUT_SHELL, background: 'var(--color-e2e-form-locked-v3)' }}>
-                    <span style={{ flex: '1 0 0', minWidth: 1 }}>{learnerEmail}</span>
-                    <img src="/brand/confirmation/lock.svg" alt="Locked" width={16} height={16} style={{ display: 'block' }} />
-                  </span>
-                </label>
+                <p style={CARD_BODY}>
+                  Create a password to set up your account for <strong style={BODY_EMAIL}>{learnerEmail}</strong>.
+                </p>
                 <label style={FIELD_GROUP}>
                   <span style={FIELD_LABEL}>Password</span>
                   <span style={INPUT_SHELL}>
@@ -225,10 +239,19 @@ export function InvitedConfirmationPageV3() {
           </div>
         </section>
       </main>
-      {signingIn ? <TakingYouToCourseDialog onClose={() => setSigningIn(false)} /> : null}
+      {/* "Setting up your account" — 2026-11-11, Afsana: it replaced "Taking
+          you to your course" after both Confirm and Start Course. */}
+      {signingIn ? (
+        <TakingYouToCourseDialog message="Setting up your account" onClose={() => setSigningIn(false)} />
+      ) : null}
     </div>
   )
 }
+
+/* How long "Setting up your account" holds before Atlas learner Home — the
+   DEMO's timing (2026-11-11, Afsana). The product holds for as long as the
+   account takes to set up. */
+export const SETTING_UP_MS = 4000
 
 /* V2's demo password, so the same shortcut fills the same value. */
 const TEST_PASSWORD = 'Navarro#2026'
@@ -310,7 +333,11 @@ const CARD_BODY: CSSProperties = {
   color: 'var(--color-text-secondary)',
 }
 
-const FIELD_GROUP: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 6 }
+/* The address in the subtext, bold and allowed to break — a long
+   one would otherwise push the card wider than 440. */
+const BODY_EMAIL: CSSProperties = { fontWeight: 800, color: 'var(--color-text-primary)', overflowWrap: 'anywhere' }
+
+const FIELD_GROUP: CSSProperties ={ display: 'flex', flexDirection: 'column', gap: 6 }
 
 const FIELD_LABEL: CSSProperties = {
   fontFamily: 'var(--font-e2e-avenir)',

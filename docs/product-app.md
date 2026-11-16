@@ -4532,3 +4532,284 @@ Pinned in `CompassStudyPlanner.test.tsx` (the arithmetic by hand, every flow,
 and the Overview reading the same plan) and `AtlasTopNav.test.tsx` (the rail,
 the locked rows, the Learn page). The 2026-10-15 note above this one
 describes the OCT2 port that this replaced the same day.
+
+### Affidavit V2 — the Affidavit Explorer's forms on Home (2026-11-03 → 11-04, Afsana, `feat/affidavits`)
+
+`AffidavitModalV2` (`src/components/e2e/`) forks `AffidavitModal` behind
+`atlas-affidavit-v2` and renders the forms in `src/data/affidavitForms.ts`,
+ported from Afsana's Affidavit Explorer: every state, three moments (before
+the course begins, before the course exam, after it), in Link out — the
+only pattern since 2026-11-10 (see below).
+The Design bar's **Affidavit moment** (which replaced Eric's Affidavit control
+there), **state**, **pattern**, **language** and **line of authority** pick
+the form. The data file's header lists every place the forms now differ from
+the explorer; carry those over on the next port.
+
+**Affidavit state lists only the states with a form at the chosen moment**
+(2026-11-06, Afsana) — `variantsHiddenWhen` on `affidavit-v2-state`, read
+live like `hiddenWhen`. The state already picked stays listed. Afsana asked
+for the N/A states greyed out and unclickable; that needs a disabled option on
+the Design bar, which is Jill's file, so for now they are dropped.
+
+**Where the wording came from, when it is not the explorer's:**
+
+- **Before course exam — Colorado, Connecticut, West Virginia, Wisconsin.**
+  The attestation text was **provided by Sarah on 11/04/26**; the explorer had
+  no document for these four at this moment. Sarah also confirmed the forms
+  may be titled **"<State> Pre-Exam Attestation"** — they had no preference on
+  what they are called. There is no box to tick (2026-11-06, Afsana took out
+  its "I have read and understand the requirements above" checkbox): the "I
+  Attest and Confirm" button attests.
+- **After course exam — CO, CT, MN, NY, WI, WV.** Fields match each state's
+  own document exactly (Afsana's "State Specific Affidavit" folder): one name
+  field, not First / Middle / Last / Suffix, and each document's own labels.
+  **Except the name and signature, since 2026-11-06** (next bullet).
+- **One way to sign** (2026-11-06). The Nov 5 product & design review
+  (Amrita, Nick) settled that signatures are captured the same way on every
+  form, whatever the document calls the field, so audit and reporting read
+  one shape. Afsana's call for now: **everywhere a signature appears** (a
+  signature line or label — 15 forms, `SIGNED_FORMS` in the data file) the
+  learner sees **First Name and Last Name, pre-filled** from the account, then
+  an **empty Student Signature** box to type their name in, and the "I
+  confirm that the above information is accurate" box. Suffix is gone (no
+  document asks for one). **Middle Name is undecided** — it is part of a
+  legal name — so it is the Design bar's **Affidavit middle name** (Shown /
+  Off; `affidavit-v2-middle`). The document's own "Student
+  E-Signature:" heading stayed until 2026-11-09 (see below). Proctor fields are untouched. **Names are taken the same way
+  too** (Afsana, same day): the forms with a name and no signature —
+  California's and the generic terms, and the KY, NV and OR enrollment
+  agreements ("Full Name", in the image of the form at the end of each Word
+  doc) —
+  take the same pre-filled name block, with no signature box
+  (`NAMED_FORMS`). "Full Legal Name", "Full Name" and "Student Name" are one
+  data point.
+  The three fields are labelled **First Name, Middle Name, Last Name** —
+  "Legal" dropped 2026-11-11 (Afsana), the proctor's too; it was Legal First
+  / Middle / Last Name from 2026-11-06.
+- **Whose fields (2026-11-09, Afsana).** The six **state-specific**
+  affidavits — the after-exam forms in the "State Specific Affidavit" folder,
+  `STATE_SPECIFIC_FORMS` (CO, CT, MN, NY, WI, WV) — keep their student and
+  proctor pages, each with its own "Must be completed by the …" banner.
+  **Every other form, in all three moments, is the student's alone** and now
+  carries the same "Must be completed by the student" banner once, at the
+  top (first page in Pagination, above the link in Link out; `who` on the
+  form). Because a banner says whose the fields are, **every signature box
+  is plain Signature** — the state-specific forms too, where the student
+  page's banner says it (Afsana, same day). And **no form keeps a "Student
+  E-Signature:" heading**, state-specific ones included: the banner, the
+  name block and the signature box already say it. Done as a pass at the end
+  of `affidavitForms.ts`, so the explorer's text above it stays verbatim.
+  On a form the student signs (it has a Signature box) the banner reads
+  **"Must be completed and signed by the student"** (2026-11-10, Afsana),
+  **in cyan** since 2026-11-11 (`.aff2-banner.is-student`,
+  `--color-aff-banner-student*`); the proctor's banner stays amber.
+  **"Must be completed by the student" is gone (2026-11-11, Afsana):** the
+  student is the only one using the modal, so a page they fill without
+  signing — Florida before the course begins, the enrollment agreements,
+  Colorado's (and CT's) Student Certification Statement page — has no
+  banner at all. It is per student page on the state-specific forms.
+  The proctor's page works the same way, naming the document's word for
+  them: **"Must be completed and signed by exam monitor"** on CO, CT and WI,
+  **"Must be completed and signed by the proctor"** on WV and MN (`proctorWord`;
+  2026-11-10, Afsana — `proctorBanner` is gone).
+- **Minnesota after the exam follows OCD (2026-11-10, Afsana)** — where
+  the PDF and OCD (what production shows today) differ, OCD and the standard
+  fields win. Student page: no "Student / Licensee Name and Certification"
+  or "Student's Full Legal Name, License Number, & DOB" headings; **Exam
+  Completion Date** and **Time of Exam Completion** (was one Date & Time
+  field), both pre-filled and locked; where the exam was completed is an
+  "Address where exam was completed" heading over the standard five address
+  fields (OCD: address, city, state, zip; the PDF: "Company & Address where
+  exam was completed"); the PDF's Business Address is the student's own
+  standard address, pre-filled (OCD: student address, city, state, zip);
+  **a Mailing Address** (see ⚑ below; OCD has none); Phone Number, Email Address and
+  Today's Date (no "Must match exam"). Proctor page: no "Proctor Name and
+  Certification" heading; banner "Must be completed and signed by the
+  proctor"; **Relationship to Examinee** as radio buttons — OCD's
+  Co-Worker / Librarian / Neighbor, without OCD's "(check one)", as Colorado
+  has it — not the PDF's open "Note your type of relationship to the
+  student."; **Employer** and **Job Title**, two fields since 2026-11-11 (see ⚑ below; OCD has none); a "Business Address" heading (2026-11-11, as the student's); the standard five
+  address fields (OCD: proctor address, city, state, zip); Today's Date,
+  pre-filled and locked, though OCD has no date for the exam monitor; Phone
+  Number.
+  - **⚑ What OCD skips but the state form asks for, we collect (2026-11-10,
+    Sarah, via Afsana).** So four fields came back the same day, overriding
+    the "no" above: the student's **License #** (beside Date of
+    Birth), the student's **Mailing Address** (optional, under "Mailing
+    Address (if different than above)", as the document has it), the
+    proctor's **Employer & Job Title** (required) and the proctor's **Email
+    Address** (required, beside Phone Number). Rule of thumb for MN: OCD
+    sets the shape and the labels; the state form sets what is collected.
+  - **License # is optional (2026-11-11, Afsana).** Most learners have no
+    licence yet — they are studying for the exam that gets them one — so the
+    field stays, without its asterisk. Patrick's distinction, which matters
+    for CE because states differ in which they require us to collect: the
+    **NPN** (National Producer Number) is one per person, nationwide, and lets
+    states track a producer across states; a **License #** is state-issued —
+    one resident licence (the state you live in), plus one non-resident
+    licence for every other state you are licensed to sell in. This field is
+    the state License #, not the NPN.
+- **No language control (2026-11-11, Afsana, on Amrita's word).** The
+  Design bar's "Affidavit language" (English / Spanish) is gone. Amrita: the
+  legal documents are kept as they are and not modified; a learner reads the
+  English or the Spanish in them as they see fit; if Florida requires the
+  notice in both languages, so be it. Whatever the course language, the
+  learner is shown the original document, which carries both, so the modal
+  is English and there is nothing to choose. The Spanish forms (`FL_LH_ES`,
+  `FL_PC_ES`, `GEN_PRE_ES`) stay in `affidavitForms.ts`, unwired, and the
+  `language` prop still reaches them for the tests; the restore steps are
+  in the comment where the flag was, in `FeatureFlagContext.tsx`. Not yet in
+  the Archive table — `archivedItems.ts` is Jillienne's.
+- **The Student Certification Statement ends the student's page (2026-11-11,
+  Afsana: "to streamline UX").** On CO, CT, WV and WI after the exam it was a
+  third page of its own, which sent the student back after the exam
+  monitor's page with nothing to fill in. It now follows the student's last
+  field, and "I confirm that the above information is accurate" moves below
+  it as the page's last row; each form
+  is two pages: the student's, then the exam monitor's. Done by one pass
+  after `WI_POST` in `affidavitForms.ts`; the forms' own `pages` still read
+  as the Word docs have them. ⚠ WV's and WI's statement says "By clicking
+  the button below" — on the student's page that button is Next, not
+  Attest. Compliance's wording, left verbatim.
+- **Quick-fill: click the top of the modal (2026-11-11, Afsana).** A click
+  anywhere on the header (the title row, not the ✕) fills every required
+  field still empty with a sample answer — Jordan Lee Navarro for the
+  student, Alex Morgan for the proctor, today for dates, the first option
+  for radios and selects — ticks the required boxes, counts a Link out
+  document as opened and every page as read, so the primary CTA (or Next)
+  comes on. What is already there is kept: the profile's pre-fill, a locked
+  field, anything typed. A review shortcut with only a tooltip to show for
+  it ("Click to fill the required fields"); `quickFill` and `sampleFor` in
+  `AffidavitModalV2.tsx`. ⚠ It is live in every build, a frozen user-test
+  build included — a participant who clicks the title gets a filled form.
+- **Minnesota's "Company where exam was completed" (2026-11-11, Patrick via
+  Afsana)** sits right above "Address where exam was completed", optional:
+  most learners will not sit the exam at a company.
+- **Minnesota's Name of Exam is asterisked (2026-11-11, Afsana)**, like
+  every other required field. It is read-only, so a read-only field now
+  shows its asterisk and counts as filled from its own value.
+- **The sentence over the link (2026-11-11, Afsana)** reads "Before you
+  begin, you must click the link below to review the **attestation** /
+  **affidavit** and complete the form below:" — "attestation" where the
+  form's title says Attestation (CO, CT, WV, WI and MN before the course
+  exam, Non-state specific before the course exam), "affidavit" for every
+  other affidavit — and the rest by what they are (same day): **enrollment
+  agreement** (KY, NV, OR), **notice** (Florida), **terms and conditions**
+  (CA and Non-state specific before the course begins), **registration
+  form** (Ohio before the course begins). `docWord` on the form, set by the
+  `DOC_WORD` pass at the end of `affidavitForms.ts`; `docWordFor` falls back
+  to the title. It used to name the document's title ("review the attached
+  …").
+- **The link shows no document (2026-11-10, Afsana).** In Link out,
+  clicking the document's link only marks it opened — "Document opened."
+  appears and the button can unlock — and nothing draws what the document
+  looks like; there is no "Back to the affidavit" view. Kept, unwired, as
+  `LinkedDocument` in `AffidavitModalV2.tsx`, whose comment has the re-wire
+  steps; the tests render it directly to pin each document's text.
+- **One size, and Home holds still (2026-11-10, Afsana).** Every affidavit
+  modal is 720 × 688 (less on a short window), whatever the form or
+  pattern. Until then only Pagination held 688px (`is-tall`, now gone) and
+  a Link out modal shrank to its content — which is why California after the
+  exam stood shorter than Connecticut. While the modal is open Home does not
+  scroll (`acquireBodyScrollLock`, the shared Modal's lock, which locks
+  `<html>` too); the modal's own text scrolls, with `overscroll-behavior:
+  contain`, and the learner leaves by its button or its X. It stays centred
+  on the area below the review bars, as on 2026-11-04.
+- **Titles (2026-11-10, Afsana).** Minnesota's before-course form is
+  "Minnesota Prelicensing Terms and Conditions Pre-Course Affidavit"; the
+  non-state-specific pre-exam form is "Prelicensing Education Insurance -
+  Proctor Acknowledgement and Student Attestation".
+- **Link out is the only pattern (2026-11-10, Afsana).** The Design bar's
+  **Affidavit pattern** offers Link out alone; Pagination is no longer a
+  choice but part of the forms that need it: where the student and the
+  exam monitor each have a page (CO, CT, MN, WV and WI after the course
+  exam) and any `noLink` form, the form shows in full, a page at a time.
+  Every other form links out, in all three moments — California, Illinois,
+  Ohio and New York after the exam included (Afsana, same day). The
+  same day the KY, NV and OR enrollment agreements stopped keeping their last
+  page in the modal (`linkKeep` removed): "By clicking on the confirmation
+  button below, you agree to the terms of this Enrollment Agreement." and the
+  "I received a copy of the catalog…" bullets are in the document the link
+  opens. So, later that day, does Minnesota's pre-exam Student Attestation
+  (and Ohio's registration's last page, empty by then): **no form keeps any
+  of its document in the modal** — `linkKeep` is unused.
+- **Smaller fixes (2026-11-09, Afsana).** Ohio's registration (before the
+  course) loses its "TO BE COMPLETED BY STUDENT:" heading — the banner says
+  it. California's after-exam affidavit loses the red box round the name and
+  its "Student Legal Name (first and last name)" heading, and Ohio's
+  after-exam affidavit loses the red box round the whole form. "The date on
+  this affidavit is the course completion date." is smaller print
+  (`aff2-fine`, black — not grey, 2026-11-09) on every form that has it
+  (`COMPLETION_DATE_NOTE`).
+- **The proctor, the same way (2026-11-09, Afsana)** — this settled what
+  had been waiting on Nick and Amrita since 2026-11-06. On the five forms
+  with a proctor (`PROCTOR_FORMS`: CO, CT, MN, WV, WI after the exam) the
+  proctor's **name** is First / Middle / Last Name (never pre-filled;
+  Middle follows the Design bar's toggle), the **signature** is a
+  "Signature" box (where the document had its signature line, or after the
+  names on WV and WI, whose "Proctor E-Signature:" heading went), and the
+  **address** is the student's five fields — Address Line 1, Address Line 2
+  (Optional), City, State, Zip. That replaced CO/CT's "Proctor Name (print)",
+  "Proctor Signature" and one-line "Proctor Address" with its "(street
+  address, city, state, zip code)" hint; WV/WI's "Proctor Full Name"; WI's
+  "Proctor Full Address"; Minnesota's "Proctor's Full Legal Name" and
+  split Business Address (kept as a "Business Address" heading over the
+  five fields). WI's "Proctor Phone Number" became "Phone Number" (2026-11-10). The same day CO
+  (and CT, its copy) lost the "Student Signature:" heading and the
+  underlined "To be completed and Signed by Exam Monitor" heading, CT lost
+  the "mm/dd/yyyy" hint under its exam date, and the course-completion-date
+  sentence went back to black (it stays the smaller size). **Still as the
+  documents have them:** the student's own address variants — Ohio's
+  registration ("Full Residence(Home) Address", built as the five fields) and
+  Minnesota's student Company & Address, Business and Mailing addresses
+  (split into City, State and Zip Code, no Line 2).
+- **Non-state specific** (`GEN`) — XCEL's Generic Terms and Conditions (before
+  the course begins, English or Spanish by Affidavit language) and its PE
+  General Attestation (before the course exam), from Afsana's "Non-State
+  Specific" folder.
+- **Before course exam — Pennsylvania** (2026-11-06), from the compliance
+  sheet below. ⚠ **The sheet and the PRD disagree.** The Compliance
+  and Regulatory Data Foundations PRD (Confluence, ATLAS space — checked
+  2026-11-06 against the page as last edited 2026-10-20) does not count
+  Pennsylvania among its 19 regulated states: tables A10 and A11 say it
+  **eliminated pre-licensing on 29 Apr 2025**, and that the state's licensing
+  tab "still says 'student affidavit'". Built from the sheet; compliance to
+  say whether XCEL still shows it before it counts as decided.
+- **Before course exam — Mississippi** (2026-11-11), from Afsana's
+  "Non-State Specific/before course exam" folder: *Mississippi Pre-Exam
+  Attestation.docx*, which is only a screenshot of OCD's affidavit preview,
+  so the title, text and fields were read off the image. The wording is
+  Pennsylvania's word for word, but with "the Mississippi Insurance
+  Department". Its First Name · Last Name · Today's date take the standard
+  signing (`SIGNED_FORMS`), and its button is "I Attest and Confirm".
+- **The SSN wording** (2026-11-06) — the sheet's "SSN Veribage" column:
+  *"This information will enable the Commissioner to properly identify and
+  assign credit to students who have completed a course."* It replaces
+  "Education providers are required to collect and report …" on California
+  and Illinois after the exam, and sits directly above Last 4 of SSN on both
+  Ohio forms (`SSN_REASON` in the data file).
+
+**The list of documents to build is the compliance team's sheet** —
+`XCEL-PE_Affidavits_and_EAs.xlsx`, Regulatory Accreditation and Compliance
+Team Site → Compass Documents → Financial Services. Last checked against
+**2026-11-06** (the sheet was last edited 2026-11-04; its note says it covers
+the documents shared as of 10/29/2026). Every row is built except Mississippi
+("Still waiting on a response"). Every row the sheet marks **Affidavit State
+Form = TRUE** (CO, CT, MN after the exam, NY, WI, WV) must match its document
+**field for field, 1:1**. Two things the build has that the sheet does not:
+
+- **The four Pre-Exam Attestations for CO, CT, WV and WI** are not on the
+  sheet yet; their wording came from Sarah directly on 11/04/26 (above).
+- ⚠ **OPEN — Ohio's "OH PE-Pre & Post Final Affidavit".** The sheet lists it
+  as Pre & Post, and the document's note says one form serves both because
+  of the different lines of authority (Ohio does not allow both on one form,
+  and OCD cannot attach two post-final affidavits). The document holds only
+  the **Property** affidavit. Built: after the course exam, Property only.
+  Unresolved: should it also show before the course exam, and is a Life &
+  Health version coming? The PRD's Ohio profile (checked 2026-11-06) lists
+  only a "Post-exam learner affidavit" and says Ohio is silent on a pre-exam
+  attestation, which points to after the exam only — it says nothing about a
+  Life & Health version. Raise it on every pass over these forms until it is
+  answered.
+
+Pinned in `AffidavitModalV2.test.tsx`.

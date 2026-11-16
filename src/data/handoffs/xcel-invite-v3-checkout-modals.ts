@@ -61,7 +61,7 @@ const feature: PrototypeFeature = {
     },
   ],
   featureFlags: [
-    { id: 'invite-v3-model', label: 'Model type', note: 'B2B invite or B2C guest.' },
+    { id: 'invite-v3-model', label: 'Model type', note: 'B2B2C or B2C.' },
     { id: 'invite-v3-flow-b2b', label: 'Invite flow', note: 'The four B2B flows — Direct Email and the three QR flows.' },
     { id: 'invite-v3-flow-b2c', label: 'Guest checkout', note: 'The five B2C flows, the two OCD flows among them.' },
     { id: 'invite-v3-cart', label: 'Cart contents', note: 'OCD flows only. Targeted only or Mixed is in scope; None targeted is not.' },
