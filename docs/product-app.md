@@ -4552,6 +4552,16 @@ plain forms — `CA_POST` and `OH_POST`, renamed from `CA_POST_LH` and
 It now picks Florida's pre-course notice (Life & Health or Property &
 Casualty). The document titles are compliance's, unchanged.
 
+**One label on the primary button** (2026-11-16, compliance): **Confirm** on
+every form's last step and **Continue** on any page before it — the student
+page of the two-page forms (CO, CT, MN, WV, WI after the exam). It replaces
+six labels (I Agree, I Attest, I Attest and Confirm, Attest, Confirmation,
+Next). The checkboxes carry the attestation; the button only submits.
+"Confirm" echoes "I confirm that the above information is accurate";
+"Continue" would undersell a sworn statement on the last step, and "Submit"
+reads as a web form. The English forms have no `agreeLabel` now; the Spanish
+forms, unwired, keep "Acepto".
+
 **Affidavit state lists only the states with a form at the chosen moment**
 (2026-11-06, Afsana) — `variantsHiddenWhen` on `affidavit-v2-state`, read
 live like `hiddenWhen`. The state already picked stays listed. Afsana asked
@@ -4667,6 +4677,15 @@ the Design bar, which is Jill's file, so for now they are dropped.
   `language` prop still reaches them for the tests; the restore steps are
   in the comment where the flag was, in `FeatureFlagContext.tsx`. Not yet in
   the Archive table — `archivedItems.ts` is Jillienne's.
+  ⚠ **OPEN (2026-11-16): the linked document is still one language.** Amrita
+  also said there will be no language-specific version of anything — and no
+  Spanish or other-language course — until a full translation strategy is
+  mapped out and carried out. So there should be no English form and Spanish
+  form at all: the link (Florida before the course begins, Life & Health or
+  Property & Casualty; the Non-state specific terms) should open the whole
+  original document, English and Spanish together, as compliance holds it.
+  Today it opens only the English half (`FL_LH_EN`, `FL_PC_EN`,
+  `GEN_PRE_EN`). Not built yet.
 - **The Student Certification Statement ends the student's page (2026-11-11,
   Afsana: "to streamline UX").** On CO, CT, WV and WI after the exam it was a
   third page of its own, which sent the student back after the exam

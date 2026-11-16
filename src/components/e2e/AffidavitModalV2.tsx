@@ -56,9 +56,9 @@ import './affidavitModalV2.css'
  *
  * THE TWO PATTERNS, as the explorer gates them:
  *   · Pagination — one page at a time under progress segments. Next unlocks
- *     when the page has been scrolled to its end and its required fields are
- *     filled; the last page carries the form's own button (I Agree, Attest,
- *     Acepto…). Proctor / exam-monitor pages never block, so a reviewer can
+ *     (Continue since 2026-11-16) when the page has been scrolled to its end and its required fields are
+ *     filled; the last page carries Confirm (2026-11-16; it was the form's own
+ *     button — I Agree, Attest…), and Next is Continue. Proctor / exam-monitor pages never block, so a reviewer can
  *     walk through without playing the proctor.
  *   · Link out — the document as a link (opening it shows it over the
  *     modal), an "I have read … and swear" checkbox, and the fields. Not
@@ -538,7 +538,7 @@ export function AffidavitModalV2({
                     } ${MOMENTS.find((m) => m.id === moment)?.label.toLowerCase()}. Pick another state or moment on the Design bar.`}
             </div>
             <div className="aff2-foot">
-              <button type="button" className="aff2-btn" disabled>I Agree</button>
+              <button type="button" className="aff2-btn" disabled>Confirm</button>
             </div>
           </>
         )}
@@ -635,7 +635,11 @@ function AffidavitBody({
     return flatList(form.pages.filter((p) => p.who !== 'proctor').flatMap((p) => p.fields ?? []).concat(form.fields))
   }
   const filled = (list?: AffField[]) => isFilled(required(list), vals)
-  const agreeLabel = form.agreeLabel ?? 'I Agree'
+  /* ONE LABEL (2026-11-16, compliance): Confirm on every form's last step,
+     Continue on any page before it. The checkboxes carry the attestation; the
+     button only submits. Until then each form named its own (I Agree, Attest,
+     I Attest and Confirm, Confirmation…). */
+  const agreeLabel = form.agreeLabel ?? 'Confirm'
 
   if (pattern === 'link') {
     const hasFields = flatFields(form).length > 0
@@ -738,7 +742,7 @@ function AffidavitBody({
             title={nextOk ? undefined : reached[page] ? 'Fill the required fields on this page to continue' : 'Scroll to the end of this page to continue'}
             onClick={() => setPage(page + 1)}
           >
-            Next
+            Continue
           </button>
         ) : (
           <button type="button" className="aff2-btn" disabled={!(reached[page] && filled())} onClick={onAgree}>

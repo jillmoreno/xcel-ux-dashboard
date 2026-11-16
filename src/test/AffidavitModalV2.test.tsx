@@ -213,7 +213,7 @@ describe('AffidavitModalV2 — the explorer’s forms', () => {
   it('says so when a state has no affidavit at that moment', () => {
     render(<AffidavitModalV2 onClose={() => {}} moment="post" state="FL" />)
     expect(screen.getByText(/Florida has no affidavit after course exam/)).toBeTruthy()
-    expect((screen.getByRole('button', { name: 'I Agree' }) as HTMLButtonElement).disabled).toBe(true)
+    expect((screen.getByRole('button', { name: 'Confirm' }) as HTMLButtonElement).disabled).toBe(true)
   })
 
   /* 2026-11-10, Afsana: the Affidavit pattern is Link out and nothing else;
@@ -225,7 +225,7 @@ describe('AffidavitModalV2 — the explorer’s forms', () => {
     for (const [moment, state] of [['pre', 'IL'], ['pre', 'OH'], ['pre', 'KY'], ['exam', 'FL'], ['exam', 'GEN'], ['exam', 'CO']] as const) {
       const { unmount } = render(<AffidavitModalV2 onClose={() => {}} moment={moment} state={state} />)
       expect(screen.getByLabelText(/I have read .* and swear/), `${moment} ${state}`).toBeTruthy()
-      expect(screen.queryByRole('button', { name: 'Next' }), `${moment} ${state}`).toBeNull()
+      expect(screen.queryByRole('button', { name: 'Continue' }), `${moment} ${state}`).toBeNull()
       unmount()
     }
   })
@@ -237,7 +237,7 @@ describe('AffidavitModalV2 — the explorer’s forms', () => {
     fireEvent.change(screen.getAllByLabelText(/^Signature/)[0]!, { target: { value: 'Jordan Navarro' } })
     fireEvent.click(screen.getByLabelText(/I confirm that the above information is accurate/))
     await ready()
-    fireEvent.click(screen.getByRole('button', { name: 'Next' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Continue' }))
     expect(screen.getByText('Must be completed and signed by exam monitor')).toBeTruthy()
     fireEvent.click(screen.getByRole('button', { name: 'Back' }))
     expect(screen.getByText('Must be completed and signed by the student')).toBeTruthy()
@@ -267,7 +267,7 @@ describe('AffidavitModalV2 — the explorer’s forms', () => {
     render(<AffidavitModalV2 onClose={() => {}} moment="pre" state="IL" />)
     fireEvent.change(screen.getByLabelText(/^Signature/), { target: { value: 'Jordan Navarro' } })
     fireEvent.click(screen.getByLabelText(/I confirm that the above information is accurate/))
-    const agree = screen.getByRole('button', { name: form.agreeLabel ?? 'I Agree' }) as HTMLButtonElement
+    const agree = screen.getByRole('button', { name: form.agreeLabel ?? 'Confirm' }) as HTMLButtonElement
     fireEvent.click(screen.getByLabelText(/I have read .* and swear/))
     expect(agree.disabled).toBe(true) // not opened yet
     fireEvent.click(screen.getByRole('button', { name: new RegExp(form.title) }))
@@ -326,7 +326,7 @@ describe('AffidavitModalV2 — the explorer’s forms', () => {
   it('Illinois after the exam: no roster heading and no red box, the SSN field kept, with the sheet’s reason for it', () => {
     render(<AffidavitModalV2 onClose={() => {}} moment="post" state="IL" />)
     const last = FORMS.IL_POST!.pages.length - 1
-    for (let i = 0; i < last; i++) fireEvent.click(screen.getByRole('button', { name: 'Next' }))
+    for (let i = 0; i < last; i++) fireEvent.click(screen.getByRole('button', { name: 'Continue' }))
     expect(screen.queryByText('Course Completion Roster upload form')).toBeNull()
     const ssn = screen.getByLabelText(/Full SSN/)
     expect(ssn.closest('.aff2-flag')).toBeNull()
@@ -337,7 +337,7 @@ describe('AffidavitModalV2 — the explorer’s forms', () => {
   it('California after the exam: no roster heading, the sheet’s SSN reason in place of the old sentence', () => {
     render(<AffidavitModalV2 onClose={() => {}} moment="post" state="CA" />)
     const last = FORMS.CA_POST!.pages.length - 1
-    for (let i = 0; i < last; i++) fireEvent.click(screen.getByRole('button', { name: 'Next' }))
+    for (let i = 0; i < last; i++) fireEvent.click(screen.getByRole('button', { name: 'Continue' }))
     expect(screen.queryByText('Course Completion Roster upload form')).toBeNull()
     expect(screen.queryByText(/Education providers are required to collect/)).toBeNull()
     expect(screen.getByText(SSN_REASON)).toBeTruthy()
@@ -394,7 +394,7 @@ describe('AffidavitModalV2 — the explorer’s forms', () => {
     fireEvent.change(screen.getByLabelText(/^Signature/), { target: { value: 'Jordan Navarro' } })
     fireEvent.click(screen.getByLabelText(/I confirm that the above information is accurate/))
     await ready()
-    fireEvent.click(screen.getByRole('button', { name: 'Next' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Continue' }))
     expect(screen.getByText('Must be completed and signed by the proctor')).toBeTruthy()
     expect((screen.getByLabelText(/^First Name/) as HTMLInputElement).value).toBe('')
     expect((screen.getByLabelText(/^Signature/) as HTMLInputElement).value).toBe('')
@@ -405,7 +405,7 @@ describe('AffidavitModalV2 — the explorer’s forms', () => {
     fireEvent.change(screen.getByLabelText(/^Signature/), { target: { value: 'Jordan Navarro' } })
     fireEvent.click(screen.getByLabelText(/I confirm that the above information is accurate/))
     await ready()
-    fireEvent.click(screen.getByRole('button', { name: 'Next' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Continue' }))
     const monitorNote = screen.getByRole('note')
     expect(bannerBody(monitorNote)).toBe('Must be completed and signed by exam monitor')
     expect(bannerEyebrow(monitorNote)).toBe('Proctor action required')
@@ -621,7 +621,7 @@ describe('AffidavitModalV2 — the explorer’s forms', () => {
     // The standard name block since 2026-11-06: pre-filled, so confirmed.
     expect((screen.getByLabelText(/^First Name/) as HTMLInputElement).value).toBe('Jordan')
     expect(screen.queryByLabelText(/^Signature/)).toBeNull()
-    const agree = screen.getByRole('button', { name: 'I Agree' }) as HTMLButtonElement
+    const agree = screen.getByRole('button', { name: 'Confirm' }) as HTMLButtonElement
     fireEvent.click(screen.getByLabelText(/I confirm that the above information is accurate/))
     readAndSwear()
     expect(agree.disabled).toBe(true) // the document not opened yet
@@ -642,13 +642,13 @@ describe('AffidavitModalV2 — the explorer’s forms', () => {
     expect(doc.queryByText('Acknowledgement of Terms and Conditions of Pre-licensing Course Completion')).toBeNull()
   })
 
-  it('Non-state specific, before the course exam: the general attestation, signed with Attest', async () => {
+  it('Non-state specific, before the course exam: the general attestation, signed with Confirm', async () => {
     render(<AffidavitModalV2 onClose={() => {}} moment="exam" state="GEN" />)
     expect(screen.getByRole('heading', { level: 2 }).textContent).toBe(
       'Prelicensing Education Insurance - Proctor Acknowledgement and Student Attestation',
     )
     expect(screen.queryByText('Student E-Signature:')).toBeNull()
-    expect(screen.getByRole('button', { name: 'Attest' })).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'Confirm' })).toBeTruthy()
     const doc = openDoc('exam', 'GEN')
     expect(doc.getByText('THIS EXAM MUST BE MONITORED BY A DISINTERESTED THIRD PARTY PROCTOR')).toBeTruthy()
     expect(doc.getByText('Student Attestation:')).toBeTruthy()
@@ -678,7 +678,7 @@ describe('AffidavitModalV2 — the explorer’s forms', () => {
     expect(doc.getByText(/I attest that I am the individual registered for this examination/)).toBeTruthy()
     expect(doc.getByText(/artificial intelligence tools/)).toBeTruthy()
     readAndSwear()
-    const agree = screen.getByRole('button', { name: 'I Attest and Confirm' }) as HTMLButtonElement
+    const agree = screen.getByRole('button', { name: 'Confirm' }) as HTMLButtonElement
     expect(agree.disabled).toBe(false)
     fireEvent.click(agree)
     expect(onClose).toHaveBeenCalled()
@@ -770,14 +770,14 @@ describe('AffidavitModalV2 — the explorer’s forms', () => {
 
   /* PENNSYLVANIA (2026-11-06), from the compliance sheet. Not in the PRD —
      an open question; affidavitForms.ts has it. */
-  it('Pennsylvania before the course exam: its affidavit, signed the standard way, with Attest', async () => {
+  it('Pennsylvania before the course exam: its affidavit, signed the standard way, with Confirm', async () => {
     render(<AffidavitModalV2 onClose={() => {}} moment="exam" state="PA" />)
     expect(screen.getByRole('heading', { level: 2 }).textContent).toBe('Pennsylvania Pre-Licensing Affidavit')
     expect(screen.queryByText('Student E-Signature:')).toBeNull()
     expect(openDoc('exam', 'PA').getByText(/sanction by the Pennsylvania Department of Insurance/)).toBeTruthy()
     expect((screen.getByLabelText(/^First Name/) as HTMLInputElement).value).toBe('Jordan')
     expect((screen.getByLabelText(/^Signature/) as HTMLInputElement).value).toBe('')
-    expect(screen.getByRole('button', { name: 'Attest' })).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'Confirm' })).toBeTruthy()
     expect(STATES.PA).toBe('Pennsylvania')
     expect(FEATURE_FLAGS.find((f) => f.key === 'affidavit-v2-state')!.variants!.some((v) => v.value === 'PA')).toBe(true)
   })
@@ -799,6 +799,18 @@ describe('AffidavitModalV2 — the explorer’s forms', () => {
     for (const st of ['IL', 'MN']) expect(ENTRIES.find((e) => e.m === 'pre' && e.st === st)!.doc, st).toBe('terms')
     expect(DOCS.map((d) => d.id)).not.toContain('privacy')
     expect(ENTRIES.every((e) => e.doc == null || DOCS.some((d) => d.id === e.doc))).toBe(true)
+  })
+
+  /* ONE LABEL (2026-11-16, compliance): Confirm on every form's last step,
+     Continue before it; only the unwired Spanish forms keep their own. */
+  it('labels the primary button Confirm on every English form, and Continue before the last page', () => {
+    for (const [key, f] of Object.entries(FORMS)) if (f.lang !== 'es') expect(f.agreeLabel, key).toBeUndefined()
+    for (const st of ['CO', 'CT', 'MN', 'WV', 'WI']) {
+      render(<AffidavitModalV2 onClose={() => {}} moment="post" state={st} />)
+      expect(screen.getByRole('button', { name: 'Continue' }), st).toBeTruthy()
+      expect(screen.queryByRole('button', { name: 'Confirm' }), st).toBeNull()
+      cleanup()
+    }
   })
 
   it('resolves every ready entry in the explorer to a form', () => {
@@ -843,9 +855,9 @@ describe('the quick-fill on the top of the modal', () => {
     render(<AffidavitModalV2 onClose={() => {}} moment={c.m} state={c.st} language={c.language} lineOfAuthority={c.loa} />)
     expect(primary().disabled).toBe(true)
     fireEvent.click(head())
-    // Pagination: Next is on for every page, through to the last.
-    for (let i = 0; i < 6 && primary().textContent === 'Next'; i++) {
-      expect(primary().disabled, `Next on page ${i + 1}`).toBe(false)
+    // Pagination: Continue is on for every page, through to the last.
+    for (let i = 0; i < 6 && primary().textContent === 'Continue'; i++) {
+      expect(primary().disabled, `Continue on page ${i + 1}`).toBe(false)
       fireEvent.click(primary())
     }
     expect(primary().disabled).toBe(false)
