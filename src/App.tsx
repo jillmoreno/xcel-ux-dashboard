@@ -11,6 +11,7 @@ import { PrdsPage } from '@/pages/PrdsPage'
 import { ComponentReviewPage } from '@/pages/ComponentReviewPage'
 import { VariantDeckPage } from '@/pages/VariantDeckPage'
 import { AtlasHeaderPreviewPage } from '@/pages/AtlasHeaderPreviewPage'
+import { ComparePage } from '@/pages/ComparePage'
 /* THE INVITE FLOW IS VERSIONED SINCE 2026-10-22, so these four routes name a
    SWITCH rather than a page — each picks V1's page or its V2 fork from the
    `invite-flow-version` flag. The paths, and everything that depends on them,
@@ -218,6 +219,11 @@ export default function App() {
           LMS hub 2026-10-26; no deck is registered here yet). The one handoff
           surface aimed at stakeholders. */}
       <Route path="/variants/:deckId" element={<TestingGate><VariantDeckPage /></TestingGate>} />
+      {/* One surface, two versions, widget by widget — each block drawn by the
+          real component, side by side or stacked, with every variant on a
+          switch and a note under each row (2026-11-16). Decks are listed in
+          `src/data/compareDecks.ts`; the Readiness one is the first. */}
+      <Route path="/compare/:compareId" element={<TestingGate><ComparePage /></TestingGate>} />
       {/* The Atlas header on its own, not wired into the shell. See `AtlasHeader`. */}
       <Route path="/atlas-header-preview" element={<TestingGate><AtlasHeaderPreviewPage /></TestingGate>} />
       {/* The End-to-End Demo's first page, before its dashboard: blank under the

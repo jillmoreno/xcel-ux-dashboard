@@ -41,10 +41,22 @@ import type { RefinedChapter } from './compassRefinedLearnCourse'
 /** ⚠ HER WORDS — "All Modules, In Progress, Completed". The noun is a third
  *  one on this page (lesson, chapter, module); it is hers, it is what the
  *  reference says, and the rows it filters are the same rows either way. */
-const ROADMAP_FILTERS: { id: RoadmapFilter; label: string }[] = [
+const ROADMAP_FILTERS: { id: RoadmapFilter; label: string; tone?: string }[] = [
   { id: 'all', label: 'All Modules' },
-  { id: 'current', label: 'In Progress' },
-  { id: 'done', label: 'Completed' },
+  /* ⚠ A SELECTED PILL WEARS ITS OWN STATE'S COLOUR — 2026-11-15: "have this
+     filter pill match the green style used for the status color."
+
+     ⚠ TONES, NOT ONE GREEN. She asked about Completed; a green Completed
+     beside a steel In Progress would have been two rules rather than one, so
+     each pill that NAMES a state takes that state's tone when it is on — the
+     same `--done` / `--progress` the cards below it wear. In Progress was
+     already steel, which is why only the green is visible as a change.
+
+     ⚠ "All Modules" HAS NO TONE and keeps the page's steel. It is not a
+     state; it is the absence of a filter, and giving it a colour would say
+     there is a fourth one. */
+  { id: 'current', label: 'In Progress', tone: 'progress' },
+  { id: 'done', label: 'Completed', tone: 'done' },
 ]
 
 /** Which chapter state each arm keeps. `all` keeps the folded view. */
@@ -293,7 +305,9 @@ export function CompassRefinedCourseCards({
               type="button"
               role="tab"
               aria-selected={filter === f.id}
-              className={`crf-map__filter${filter === f.id ? ' is-on' : ''}`}
+              className={`crf-map__filter${f.tone ? ` crf-map__filter--${f.tone}` : ''}${
+                filter === f.id ? ' is-on' : ''
+              }`}
               onClick={() => setFilter(f.id)}
             >
               {f.label}
