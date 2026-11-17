@@ -13,6 +13,7 @@ import { ComponentReviewPage } from '@/pages/ComponentReviewPage'
 import { VariantDeckPage } from '@/pages/VariantDeckPage'
 import { AtlasHeaderPreviewPage } from '@/pages/AtlasHeaderPreviewPage'
 import { ComparePage } from '@/pages/ComparePage'
+import { InviteV3StartPage } from '@/pages/InviteV3StartPage'
 /* THE INVITE FLOW IS VERSIONED SINCE 2026-10-22, so these four routes name a
    SWITCH rather than a page — each picks V1's page or its V2 fork from the
    `invite-flow-version` flag. The paths, and everything that depends on them,
@@ -226,6 +227,10 @@ export default function App() {
           than their whole branch. Takes its entire definition from the URL, so
           it needs no per-component code. See `ComponentReviewPage`. */}
       <Route path="/review" element={<TestingGate><ComponentReviewPage /></TestingGate>} />
+      {/* The V3 invite flow on its own — the link a Jira ticket carries
+          (2026-11-17, Afsana). One Start per flow, no Hub or demo chrome, and
+          the walk stops at Setting up your account. See `InviteV3StartPage`. */}
+      <Route path="/invite-v3" element={<TestingGate><InviteV3StartPage /></TestingGate>} />
       {/* Variants & Copy decks — every state of a model, on every surface it
           feeds, with the exact strings it produces (carried from the Common
           LMS hub 2026-10-26; no deck is registered here yet). The one handoff
