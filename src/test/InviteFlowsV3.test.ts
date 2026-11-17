@@ -15,7 +15,9 @@ import {
   inviteEndingV3,
   entryPathV3,
   inviteV3Surface,
+  qrFlowV3,
   resolveInviteFlowV3,
+  retiredQrEmail,
   resolveInviteModel,
   suppliesEmailV3,
   verifiesEmailFirst,
@@ -73,11 +75,37 @@ describe('Invite Flow V3 model types and flows', () => {
     expect(keys).not.toContain(INVITE_V3_FLOW_FLAGS.b2c)
   })
 
-  it('carries three of the file’s flows, plus Direct Email and the two OCD flows', () => {
-    expect(INVITE_FLOWS_V3).toHaveLength(6)
-    expect(INVITE_FLOWS_V3.filter((f) => f.model === 'b2b')).toHaveLength(4)
+  it('carries two B2B flows — Direct Email and QR Code — and the two OCD flows', () => {
+    expect(INVITE_FLOWS_V3).toHaveLength(4)
+    expect(INVITE_FLOWS_V3.filter((f) => f.model === 'b2b').map((f) => f.id)).toEqual(['direct-email', 'qr'])
     expect(INVITE_FLOWS_V3.filter((f) => f.model === 'b2c').map((f) => f.id)).toEqual(['xcel-signed-in', 'xcel-signed-out'])
-    expect(INVITE_FLOWS_V3.find((f) => f.id === 'qr-net-new')?.label).toBe('QR: Net New: No OCD, No Atlas')
+    expect(INVITE_FLOWS_V3.find((f) => f.id === 'qr')?.label).toBe('QR Code')
+  })
+
+  it('walks QR Code by Email belongs to — Net New’s screens, or the log-in widget’s', () => {
+    const qr = INVITE_FLOWS_V3.find((f) => f.id === 'qr')!
+    /* The row is the default walk, No Atlas account. */
+    expect(qrFlowV3(qr, 'no-atlas').screens).toEqual(qr.screens)
+    expect(inviteEndingV3(qrFlowV3(qr, 'no-atlas'))).toBe('create-password')
+    expect(inviteEndingV3(qrFlowV3(qr, 'atlas'))).toBe('ready')
+    expect(qrFlowV3(qr, 'atlas').screens).toContain('verify-login-1')
+    expect(qrFlowV3(qr, 'atlas').screens.at(-1)).toBe('ready-login')
+    expect(entryPathV3(qrFlowV3(qr, 'atlas'))).toBe('/end-to-end-demo/qr')
+    const keys = designControlsFor('eric-atlas-e2e', 'eric', inviteV3Surface('b2b', 'qr')).map((d) => d.key)
+    expect(keys).toContain(INVITE_V3_EMAIL_ACCOUNT_FLAG)
+    expect(FEATURE_FLAGS.find((f) => f.key === INVITE_V3_FLOW_FLAGS.b2b)?.variants?.map((v) => v.value)).toEqual(['direct-email', 'qr'])
+  })
+
+  it('opens an old link naming one of the three QR flows on QR Code', () => {
+    for (const old of ['qr-net-new', 'qr-ocd', 'qr-atlas-login']) {
+      expect(resolveInviteFlowV3('b2b', old).id).toBe('qr')
+    }
+    expect(retiredQrEmail('qr-net-new')).toBe('no-atlas')
+    expect(retiredQrEmail('qr-ocd')).toBe('no-atlas')
+    expect(retiredQrEmail('qr-atlas-login')).toBe('atlas')
+    expect(retiredQrEmail('qr')).toBeUndefined()
+    /* Still B2B's: B2C never borrows them. */
+    expect(resolveInviteFlowV3('b2c', 'qr-ocd').id).toBe(DEFAULT_INVITE_FLOW_V3.b2c)
   })
 
   it('no longer offers the flows archived on 2026-11-05, and a stored pick falls back to the default', () => {
@@ -116,12 +144,9 @@ describe('Invite Flow V3 model types and flows', () => {
     expect(inviteEndingV3(directEmailFlowV3(direct, 'atlas'))).toBe('ready')
     /* The default row is the code's walk, Email belongs to's default. */
     expect(directEmailFlowV3(direct, 'no-atlas').screens).toEqual(direct.screens)
-    expect(suppliesEmailV3(INVITE_FLOWS_V3.find((f) => f.id === 'qr-net-new')!)).toBe(false)
+    expect(suppliesEmailV3(INVITE_FLOWS_V3.find((f) => f.id === 'qr')!)).toBe(false)
     const keys = designControlsFor('eric-atlas-e2e', 'eric', inviteV3Surface('b2b', 'direct-email')).map((d) => d.key)
     expect(keys).toContain(INVITE_V3_EMAIL_ACCOUNT_FLAG)
-    expect(designControlsFor('eric-atlas-e2e', 'eric', inviteV3Surface('b2b', 'qr-net-new')).map((d) => d.key)).not.toContain(
-      INVITE_V3_EMAIL_ACCOUNT_FLAG,
-    )
   })
 
   it('draws every flow row in the bar’s own style — no tinted rows', () => {
@@ -134,8 +159,8 @@ describe('Invite Flow V3 model types and flows', () => {
   })
 
   it('never resolves a flow from the other model’s list', () => {
-    expect(resolveInviteFlowV3('b2b', 'qr-ocd').id).toBe('qr-ocd')
-    expect(resolveInviteFlowV3('b2c', 'qr-ocd').id).toBe(DEFAULT_INVITE_FLOW_V3.b2c)
+    expect(resolveInviteFlowV3('b2b', 'qr').id).toBe('qr')
+    expect(resolveInviteFlowV3('b2c', 'qr').id).toBe(DEFAULT_INVITE_FLOW_V3.b2c)
     expect(resolveInviteFlowV3('b2b', undefined).id).toBe(DEFAULT_INVITE_FLOW_V3.b2b)
     expect(resolveInviteModel('b2x')).toBe(DEFAULT_INVITE_MODEL)
   })

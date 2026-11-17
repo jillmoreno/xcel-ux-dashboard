@@ -36,12 +36,12 @@ const feature: PrototypeFeature = {
     {
       label: 'Version B — Finish setting up your account',
       note: 'A learner new to Atlas. The hidden corner bottom-right of the card fills a valid password into both fields; Confirm opens Setting up your account…, which lands on Atlas learner Home after four seconds (demo timing); a click outside closes it first (demo only).',
-      to: '/end-to-end-demo/confirmation?demo=1&ff=invite-flow-version:v3,invite-v3-model:b2b,invite-v3-flow-b2b:qr-net-new',
+      to: '/end-to-end-demo/confirmation?demo=1&ff=invite-flow-version:v3,invite-v3-model:b2b,invite-v3-flow-b2b:qr,invite-v3-email-account:no-atlas',
     },
     {
       label: 'Version A — Start learning',
       note: 'A learner whose email already has Atlas. Start Course opens Setting up your account….',
-      to: '/end-to-end-demo/confirmation?demo=1&ff=invite-flow-version:v3,invite-v3-model:b2b,invite-v3-flow-b2b:qr-atlas-login',
+      to: '/end-to-end-demo/confirmation?demo=1&ff=invite-flow-version:v3,invite-v3-model:b2b,invite-v3-flow-b2b:qr,invite-v3-email-account:atlas',
     },
     {
       label: 'Atlas learner Home — where the learner lands',
@@ -50,8 +50,8 @@ const feature: PrototypeFeature = {
     },
   ],
   featureFlags: [
-    { id: 'invite-v3-flow-b2b', label: 'Invite flow', note: 'Which version the page shows: the Has Atlas flows end on Start learning, the others on Finish setting up your account.' },
-    { id: 'invite-v3-email-account', label: 'Email belongs to', note: 'On Direct Email and the OCD flows: Atlas account → Start learning; No Atlas account → Finish setting up your account.' },
+    { id: 'invite-v3-flow-b2b', label: 'Invite flow', note: 'Direct Email or QR Code. Both end the same way, by Email belongs to.' },
+    { id: 'invite-v3-email-account', label: 'Email belongs to', note: 'On Direct Email, QR Code and the OCD flows: Atlas account → Start learning; No Atlas account → Finish setting up your account.' },
   ],
   devHandoff: {
     flagsNote: 'Design bar controls for reaching each version in the prototype, not product settings.',
