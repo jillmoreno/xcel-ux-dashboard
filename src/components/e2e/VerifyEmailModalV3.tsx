@@ -13,12 +13,14 @@ import {
   type VerifiedIdentity,
 } from '@/data/inviteVerification'
 import { looksLikeEmail } from '@/data/inviteFlows'
-import { CircleCheckSolid } from '@/icons'
+import { Check, CircleCheckSolid } from '@/icons'
 import { V3_EXPIRED_DEMO_CODE, V3_INVALID_DEMO_CODE, V3_WRONG_DEMO_PASSWORD } from '@/data/inviteFlowsV3'
-import { E2E_LEARNER_EMAIL, E2E_LEARNER_FIRST } from '@/pages/endToEndDemo'
+import { E2E_LEARNER_EMAIL, E2E_LEARNER_FIRST, E2E_LEARNER_LAST } from '@/pages/endToEndDemo'
 import { LOADING_HANDOFF_MS } from '@/components/e2e/XcelLoadingPage'
 import { XcelLoadingStatus } from '@/components/e2e/XcelLoadingStatus'
 import { useV3DialogLayer } from '@/components/e2e/useV3DialogLayer'
+import { InvitePasswordChecklistV3 } from '@/components/e2e/InvitePasswordChecklistV3'
+import { meetsInvitePasswordRulesV3 } from '@/data/invitePasswordRulesV3'
 import '@/pages/inviteFlow.css'
 
 /**
@@ -36,7 +38,7 @@ import '@/pages/inviteFlow.css'
  *   - 460 wide, with Continue, Confirm and Log in full width, OFF until the
  *     step is complete (V2's are always on and explain on press);
  *   - the code boxes are 54 × 66 and centred. Since 2026-11-03 (Afsana) the
- *     code step carries the XCEL logo over "Enter your one-time code", and
+ *     code step carries the XCEL logo over "Verify your email" (was "Enter your one-time code" until 2026-11-13), and
  *     under Confirm: "Didn't receive the code? Resend code in 10:00",
  *     counting down until Resend unlocks, then Use a different email;
  *   - ANY six digits are accepted, as in the file — there is no wrong code and
@@ -72,18 +74,36 @@ export function VerifyEmailModalV3({
    *  no "Use a different email": the partner named this one. */
   suppliedEmail?: string
 }) {
-  const [step, setStep] = useState<'email' | 'code' | 'login' | 'signing-in'>(() =>
-    suppliedEmail && second !== 'none' ? second : 'email',
+  /* A supplied address with Atlas goes straight to Log in. Without Atlas it
+     no longer goes straight to the code (2026-11-13, Afsana): the email step
+     comes first, filled with the invitation's address, so no code is sent
+     before the learner says where. */
+  const [step, setStep] = useState<'email' | 'code' | 'verified' | 'name' | 'login' | 'signing-in'>(() =>
+    suppliedEmail && second === 'login' ? 'login' : 'email',
   )
   const layer = useV3DialogLayer()
   const [email, setEmail] = useState(suppliedEmail ?? '')
   const ready = looksLikeEmail(email)
-  /* Email only — the name is asked at checkout, so it is empty here. */
-  const identity: VerifiedIdentity = { first: '', last: '', email }
+  /* Said as the learner types, once there is something to judge
+     (2026-11-13, Afsana). */
+  const badEmail = email.trim() !== '' && !ready
+  /* The name — asked after the code, for a learner with no Atlas account
+     (2026-11-13, Afsana); the log-in finds it on the account, so it stays
+     empty there. The checkout's student form arrives with it filled. */
+  const [first, setFirst] = useState('')
+  const [last, setLast] = useState('')
+  const identity: VerifiedIdentity = { first, last, email }
 
   useEffect(() => {
     document.getElementById('verify-email-modal')?.focus()
   }, [])
+
+  /* Email verified holds, then the name (2026-11-13, Afsana). */
+  useEffect(() => {
+    if (step !== 'verified') return
+    const timer = window.setTimeout(() => setStep('name'), VERIFIED_HOLD_MS)
+    return () => window.clearTimeout(timer)
+  }, [step])
 
   /* The second step is done: hold on "Signing you in" first where the flow
      has it, the flow's usual three seconds. */
@@ -127,26 +147,33 @@ export function VerifyEmailModalV3({
               </h2>
               <div aria-hidden style={RULE} />
               <p id="verify-email-lead" style={LEAD}>
-                Provide your email address. We use it to find or create your account.
+                {/* One line on every flow, whatever the account turns out to
+                    be — it is only checked after Continue (2026-11-13, Afsana). */}
+                Provide your email address. We will use it to find your existing account or create one.
               </p>
             </div>
 
-            <label htmlFor="verify-email" style={FIELD_GROUP}>
-              <span style={FIELD_LABEL}>
-                Email address<span aria-hidden>*</span>
-              </span>
-              <input
-                id="verify-email"
-                type="email"
-                required
-                autoComplete="email"
-                placeholder="you@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="cre-e2e-input"
-                style={FIELD}
-              />
-            </label>
+            <div style={FIELD_AND_ERROR}>
+              <label htmlFor="verify-email" style={FIELD_GROUP}>
+                <span style={FIELD_LABEL}>
+                  Email address<span aria-hidden>*</span>
+                </span>
+                <input
+                  id="verify-email"
+                  type="email"
+                  required
+                  autoComplete="email"
+                  placeholder="you@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  aria-invalid={badEmail}
+                  aria-describedby={badEmail ? 'verify-email-invalid' : undefined}
+                  className="cre-e2e-input cre-e2e-input-v3"
+                  style={badEmail ? { ...FIELD, ...FIELD_INVALID } : FIELD}
+                />
+              </label>
+              {badEmail ? <EmailInvalid id="verify-email-invalid" /> : null}
+            </div>
 
             <div style={ACTIONS}>
               <button
@@ -173,13 +200,22 @@ export function VerifyEmailModalV3({
         ) : step === 'code' ? (
           <CodeStep
             identity={identity}
-            onVerified={done}
+            onVerified={() => setStep('verified')}
             onChangeEmail={suppliedEmail ? undefined : () => setStep('email')}
           />
+        ) : step === 'verified' ? (
+          <EmailVerified />
+        ) : step === 'name' ? (
+          <NameStep first={first} last={last} onFirst={setFirst} onLast={setLast} onDone={done} />
         ) : step === 'login' ? (
           /* Log in always holds on "Signing you in" (2026-11-05, Afsana),
              whether or not the flow's `signsIn` does. */
-          <LoginStep email={email} onLoggedIn={() => setStep('signing-in')} />
+          <LoginStep
+            email={email}
+            supplied={Boolean(suppliedEmail)}
+            onEmailChange={setEmail}
+            onLoggedIn={() => setStep('signing-in')}
+          />
         ) : (
           <div style={SIGNING_IN}>
             <img src="/brand/xcel-logo.webp" alt="XCEL Insurance Training by Colibri" style={CODE_LOGO} />
@@ -285,7 +321,7 @@ function CodeStep({
       <img src="/brand/xcel-logo.webp" alt="XCEL Insurance Training by Colibri" style={CODE_LOGO} />
       <div style={HEAD}>
         <h2 id="verify-email-title" style={TITLE}>
-          Enter your one-time code
+          Verify your email
         </h2>
         <div aria-hidden style={RULE} />
         {/* Code resent — a light green banner over the lead (2026-11-05,
@@ -298,9 +334,10 @@ function CodeStep({
           </p>
         ) : null}
         <p id="verify-email-lead" style={LEAD}>
-          To verify your email address, enter the 6-digit code we sent to{' '}
-          <strong style={{ fontWeight: 800 }}>{identity.email.trim()}</strong>. Be sure to check your spam or junk
-          folders. This code will expire in 10 minutes.
+          {/* Shorter, with the expiry moved under the boxes (2026-11-13,
+              Afsana). */}
+          We sent a 6-digit code to <strong style={{ fontWeight: 800 }}>{identity.email.trim()}</strong>. Be sure to
+          check your spam or junk folders.
         </p>
       </div>
 
@@ -325,7 +362,7 @@ function CodeStep({
               onFocus={(e) => e.target.select()}
               aria-invalid={invalid}
               aria-describedby={invalid ? 'code-invalid' : undefined}
-              className="cre-e2e-input"
+              className="cre-e2e-input cre-e2e-input-v3"
               style={invalid ? { ...CODE_BOX, ...CODE_BOX_INVALID } : CODE_BOX}
             />
           ))}
@@ -335,6 +372,7 @@ function CodeStep({
             {codeError === 'expired' ? 'The code has expired. Request another code.' : 'Invalid code. Please try again.'}
           </p>
         ) : null}
+        <p style={NOTE}>The code expires in 10 minutes</p>
       </div>
 
       <div style={ACTIONS}>
@@ -385,11 +423,141 @@ function CodeStep({
 
 const RESEND_AFTER_S = 10 * 60
 
+/* How long Email verified shows before the name step. */
+const VERIFIED_HOLD_MS = 2000
+
+/** "Email verified" — 2026-11-13, Afsana, from a reference image: a green
+ *  check in a pale green ring, "Email verified", "Thanks! Continuing…". Shown
+ *  after a code is accepted, then the modal moves on by itself. The XCEL logo
+ *  over a smaller ring since 2026-11-17 (Afsana), as on the other steps. */
+function EmailVerified() {
+  return (
+    <div style={VERIFIED} role="status">
+      <img src="/brand/xcel-logo.webp" alt="XCEL Insurance Training by Colibri" style={CODE_LOGO} />
+      <span aria-hidden style={VERIFIED_RING}>
+        {/* The light icon, stroked heavier to match the reference. */}
+        <Check size={24} style={{ stroke: 'currentColor', strokeWidth: 28 }} />
+      </span>
+      <div style={{ ...HEAD, alignItems: 'center', gap: 6 }}>
+        <h2 id="verify-email-title" style={TITLE}>
+          Email verified
+        </h2>
+        <p id="verify-email-lead" style={{ ...LEAD, color: 'var(--color-text-secondary)' }}>
+          Thanks! Continuing…
+        </p>
+      </div>
+    </div>
+  )
+}
+
 /* How long Resend link stays off after a reset link is sent — the demo's
    stand-in for whatever the system allows (2026-11-05). */
 const RESEND_LINK_AFTER_S = 30
 
 /** 600 → "10:00", 59 → "0:59". */
+/** "Enter your name to continue" — 2026-11-13, Afsana. After the one-time
+ *  code, for a learner with no Atlas account: first and last name, both
+ *  required, before the checkout. Continue stays off until both are in. */
+function NameStep({
+  first,
+  last,
+  onFirst,
+  onLast,
+  onDone,
+}: {
+  first: string
+  last: string
+  onFirst: (value: string) => void
+  onLast: (value: string) => void
+  onDone: () => void
+}) {
+  const ready = first.trim() !== '' && last.trim() !== ''
+  useEffect(() => {
+    document.getElementById('verify-first')?.focus()
+  }, [])
+  return (
+    <form
+      style={BODY}
+      onSubmit={(e) => {
+        e.preventDefault()
+        if (ready) onDone()
+      }}
+      noValidate
+    >
+      <img src="/brand/xcel-logo.webp" alt="XCEL Insurance Training by Colibri" style={CODE_LOGO} />
+      <div style={HEAD}>
+        <h2 id="verify-email-title" style={TITLE}>
+          Enter your name to continue
+        </h2>
+        <div aria-hidden style={RULE} />
+        <p id="verify-email-lead" style={LEAD}>
+          Your email is verified. Enter your first and last name to continue to checkout.
+        </p>
+      </div>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <label htmlFor="verify-first" style={FIELD_GROUP}>
+          <span style={FIELD_LABEL}>
+            First name <span aria-hidden>*</span>
+          </span>
+          <input
+            id="verify-first"
+            type="text"
+            required
+            autoComplete="given-name"
+            placeholder="First name"
+            value={first}
+            onChange={(e) => onFirst(e.target.value)}
+            className="cre-e2e-input cre-e2e-input-v3"
+            style={FIELD}
+          />
+        </label>
+        <label htmlFor="verify-last" style={FIELD_GROUP}>
+          <span style={FIELD_LABEL}>
+            Last name <span aria-hidden>*</span>
+          </span>
+          <input
+            id="verify-last"
+            type="text"
+            required
+            autoComplete="family-name"
+            placeholder="Last name"
+            value={last}
+            onChange={(e) => onLast(e.target.value)}
+            className="cre-e2e-input cre-e2e-input-v3"
+            style={FIELD}
+          />
+        </label>
+      </div>
+
+      <div style={ACTIONS}>
+        <button
+          type="submit"
+          className="cre-e2e-cta"
+          disabled={!ready}
+          aria-disabled={!ready}
+          style={ready ? CTA : CTA_OFF}
+        >
+          Continue
+        </button>
+      </div>
+
+      {/* The demo fill — the same invisible, labelled corner as the email
+          step's. */}
+      <button
+        type="button"
+        aria-label="Fill in the demo learner’s name"
+        title="Demo shortcut: fill in the demo learner’s name"
+        style={DEMO_FILL}
+        onClick={() => {
+          onFirst(E2E_LEARNER_FIRST)
+          onLast(E2E_LEARNER_LAST)
+        }}
+      />
+    </form>
+  )
+}
+
 function formatCountdown(seconds: number): string {
   return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`
 }
@@ -397,7 +565,19 @@ function formatCountdown(seconds: number): string {
 /** "Log in to continue" — the Has Atlas log-in widget (`login-1`, `login-2`).
  *  The address is the one just given, locked; Log in stays off until there
  *  is a password. Any password is accepted, as in the file. */
-function LoginStep({ email, onLoggedIn }: { email: string; onLoggedIn: () => void }) {
+function LoginStep({
+  email,
+  supplied,
+  onEmailChange,
+  onLoggedIn,
+}: {
+  email: string
+  /** Direct Email: the partner supplied the address, and Log in shows it in
+   *  an email field, filled and editable (2026-11-13, Afsana). */
+  supplied: boolean
+  onEmailChange: (email: string) => void
+  onLoggedIn: () => void
+}) {
   const [password, setPassword] = useState('')
   const [shown, setShown] = useState(false)
   /* A wrong password — 2026-11-05, Afsana, as the code step's wrong code.
@@ -406,6 +586,12 @@ function LoginStep({ email, onLoggedIn }: { email: string; onLoggedIn: () => voi
   /* Forgot password? — 2026-11-05, Afsana: the modal says a reset link went
      to the address, bold, and to follow the email's instructions. */
   const [resetSent, setResetSent] = useState(false)
+  /* Reset your password — 2026-11-12, Afsana: for the demo, a click on
+     Check your email (anywhere but its two buttons) stands in for following
+     the link. Reset password comes back here with a green banner — a
+     proposal; where a reset lands is still open. */
+  const [resetting, setResetting] = useState(false)
+  const [wasReset, setWasReset] = useState(false)
   /* Resend link waits after every send, the first included (2026-11-05,
      Afsana: "disabled for a bit until the system enables the user to make
      another request"). The real wait is the system's; the demo's is
@@ -417,10 +603,32 @@ function LoginStep({ email, onLoggedIn }: { email: string; onLoggedIn: () => voi
     return () => window.clearTimeout(t)
   }, [linkWait])
   const canResend = linkWait <= 0
-  const ready = password !== ''
+  /* Direct Email's field can be edited, so it has to hold an address too. */
+  const ready = password !== '' && (!supplied || looksLikeEmail(email))
+  const badEmail = supplied && email.trim() !== '' && !looksLikeEmail(email)
+  if (resetting) {
+    return (
+      <ResetPasswordStep
+        email={email}
+        onReset={() => {
+          setResetting(false)
+          setResetSent(false)
+          setPassword('')
+          setFailed(false)
+          setWasReset(true)
+        }}
+      />
+    )
+  }
   if (resetSent) {
     return (
-      <div style={BODY}>
+      <div
+        style={{ ...BODY, cursor: 'pointer' }}
+        title="Demo: click to follow the reset link"
+        onClick={(e) => {
+          if (!(e.target as HTMLElement).closest('button')) setResetting(true)
+        }}
+      >
         <img src="/brand/xcel-logo.webp" alt="XCEL Insurance Training by Colibri" style={CODE_LOGO} />
         <div style={HEAD}>
           <h2 id="verify-email-title" style={TITLE}>
@@ -432,6 +640,13 @@ function LoginStep({ email, onLoggedIn }: { email: string; onLoggedIn: () => voi
             instructions in the email to reset your password. Be sure to check your spam or junk folders.
           </p>
         </div>
+        {/* The address the link went to, in a field the learner cannot change
+            — grey, no lock, as the checkout's fixed fields (2026-11-13,
+            Afsana). */}
+        <label htmlFor="reset-email" style={FIELD_GROUP}>
+          <span style={FIELD_LABEL}>Email address</span>
+          <input id="reset-email" type="email" value={email.trim()} disabled readOnly style={{ ...FIELD, ...FIELD_DISABLED }} />
+        </label>
         {/* Resend link, primary, over Back to sign in, secondary (2026-11-05,
             Afsana). Back is the way out — the modal has no ✕. */}
         <div style={ACTIONS}>
@@ -445,6 +660,12 @@ function LoginStep({ email, onLoggedIn }: { email: string; onLoggedIn: () => voi
           >
             Resend link
           </button>
+          {/* The wait, counted down under the button (2026-11-13, Afsana). */}
+          {canResend ? null : (
+            <p role="timer" aria-live="off" style={NOTE}>
+              You can resend the link in {formatCountdown(linkWait)}
+            </p>
+          )}
           <button
             type="button"
             style={CTA_SECONDARY}
@@ -473,15 +694,51 @@ function LoginStep({ email, onLoggedIn }: { email: string; onLoggedIn: () => voi
           Log in to continue
         </h2>
         <div aria-hidden style={RULE} />
+        {wasReset ? (
+          <p role="status" style={RESENT_BANNER}>
+            <CircleCheckSolid size={16} aria-hidden style={{ flex: 'none' }} />
+            <span>Your password has been reset.</span>
+          </p>
+        ) : null}
         {/* The address in the sentence, not a field (2026-11-03, Afsana) — it
             was a locked email field above the password. */}
-        <p id="verify-email-lead" style={LEAD}>
-          Welcome back, {E2E_LEARNER_FIRST}! Sign in to <strong style={{ fontWeight: 800 }}>{email.trim()}</strong>{' '}
-          to finish checking out.
-        </p>
+        {supplied ? (
+          <p id="verify-email-lead" style={LEAD}>
+            Welcome back, {E2E_LEARNER_FIRST}! Sign in to finish checking out.
+          </p>
+        ) : (
+          <p id="verify-email-lead" style={LEAD}>
+            Welcome back, {E2E_LEARNER_FIRST}! Sign in to <strong style={{ fontWeight: 800 }}>{email.trim()}</strong>{' '}
+            to finish checking out.
+          </p>
+        )}
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        {/* Direct Email's address, pre-filled from the invitation and
+            editable — no lock, no grey (2026-11-13, Afsana). */}
+        {supplied ? (
+          <div style={FIELD_AND_ERROR}>
+            <label htmlFor="login-email" style={FIELD_GROUP}>
+              <span style={FIELD_LABEL}>
+                Email address <span aria-hidden>*</span>
+              </span>
+              <input
+                id="login-email"
+                type="email"
+                required
+                autoComplete="email"
+                value={email}
+                onChange={(e) => onEmailChange(e.target.value)}
+                aria-invalid={badEmail}
+                aria-describedby={badEmail ? 'login-email-invalid' : undefined}
+                className="cre-e2e-input cre-e2e-input-v3"
+                style={badEmail ? { ...FIELD, ...FIELD_INVALID } : FIELD}
+              />
+            </label>
+            {badEmail ? <EmailInvalid id="login-email-invalid" /> : null}
+          </div>
+        ) : null}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
           <label htmlFor="login-password" style={FIELD_GROUP}>
             <span style={FIELD_LABEL}>
@@ -549,9 +806,140 @@ function LoginStep({ email, onLoggedIn }: { email: string; onLoggedIn: () => voi
           Log in
         </button>
       </div>
+      {/* The way out for a learner who cannot get in at all (2026-11-13,
+          Afsana). Drawn only — the help center's address is not settled. */}
+      <p style={{ ...NOTE, textAlign: 'center' }}>
+        Can’t log in?{' '}
+        <button type="button" className="cre-e2e-textlink" style={{ ...TEXT_LINK, color: 'var(--color-xcel-brick)' }}>
+          Visit our help center
+        </button>
+      </p>
     </form>
   )
 }
+
+/** "Reset your password" — 2026-11-12, Afsana. Reached in the demo by
+ *  clicking Check your email. The same meter and seven rules as the password
+ *  the learner creates at the end of the flow, for continuity; Reset password
+ *  stays off until every rule is met and both fields match. */
+function ResetPasswordStep({ email, onReset }: { email: string; onReset: () => void }) {
+  const [password, setPassword] = useState('')
+  const [shown, setShown] = useState(false)
+  const [confirm, setConfirm] = useState('')
+  const [confirmShown, setConfirmShown] = useState(false)
+  /* The mismatch speaks once the second field has something in it. */
+  const mismatch = confirm.length > 0 && confirm !== password
+  const ready = meetsInvitePasswordRulesV3(password, email.trim()) && confirm === password
+  return (
+    <form
+      style={BODY}
+      onSubmit={(e) => {
+        e.preventDefault()
+        if (ready) onReset()
+      }}
+      noValidate
+    >
+      <img src="/brand/xcel-logo.webp" alt="XCEL Insurance Training by Colibri" style={CODE_LOGO} />
+      <div style={HEAD}>
+        <h2 id="verify-email-title" style={TITLE}>
+          Reset your password
+        </h2>
+        <div aria-hidden style={RULE} />
+        <p id="verify-email-lead" style={LEAD}>
+          Create a new password for <strong style={{ fontWeight: 800 }}>{email.trim()}</strong>.
+        </p>
+      </div>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <label htmlFor="reset-password" style={FIELD_GROUP}>
+          <span style={FIELD_LABEL}>
+            Password <span aria-hidden>*</span>
+          </span>
+          <span style={{ position: 'relative', display: 'block' }}>
+            <input
+              id="reset-password"
+              type={shown ? 'text' : 'password'}
+              required
+              autoComplete="new-password"
+              placeholder="Enter password..."
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="cre-e2e-input cre-e2e-input-v3"
+              style={{ ...FIELD, paddingRight: 40 }}
+            />
+            <button
+              type="button"
+              onClick={() => setShown((v) => !v)}
+              aria-label={shown ? 'Hide password' : 'Show password'}
+              aria-pressed={shown}
+              style={EYE}
+            >
+              <img src={shown ? '/brand/confirmation/eye.svg' : '/brand/confirmation/eye-off.svg'} alt="" width={18} height={18} style={{ display: 'block' }} />
+            </button>
+          </span>
+        </label>
+        <InvitePasswordChecklistV3 password={password} username={email.trim()} />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          <label htmlFor="reset-confirm" style={FIELD_GROUP}>
+            <span style={FIELD_LABEL}>
+              Confirm new password <span aria-hidden>*</span>
+            </span>
+            <span style={{ position: 'relative', display: 'block' }}>
+              <input
+                id="reset-confirm"
+                type={confirmShown ? 'text' : 'password'}
+                required
+                autoComplete="new-password"
+                placeholder="Re-enter password..."
+                value={confirm}
+                onChange={(e) => setConfirm(e.target.value)}
+                aria-invalid={mismatch}
+                aria-describedby={mismatch ? 'reset-mismatch' : undefined}
+                className="cre-e2e-input cre-e2e-input-v3"
+                style={mismatch ? { ...FIELD, paddingRight: 40, ...FIELD_INVALID } : { ...FIELD, paddingRight: 40 }}
+              />
+              <button
+                type="button"
+                onClick={() => setConfirmShown((v) => !v)}
+                aria-label={confirmShown ? 'Hide confirm new password' : 'Show confirm new password'}
+                aria-pressed={confirmShown}
+                style={EYE}
+              >
+                <img src={confirmShown ? '/brand/confirmation/eye.svg' : '/brand/confirmation/eye-off.svg'} alt="" width={18} height={18} style={{ display: 'block' }} />
+              </button>
+            </span>
+          </label>
+          {mismatch ? (
+            <p id="reset-mismatch" role="alert" style={INVALID}>
+              Passwords do not match.
+            </p>
+          ) : null}
+        </div>
+      </div>
+
+      <div style={ACTIONS}>
+        <button type="submit" className="cre-e2e-cta" disabled={!ready} aria-disabled={!ready} style={ready ? CTA : CTA_OFF}>
+          Reset password
+        </button>
+      </div>
+
+      {/* The demo fill — the same invisible corner as the ending's. */}
+      <button
+        type="button"
+        aria-label="Fill in a new demo password"
+        title="Demo shortcut: fill in a new demo password"
+        style={DEMO_FILL}
+        onClick={() => {
+          setPassword(RESET_DEMO_PASSWORD)
+          setConfirm(RESET_DEMO_PASSWORD)
+        }}
+      />
+    </form>
+  )
+}
+
+/* A valid new password for the demo fill — every rule met. */
+const RESET_DEMO_PASSWORD = 'Navarro#2027'
 
 /* ── Styles — the file's ────────────────────────────────────────────────── */
 
@@ -645,6 +1033,14 @@ const FIELD: CSSProperties = {
   border: '1px solid var(--color-e2e-card-outline)',
 }
 
+/* A field the learner cannot change: grey, no lock — the checkout's
+   FIELD_DISABLED (2026-11-13, Afsana). */
+const FIELD_DISABLED: CSSProperties = {
+  background: 'var(--color-e2e-form-locked-v3)',
+  color: 'var(--color-text-secondary)',
+  cursor: 'not-allowed',
+}
+
 /* Code resent — light green, the success scale's lightest fill. */
 const RESENT_BANNER: CSSProperties = {
   display: 'flex',
@@ -711,6 +1107,19 @@ const CODE_BOX_INVALID: CSSProperties = { boxShadow: 'inset 0 -2px 0 var(--color
 
 /* The same stroke under the log-in password on a wrong password. */
 const FIELD_INVALID: CSSProperties = CODE_BOX_INVALID
+
+/* A field with its error line under it, 6px apart — as the password's. */
+const FIELD_AND_ERROR: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 6 }
+
+/** The email fields' inline error — shown as the learner types, while what
+ *  is there is not an address (2026-11-13, Afsana). */
+function EmailInvalid({ id }: { id: string }) {
+  return (
+    <p id={id} role="alert" style={INVALID}>
+      Please enter a valid email address
+    </p>
+  )
+}
 
 const ACTIONS: CSSProperties = {
   display: 'flex',
@@ -805,6 +1214,26 @@ const FORGOT: CSSProperties = {
    (2026-11-03, Afsana). */
 /* Smaller than the loading page's 72 (2026-11-03, Afsana). */
 const SIGNING_SPINNER = 48
+
+const VERIFIED: CSSProperties = {
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  gap: 20,
+  padding: '16px 0 12px',
+  textAlign: 'center',
+}
+
+const VERIFIED_RING: CSSProperties = {
+  display: 'grid',
+  placeItems: 'center',
+  width: 56,
+  height: 56,
+  borderRadius: '50%',
+  border: '2px solid var(--color-success-600)',
+  background: 'var(--color-e2e-verified-fill)',
+  color: 'var(--color-success-600)',
+}
 
 const SIGNING_IN: CSSProperties = {
   display: 'flex',
