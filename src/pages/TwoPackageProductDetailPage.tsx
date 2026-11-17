@@ -658,12 +658,13 @@ export function TwoPackageProductDetailPage() {
                 This package is ideal for those who are self-motivated and will prioritize learning on their own.
               </p>
             ) : california ? (
-              /* California's description, word for word and unbolded (2026-11-06, Eric: "change this text to this … Do not bold any
+              /* California's description, word for word and unbolded but its last clause (2026-11-06, Eric: "change this text to this … Do not bold any
                  of it") — the live California Premier copy, "Pass Guarantee" and all. */
               <p style={{ ...BODY, marginTop: 8, marginBottom: 0 }}>
                 Our Premier package adds flashcards, a recorded review class, and our Pass Guarantee to the standard package and is ideal
-                for those looking to maximize their studying with various learning formats. This package includes the mandatory
-                stand-alone 12-hour California Code and Ethics Course.
+                for those looking to maximize their studying with various learning formats. This package{' '}
+                {/* Bold from "includes" to the end (2026-11-17, Eric) — the rest of the description stays unbolded. */}
+                <strong style={{ fontWeight: 800 }}>includes the mandatory stand-alone 12-hour California Code and Ethics Course.</strong>
               </p>
             ) : soloId === 'premier' ? (
               /* Premier's own description, as Standard's is (same day, Eric) — the live Premier description, shortened. */
@@ -711,12 +712,13 @@ export function TwoPackageProductDetailPage() {
                 This package is ideal for those who are self-motivated and will prioritize learning on their own.
               </p>
             ) : california ? (
-              /* California's description, word for word and unbolded (2026-11-06, Eric: "change this text to this … Do not bold any
+              /* California's description, word for word and unbolded but its last clause (2026-11-06, Eric: "change this text to this … Do not bold any
                  of it") — the live California Premier copy, "Pass Guarantee" and all. */
               <p style={{ ...BODY, marginTop: 8, marginBottom: 0 }}>
                 Our Premier package adds flashcards, a recorded review class, and our Pass Guarantee to the standard package and is ideal
-                for those looking to maximize their studying with various learning formats. This package includes the mandatory
-                stand-alone 12-hour California Code and Ethics Course.
+                for those looking to maximize their studying with various learning formats. This package{' '}
+                {/* Bold from "includes" to the end (2026-11-17, Eric) — the rest of the description stays unbolded. */}
+                <strong style={{ fontWeight: 800 }}>includes the mandatory stand-alone 12-hour California Code and Ethics Course.</strong>
               </p>
             ) : soloId === 'premier' ? (
               /* Premier's own description, as Standard's is (same day, Eric) — the live Premier description, shortened. */
@@ -953,7 +955,11 @@ export function TwoPackageProductDetailPage() {
                       /* Standard and Premier: "What's Included", and what it is under it (2026-11-12, Eric; "Package includes:" before). */
                       <>
                         What&rsquo;s Included
-                        <span style={COMPARE_SUBHEAD}>XCEL&rsquo;s Proven 3-Part Training Program:</span>
+                        {/* As California's heading row (2026-11-17, Eric: "make this the top row for the standard and premier packages as
+                            well") — 800, a rule over it, 20 clear either side. */}
+                        <span style={{ ...COMPARE_SUBHEAD, marginTop: 20, paddingTop: 20, borderTop: `1px solid ${COMPARE_RULE}`, fontWeight: 800 }}>
+                          XCEL&rsquo;s Proven 3-Part Training Program:
+                        </span>
                       </>
                     ) : california ? (
                       /* California: "What's Included", then the course and what it is, over the three tiles (2026-11-12, Eric; "Package
@@ -970,8 +976,9 @@ export function TwoPackageProductDetailPage() {
                     ) : single ? 'Package includes:' : 'Compare packages:'}
                     {/* THE CALIFORNIA PACKAGE'S THREE PRODUCTS — Figma 668:1357 (2026-11-06, Eric: "add this below package includes" and
                         retitle it "Included in this package:"). Three tiles across the column: the course itself, then the Code and
-                        Ethics course and the flashcards, each a link with its chevron. Not wired. */}
-                    {california ? (
+                        Ethics course and the flashcards, each a link with its chevron. Not wired.
+                        HIDDEN 2026-11-17 (Eric: "remove") — kept; set SHOW_CALIFORNIA_INCLUDED true to bring it back. */}
+                    {SHOW_CALIFORNIA_INCLUDED && california ? (
                       <span style={INCLUDED_ROW}>
                         {/* Each tile as wide as its two lines, and the room left over shared out evenly, a rule centred in each gap (same
                             day, Eric: "have the cards fit to the width of their text … to make the spacing look more even"). */}
@@ -2868,6 +2875,8 @@ const CI_PANEL: CSSProperties = {
   background: 'var(--color-secondary-100)', borderStyle: 'solid', borderWidth: '0 1px 1px', borderColor: 'var(--color-secondary-200)', borderRadius: '0 10px 10px 10px', padding: '24px 32px 32px',
 }
 // Headers and columns on one grid, so each header sits over its column: 165 / 1 / 165 / 1 / 165, 28 either side of the rules.
+// The California package's three product tiles under What's Included — hidden 2026-11-17 (Eric), built and kept.
+const SHOW_CALIFORNIA_INCLUDED = false
 const CI_GRID: CSSProperties = { display: 'grid', gridTemplateColumns: '1fr 1px 1fr 1px 1fr', columnGap: 28 }
 const CI_TEXT: CSSProperties = { fontFamily: 'var(--font-e2e-avenir)', fontSize: 13, color: 'var(--color-text-primary)' }
 const CI_HEAD: CSSProperties = { ...CI_TEXT, margin: 0, lineHeight: '18px', display: 'flex', alignItems: 'center', gap: 6 }
@@ -2889,7 +2898,7 @@ function CourseFacts({ rows, valueWeight = 800 }: { rows: [string, string][]; va
   )
 }
 
-function CourseInfoTabs({ courses, place, abbr, initial = 0 }: { courses: CourseTab[]; place: string; abbr: string; initial?: number }) {
+function CourseInfoTabs({ courses, place, initial = 0 }: { courses: CourseTab[]; place: string; abbr: string; initial?: number }) {
   const [active, setActive] = useState(initial)
   const course = courses[active] ?? courses[0]
   return (
@@ -2928,7 +2937,9 @@ function CourseInfoTabs({ courses, place, abbr, initial = 0 }: { courses: Course
         <div role="tabpanel" style={CI_PANEL}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             <div style={CI_GRID}>
-              {['Course Details', 'Regulatory Info', 'State Reporting Fee'].map((h, i) => (
+              {/* State Reporting Fee REMOVED (2026-11-17, Eric's request) — its third column stays in CI_GRID, empty,
+                  so the two to its left keep their width rather than spreading into the space. */}
+              {['Course Details', 'Regulatory Info'].map((h, i) => (
                 <p key={h} style={{ ...CI_HEAD, gridColumn: i * 2 + 1 }}>
                   {h}
                   <ArrowDownSolid aria-hidden style={CI_ARROW} />
@@ -2946,13 +2957,8 @@ function CourseInfoTabs({ courses, place, abbr, initial = 0 }: { courses: Course
                 {place} Insurance Licensing Requirements
               </button>
             </div>
-            <div aria-hidden /> {/* the rule's 1 kept, unruled (same day, Eric), so each column stays under its heading */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-              <CourseFacts rows={[[`${abbr} fee due at checkout:`, course.fee]]} valueWeight={700} />
-              <button type="button" className="cre-e2e-textlink cre-e2e-textlink--brick" style={CI_LINK}>
-                100% transparent pricing
-              </button>
-            </div>
+            {/* The State Reporting Fee column (fee due at checkout + "100% transparent pricing") was here; removed
+                2026-11-17 at Eric's request. The grid's third column is left empty on purpose. */}
           </div>
         </div>
       </div>
