@@ -3912,6 +3912,69 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'invite-v3-eric-pdp',
+    /* ERIC'S PRODUCT PAGE IN V3's FLOWS — 2026-11-17, Afsana. On: V3's
+       `/end-to-end-demo` is his multi-product page (`ProductDetailPageV3Multi`,
+       copied from `erics-atlas-primary`), its Products control on the Design
+       bar, every Purchase going on into V3's checkout. Off: V3's own product
+       page (`InvitedProductDetailPageV3`), untouched. Not a Design bar control
+       — Products is the only one this adds; flip it with
+       `?ff=invite-v3-eric-pdp:off` or the Feature Flag panel. */
+    group: 'Navigation',
+    label: 'Eric’s product page (V3)',
+    description:
+      'Invite Flow V3 opens Eric’s multi-product page — Products picks Multi-product, Premier, Standard, California or Multi-product (Old) — and Purchase goes on into V3’s checkout. Off: V3’s own product page.',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
+    /* COPIED FROM `erics-atlas-primary` @ c9ec0ca2 (2026-11-17, Afsana: "after
+       a user clicks the purchase CTA on any of the variations … have it
+       continue our remaining checkout/invite logic"). Eric's flag, verbatim but
+       for its surfaces: here it names V3's B2B surfaces, where his page is the
+       product page (`ProductDetailPageV3Multi.tsx`); on his branch it names
+       V1/V2's `invite`. When his branch lands, keep ONE definition. */
+    key: 'pdp-products',
+    /* THE PDP'S PRODUCTS — 2026-10-28, Eric: "Duplicate this page based on a
+       single product … add a design control to be able to flip between the
+       single product page and the multi-product page."
+
+       multi  — Standard and Premier side by side, the comparison grid under
+                them. The default on Eric's branch.
+       single — Premier alone: one card, the comparison's Standard column
+                gone, and the grid captioned "Premier package includes:". The
+                top tray carries the one card too.
+
+       One page, not two files: everything but the cards and the grid is the
+       same page, and it is still being tuned a pixel at a time — two copies
+       would drift with every tweak. */
+    surface: 'design',
+    versions: ['eric-atlas-e2e'],
+    surfaces: ['invite:v3-b2b', 'invite:v3-b2b-direct-email'],
+    group: 'Layout',
+    label: 'Products',
+    description:
+      'The two-package PDP as a multi-product page \u2014 Standard and Premier side by side \u2014 or a single-product page for one of them: Standard (the default in V3), Premier, or California, each alone with its own \u201cincludes\u201d list.',
+    defaultEnabled: true,
+    /* STANDARD BY DEFAULT IN V3 (2026-11-17, Afsana: "let us default it to
+       where PRODUCTS is set to Standard"). Eric's branch opens on `multi`. */
+    defaultVariant: 'standard',
+    variants: [
+      /* MULTI-PRODUCT 2 (2026-11-11, Eric: "duplicate this multi product page and add it to the products drop down as Multi-product
+         2") — the multi page as it stands today, a second copy to change without touching the first. The page reads it as `multi2`. */
+      { value: 'multi-2', label: 'Multi-product' /* the 2 dropped (2026-11-12, Eric) */, description: 'A second multi-product page \u2014 a copy of Multi-product to try changes on.' },
+      /* `single` is the Premier page — its value kept so links pinned to it still open it; labelled Premier since 2026-11-05. */
+      { value: 'single', label: 'Premier', description: 'Premier alone, the grid captioned \u201cPackage includes:\u201d as a list of what it includes.' },
+      /* STANDARD (2026-11-05, Eric: "Duplicate this page and make it a Standard Product page in the product dropdown"). */
+      { value: 'standard', label: 'Standard', description: 'Standard alone — its card, the rows it includes, no crown and no Pass Guarantee.' },
+      /* CALIFORNIA (2026-11-06, Eric) — the Premier page, written for California. */
+      { value: 'california', label: 'California', description: 'The Premier page for California \u2014 Premier alone, the state California.' },
+      /* The first multi-product page, last in the list and marked Old (2026-11-12, Eric) — Multi-product 2 is the one being worked on. */
+      { value: 'multi', label: 'Multi-product (Old)', description: 'Standard and Premier side by side, with the comparison grid.' },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'invite-v3-flow-b2c',
     /* V3's B2C flows — the B2B control's twin, shown only while Model type is
        B2C. */
