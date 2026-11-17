@@ -35,14 +35,14 @@ const feature: PrototypeFeature = {
     'The invite flow’s eight checkout modals: email, one-time code, log-in, partner code, not supported, and the signing in, signing out and placing order holds.',
   pages: [
     {
-      label: 'Enter your email, then the one-time code — B2B, QR Net New',
+      label: 'Enter your email, then the one-time code — B2B, QR Code, no Atlas account',
       note: 'Type any email and Continue. On the code step, 000000 shows the wrong-code error and 999999 the expired-code error; any other six digits verifies.',
-      to: '/end-to-end-demo/checkout?demo=1&ff=invite-flow-version:v3,invite-v3-model:b2b,invite-v3-flow-b2b:qr-net-new',
+      to: '/end-to-end-demo/checkout?demo=1&ff=invite-flow-version:v3,invite-v3-model:b2b,invite-v3-flow-b2b:qr,invite-v3-email-account:no-atlas',
     },
     {
-      label: 'Log in to continue — B2B, QR Has Atlas: Open Log-In Widget',
+      label: 'Log in to continue — B2B, QR Code, Atlas account',
       note: 'Type any email and Continue. The password "wrong" shows the log-in error; any other password signs in. Forgot password? opens Check your email.',
-      to: '/end-to-end-demo/checkout?demo=1&ff=invite-flow-version:v3,invite-v3-model:b2b,invite-v3-flow-b2b:qr-atlas-login',
+      to: '/end-to-end-demo/checkout?demo=1&ff=invite-flow-version:v3,invite-v3-model:b2b,invite-v3-flow-b2b:qr,invite-v3-email-account:atlas',
     },
     {
       label: 'Direct Email, no Atlas — the email step, pre-filled, then the code',
@@ -62,7 +62,7 @@ const feature: PrototypeFeature = {
   ],
   featureFlags: [
     { id: 'invite-v3-model', label: 'Model type', note: 'B2B2C or B2C.' },
-    { id: 'invite-v3-flow-b2b', label: 'Invite flow', note: 'The four B2B flows — Direct Email and the three QR flows.' },
+    { id: 'invite-v3-flow-b2b', label: 'Invite flow', note: 'The two B2B flows — Direct Email and QR Code.' },
     { id: 'invite-v3-flow-b2c', label: 'Guest checkout', note: 'The five B2C flows, the two OCD flows among them.' },
     { id: 'invite-v3-cart', label: 'Cart contents', note: 'OCD flows only. Targeted only or Mixed is in scope; None targeted is not.' },
     { id: 'invite-v3-email-account', label: 'Email belongs to', note: 'Direct Email and the OCD flows: whether the email has an Atlas account — Log in to continue, or the one-time code.' },

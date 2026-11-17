@@ -65,9 +65,10 @@ function FlowGroup({ title, flows }: { title: string; flows: InviteFlowV3[] }) {
   )
 }
 
-/* Which flows branch on whose email it is (the rest decide it themselves:
-   the QR flows each name one), and which start at the cart. */
-const ASKS_ACCOUNT: ReadonlySet<string> = new Set(['direct-email', 'xcel-signed-in', 'xcel-signed-out'])
+/* Which flows branch on whose email it is — every one since QR Code took
+   over the three QR flows (2026-11-17), kept as a list so a flow that
+   decides it itself can still say so. */
+const ASKS_ACCOUNT: ReadonlySet<string> = new Set(['direct-email', 'qr', 'xcel-signed-in', 'xcel-signed-out'])
 
 const CARTS = [
   { value: 'targeted', label: 'Targeted only' },

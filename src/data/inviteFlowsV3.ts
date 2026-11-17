@@ -17,7 +17,8 @@ import { ALL_US_STATES } from './licensedStatesFixtures'
  * On V3 that control is not shown; these three are, instead:
  *
  *   invite-v3-model       B2B or B2C
- *   invite-v3-flow-b2b    the B2B flows — Direct Email, then the file's four QR flows
+ *   invite-v3-flow-b2b    the B2B flows — Direct Email, then QR Code (the file's
+ *                         QR flows, one since 2026-11-17)
  *   invite-v3-flow-b2c    the four B2C flows
  *
  * ⚠ ONE FLOW CONTROL PER MODEL, AND THAT IS HOW THE PICKER FILTERS. The Design
@@ -38,9 +39,7 @@ export type InviteModelId = 'b2b' | 'b2c'
 
 export type InviteFlowV3Id =
   | 'direct-email'
-  | 'qr-net-new'
-  | 'qr-ocd'
-  | 'qr-atlas-login'
+  | 'qr'
   | 'xcel-signed-in'
   | 'xcel-signed-out'
 
@@ -90,28 +89,19 @@ export const INVITE_FLOWS_V3: InviteFlowV3[] = [
     screens: ['email', 'pdp', ...VERIFY, ...CODE, 'checkout-1', ...CHECKOUT, 'placing', ...NEW_PASSWORD],
   },
   {
-    id: 'qr-net-new',
+    /* ⚠ ONE QR FLOW SINCE 2026-11-17 — Afsana: "could we not just have 2
+       invite flows ultimately: Direct Email, QR Code, where QR code has the
+       'email belongs to' design control added?" The file's three QR flows
+       differed only by whose email it was — Net New and OCD-but-no-Atlas
+       walked the same screens — so Email belongs to now picks the walk, as
+       it does for Direct Email: `qrFlowV3`. These screens are the default,
+       No Atlas account. `archivedInviteFlowsV3.ts` keeps the three rows. */
+    id: 'qr',
     model: 'b2b',
-    label: 'QR: Net New: No OCD, No Atlas',
-    description: 'New to XCEL. Verify email by code, full checkout, then create a password.',
+    label: 'QR Code',
+    description: 'Scanned a partner’s QR code. Email belongs to decides the rest: a code then Create password, or a log-in widget then ready to log in.',
     base: 'qr-social',
     screens: [...QR_START, ...VERIFY, ...CODE, 'checkout-1', ...CHECKOUT, 'placing', ...NEW_PASSWORD],
-  },
-  {
-    id: 'qr-ocd',
-    model: 'b2b',
-    label: 'QR: OCD, but no Atlas',
-    description: 'Has an OCD account, no Atlas. Same screens as Net New for now.',
-    base: 'qr-social',
-    screens: [...QR_START, ...VERIFY, ...CODE, 'checkout-1', ...CHECKOUT, 'placing', ...NEW_PASSWORD],
-  },
-  {
-    id: 'qr-atlas-login',
-    model: 'b2b',
-    label: 'QR: Has Atlas: Open Log-In Widget',
-    description: 'Already on Atlas. Email check opens a log-in widget; ends ready to log in.',
-    base: 'qr-social',
-    screens: [...QR_START, 'verify-login-1', 'verify-login-2', 'login-1', 'login-2', 'signing-in', ...CHECKOUT, 'placing', 'ready-login'],
   },
   {
     /* SIGNED IN TO AN EXISTING XCEL (OCD) ACCOUNT — 2026-11-02, Afsana. Its
@@ -166,7 +156,8 @@ export function inviteV3Surface(
   | 'invite:v3-b2b-direct-email'
   | 'invite:v3-b2c'
   | 'invite:v3-b2c-signed-in' {
-  /* Direct Email carries Email belongs to (2026-11-04). */
+  /* Direct Email has a surface of its own (2026-11-04); Email belongs to
+     names both since QR Code joined it (2026-11-17). */
   if (model === 'b2b') return flowId === 'direct-email' ? 'invite:v3-b2b-direct-email' : 'invite:v3-b2b'
   /* Both OCD flows carry Cart contents and Email belongs to. */
   return isOcdCartFlow(flowId) ? 'invite:v3-b2c-signed-in' : 'invite:v3-b2c'
@@ -179,8 +170,9 @@ export function resolveInviteModel(value: string | null | undefined): InviteMode
 /** A flow of THIS model, or the model's default — a stored id from the other
  *  model's list never leaks across. */
 export function resolveInviteFlowV3(model: InviteModelId, value: string | null | undefined): InviteFlowV3 {
+  const id = model === 'b2b' && retiredQrEmail(value) ? 'qr' : value
   return (
-    INVITE_FLOWS_V3.find((f) => f.model === model && f.id === value) ??
+    INVITE_FLOWS_V3.find((f) => f.model === model && f.id === id) ??
     INVITE_FLOWS_V3.find((f) => f.id === DEFAULT_INVITE_FLOW_V3[model])!
   )
 }
@@ -289,10 +281,40 @@ export function useInviteFlowV3(): InviteFlowV3 {
   const [params] = useSearchParams()
   const flow = resolveInviteFlowV3(model, model === 'b2b' ? b2b : b2c)
   if (flow.id === 'direct-email') return directEmailFlowV3(flow, email)
+  /* An old link naming one of the three QR flows says whose email it is. */
+  if (flow.id === 'qr') return qrFlowV3(flow, retiredQrEmail(b2b) ?? email)
   if (flow.id === 'xcel-signed-out') return ocdCartFlowV3(flow, cart, email)
   return flow.id === 'xcel-signed-in'
     ? signedInFlowV3(flow, cart, email, params.get(V3_SIGNED_OUT_PARAM) === '1')
     : flow
+}
+
+/** QR Code's walk, by whether the email given has Atlas
+ *  (`invite-v3-email-account`) — 2026-11-17, the file's three QR flows as
+ *  one: no Atlas account walks Net New's screens (a code, the full checkout,
+ *  Create password), an Atlas account walks Has Atlas: Open Log-In Widget's
+ *  (the log-in widget, Signing you in, ready to log in). */
+export function qrFlowV3(flow: InviteFlowV3, email: V3EmailAccount): InviteFlowV3 {
+  return {
+    ...flow,
+    screens:
+      email === 'atlas'
+        ? [...QR_START, 'verify-login-1', 'verify-login-2', 'login-1', 'login-2', 'signing-in', ...CHECKOUT, 'placing', 'ready-login']
+        : [...QR_START, ...VERIFY, ...CODE, 'checkout-1', ...CHECKOUT, 'placing', ...NEW_PASSWORD],
+  }
+}
+
+/** The three QR flow ids retired on 2026-11-17, and the Email belongs to
+ *  each one meant — so a link or handoff preview still naming one opens QR
+ *  Code walking the same screens. `?ff=` passes them through unchecked. */
+const RETIRED_QR_FLOWS = new Map<string, V3EmailAccount>([
+  ['qr-net-new', 'no-atlas'],
+  ['qr-ocd', 'no-atlas'],
+  ['qr-atlas-login', 'atlas'],
+])
+
+export function retiredQrEmail(value: string | null | undefined): V3EmailAccount | undefined {
+  return value ? RETIRED_QR_FLOWS.get(value) : undefined
 }
 
 /** The two OCD flows — signed in or not — whose cart decides the checkout. */
