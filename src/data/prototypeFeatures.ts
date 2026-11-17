@@ -996,7 +996,7 @@ const AUTHORED_FEATURES: PrototypeFeature[] = [
     // All four opening rows re-stamped at the 2026-10-15 ship that retired the
     // demo site: the shared chrome every row renders — the demo bar, the
     // version picker, the prototype bar — changed under all of them.
-    lastUpdated: '2026-11-16T19:25:06Z',
+    lastUpdated: '2026-11-17T17:25:23Z',
     pinned: true,
     // An in-app route, not a document. `to` is what makes the tile navigate
     // rather than open a new tab, and it is also what the row's live preview
@@ -1128,7 +1128,7 @@ const AUTHORED_FEATURES: PrototypeFeature[] = [
     status: 'ready',
     category: 'prototype',
     prototypeScope: 'invite',
-    lastUpdated: '2026-11-16T19:25:06Z',
+    lastUpdated: '2026-11-17T17:25:23Z',
     pinned: true,
     // ⚠ `/find`, THE GUEST'S FIRST SCREEN — 2026-10-23: "clicking on this
     // should default to the guest view but the wrong screen is showing
