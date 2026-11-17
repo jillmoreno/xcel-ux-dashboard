@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react'
-import { EllipsisVerticalSolid } from '@/icons'
+import { AngleRightSolid, EllipsisVerticalSolid } from '@/icons'
 import { AtlasStatusPill, statusStrongFill, type AtlasCourseStatus } from './AtlasStatusPill'
 import type { AtlasCourseCardData } from './AtlasCourseCard'
 
@@ -77,8 +77,22 @@ export function AtlasCourseCardFigma({
         {/* One status pill (Figma 710:2531–2551, 2026-11-12, Eric), the most pressing: the clock before the course's own state. */}
         {/* At the foot of the title row, whatever the title's length, so every card's pills line up — 16 over the State line,
             then 8 lower, then 4 back up: 12 over it (2026-11-12, Eric). Flex, so no stray line box under the pill. */}
-        <span style={{ display: 'flex', marginTop: 'auto', marginBottom: -4 }}>
+        {/* …and "Review Course" across from it, at the card's right edge (2026-11-17, Eric: "a text link adjusted far right next
+            to the status pills … with an angle right icon at the end of it"). It does what the card does — Home in this course. */}
+        <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, alignSelf: 'stretch', marginTop: 'auto', marginBottom: -4 }}>
           <AtlasStatusPill status={statusFor(data, progress)} />
+          <button
+            type="button"
+            className="cre-atlas-card-review"
+            onClick={(e) => {
+              e.stopPropagation()
+              onOpen?.()
+            }}
+            style={REVIEW_LINK}
+          >
+            Review Course
+            <AngleRightSolid size={11} aria-hidden style={{ width: 6 }} />
+          </button>
         </span>
       </div>
       <div style={FACTS}>
@@ -107,6 +121,9 @@ export function AtlasCourseCardFigma({
         </div>
       </div>
       <div style={ACTIONS}>
+        {/* The ⋮ and its menu, OFF for now (2026-11-17, Eric: "turn off the kebab menu for now") — built and kept; set
+            SHOW_CARD_MENU true to bring it back. The main button takes the row. */}
+        {SHOW_CARD_MENU ? (
         <div ref={menuRef} style={{ position: 'relative', display: 'flex' }}>
           <button
             type="button"
@@ -154,6 +171,7 @@ export function AtlasCourseCardFigma({
             </div>
           ) : null}
         </div>
+        ) : null}
         {data.completed ? (
           <button type="button" disabled style={{ ...BUTTON, ...BUTTON_DONE, ...(onOpen ? { pointerEvents: 'none' as const } : null) }}>
             Completed
@@ -266,6 +284,24 @@ const BAR_TRACK: CSSProperties = {
 }
 const BAR_FILL: CSSProperties = { position: 'absolute', top: 0, bottom: 0, left: 0, borderRadius: 2.5, background: 'var(--color-primary-500)' }
 /* The ⋮ and the main button, 6 apart, 35 tall, 9 corners — at the foot of their subgrid row so the row's buttons line up. */
+/** The ⋮ beside the main button — off since 2026-11-17 (Eric). */
+const SHOW_CARD_MENU = false
+/** "Review Course ›" — the Atlas text link (the exam-date step's "Not Yet ›"), at the facts' 11. */
+const REVIEW_LINK: CSSProperties = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: 4,
+  padding: 0,
+  border: 'none',
+  background: 'none',
+  fontFamily: 'var(--font-body)',
+  fontWeight: 700,
+  fontSize: 11,
+  lineHeight: '16px',
+  color: 'var(--color-primary-500)',
+  whiteSpace: 'nowrap',
+  cursor: 'pointer',
+}
 const ACTIONS: CSSProperties = { display: 'flex', gap: 6, alignItems: 'flex-end', alignSelf: 'end' }
 const KEBAB: CSSProperties = {
   display: 'inline-flex',

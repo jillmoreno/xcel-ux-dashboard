@@ -8133,6 +8133,7 @@ thead .cre-admin-sticky-col { background: var(--admin-fill-soft); }
 /* Figma 706:2416's course card (2026-11-12, Eric): its two buttons darken a step on hover. */
 .cre-atlas-card-primary:not(:disabled):hover { background: var(--color-primary-600) !important; }
 .cre-atlas-card-kebab:hover { background: var(--color-primary-200) !important; }
+.cre-atlas-card-review:hover { text-decoration: underline; }
 .cre-atlas-card-outline:not(:disabled):hover { background: var(--color-primary-100) !important; }
 
 /* Quick Links pinned 40 under the header (2026-11-12, Eric: "stop scrolling vertically once it reaches 40 pixels below the
