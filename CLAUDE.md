@@ -138,6 +138,27 @@ the team sees, except the review recaps, which the production deploy 404s
 at the edge. The three `archivedItems.ts` rows dated 2026-10-15 say how it
 was wired. The user-test build is unaffected.
 
+**THE PROTOTYPES LINKS ARE DEACTIVATED (2026-11-17).** Jillienne: "deactivate
+the links to the main prototypes and stage prototypes so that the users get an
+error screen … on the error screen shown to the user is where the message
+should be." All four rows that open are marked `linkRetired` in
+`prototypeFeatures.ts`; under Main AND Stage the row renders
+`/prototype-unavailable/<id>` instead of the product, and that screen
+(`PrototypeLinkRetiredPage.tsx`) carries the message — the links are being
+replaced, go to this scope's `owner` for the new one. **NOT `coming-soon`**,
+which is the other way to take a link away: that draws the row disabled with
+nothing to click, which hides the link and tells nobody anything. Here the
+click is kept precisely so there is somewhere to put the message. **Nothing
+about the rows' routes changed** — every `to` is still the real route and the
+smoke test still holds it to the one-build rule, so **reactivating a row is
+deleting its `linkRetired` line**, and `expectedHref` in
+`UxDashboard.smoke.test.tsx` is the single place the tests know about it. One
+screen for both builds on purpose: the stage origin is behind its own copy of
+the site password, so a retired screen served from there would be a login wall
+in front of the message. ⚠ New links are still OUTSTANDING from the scope
+owners — Eric (Atlas), Afsana & Eric (Invite), Anjani (Compass), Jillienne
+(end to end).
+
 Five rows as of the evening of 2026-10-14, the product first and then the
 doors around it: **End-to-End User Experience (Invite, Atlas, Compass)** — always the
 first row — then **Invite & Purchase** (`/end-to-end-demo`, Eric's End-to-End

@@ -7,6 +7,7 @@ import { PrototypeHandoffDetailPage } from '@/pages/PrototypeHandoffDetailPage'
 import { ResearchRationalePage } from '@/pages/ResearchRationalePage'
 import { QaNotesPage } from '@/pages/QaNotesPage'
 import { LinksPage } from '@/pages/LinksPage'
+import { PrototypeLinkRetiredPage } from '@/pages/PrototypeLinkRetiredPage'
 import { PrdsPage } from '@/pages/PrdsPage'
 import { ComponentReviewPage } from '@/pages/ComponentReviewPage'
 import { VariantDeckPage } from '@/pages/VariantDeckPage'
@@ -208,6 +209,17 @@ export default function App() {
       {/* Both redirect into the gateway shell, which owns the section chrome —
           see the note at the top of each page. */}
       <Route path="/links" element={<TestingGate><LinksPage /></TestingGate>} />
+      {/* THE RETIRED-LINK SCREEN (2026-11-17) — where a deactivated Prototypes
+          row lands. A Hub route rather than a product one, because the product
+          app is untouched: only the row's rendered href is re-pointed, and the
+          row's real `to` stays on record. `:featureId` names the row so the
+          screen can say which surface and whose it is; `?build=` says whether
+          the reader was reaching for Main or Stage. The bare path is the
+          fallback for a link pasted without an id. See
+          `PrototypeLinkRetiredPage.tsx` and `linkRetired` in
+          `prototypeFeatures.ts`. */}
+      <Route path="/prototype-unavailable" element={<TestingGate><PrototypeLinkRetiredPage /></TestingGate>} />
+      <Route path="/prototype-unavailable/:featureId" element={<TestingGate><PrototypeLinkRetiredPage /></TestingGate>} />
       <Route path="/prds" element={<TestingGate><PrdsPage /></TestingGate>} />
       {/* One component, every variant, stacked — the page a Refinement row
           points at when a designer wants the team to review ONE widget rather

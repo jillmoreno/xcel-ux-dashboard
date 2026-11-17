@@ -2212,12 +2212,33 @@ function ProjectRow({
   // admin tool to show it's disabled". A live frame of the surface behind a
   // held-back row read as an invitation; the abstract mark reads as closed.
   const hasPreview = !placeholder && Boolean(feature.thumbnail || preview)
+  /* A DEACTIVATED LINK — 2026-11-17, Jillienne: "deactivate the links to the
+     main prototypes and stage prototypes so that the users get an error
+     screen … on the error screen shown to the user is where the message
+     should be."
+
+     The row is drawn exactly as it was — it has to still look clickable, or
+     there is no click to put the message behind. What changes is only where
+     the click GOES: the retired-link screen on this origin, which names the
+     surface, the build the reader was reaching for, and the scope owner to
+     ask for the new link.
+
+     ⚠ UNDER BOTH BUILDS, and same-origin under both. Pointing Stage at a
+     retired screen on the stage origin would put Netlify's password page in
+     front of the message, which is the one thing this must not do. `?build=`
+     carries which switch position the reader was on instead.
+
+     ⚠ `feature.to` IS NOT CONSULTED HERE, on purpose — it stays the real
+     route so the smoke test keeps holding it to the one-build rule, and
+     reactivating a row is deleting its `linkRetired` line. */
+  const linkRetired = isPrototypeRow && feature.linkRetired === true
   /* A Prototypes row's `to` is a same-origin path on main's build; under the
      section's Stage switch the same path opens on the stage origin instead
      (`stageBuild.ts`). Every other row is what it always was. */
-  const href =
-    feature.externalUrl ??
-    (feature.to ? (isPrototypeRow ? prototypeHref(feature.to, build) : feature.to) : `/prototype/${feature.id}`)
+  const href = linkRetired
+    ? `/prototype-unavailable/${feature.id}${build === 'stage' ? '?build=stage' : ''}`
+    : (feature.externalUrl ??
+      (feature.to ? (isPrototypeRow ? prototypeHref(feature.to, build) : feature.to) : `/prototype/${feature.id}`))
   // An absolute href is one the copy-link button must not prefix with this
   // origin — a document's, or a Prototypes row's under Stage.
   const external = Boolean(feature.externalUrl) || /^https?:\/\//.test(href)

@@ -878,6 +878,27 @@ describe('Prototypes — one row per scope, every row the same build', () => {
   const openingRows = () => prototypeRows.filter((f) => !isPlaceholder(f) && f.to)
   const hrefOf = (id: string) => document.querySelector(`[data-row="${id}"] a`)!.getAttribute('href')
 
+  /* ⚠ THE LINKS ARE DEACTIVATED — 2026-11-17, Jillienne: "deactivate the links
+     to the main prototypes and stage prototypes so that the users get an error
+     screen". A row carrying `linkRetired` is drawn exactly as before and still
+     takes a click; the click lands on the retired-link screen, which is where
+     the message about new links lives (`PrototypeLinkRetiredPage.tsx`).
+
+     THE RULE THE CASES BELOW USED TO ASSERT HAS NOT BEEN DROPPED, only moved
+     off the rendered href: `to` is still the real route, and the shape case
+     above ("every Prototypes row with a route enters the product on main at
+     the committed baseline") still holds every row to same-origin, a product
+     door, `?demo=1` and nothing pinned. That is what makes reactivating a row
+     one deleted line. This helper is the one place that knows which of the two
+     a row renders, so when the new links arrive, deleting the `linkRetired`
+     branch here puts every case below back to what it was. */
+  const expectedHref = (f: (typeof prototypeRows)[number], build: 'main' | 'stage') =>
+    f.linkRetired
+      ? `/prototype-unavailable/${f.id}${build === 'stage' ? '?build=stage' : ''}`
+      : build === 'stage'
+        ? `${STAGE_ORIGIN}${f.to}`
+        : f.to
+
   it('the stage origin is the Netlify branch-deploy address of the `stage` branch on the Hub’s own site', () => {
     // `HUB_URL` in PrototypeBar.tsx and `HUB_HOST` here are the same host:
     // the stage address is derived from it, so a site rename moves both.
@@ -898,8 +919,9 @@ describe('Prototypes — one row per scope, every row the same build', () => {
     expect(radios[0]).toHaveAttribute('aria-checked', 'true')
     expect(document.querySelector('[data-build-note]')!.textContent).toMatch(/main branch/i)
     // Under Main every row that opens is exactly its authored `to` — the
-    // pre-switch behaviour, byte for byte.
-    for (const f of openingRows()) expect(hrefOf(f.id), f.id).toBe(f.to)
+    // pre-switch behaviour, byte for byte — unless its link is deactivated,
+    // in which case it is the retired screen. See `expectedHref`.
+    for (const f of openingRows()) expect(hrefOf(f.id), f.id).toBe(expectedHref(f, 'main'))
   })
 
   it('under Stage every row opens the SAME path on the stage origin, in a new tab, and the notes say so', async () => {
@@ -909,9 +931,13 @@ describe('Prototypes — one row per scope, every row the same build', () => {
     expect(screen.getByRole('radio', { name: 'Stage' })).toHaveAttribute('aria-checked', 'true')
     for (const f of openingRows()) {
       const a = document.querySelector(`[data-row="${f.id}"] a`)!
-      expect(a.getAttribute('href'), f.id).toBe(`${STAGE_ORIGIN}${f.to}`)
-      // Another origin opens in its own tab, like a document row does.
-      expect(a.getAttribute('target'), f.id).toBe('_blank')
+      expect(a.getAttribute('href'), f.id).toBe(expectedHref(f, 'stage'))
+      // Another origin opens in its own tab, like a document row does. A
+      // DEACTIVATED row does not: the retired screen is on this origin, and
+      // sending the reader to a new tab to be told the link is off — with the
+      // Back to the Hub link then going nowhere they came from — is worse than
+      // showing it in place.
+      expect(a.getAttribute('target'), f.id).toBe(f.linkRetired ? null : '_blank')
     }
     // The placeholder still opens nothing — a switch does not build the Admin tool.
     expect(document.querySelector('[data-placeholder="xcel-admin-coming-soon"] a')).toBeNull()
@@ -981,8 +1007,12 @@ describe('Prototypes — one row per scope, every row the same build', () => {
     // staged work — so it must not say "Staged". It points at the switch.
     await waitFor(() => expect(compass().textContent).toContain('Waiting on stage'))
     expect(compass().textContent).not.toContain('Staged Nov')
-    // And the row still opens main, exactly as before.
-    expect(hrefOf('xcel-compass')).toBe('/dashboard-rebrand?demo=1&section=compass')
+    // And the row's link is what the switch says it is — today the retired
+    // screen under both builds (2026-11-17); the TAG is unaffected either way,
+    // which is the thing this case is about.
+    expect(hrefOf('xcel-compass')).toBe(
+      expectedHref(prototypeRows.find((f) => f.id === 'xcel-compass')!, 'main'),
+    )
 
     // UNDER STAGE it is the staged thing, so it says when and by whom.
     await user.click(screen.getByRole('radio', { name: 'Stage' }))
@@ -1021,7 +1051,7 @@ describe('Prototypes — one row per scope, every row the same build', () => {
     // Deep-linked to Stage, the switch opens on Stage.
     renderDashboard('/?build=stage')
     expect(screen.getByRole('radio', { name: 'Stage' })).toHaveAttribute('aria-checked', 'true')
-    for (const f of openingRows()) expect(hrefOf(f.id), f.id).toBe(`${STAGE_ORIGIN}${f.to}`)
+    for (const f of openingRows()) expect(hrefOf(f.id), f.id).toBe(expectedHref(f, 'stage'))
     // An unknown value is Main, not an empty board.
     document.body.innerHTML = ''
     renderDashboard('/?build=nonsense')
