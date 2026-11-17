@@ -428,13 +428,15 @@ const VERIFIED_HOLD_MS = 2000
 
 /** "Email verified" — 2026-11-13, Afsana, from a reference image: a green
  *  check in a pale green ring, "Email verified", "Thanks! Continuing…". Shown
- *  after a code is accepted, then the modal moves on by itself. */
+ *  after a code is accepted, then the modal moves on by itself. The XCEL logo
+ *  over a smaller ring since 2026-11-17 (Afsana), as on the other steps. */
 function EmailVerified() {
   return (
     <div style={VERIFIED} role="status">
+      <img src="/brand/xcel-logo.webp" alt="XCEL Insurance Training by Colibri" style={CODE_LOGO} />
       <span aria-hidden style={VERIFIED_RING}>
         {/* The light icon, stroked heavier to match the reference. */}
-        <Check size={34} style={{ stroke: 'currentColor', strokeWidth: 28 }} />
+        <Check size={24} style={{ stroke: 'currentColor', strokeWidth: 28 }} />
       </span>
       <div style={{ ...HEAD, alignItems: 'center', gap: 6 }}>
         <h2 id="verify-email-title" style={TITLE}>
@@ -1225,10 +1227,10 @@ const VERIFIED: CSSProperties = {
 const VERIFIED_RING: CSSProperties = {
   display: 'grid',
   placeItems: 'center',
-  width: 88,
-  height: 88,
+  width: 56,
+  height: 56,
   borderRadius: '50%',
-  border: '3px solid var(--color-success-600)',
+  border: '2px solid var(--color-success-600)',
   background: 'var(--color-e2e-verified-fill)',
   color: 'var(--color-success-600)',
 }

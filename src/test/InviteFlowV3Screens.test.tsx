@@ -301,6 +301,7 @@ describe('Invite Flow V3 — the email check', () => {
     const verified = screen.getByRole('dialog', { name: 'Email verified' })
     expect(verified).toHaveAccessibleDescription('Thanks! Continuing…')
     expect(within(verified).queryByRole('button')).not.toBeInTheDocument()
+    expect(within(verified).getByAltText('XCEL Insurance Training by Colibri')).toBeInTheDocument()
 
     /* No Atlas account: the name is asked before the checkout (2026-11-13). */
     const named = await screen.findByRole('dialog', { name: 'Enter your name to continue' }, { timeout: 3000 })
