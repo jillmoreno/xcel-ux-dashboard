@@ -38,6 +38,10 @@ vi.mock('@/pages/InvitedProductDetailPageV2', () => ({
 vi.mock('@/pages/InvitedProductDetailPageV3', () => ({
   InvitedProductDetailPageV3: () => <p>V3 product detail</p>,
 }))
+/* Eric's page is V3's product page while `invite-v3-eric-pdp` is on (2026-11-17). */
+vi.mock('@/pages/ProductDetailPageV3Multi', () => ({
+  ProductDetailPageV3Multi: () => <p>V3 product detail</p>,
+}))
 vi.mock('@/pages/InvitedCheckoutPage', () => ({ InvitedCheckoutPage: () => <p>V1 checkout</p> }))
 vi.mock('@/pages/InvitedCheckoutPageV2', () => ({
   InvitedCheckoutPageV2: () => <p>V2 checkout</p>,

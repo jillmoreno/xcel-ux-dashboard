@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest'
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 import { act, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom'
@@ -100,8 +100,10 @@ describe('Invite Flow V3 — B2B opening screens', () => {
     expect(go).toBeEnabled()
   })
 
-  it('Continue shows the chosen course, and Change can update it', async () => {
-    renderAt('/end-to-end-demo', V3_B2B)
+  it('Continue shows the chosen course, and Change can update it — V3’s own product page', async () => {
+    /* The course band and Change are V3's own page's; Eric's page stands in
+       for it while `invite-v3-eric-pdp` is on (2026-11-17). */
+    renderAt('/end-to-end-demo', `${V3_B2B},invite-v3-eric-pdp:off`)
     await userEvent.type(screen.getByLabelText(/Choose your state/), 'florida')
     await userEvent.click(screen.getByRole('radio', { name: 'Life and Health' }))
     await userEvent.click(screen.getByRole('button', { name: 'Continue' }))
@@ -120,6 +122,60 @@ describe('Invite Flow V3 — B2B opening screens', () => {
 })
 
 const CHECKOUT = '/end-to-end-demo/checkout'
+
+describe('Invite Flow V3 — Eric’s product page (2026-11-17)', () => {
+  const DIRECT = 'invite-flow-version:v3,invite-v3-model:b2b,invite-v3-flow-b2b:direct-email'
+  /* His page measures wrapped lines with `Range.getClientRects`, which jsdom
+     does not implement — no lines is "fits on one", which is all these need. */
+  const original = Range.prototype.getClientRects
+  beforeAll(() => {
+    Range.prototype.getClientRects = () => [] as unknown as DOMRectList
+  })
+  afterAll(() => {
+    Range.prototype.getClientRects = original
+  })
+
+  it('asks the QR code’s course first, then opens Eric’s page on it', async () => {
+    renderAt('/end-to-end-demo', V3_B2B)
+    await userEvent.type(screen.getByLabelText(/Choose your state/), 'texas')
+    await userEvent.click(screen.getByRole('radio', { name: 'Life and Health' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Continue' }))
+    expect(screen.getAllByRole('button', { name: /^Purchase / }).length).toBeGreaterThan(0)
+    expect(screen.queryByText('Showing the course for')).not.toBeInTheDocument()
+    expect(screen.getAllByText(/Texas/).length).toBeGreaterThan(0)
+  })
+
+  for (const [products, pkg] of [
+    ['multi-2', 'standard'],
+    ['multi', 'premier'],
+    ['single', 'premier'],
+    ['standard', 'standard'],
+    ['california', 'premier'],
+  ] as const) {
+    it(`Purchase on Products ${products} goes on into V3’s checkout with ${pkg}`, async () => {
+      renderAt('/end-to-end-demo', `${DIRECT},pdp-products:${products}`)
+      const buttons = screen.getAllByRole('button', { name: new RegExp(`^Purchase ${pkg}`, 'i') })
+      await userEvent.click(buttons[0])
+      const where = screen.getByTestId('where').textContent!
+      expect(where).toMatch(/^\/end-to-end-demo\/checkout\?/)
+      expect(where).toContain(`pkg=${pkg}`)
+      expect(where).toContain(`lstate=${products === 'california' ? 'California' : 'Florida'}`)
+      expect(where).toContain('invite-v3-flow-b2b%3Adirect-email')
+    })
+  }
+
+  it('opens on Standard — Products’ default in V3', () => {
+    renderAt('/end-to-end-demo', DIRECT)
+    expect(screen.getAllByRole('button', { name: /^Purchase standard/i }).length).toBeGreaterThan(0)
+    expect(screen.queryByRole('button', { name: /^Purchase premier/i })).not.toBeInTheDocument()
+  })
+
+  it('Direct Email: Purchase Standard opens the checkout’s email step', async () => {
+    renderAt('/end-to-end-demo', `${DIRECT},pdp-products:standard`)
+    await userEvent.click(screen.getAllByRole('button', { name: /^Purchase standard/i })[0])
+    expect(screen.getByRole('dialog', { name: /email/i })).toBeInTheDocument()
+  })
+})
 
 describe('Invite Flow V3 — the Direct Email invitation', () => {
   const DIRECT = 'invite-flow-version:v3,invite-v3-model:b2b,invite-v3-flow-b2b:direct-email'
