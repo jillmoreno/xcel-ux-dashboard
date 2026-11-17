@@ -669,8 +669,10 @@ export type PrototypeFeature = {
    * When true the row still DRAWS as a live row — title, tags, thumbnail,
    * chevron, kebab — and still takes a click, but the click lands on
    * `/prototype-unavailable/<id>` instead of the product. That screen carries
-   * the message: the links are being replaced, go to this scope's `owner` for
-   * the new one.
+   * the message: the links are being replaced, check with UX Team/Product
+   * Owner for the new one. ⚠ NO INDIVIDUAL IS NAMED — it named the scope's
+   * `owner` for half a day on 2026-11-17, until Jillienne read her own name
+   * on the live screen.
    *
    * ⚠ NOT `status: 'coming-soon'`, and the difference is the point. A
    * coming-soon row is drawn DISABLED with nothing to click (the Admin
@@ -1081,9 +1083,9 @@ const AUTHORED_FEATURES: PrototypeFeature[] = [
     // first row of Prototypes is its own decision.
     to: '/dashboard-rebrand?demo=1&journey=full',
     /* LINK DEACTIVATED 2026-11-17 (Jillienne) — the row still takes a click;
-       the click lands on the retired-link screen, which carries the message
-       and names this scope's owner. The `to` above is the real route, kept on
-       record: reactivating is deleting this line. See `linkRetired`. */
+       the click lands on the retired-link screen, which carries the message.
+       The `to` above is the real route, kept on record: reactivating is
+       deleting this line. See `linkRetired`. */
     linkRetired: true,
     brands: ['xcel'],
   },
@@ -1144,9 +1146,9 @@ const AUTHORED_FEATURES: PrototypeFeature[] = [
     // the owner's call (`UxDashboard.smoke.test.tsx`).
     to: '/end-to-end-demo/find?demo=1',
     /* LINK DEACTIVATED 2026-11-17 (Jillienne) — the row still takes a click;
-       the click lands on the retired-link screen, which carries the message
-       and names this scope's owner. The `to` above is the real route, kept on
-       record: reactivating is deleting this line. See `linkRetired`. */
+       the click lands on the retired-link screen, which carries the message.
+       The `to` above is the real route, kept on record: reactivating is
+       deleting this line. See `linkRetired`. */
     linkRetired: true,
     brands: ['xcel'],
   },
@@ -1189,9 +1191,9 @@ const AUTHORED_FEATURES: PrototypeFeature[] = [
     pinned: true,
     to: '/dashboard-rebrand?demo=1&section=dashboard',
     /* LINK DEACTIVATED 2026-11-17 (Jillienne) — the row still takes a click;
-       the click lands on the retired-link screen, which carries the message
-       and names this scope's owner. The `to` above is the real route, kept on
-       record: reactivating is deleting this line. See `linkRetired`. */
+       the click lands on the retired-link screen, which carries the message.
+       The `to` above is the real route, kept on record: reactivating is
+       deleting this line. See `linkRetired`. */
     linkRetired: true,
     brands: ['xcel'],
   },
@@ -1242,9 +1244,9 @@ const AUTHORED_FEATURES: PrototypeFeature[] = [
     // deep link `PlatformShell` honours under either navigation.
     to: '/dashboard-rebrand?demo=1&section=compass',
     /* LINK DEACTIVATED 2026-11-17 (Jillienne) — the row still takes a click;
-       the click lands on the retired-link screen, which carries the message
-       and names this scope's owner. The `to` above is the real route, kept on
-       record: reactivating is deleting this line. See `linkRetired`. */
+       the click lands on the retired-link screen, which carries the message.
+       The `to` above is the real route, kept on record: reactivating is
+       deleting this line. See `linkRetired`. */
     linkRetired: true,
     brands: ['xcel'],
   },

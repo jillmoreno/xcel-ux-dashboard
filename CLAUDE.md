@@ -145,7 +145,9 @@ should be." All four rows that open are marked `linkRetired` in
 `prototypeFeatures.ts`; under Main AND Stage the row renders
 `/prototype-unavailable/<id>` instead of the product, and that screen
 (`PrototypeLinkRetiredPage.tsx`) carries the message — the links are being
-replaced, go to this scope's `owner` for the new one. **NOT `coming-soon`**,
+replaced, check with UX Team/Product Owner for the new one (**no individual is
+named**: it named the scope's owner for half a day on 2026-11-17, until
+Jillienne read her own name on the live screen). **NOT `coming-soon`**,
 which is the other way to take a link away: that draws the row disabled with
 nothing to click, which hides the link and tells nobody anything. Here the
 click is kept precisely so there is somewhere to put the message. **Nothing

@@ -2,11 +2,7 @@ import type { CSSProperties } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
 
 import { TriangleExclamation } from '@/icons'
-import {
-  PROTOTYPE_FEATURES,
-  prototypeScopeLabel,
-  prototypeScopeOwner,
-} from '@/data/prototypeFeatures'
+import { PROTOTYPE_FEATURES } from '@/data/prototypeFeatures'
 import { parsePrototypeBuild, PROTOTYPE_BUILDS } from '@/data/stageBuild'
 
 /**
@@ -35,9 +31,12 @@ import { parsePrototypeBuild, PROTOTYPE_BUILDS } from '@/data/stageBuild'
  * the HUB's origin under either switch position, and `?build=stage` is how the
  * screen knows which one the reader was reaching for.
  *
- * WHO TO ASK is the scope's `owner` — the person who already decides what that
- * surface is (`PROTOTYPE_SCOPES`). Naming them beats "the design team": the
- * reader goes to one person instead of asking in a channel.
+ * WHO TO ASK is deliberately NOT a person. It named the scope's `owner` for
+ * half a day on 2026-11-17, on the reasoning that one name beats a channel —
+ * until Jillienne read her own name on the live screen: "I don't want my name
+ * in there, just have Check with UX Team/Product Owner for the new link." One
+ * line for every row, so the screen carries no roster to keep in step with
+ * `PROTOTYPE_SCOPES` and no individual's name in front of stakeholders.
  */
 export function PrototypeLinkRetiredPage() {
   const { featureId } = useParams<{ featureId: string }>()
@@ -46,8 +45,6 @@ export function PrototypeLinkRetiredPage() {
   const buildLabel = PROTOTYPE_BUILDS.find((b) => b.id === build)?.label ?? 'Main'
 
   const feature = PROTOTYPE_FEATURES.find((f) => f.id === featureId)
-  const scope = prototypeScopeLabel(feature?.prototypeScope)
-  const owner = prototypeScopeOwner(feature?.prototypeScope)
 
   return (
     <div style={wrapStyle}>
@@ -59,26 +56,30 @@ export function PrototypeLinkRetiredPage() {
         <p style={leadStyle}>
           {feature ? (
             <>
+              {/* ⚠ THE TITLE ALONE, no scope label after it. The row titles
+                  already carry their own parenthetical — "End-to-End User
+                  Experience (Invite, Atlas, Compass)" — so appending the scope
+                  read as a doubled bracket, "(Invite, Atlas, Compass)
+                  (End-to-End)", on every row (2026-11-17, Jillienne on the
+                  live screen). */}
               The <strong style={strongStyle}>{buildLabel}</strong> link for{' '}
-              <strong style={strongStyle}>{feature.title}</strong>
-              {scope ? ` (${scope})` : ''} has been turned off.
+              <strong style={strongStyle}>{feature.title}</strong> has been turned off.
             </>
           ) : (
             <>The {buildLabel} prototype link you followed has been turned off.</>
           )}
         </p>
 
-        {/* THE MESSAGE — the whole reason this screen exists. */}
+        {/* THE MESSAGE — the whole reason this screen exists.
+            ⚠ NO NAMES, and no per-scope branch. It named the scope's `owner`
+            until 2026-11-17, when Jillienne saw her own name on the live
+            screen: "I don't want my name in there, just have Check with UX
+            Team/Product Owner for the new link." One line for every row and
+            for the bare path, so there is nothing to keep in step with
+            `PROTOTYPE_SCOPES`. */}
         <p style={bodyStyle}>
-          The Main and Stage prototype links are being replaced.{' '}
-          {owner ? (
-            <>
-              Check with <strong style={strongStyle}>{owner}</strong> for the new link before you
-              review this surface.
-            </>
-          ) : (
-            <>Check with the surface&rsquo;s designer for the new link before you review it.</>
-          )}
+          The Main and Stage prototype links are being replaced. Check with UX Team/Product Owner
+          for the new link before you review this surface.
         </p>
 
         <p style={noteStyle}>

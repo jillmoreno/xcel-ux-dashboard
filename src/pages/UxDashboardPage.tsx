@@ -2220,8 +2220,9 @@ function ProjectRow({
      The row is drawn exactly as it was — it has to still look clickable, or
      there is no click to put the message behind. What changes is only where
      the click GOES: the retired-link screen on this origin, which names the
-     surface, the build the reader was reaching for, and the scope owner to
-     ask for the new link.
+     surface and the build the reader was reaching for, and says to check with
+     UX Team/Product Owner for the new link (no individual is named —
+     2026-11-17).
 
      ⚠ UNDER BOTH BUILDS, and same-origin under both. Pointing Stage at a
      retired screen on the stage origin would put Netlify's password page in
