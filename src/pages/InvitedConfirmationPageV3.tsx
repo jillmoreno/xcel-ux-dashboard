@@ -79,15 +79,19 @@ export function InvitedConfirmationPageV3() {
      account. A click outside still closes it first. */
   const [signingIn, setSigningIn] = useState(false)
   const navigate = useNavigate()
+  /* Opened from `/invite-v3` (2026-11-17): the walk is the flow alone, so
+     Setting up your account is where it ends — it holds rather than going on
+     into Atlas Home. */
+  const standalone = params.get('standalone') === '1'
   useEffect(() => {
-    if (!signingIn) return
+    if (!signingIn || standalone) return
     const t = window.setTimeout(() => {
       navigate(`/dashboard-rebrand?demo=1&version=${END_TO_END_VERSION}&${E2E_JOURNEY_PARAM}=${E2E_JOURNEY_FULL}`, {
         replace: true,
       })
     }, SETTING_UP_MS)
     return () => window.clearTimeout(t)
-  }, [signingIn, navigate])
+  }, [signingIn, standalone, navigate])
 
   /* What was bought, and for how much — V2's ending's reading of the same
      address, so the receipt agrees with the checkout. */
