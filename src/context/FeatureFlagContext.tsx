@@ -3890,8 +3890,9 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
   {
     key: 'invite-v3-flow-b2b',
     /* V3's B2B flows: Direct Email (V2's "B2B2C with email", first and the
-       default since 2026-11-03), then the four QR flows from Afsana's
-       `xcel-b2b2c-email-flow.html`. Shown only
+       default since 2026-11-03), then QR Code — the QR flows from Afsana's
+       `xcel-b2b2c-email-flow.html`, one since 2026-11-17 with Email belongs
+       to choosing between them. Shown only
        while Model type is B2B — see `invite-v3-model`. The variants must
        match `INVITE_FLOWS_V3`'s B2B rows; `InviteFlowsV3.test.ts` holds them
        together. */
@@ -3901,14 +3902,12 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     group: 'Navigation',
     label: 'Invite flow',
     picker: 'sheet',
-    description: 'Invite Flow V3, B2B invite. Which invite flow the demo walks: Direct Email (the partner’s invitation, address supplied), or one of the three QR flows — net new, has OCD but no Atlas, or has Atlas with a log-in widget.',
+    description: 'Invite Flow V3, B2B invite. Which invite flow the demo walks: Direct Email (the partner’s invitation, address supplied) or QR Code (a partner’s QR code). Email belongs to picks the walk for both.',
     defaultEnabled: true,
     defaultVariant: 'direct-email',
     variants: [
       { value: 'direct-email', label: 'Direct Email', description: 'Partner invited them, address supplied. Locked at checkout.' },
-      { value: 'qr-net-new', label: 'QR: Net New: No OCD, No Atlas', description: 'New to XCEL. Verify email by code, full checkout, then create a password.' },
-      { value: 'qr-ocd', label: 'QR: OCD, but no Atlas', description: 'Has an OCD account, no Atlas. Same screens as Net New for now.' },
-      { value: 'qr-atlas-login', label: 'QR: Has Atlas: Open Log-In Widget', description: 'Already on Atlas. Email check opens a log-in widget; ends ready to log in.' },
+      { value: 'qr', label: 'QR Code', description: 'Scanned a partner’s QR code. Email belongs to decides the rest.' },
     ],
     page: 'dashboard-rebrand',
   },
@@ -3960,13 +3959,15 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     key: 'invite-v3-email-account',
     /* Which way "Verify your email" goes for the signed-out OCD learner — a
        log-in when the email they give has Atlas, a code when it does not.
-       Direct Email too (2026-11-04): the supplied address, after Purchase. */
+       Direct Email too (2026-11-04): the supplied address, after Purchase.
+       QR Code too (2026-11-17): the address given at Verify your email —
+       `invite:v3-b2b` is the QR flow's surface. */
     surface: 'design',
     versions: ['eric-atlas-e2e'],
-    surfaces: ['invite:v3-b2b-direct-email', 'invite:v3-b2c-signed-in'],
+    surfaces: ['invite:v3-b2b', 'invite:v3-b2b-direct-email', 'invite:v3-b2c-signed-in'],
     group: 'Navigation',
     label: 'Email belongs to',
-    description: 'Invite Flow V3 — B2B Direct Email (the supplied address, after Purchase), and signed in to XCEL or not (targeted or mixed cart). The email given at Verify your email: an Atlas account (log in, then Start course) or no Atlas account (a code, then Create password).',
+    description: 'Invite Flow V3 — B2B Direct Email (the supplied address, after Purchase), B2B QR Code, and signed in to XCEL or not (targeted or mixed cart). The email given at Verify your email: an Atlas account (log in, then Start course) or no Atlas account (a code, then Create password).',
     defaultEnabled: true,
     defaultVariant: 'no-atlas',
     variants: [
