@@ -347,6 +347,8 @@ describe('Invite Flow V3 — the email check', () => {
     await userEvent.clear(field)
     await userEvent.type(field, 'jordan@')
     expect(field).toHaveAccessibleDescription('Please enter a valid email address')
+    /* The line is enough — no red stroke under the field (2026-11-18). */
+    expect(field.style.boxShadow).toBe('')
     await userEvent.type(field, 'example.com')
     expect(within(dialog).queryByText('Please enter a valid email address')).not.toBeInTheDocument()
     expect(dialog).toHaveTextContent('Can’t log in? Visit our help center')
