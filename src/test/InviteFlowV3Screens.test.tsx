@@ -935,12 +935,14 @@ describe('Invite Flow V3 — not signed into XCEL (OCD)', () => {
   const base = INVITE_FLOWS_V3.find((f) => f.id === 'xcel-signed-out')!
 
   it('walks as the signed-in flow, a guest throughout and never signed out', () => {
-    for (const cart of ['targeted', 'mixed', 'none'] as const) {
+    for (const cart of ['targeted', 'mixed'] as const) {
       const flow = ocdCartFlowV3(base, cart, 'no-atlas')
       expect(flow.base).toBe('b2c-guest')
       expect(flow.screens).not.toContain('signing-out')
       expect(flow.screens.slice(0, 2)).toEqual(['cart', 'pc-modal'])
     }
+    /* Nothing targeted ends at the cart (2026-11-18). */
+    expect(ocdCartFlowV3(base, 'none', 'atlas').screens).toEqual(['cart'])
     expect(ocdCartFlowV3(base, 'mixed', 'atlas').screens).toContain('drop-notice')
     expect(emailCheckV3(ocdCartFlowV3(base, 'targeted', 'atlas'))).toEqual({ second: 'login', signsIn: false, accountKnown: true })
     expect(emailCheckV3(ocdCartFlowV3(base, 'mixed', 'atlas')).accountKnown).toBe(true)
@@ -997,8 +999,19 @@ describe('Invite Flow V3 — not signed into XCEL (OCD)', () => {
     expect(screen.getByTestId('where').textContent).toContain('dropped=1')
   })
 
+  it('does nothing at Checkout when nothing is targeted — not even the Partner Code question', async () => {
+    for (const account of ['no-atlas', 'atlas']) {
+      const { unmount } = cartAt(`none,invite-v3-email-account:${account}`)
+      await userEvent.click(screen.getByRole('button', { name: 'Checkout' }))
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+      expect(screen.queryByText('Checkout page')).not.toBeInTheDocument()
+      expect(screen.getByRole('button', { name: 'Checkout' })).toBeInTheDocument()
+      unmount()
+    }
+  })
+
   it('does nothing on Yes, as when signed in', async () => {
-    cartAt('none')
+    cartAt('targeted')
     await userEvent.click(screen.getByRole('button', { name: 'Checkout' }))
     await userEvent.click(screen.getByRole('button', { name: 'YES' }))
     expect(screen.queryByRole('dialog', { name: 'Enter your Partner Code' })).not.toBeInTheDocument()
@@ -1162,10 +1175,11 @@ describe('Invite Flow V3 — signed into XCEL (OCD)', () => {
   })
 
   it('asks the Partner Code question before anything else', () => {
-    for (const cart of ['targeted', 'mixed', 'none'] as const) {
+    for (const cart of ['targeted', 'mixed'] as const) {
       const flow = signedInFlowV3(base, cart, 'no-atlas', false)
       expect(flow.screens.slice(0, 2)).toEqual(['cart', 'pc-modal'])
     }
+    expect(signedInFlowV3(base, 'none', 'no-atlas', false).screens).toEqual(['cart'])
     expect(signedInFlowV3(base, 'mixed', 'atlas', false).screens).toContain('drop-notice')
     expect(signedInFlowV3(base, 'targeted', 'atlas', false).screens).not.toContain('drop-notice')
   })
@@ -1177,8 +1191,8 @@ describe('Invite Flow V3 — signed into XCEL (OCD)', () => {
     expect(screen.queryByText(/have been removed from your cart/)).not.toBeInTheDocument()
   })
 
-  it('does nothing on Yes, whatever the cart holds — no code to enter', async () => {
-    for (const cart of ['targeted', 'mixed', 'none']) {
+  it('does nothing on Yes, whatever targeted cart it holds — no code to enter', async () => {
+    for (const cart of ['targeted', 'mixed']) {
       const { unmount } = cartAt(`${SIGNED_IN},invite-v3-cart:${cart}`)
       await userEvent.click(screen.getByRole('button', { name: 'Checkout' }))
       await userEvent.click(screen.getByRole('button', { name: 'YES' }))
@@ -1280,9 +1294,14 @@ describe('Invite Flow V3 — signed into XCEL (OCD)', () => {
     expect(screen.queryByText(/Your order confirmation will be sent here|Enter it twice/)).not.toBeInTheDocument()
   })
 
-  it('takes a cart with nothing targeted to the existing checkout on No', async () => {
-    await answerNo('none')
-    expect(screen.getByText('Checkout page')).toBeInTheDocument()
-    expect(screen.getByTestId('where').textContent).not.toContain('signedout=1')
+  it('does nothing at Checkout when nothing is targeted, Atlas or not', async () => {
+    for (const account of ['no-atlas', 'atlas']) {
+      const { unmount } = cartAt(`${SIGNED_IN},invite-v3-cart:none,invite-v3-email-account:${account}`)
+      await userEvent.click(screen.getByRole('button', { name: 'Checkout' }))
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+      expect(screen.queryByText('Checkout page')).not.toBeInTheDocument()
+      expect(screen.getByTestId('where').textContent).not.toContain('signedout=1')
+      unmount()
+    }
   })
 })

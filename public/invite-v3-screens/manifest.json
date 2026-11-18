@@ -982,41 +982,6 @@
               "file": "xcel-signed-out/none/01-your-cart-nothing-targeted-signed-out.png",
               "title": "Your cart",
               "state": "Nothing targeted, signed out"
-            },
-            {
-              "file": "xcel-signed-out/none/02-do-you-have-a-partner-code-question-over-the-cart.png",
-              "title": "Do you have a Partner Code?",
-              "state": "Question over the cart"
-            },
-            {
-              "file": "xcel-signed-out/none/03-checkout-on-arrival-no-email-check.png",
-              "title": "Checkout",
-              "state": "On arrival — no email check"
-            },
-            {
-              "file": "xcel-signed-out/none/04-checkout-save-and-continue-with-required-fields-empty.png",
-              "title": "Checkout",
-              "state": "Save and continue with required fields empty"
-            },
-            {
-              "file": "xcel-signed-out/none/05-checkout-student-information-filled.png",
-              "title": "Checkout",
-              "state": "Student information filled"
-            },
-            {
-              "file": "xcel-signed-out/none/06-checkout-payment-card-form-empty.png",
-              "title": "Checkout",
-              "state": "Payment — card form empty"
-            },
-            {
-              "file": "xcel-signed-out/none/07-checkout-ready-to-place-the-order.png",
-              "title": "Checkout",
-              "state": "Ready to place the order"
-            },
-            {
-              "file": "xcel-signed-out/none/08-checkout-ready-to-place-the-order-full-page.png",
-              "title": "Checkout",
-              "state": "Ready to place the order — full page"
             }
           ]
         }
@@ -1434,31 +1399,6 @@
               "file": "xcel-signed-in/none/01-your-cart-nothing-targeted-signed-in.png",
               "title": "Your cart",
               "state": "Nothing targeted, signed in"
-            },
-            {
-              "file": "xcel-signed-in/none/02-do-you-have-a-partner-code-question-over-the-cart.png",
-              "title": "Do you have a Partner Code?",
-              "state": "Question over the cart"
-            },
-            {
-              "file": "xcel-signed-in/none/03-checkout-on-arrival-no-email-check.png",
-              "title": "Checkout",
-              "state": "On arrival — no email check"
-            },
-            {
-              "file": "xcel-signed-in/none/04-checkout-payment-card-form-empty.png",
-              "title": "Checkout",
-              "state": "Payment — card form empty"
-            },
-            {
-              "file": "xcel-signed-in/none/05-checkout-ready-to-place-the-order.png",
-              "title": "Checkout",
-              "state": "Ready to place the order"
-            },
-            {
-              "file": "xcel-signed-in/none/06-checkout-ready-to-place-the-order-full-page.png",
-              "title": "Checkout",
-              "state": "Ready to place the order — full page"
             }
           ]
         }
