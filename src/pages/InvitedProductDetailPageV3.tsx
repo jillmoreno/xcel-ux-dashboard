@@ -23,6 +23,8 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { E2E_COURSE_TITLE_SHORT, E2E_ORIGINAL_PRICE, E2E_PARTNER_NAME, E2E_PARTNER_PRICE, useEndToEndCourseTitle, useEndToEndDemoParams } from './endToEndDemo'
 import { PARTNER_HEADER_HEIGHT, PartnerHeader } from '@/components/e2e/PartnerHeader'
 import { CourseChoiceFields } from '@/components/e2e/CourseChoiceFields'
+import { CourseChoiceCard } from '@/components/e2e/CourseChoiceCard'
+import { CHOOSE_BODY, CHOOSE_TITLE, GATE_ON } from '@/components/e2e/courseChoiceStyles'
 import { matchState } from '@/data/inviteFlowsV3'
 import { TopoBackground } from '@/components/e2e/TopoBackground'
 import { useV3DialogLayer } from '@/components/e2e/useV3DialogLayer'
@@ -1125,10 +1127,6 @@ function ChooseCourseScreen({
   partner: boolean
   onChoose: (state: string, lineOfAuthority: FinderLineOfAuthority) => void
 }) {
-  const [typed, setTyped] = useState('')
-  const [loa, setLoa] = useState<FinderLineOfAuthority | null>(null)
-  const state = matchState(typed)
-  const ready = state != null && loa != null
   return (
     <div style={{ ...PAGE, display: 'flex', flexDirection: 'column' }}>
       <StandaloneBrowserChrome />
@@ -1145,31 +1143,9 @@ function ChooseCourseScreen({
       </section>
       <section aria-label="Choose your course" style={CHOOSE_SECTION}>
         <TopoBackground entrance />
-        <form
-          style={CHOOSE_CARD}
-          onSubmit={(e) => {
-            e.preventDefault()
-            if (state && loa) onChoose(state, loa)
-          }}
-        >
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-            <h2 style={CHOOSE_TITLE}>Select your state and line of authority</h2>
-            <div aria-hidden style={CHOOSE_RULE} />
-            <p style={CHOOSE_BODY}>This will help us show you the course that aligns with you.</p>
-          </div>
-          <CourseChoiceFields
-            idPrefix="v3-choose"
-            stateLabel="State"
-            loaLabel="Line of authority"
-            state={typed}
-            onState={setTyped}
-            loa={loa}
-            onLoa={setLoa}
-          />
-          <button type="submit" disabled={!ready} aria-disabled={!ready} style={ready ? GATE_ON : GATE_OFF}>
-            Continue
-          </button>
-        </form>
+        {/* The card is `CourseChoiceCard`, shared with Eric's product page's
+            Change state/line of authority dialog (2026-11-18). */}
+        <CourseChoiceCard idPrefix="v3-choose" onChoose={onChoose} />
       </section>
     </div>
   )
@@ -1260,66 +1236,11 @@ const CHOOSE_SECTION: CSSProperties = {
   flex: '1 1 auto',
 }
 
-const CHOOSE_CARD: CSSProperties = {
-  position: 'relative',
-  boxSizing: 'border-box',
-  display: 'flex',
-  flexDirection: 'column',
-  gap: 20,
-  padding: 28,
-  borderRadius: 8,
-  background: 'var(--color-fixed-light)',
-  boxShadow: '0 10px 30px var(--color-e2e-form-shadow)',
-  width: 560,
-  maxWidth: '100%',
-}
 
-const CHOOSE_TITLE: CSSProperties = {
-  margin: 0,
-  fontFamily: 'var(--font-e2e-avenir)',
-  fontWeight: 800,
-  fontSize: 20,
-  lineHeight: '28px',
-  color: 'var(--color-text-primary)',
-}
 
-const CHOOSE_RULE: CSSProperties = {
-  width: '22%',
-  height: 2,
-  borderRadius: 1,
-  background: '#dcdcdc',
-  margin: '2px 0 4px',
-}
 
-const CHOOSE_BODY: CSSProperties = {
-  margin: 0,
-  fontFamily: 'var(--font-e2e-avenir)',
-  /* 16, up from 14 (2026-11-18, Afsana). */
-  fontSize: 16,
-  lineHeight: '24px',
-  color: 'var(--color-text-primary)',
-}
 
-const GATE_ON: CSSProperties = {
-  padding: '12px 26px',
-  borderRadius: 6,
-  border: 'none',
-  background: 'var(--color-xcel-brick-600)',
-  color: 'var(--color-fixed-light)',
-  fontFamily: 'var(--font-e2e-avenir)',
-  fontWeight: 800,
-  fontSize: 15,
-  letterSpacing: '0.02em',
-  cursor: 'pointer',
-  alignSelf: 'stretch',
-}
 
-const GATE_OFF: CSSProperties = {
-  ...GATE_ON,
-  background: 'var(--color-e2e-form-locked)',
-  color: 'var(--color-text-secondary)',
-  cursor: 'not-allowed',
-}
 
 const SHOWING: CSSProperties = {
   display: 'flex',

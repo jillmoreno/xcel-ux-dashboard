@@ -191,6 +191,31 @@ describe('Invite Flow V3 — Eric’s product page (2026-11-17)', () => {
     await userEvent.click(screen.getAllByRole('button', { name: /^Purchase standard/i })[0])
     expect(screen.getByRole('dialog', { name: /email/i })).toBeInTheDocument()
   })
+
+  it('Change state/line of authority opens the QR step’s card, on the current course', async () => {
+    renderAt('/end-to-end-demo', DIRECT)
+    await userEvent.click(screen.getByRole('button', { name: /Change state\/line of authority/ }))
+    const dialog = screen.getByRole('dialog', { name: 'Select your state and line of authority' })
+    expect(screen.queryByRole('dialog', { name: 'What are you licensing for?' })).not.toBeInTheDocument()
+    const field = within(dialog).getByRole('combobox', { name: /State/ })
+    expect(field).toHaveValue('Florida')
+    expect(within(dialog).getByRole('radio', { name: 'Life and Health' })).toHaveAttribute('aria-checked', 'true')
+    await userEvent.clear(field)
+    await userEvent.type(field, 'Texas')
+    await userEvent.click(within(dialog).getByRole('radio', { name: 'Life' }))
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Continue' }))
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    expect(screen.getAllByText(/Texas Life Pre-licensing/).length).toBeGreaterThan(0)
+  })
+
+  it('Change state/line of authority closes on the ✕ without changing the course', async () => {
+    renderAt('/end-to-end-demo', DIRECT)
+    await userEvent.click(screen.getByRole('button', { name: /Change state\/line of authority/ }))
+    const dialog = screen.getByRole('dialog', { name: 'Select your state and line of authority' })
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Close' }))
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    expect(screen.getAllByText(/Florida Life and Health Pre-licensing/).length).toBeGreaterThan(0)
+  })
 })
 
 describe('Invite Flow V3 — the Direct Email invitation', () => {
