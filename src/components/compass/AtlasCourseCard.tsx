@@ -50,6 +50,9 @@ export type AtlasCourseCardData = {
   category?: string
   /** "Life and Health". */
   lineOfAuthority?: string
+  /** The Course Details sheet's paragraph under the facts — what the course's package is and who it suits (2026-11-18, Eric).
+   *  Invented demo copy; absent → no paragraph. */
+  packageSummary?: string
   /** 0–100; the progress row and its bar. Absent → read off the lifecycle (Completed 100, Begin 0). */
   progress?: number
 }

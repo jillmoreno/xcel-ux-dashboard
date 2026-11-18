@@ -27,6 +27,9 @@ export const ATLAS_MY_COURSES: readonly AtlasCourseCardData[] = [
     state: 'Florida',
     category: 'Licensing',
     lineOfAuthority: 'Life and Health',
+    // Invented demo copy for the Course Details sheet (2026-11-18, Eric).
+    packageSummary:
+      'Our Premier package adds flashcards, a recorded review class, and our Pass Guarantee to the standard package and is ideal for those looking to maximize their studying with various learning formats.',
     progress: 45,
   },
   {
@@ -42,6 +45,9 @@ export const ATLAS_MY_COURSES: readonly AtlasCourseCardData[] = [
     state: 'Florida',
     category: 'Licensing',
     lineOfAuthority: 'Property and Casualty',
+    // Invented demo copy for the Course Details sheet (2026-11-18, Eric).
+    packageSummary:
+      'Our Standard package covers every topic on the Florida Property & Casualty exam with self-paced lessons and practice quizzes, and is ideal for those who like to study on their own schedule.',
     progress: 0,
   },
   /* The THIRD card (2026-10-06, Eric's request), its badge, date and button
@@ -66,6 +72,9 @@ export const ATLAS_MY_COURSES: readonly AtlasCourseCardData[] = [
     state: 'Florida',
     category: 'Continuing Education',
     lineOfAuthority: 'All Lines',
+    // Invented demo copy for the Course Details sheet (2026-11-18, Eric).
+    packageSummary:
+      "This continuing education course meets Florida's Preferred Business Practices requirement in one self-paced module, and is ideal for producers renewing their license on a tight timeline.",
     progress: 100,
   },
   /* THE FOURTH CARD (2026-11-12, Eric): New York Personal Lines, EXPIRED — its access ran out partway through, so its button
@@ -85,6 +94,9 @@ export const ATLAS_MY_COURSES: readonly AtlasCourseCardData[] = [
     state: 'Florida',
     category: 'Licensing',
     lineOfAuthority: 'Personal Lines',
+    // Invented demo copy for the Course Details sheet (2026-11-18, Eric).
+    packageSummary:
+      'Our Plus package adds flashcards and timed practice exams to the standard package and is ideal for those who want to test their readiness before exam day.',
     progress: 62,
   },
   /* THE FIFTH CARD (2026-11-12, Eric): the NY P&C / L&H Refresher CE Package, FAILED — finished, its final exam not passed,
@@ -100,6 +112,9 @@ export const ATLAS_MY_COURSES: readonly AtlasCourseCardData[] = [
     state: 'Florida',
     category: 'Continuing Education',
     lineOfAuthority: 'Property, Casualty, Life and Health',
+    // Invented demo copy for the Course Details sheet (2026-11-18, Eric).
+    packageSummary:
+      'Our Refresher CE Package bundles the hours Florida requires across Property, Casualty, Life and Health into one purchase, and is ideal for producers who hold several lines of authority.',
     progress: 87, // (2026-11-12, Eric; 100 first)
   },
 ]

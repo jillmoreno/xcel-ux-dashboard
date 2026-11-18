@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import { AngleRightSolid, EllipsisVerticalSolid } from '@/icons'
 import { AtlasStatusPill, statusStrongFill, type AtlasCourseStatus } from './AtlasStatusPill'
 import type { AtlasCourseCardData } from './AtlasCourseCard'
+import { AtlasCourseDetailsSheet } from './AtlasCourseDetailsSheet'
 
 /**
  * THE ATLAS COURSE CARD, FIGMA 706:2416 — 2026-11-12, Eric: "rework the course cards to match the following Figma file".
@@ -36,6 +37,8 @@ export function AtlasCourseCardFigma({
   const status = data.completed ? 'Completed' : expired || failed ? 'Progress Made' : progress > 0 ? 'In Progress' : 'Not Started'
   /* The ⋮ menu: open on click, shut on a click anywhere else, on Escape, or on picking a row. */
   const [menuOpen, setMenuOpen] = useState(false)
+  /* Course Details — the facts' sheet (2026-11-18, Eric). */
+  const [detailsOpen, setDetailsOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
   useEffect(() => {
     if (!menuOpen) return
@@ -53,6 +56,7 @@ export function AtlasCourseCardFigma({
     }
   }, [menuOpen])
   return (
+    <>
     <article
       aria-label={data.title}
       onClick={onOpen}
@@ -73,14 +77,34 @@ export function AtlasCourseCardFigma({
       <img src={data.imageUrl} alt="" aria-hidden style={IMAGE} />
       {/* The title, then its pill under it — 10 apart, 4 above and below (Figma 710:2526). */}
       <div style={TITLE_BLOCK}>
-        <h3 style={TITLE}>{data.title}</h3>
+        {/* The title, then "Course Details ›" under it, then the rule (2026-11-18, Eric) — the link in Review Course's style,
+            opening the facts the card used to carry in a sheet from the right. */}
+        <div style={TITLE_HEAD}>
+          <h3 style={TITLE}>{data.title}</h3>
+          <button
+            type="button"
+            className="cre-atlas-card-review"
+            onClick={(e) => {
+              e.stopPropagation()
+              setDetailsOpen(true)
+            }}
+            // Left, under the title (2026-11-18, Eric — right-aligned for a while that day).
+            style={REVIEW_LINK}
+          >
+            Course Details
+            <AngleRightSolid size={11} aria-hidden style={{ width: 6 }} />
+          </button>
+        </div>
         {/* One status pill (Figma 710:2531–2551, 2026-11-12, Eric), the most pressing: the clock before the course's own state. */}
         {/* At the foot of the title row, whatever the title's length, so every card's pills line up — 16 over the State line,
             then 8 lower, then 4 back up: 12 over it (2026-11-12, Eric). Flex, so no stray line box under the pill. */}
         {/* …and "Review Course" across from it, at the card's right edge (2026-11-17, Eric: "a text link adjusted far right next
             to the status pills … with an angle right icon at the end of it"). It does what the card does — Home in this course. */}
-        <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, alignSelf: 'stretch', marginTop: 'auto', marginBottom: -4 }}>
+        <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, alignSelf: 'stretch', marginTop: 'auto', paddingTop: 4, /* 4 more over the pills (2026-11-18, Eric) */ marginBottom: 0 /* and 4 more under them — the −4 went (same day) */ }}>
           <AtlasStatusPill status={statusFor(data, progress)} />
+          {/* Only on a finished card — completed, expired or failed. A course in progress or not started has none
+              (2026-11-18, Eric). */}
+          {steppedBack ? (
           <button
             type="button"
             className="cre-atlas-card-review"
@@ -93,14 +117,10 @@ export function AtlasCourseCardFigma({
             Review Course
             <AngleRightSolid size={11} aria-hidden style={{ width: 6 }} />
           </button>
+          ) : null}
         </span>
       </div>
-      <div style={FACTS}>
-        {/* No icons before the three (2026-11-12, Eric; the design's location-dot, list-tree and book). */}
-        {data.state ? <Fact label="State:" value={data.state} /> : null}
-        {data.category ? <Fact label="Category:" value={data.category} /> : null}
-        {data.lineOfAuthority ? <Fact label="Line of authority:" value={data.lineOfAuthority} /> : null}
-      </div>
+      {/* State, Category and Line of authority moved into the Course Details sheet (2026-11-18, Eric). */}
       <div style={PROGRESS}>
         <div style={PROGRESS_ROW}>
           {/* No gauge before it (2026-11-12, Eric). */}
@@ -199,6 +219,9 @@ export function AtlasCourseCardFigma({
         )}
       </div>
     </article>
+    {/* Outside the article, so a click inside the sheet does not bubble (through the portal) to the card's open. */}
+    <AtlasCourseDetailsSheet data={data} open={detailsOpen} onClose={() => setDetailsOpen(false)} />
+    </>
   )
 }
 
@@ -213,19 +236,11 @@ function statusFor(data: AtlasCourseCardData, progress: number): AtlasCourseStat
   return 'not-started'
 }
 
-function Fact({ label, value }: { label: string; value: string }) {
-  return (
-    <span style={FACT}>
-      {label} <strong style={FACT_VALUE}>{value}</strong>
-    </span>
-  )
-}
-
-/* 24 in, 12 corners, Primary 100, no outline. A SUBGRID of five rows — image, title, facts, progress, buttons — on the
+/* 24 in, 12 corners, Primary 100, no outline. A SUBGRID of four rows — image, title, progress, buttons (the facts went to Course Details, 2026-11-18) — on the
    row of cards, so every card's rows line up with its neighbours' (the parent grid is PlatformShell's). */
 const CARD: CSSProperties = {
   display: 'grid',
-  gridRow: 'span 5',
+  gridRow: 'span 4',
   gridTemplateRows: 'subgrid',
   rowGap: 8,
   padding: 24,
@@ -239,6 +254,17 @@ const CARD: CSSProperties = {
 const CARD_DONE: CSSProperties = { background: 'var(--color-secondary-100)', boxShadow: 'inset 0 0 0 1px var(--color-primary-100)' }
 const IMAGE: CSSProperties = { display: 'block', width: '100%', height: 120, objectFit: 'cover', borderRadius: 6 }
 const TITLE_BLOCK: CSSProperties = { display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 14 /* 4 more over the pill (2026-11-12, Eric; the design's 10) */, paddingTop: 4, paddingBottom: 4 }
+/* The title and its Course Details link (2026-11-18, Eric; a rule under them that day, then removed). The pair stretches to the foot of its share of the row, which is
+   what holds the pills at one height across the row. */
+const TITLE_HEAD: CSSProperties = {
+  flexGrow: 1,
+  alignSelf: 'stretch',
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'flex-start',
+  gap: 6,
+  // The rule under it went the same day (2026-11-18, Eric) — and with it the 12 that held it off the title.
+}
 const TITLE: CSSProperties = {
   margin: 0,
   fontFamily: 'var(--font-heading-serif)',
@@ -247,20 +273,6 @@ const TITLE: CSSProperties = {
   lineHeight: '24px',
   color: 'var(--color-text-primary)',
 }
-/* The three facts, 6 apart, 4 above and 12 below, in the secondary grey. */
-const FACTS: CSSProperties = {
-  display: 'flex',
-  flexDirection: 'column',
-  gap: 6,
-  paddingTop: 4,
-  paddingBottom: 12,
-  color: 'var(--color-text-secondary)',
-  fontFamily: 'var(--font-body)',
-}
-/* One run of text, so a long value wraps under its label inside the card rather than widening it (2026-11-12 — the Refresher
-   CE package's "Property, Casualty, Life and Health"). */
-const FACT: CSSProperties = { display: 'block', fontSize: 11, lineHeight: '18px' }
-const FACT_VALUE: CSSProperties = { fontWeight: 700, fontSize: 10 }
 /* The progress: its row, then the bar 10 under it, 16 under the bar. */
 const PROGRESS: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 10, paddingBottom: 16 }
 const PROGRESS_ROW: CSSProperties = {
