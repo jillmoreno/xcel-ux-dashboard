@@ -170,7 +170,7 @@ async function codeCheck(w, { email = null, emailStates = false, wrongCode = tru
   const p = w.page
   const ask = w.dialog('Enter your email to continue')
   await w.waitDialog('Enter your email to continue')
-  const field = ask.getByLabel(/Email address/)
+  const field = ask.getByLabel(/^Email\s*\*?$/)
   if (emailStates) {
     await w.shot('Enter your email to continue', 'Empty, Continue disabled')
     await field.fill('sam@example')
@@ -223,7 +223,7 @@ async function loginCheck(w, { fromEmailAsk = false, email = 'jordan@example.com
   if (fromEmailAsk) {
     const ask = w.dialog('Enter your email to continue')
     await w.waitDialog('Enter your email to continue')
-    const field = ask.getByLabel(/Email address/)
+    const field = ask.getByLabel(/^Email\s*\*?$/)
     if (!brief) {
       await w.shot('Enter your email to continue', 'Empty, Continue disabled')
       await field.fill('jordan@')
@@ -236,7 +236,7 @@ async function loginCheck(w, { fromEmailAsk = false, email = 'jordan@example.com
   await w.waitDialog('Log in to continue')
   const d = w.dialog('Log in to continue')
   await w.shot('Log in to continue', 'Empty password, Log in disabled')
-  const emailField = d.getByLabel(/Email address/)
+  const emailField = d.getByLabel(/^Email\s*\*?$/)
   if (await emailField.count()) {
     const was = await emailField.inputValue()
     await emailField.fill('jordan@')
