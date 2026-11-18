@@ -389,7 +389,8 @@ const PRODUCTS = [
   ['multi-2', 'Multi-product'],
   ['single', 'Premier'],
   ['california', 'California'],
-  ['multi', 'Multi-product (Old)'],
+  /* Multi-product (Old) is left out, as on /invite-v3's Products choice
+     (2026-11-18, Afsana). */
 ]
 
 /* The full page only in the Products variant — the walks show the fold. */

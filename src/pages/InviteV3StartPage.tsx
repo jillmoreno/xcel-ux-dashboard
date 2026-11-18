@@ -137,7 +137,9 @@ const SUBTEXT: Readonly<Record<string, string>> = {
 }
 
 const PRODUCTS_FLAG = FEATURE_FLAGS.find((f) => f.key === 'pdp-products')
-const PRODUCTS = PRODUCTS_FLAG?.variants ?? []
+/* Without Multi-product (Old) — this page only; the Design bar keeps it
+   (2026-11-18, Afsana). */
+const PRODUCTS = (PRODUCTS_FLAG?.variants ?? []).filter((v) => v.value !== 'multi')
 
 function FlowRow({ flow }: { flow: InviteFlowV3 }) {
   const [cart, setCart] = useState<string>('targeted')

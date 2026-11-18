@@ -38,6 +38,9 @@ describe('the stand-alone invite flow page', () => {
       const row = screen.getByRole('heading', { name }).closest('article')!
       const select = within(row).getByLabelText('Products')
       expect(select).toHaveValue('standard')
+      /* No Multi-product (Old) here (2026-11-18). */
+      expect(within(select as HTMLElement).queryByRole('option', { name: 'Multi-product (Old)' })).not.toBeInTheDocument()
+      expect(within(select as HTMLElement).getAllByRole('option')).toHaveLength(4)
       expect(within(row).getAllByRole('link')[0].getAttribute('href')).toContain('pdp-products%3Astandard')
       await userEvent.selectOptions(select, 'california')
       for (const link of within(row).getAllByRole('link')) {
