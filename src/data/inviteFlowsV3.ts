@@ -109,7 +109,7 @@ export const INVITE_FLOWS_V3: InviteFlowV3[] = [
        starting point: `signedInFlowV3` works out the walk. */
     id: 'xcel-signed-in',
     model: 'b2c',
-    label: 'Signed in to XCEL (OCD)',
+    label: 'Signed into XCEL (OCD)',
     description: 'Signed in to an existing XCEL account. Presence of a partner code dictates next steps. If they have a partner code, cart items affect next steps. If no partner code and all items are part of the 526 SKU list, or if they agree to drop unsupported items, they are signed out. The subsequent flow is affected by whether they have an Atlas account or not.',
     base: 'xcel-signed-in',
     screens: ['cart', ...CHECKOUT, 'placing', 'ready'],
@@ -122,7 +122,7 @@ export const INVITE_FLOWS_V3: InviteFlowV3[] = [
        account. `ocdCartFlowV3` works out the walk. */
     id: 'xcel-signed-out',
     model: 'b2c',
-    label: 'Not signed in to XCEL (OCD)',
+    label: 'Not signed into XCEL (OCD)',
     description: 'Presence of a partner code dictates next steps. If they have a partner code, cart items affect next steps. The subsequent flow is affected by whether they have an Atlas account or not.',
     base: 'b2c-guest',
     screens: ['cart', ...CHECKOUT, 'placing', 'ready'],
@@ -138,7 +138,7 @@ export const INVITE_V3_FLOW_FLAGS: Record<InviteModelId, string> = {
 }
 
 /** V3 opens on B2B's first flow — Direct Email since 2026-11-03. B2C opens
- *  on Not signed in to XCEL (OCD), a guest from the start, since 2026-11-05. */
+ *  on Not signed into XCEL (OCD), a guest from the start, since 2026-11-05. */
 export const DEFAULT_INVITE_MODEL: InviteModelId = 'b2b'
 
 export const DEFAULT_INVITE_FLOW_V3: Record<InviteModelId, InviteFlowV3Id> = {
@@ -339,7 +339,7 @@ export function directEmailFlowV3(flow: InviteFlowV3, email: V3EmailAccount): In
   }
 }
 
-/* ── Signed in to XCEL (OCD) — 2026-11-02 ─────────────────────────────────
+/* ── Signed into XCEL (OCD) — 2026-11-02 ─────────────────────────────────
 
    Afsana: a learner signed in to an existing XCEL account checks out from the
    cart, and what happens depends on what is in it —

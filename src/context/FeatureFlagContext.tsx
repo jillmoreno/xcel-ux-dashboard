@@ -3992,16 +3992,16 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     defaultVariant: 'xcel-signed-out',
     variants: [
       /* Both descriptions in Afsana's words (2026-11-03). */
-      { value: 'xcel-signed-in', label: 'Signed in to XCEL (OCD)', description: 'Signed in to an existing XCEL account. Presence of a partner code dictates next steps. If they have a partner code, cart items affect next steps. If no partner code and all items are part of the 526 SKU list, or if they agree to drop unsupported items, they are signed out. The subsequent flow is affected by whether they have an Atlas account or not.' },
-      { value: 'xcel-signed-out', label: 'Not signed in to XCEL (OCD)', description: 'Presence of a partner code dictates next steps. If they have a partner code, cart items affect next steps. The subsequent flow is affected by whether they have an Atlas account or not.' },
+      { value: 'xcel-signed-in', label: 'Signed into XCEL (OCD)', description: 'Signed in to an existing XCEL account. Presence of a partner code dictates next steps. If they have a partner code, cart items affect next steps. If no partner code and all items are part of the 526 SKU list, or if they agree to drop unsupported items, they are signed out. The subsequent flow is affected by whether they have an Atlas account or not.' },
+      { value: 'xcel-signed-out', label: 'Not signed into XCEL (OCD)', description: 'Presence of a partner code dictates next steps. If they have a partner code, cart items affect next steps. The subsequent flow is affected by whether they have an Atlas account or not.' },
     ],
     page: 'dashboard-rebrand',
   },
   {
     key: 'invite-v3-cart',
     /* THE OCD LEARNER'S CART — 2026-11-02, Afsana. Which of the three cases
-       the "Signed in to XCEL (OCD)" flow walks — and, since 2026-11-03, "Not
-       signed in to XCEL (OCD)"; shown only on those two
+       the "Signed into XCEL (OCD)" flow walks — and, since 2026-11-03, "Not
+       signed into XCEL (OCD)"; shown only on those two
        (`invite:v3-b2c-signed-in`). See `signedInFlowV3`, `ocdCartFlowV3`. */
     surface: 'design',
     versions: ['eric-atlas-e2e'],

@@ -897,7 +897,7 @@ describe('Invite Flow V3 — every B2C flow starts at the cart', () => {
   })
 })
 
-describe('Invite Flow V3 — not signed in to XCEL (OCD)', () => {
+describe('Invite Flow V3 — not signed into XCEL (OCD)', () => {
   const SIGNED_OUT = 'invite-flow-version:v3,invite-v3-model:b2c,invite-v3-flow-b2c:xcel-signed-out'
   const base = INVITE_FLOWS_V3.find((f) => f.id === 'xcel-signed-out')!
 
@@ -1080,7 +1080,7 @@ describe('Invite Flow V3 — the OCD flows’ checkout after an Atlas log-in', (
   }
 })
 
-describe('Invite Flow V3 — signed in to XCEL (OCD)', () => {
+describe('Invite Flow V3 — signed into XCEL (OCD)', () => {
   const SIGNED_IN = 'invite-flow-version:v3,invite-v3-model:b2c,invite-v3-flow-b2c:xcel-signed-in'
   const base = INVITE_FLOWS_V3.find((f) => f.id === 'xcel-signed-in')!
 
