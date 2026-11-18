@@ -1,5 +1,6 @@
 import { useState, type CSSProperties } from 'react'
 import { Link } from 'react-router-dom'
+import { FEATURE_FLAGS } from '@/context/FeatureFlagContext'
 import {
   INVITE_FLOWS_V3,
   INVITE_V3_CART_FLAG,
@@ -31,11 +32,17 @@ import './inviteFlow.css'
  * ⚠ THE ROWS ARE `INVITE_FLOWS_V3`, NOT A COPY OF IT — a flow added or
  * renamed there appears here with nothing to keep in step. The only choices
  * this page adds are the two the flows branch on and the Design bar would
- * otherwise set: whose email it is, and (B2C) what is in the cart.
+ * otherwise set: whose email it is, and (B2C) what is in the cart. And
+ * (B2B2C, 2026-11-18) which Products option Eric's product page shows — the
+ * Design bar's `pdp-products`, read off the catalog so the two lists agree.
  */
 export function InviteV3StartPage() {
   const b2b = INVITE_FLOWS_V3.filter((f) => f.model === 'b2b')
-  const b2c = INVITE_FLOWS_V3.filter((f) => f.model === 'b2c')
+  /* Not signed in first, then signed in (2026-11-18, Afsana) — this page's
+     order only; the Design bar keeps the catalog's. */
+  const b2c = INVITE_FLOWS_V3.filter((f) => f.model === 'b2c').sort(
+    (a, b) => Number(a.id === 'xcel-signed-in') - Number(b.id === 'xcel-signed-in'),
+  )
   return (
     <div style={PAGE}>
       <main style={COLUMN}>
@@ -76,8 +83,21 @@ const CARTS = [
   { value: 'none', label: 'None targeted' },
 ] as const
 
+/* This page's own subtext, one line each (2026-11-18, Afsana). The catalog's
+   longer descriptions stay on the Design bar. */
+const SUBTEXT: Readonly<Record<string, string>> = {
+  'direct-email': 'User receives an email invitation from an XCEL partner.',
+  qr: 'User scans an XCEL partner’s QR code.',
+  'xcel-signed-out': 'User is not signed into XCEL and wants to make a purchase.',
+  'xcel-signed-in': 'User is signed into XCEL and wants to make a purchase.',
+}
+
+const PRODUCTS_FLAG = FEATURE_FLAGS.find((f) => f.key === 'pdp-products')
+const PRODUCTS = PRODUCTS_FLAG?.variants ?? []
+
 function FlowRow({ flow }: { flow: InviteFlowV3 }) {
   const [cart, setCart] = useState<string>('targeted')
+  const [product, setProduct] = useState<string>(PRODUCTS_FLAG?.defaultVariant ?? 'standard')
   const b2c = flow.model === 'b2c'
   const starts = ASKS_ACCOUNT.has(flow.id)
     ? [
@@ -89,7 +109,7 @@ function FlowRow({ flow }: { flow: InviteFlowV3 }) {
     <article style={ROW}>
       <div style={{ display: 'grid', gap: 4, minWidth: 0 }}>
         <h3 style={ROW_TITLE}>{flow.label}</h3>
-        <p style={ROW_TEXT}>{flow.description}</p>
+        <p style={ROW_TEXT}>{SUBTEXT[flow.id] ?? flow.description}</p>
       </div>
       <div style={ACTIONS}>
         {b2c ? (
@@ -103,9 +123,25 @@ function FlowRow({ flow }: { flow: InviteFlowV3 }) {
               ))}
             </select>
           </label>
+        ) : PRODUCTS.length > 0 ? (
+          <label style={CART_LABEL}>
+            Products
+            <select value={product} onChange={(e) => setProduct(e.target.value)} style={SELECT}>
+              {PRODUCTS.map((p) => (
+                <option key={p.value} value={p.value}>
+                  {p.label}
+                </option>
+              ))}
+            </select>
+          </label>
         ) : null}
         {starts.map((s) => (
-          <Link key={s.label} to={startHref(flow, s.account, b2c ? cart : null)} className="cre-e2e-cta" style={START}>
+          <Link
+            key={s.label}
+            to={startHref(flow, s.account, b2c ? cart : null, b2c ? null : product)}
+            className="cre-e2e-cta"
+            style={START}
+          >
             {s.label}
           </Link>
         ))}
@@ -116,7 +152,7 @@ function FlowRow({ flow }: { flow: InviteFlowV3 }) {
 
 /** The flow's first page, with the flags the Design bar would have set and
  *  the two switches that keep the walk to the flow's own pages. */
-function startHref(flow: InviteFlowV3, account: string | null, cart: string | null): string {
+function startHref(flow: InviteFlowV3, account: string | null, cart: string | null, product: string | null): string {
   const model: InviteModelId = flow.model
   const ff = [
     `${INVITE_FLOW_VERSION_FLAG}:v3`,
@@ -124,6 +160,7 @@ function startHref(flow: InviteFlowV3, account: string | null, cart: string | nu
     `${INVITE_V3_FLOW_FLAGS[model]}:${flow.id}`,
     ...(account ? [`${INVITE_V3_EMAIL_ACCOUNT_FLAG}:${account}`] : []),
     ...(cart ? [`${INVITE_V3_CART_FLAG}:${cart}`] : []),
+    ...(product ? [`pdp-products:${product}`] : []),
   ]
   const params = new URLSearchParams({ demo: '1', chrome: 'off', standalone: '1', ff: ff.join(',') })
   const path = entryPathV3(flow)
@@ -164,11 +201,12 @@ const GROUP: CSSProperties = {
   color: 'var(--color-text-secondary)',
 }
 
+/* Buttons always under the text — 2026-11-18, Afsana: Direct Email's short
+   description let them sit on the right, unlike every other row. */
 const ROW: CSSProperties = {
   display: 'flex',
-  flexWrap: 'wrap',
-  alignItems: 'center',
-  justifyContent: 'space-between',
+  flexDirection: 'column',
+  alignItems: 'flex-start',
   gap: 16,
   padding: '18px 20px',
   background: 'var(--color-fixed-light)',

@@ -50,12 +50,12 @@ const feature: PrototypeFeature = {
       to: '/end-to-end-demo/checkout?demo=1&ff=invite-flow-version:v3,invite-v3-model:b2b,invite-v3-flow-b2b:direct-email,invite-v3-email-account:no-atlas',
     },
     {
-      label: 'Signed in to XCEL (OCD), mixed cart — partner code, not supported, signing you out',
+      label: 'Signed into XCEL (OCD), mixed cart — partner code, not supported, signing you out',
       note: 'Click Checkout on the cart: Partner code? → No → 1 item in your cart is not supported → Proceed to checkout → Signing you out… → the new Atlas checkout.',
       to: '/end-to-end-demo/cart?demo=1&ff=invite-flow-version:v3,invite-v3-model:b2c,invite-v3-flow-b2c:xcel-signed-in,invite-v3-cart:mixed&lstate=Arizona&loa=Health&pkg=premier',
     },
     {
-      label: 'Not signed in to XCEL (OCD), all supported — partner code, then the new checkout',
+      label: 'Not signed into XCEL (OCD), all supported — partner code, then the new checkout',
       note: 'Click Checkout on the cart: Partner code? → No → Enter your email to continue. Nobody is signed out on this flow.',
       to: '/end-to-end-demo/cart?demo=1&ff=invite-flow-version:v3,invite-v3-model:b2c,invite-v3-flow-b2c:xcel-signed-out,invite-v3-cart:targeted&lstate=Arizona&loa=Health&pkg=premier',
     },
@@ -347,7 +347,7 @@ const feature: PrototypeFeature = {
         tabLabel: 'Partner code',
         location: 'B2C guest, after Checkout is clicked: over the cart on the two OCD flows, over the checkout on the other B2C flows. src/components/e2e/PartnerCodeAsk.tsx.',
         summary:
-          '"Do you have a Partner Code?*", YES and NO, and the footnote: "*Partner Code, previously known as a Discount Code, allows access to your company’s dedicated Partner Site for exclusive pricing, products and to log in." An ✕ in the corner. Asked whether or not the learner is signed in to XCEL (OCD).',
+          '"Do you have a Partner Code?*", YES and NO, and the footnote: "*Partner Code, previously known as a Discount Code, allows access to your company’s dedicated Partner Site for exclusive pricing, products and to log in." An ✕ in the corner. Asked whether or not the learner is signed into XCEL (OCD).',
         variants: [
           { name: 'Asked', when: 'After Checkout on a B2C flow, before anything else.', why: 'A partner code changes what the learner is buying and where — the partner’s own site — so it is settled before the cart or the email.' },
         ],
@@ -386,7 +386,7 @@ const feature: PrototypeFeature = {
           { name: 'Several items', when: 'More than one. Heading: "2 items in your cart are not supported", and so on; each item listed.', detail: 'The prototype’s carts only ever hold one unsupported item, so this state has no picture — it is the One item modal with the heading pluralised and a line per item.' },
         ],
         ctas: [
-          { name: 'Proceed to checkout', does: 'Removes the unsupported items from the cart and continues with the supported ones only: Signing you out… if signed in to XCEL (OCD), otherwise straight to the new Atlas checkout.' },
+          { name: 'Proceed to checkout', does: 'Removes the unsupported items from the cart and continues with the supported ones only: Signing you out… if signed into XCEL (OCD), otherwise straight to the new Atlas checkout.' },
           { name: '✕', does: 'Closes and leaves the cart as it was. Escape and a click outside the card do the same.' },
         ],
         statesMatrix: [
@@ -412,7 +412,7 @@ const feature: PrototypeFeature = {
         order: 8,
         name: 'Signing you out…',
         tabLabel: 'Signing you out',
-        location: 'Over the cart, Signed in to XCEL (OCD) only, after No to the partner code (and after Proceed on a mixed cart). src/components/e2e/SigningOutDialog.tsx.',
+        location: 'Over the cart, Signed into XCEL (OCD) only, after No to the partner code (and after Proceed on a mixed cart). src/components/e2e/SigningOutDialog.tsx.',
         summary:
           'The XCEL logo, a notice — "To support an ongoing platform update, we need to sign you out." — and the spinner with "Signing you out…". Then the new Atlas checkout, as a guest.',
         variants: [
@@ -464,7 +464,7 @@ const feature: PrototypeFeature = {
       items: [
         {
           question: 'When is the partner code asked?',
-          decision: 'After Checkout, on every B2C flow, whether or not the learner is signed in to XCEL (OCD) — before the cart is changed or the email asked, because a partner code changes where the purchase happens.',
+          decision: 'After Checkout, on every B2C flow, whether or not the learner is signed into XCEL (OCD) — before the cart is changed or the email asked, because a partner code changes where the purchase happens.',
           status: 'Decided',
         },
         {
@@ -495,7 +495,7 @@ const feature: PrototypeFeature = {
         {
           question: 'After a signed-in XCEL (OCD) learner is signed out, how should Enter your email to continue behave?',
           decision:
-            'Open. This is only the Signed in to XCEL (OCD) flow, at the moment the learner is signed out and continues into the new Atlas checkout — reached either by (1) No to the partner code, then 1 item in your cart is not supported, then Proceed to checkout; or (2) No to the partner code after Checkout with every item a supported SKU. Signing you out… follows in both, then the new checkout. What comes after the email is settled: the one-time code if it has no Atlas account, Log in if it does. What is open is the email step: should it appear at all, or go straight to the code or Log in with their XCEL email? If it appears, should the email be pre-filled? If pre-filled, should it be locked? This matters most for learners with XCEL history — active entitlements, passed or failed courses — so that history and the new Atlas account stay on one identity for migration. The prototype asks for the email with nothing filled in. Not covered: Not signed in to XCEL (OCD) and the other B2C flows, where nobody is signed out and the learner types their own email.',
+            'Open. This is only the Signed into XCEL (OCD) flow, at the moment the learner is signed out and continues into the new Atlas checkout — reached either by (1) No to the partner code, then 1 item in your cart is not supported, then Proceed to checkout; or (2) No to the partner code after Checkout with every item a supported SKU. Signing you out… follows in both, then the new checkout. What comes after the email is settled: the one-time code if it has no Atlas account, Log in if it does. What is open is the email step: should it appear at all, or go straight to the code or Log in with their XCEL email? If it appears, should the email be pre-filled? If pre-filled, should it be locked? This matters most for learners with XCEL history — active entitlements, passed or failed courses — so that history and the new Atlas account stay on one identity for migration. The prototype asks for the email with nothing filled in. Not covered: Not signed into XCEL (OCD) and the other B2C flows, where nobody is signed out and the learner types their own email.',
           status: 'Needs weigh-in',
           owner: 'Jill and Engineering',
         },
