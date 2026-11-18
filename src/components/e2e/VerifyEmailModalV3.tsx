@@ -70,17 +70,16 @@ export function VerifyEmailModalV3({
   /** Hold on "Signing you in" before the checkout. */
   signsIn?: boolean
   /** An address the flow already has — Direct Email's invitation supplied it
-   *  (2026-11-04). The check opens on its second step with it, and there is
-   *  no "Use a different email": the partner named this one. */
+   *  (2026-11-04). The email step opens filled with it, and the code step
+   *  has no "Use a different email": the partner named this one. */
   suppliedEmail?: string
 }) {
-  /* A supplied address with Atlas goes straight to Log in. Without Atlas it
-     no longer goes straight to the code (2026-11-13, Afsana): the email step
-     comes first, filled with the invitation's address, so no code is sent
-     before the learner says where. */
-  const [step, setStep] = useState<'email' | 'code' | 'verified' | 'name' | 'login' | 'signing-in'>(() =>
-    suppliedEmail && second === 'login' ? 'login' : 'email',
-  )
+  /* The email step always comes first — filled with a supplied address, so
+     nothing is sent and nobody is asked to sign in before the learner says
+     where (2026-11-13, Afsana, for the code; 2026-11-18 for Log in, which
+     until then opened straight on a supplied address with Atlas). Log in
+     keeps its own Email field, filled with what the step was given. */
+  const [step, setStep] = useState<'email' | 'code' | 'verified' | 'name' | 'login' | 'signing-in'>('email')
   const layer = useV3DialogLayer()
   const [email, setEmail] = useState(suppliedEmail ?? '')
   const ready = looksLikeEmail(email)
