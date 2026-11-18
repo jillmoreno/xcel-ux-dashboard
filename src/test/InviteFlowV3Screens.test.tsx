@@ -93,18 +93,34 @@ describe('Invite Flow V3 — B2B opening screens', () => {
     renderAt('/end-to-end-demo', V3_B2B)
     const go = screen.getByRole('button', { name: 'Continue' })
     expect(go).toBeDisabled()
-    await userEvent.type(screen.getByLabelText(/Choose your state/), 'Flor')
+    await userEvent.type(screen.getByRole('combobox', { name: /State/ }), 'Flor')
     await userEvent.click(screen.getByRole('radio', { name: 'Life and Health' }))
     expect(go).toBeDisabled()
-    await userEvent.type(screen.getByLabelText(/Choose your state/), 'ida')
+    await userEvent.type(screen.getByRole('combobox', { name: /State/ }), 'ida')
     expect(go).toBeEnabled()
+  })
+
+  it('labels the fields State and Line of authority, and lists the states under the field', async () => {
+    renderAt('/end-to-end-demo', V3_B2B)
+    const field = screen.getByRole('combobox', { name: /State/ })
+    expect(field).toHaveAttribute('placeholder', 'Select State')
+    expect(screen.getByRole('radiogroup', { name: 'Line of authority' })).toBeInTheDocument()
+    expect(screen.queryByText(/Choose your state|Pick your line of authority/)).not.toBeInTheDocument()
+    await userEvent.click(field)
+    expect(within(screen.getByRole('listbox')).getAllByRole('option')).toHaveLength(50)
+    await userEvent.type(field, 'ari')
+    const list = screen.getByRole('listbox')
+    expect(within(list).getAllByRole('option').map((o) => o.textContent)).toEqual(['Arizona'])
+    await userEvent.click(within(list).getByRole('option', { name: 'Arizona' }))
+    expect(field).toHaveValue('Arizona')
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument()
   })
 
   it('Continue shows the chosen course, and Change can update it — V3’s own product page', async () => {
     /* The course band and Change are V3's own page's; Eric's page stands in
        for it while `invite-v3-eric-pdp` is on (2026-11-17). */
     renderAt('/end-to-end-demo', `${V3_B2B},invite-v3-eric-pdp:off`)
-    await userEvent.type(screen.getByLabelText(/Choose your state/), 'florida')
+    await userEvent.type(screen.getByRole('combobox', { name: /State/ }), 'florida')
     await userEvent.click(screen.getByRole('radio', { name: 'Life and Health' }))
     await userEvent.click(screen.getByRole('button', { name: 'Continue' }))
 
@@ -137,7 +153,7 @@ describe('Invite Flow V3 — Eric’s product page (2026-11-17)', () => {
 
   it('asks the QR code’s course first, then opens Eric’s page on it', async () => {
     renderAt('/end-to-end-demo', V3_B2B)
-    await userEvent.type(screen.getByLabelText(/Choose your state/), 'texas')
+    await userEvent.type(screen.getByRole('combobox', { name: /State/ }), 'texas')
     await userEvent.click(screen.getByRole('radio', { name: 'Life and Health' }))
     await userEvent.click(screen.getByRole('button', { name: 'Continue' }))
     expect(screen.getAllByRole('button', { name: /^Purchase / }).length).toBeGreaterThan(0)
