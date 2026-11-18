@@ -22,6 +22,7 @@ import { PrototypeChrome } from './PrototypeChrome'
 import { DesignSurfaceProvider } from '@/context/DesignSurfaceProvider'
 import { MobileNavProvider } from './MobileNavContext'
 import { EndToEndPageSync, InviteFlowEntrySync, InviteSurfaceSync } from '@/pages/EndToEndPageSync'
+import { InviteFlowBanner } from '@/components/e2e/InviteFlowBanner'
 
 /**
  * `bare` (2026-10-14, Eric's request) — the providers and the prototype chrome
@@ -109,6 +110,9 @@ export function AppLayout({ bare = false }: { bare?: boolean } = {}) {
                         (2026-10-22). Inside the provider, unlike the two syncs
                         above — it writes the state the provider holds. */}
                     <InviteSurfaceSync />
+                    {/* Which invite flow, over a stand-alone walk from
+                        /invite-v3 — nothing anywhere else (2026-11-18). */}
+                    <InviteFlowBanner />
                     <DeviceFrame chrome={<PrototypeChrome />}>
                       {bare ? (
                         <Outlet />
