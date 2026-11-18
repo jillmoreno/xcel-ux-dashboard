@@ -1,4 +1,4 @@
-import { InviteProductOptionsModal } from '@/components/e2e/InviteProductOptionsModal'
+import { CourseChoiceDialog } from '@/components/e2e/CourseChoiceCard'
 import { Fragment, useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { E2E_ORIGINAL_PRICE, E2E_PARTNER_NAME, E2E_PARTNER_PRICE, useEndToEndDemoParams } from './endToEndDemo'
@@ -512,17 +512,19 @@ export function ProductDetailPageV3Multi() {
           </div>
         </div>
       ) : null}
+      {/* ⚠ V3'S OWN CARD, NOT ERIC'S "What are you licensing for?" — 2026-11-18,
+          Afsana: Change state/line of authority opens the QR flows' "Select
+          your state and line of authority" (`CourseChoiceDialog`), on the
+          current choice. */}
       {optionsOpen ? (
-        <InviteProductOptionsModal
-          reason="broadcast-link"
-          headingFont="var(--font-e2e-serif)"
-          dismissOnScrim
-          onChoose={(choice) => {
-            setPlace(choice.state)
-            setLine(choice.lineOfAuthority)
+        <CourseChoiceDialog
+          initial={{ state: place, lineOfAuthority: line }}
+          onChoose={(state, lineOfAuthority) => {
+            setPlace(state)
+            setLine(lineOfAuthority)
             setOptionsOpen(false)
           }}
-          onDismiss={() => setOptionsOpen(false)}
+          onCancel={() => setOptionsOpen(false)}
         />
       ) : null}
       <PartnerHeader />
