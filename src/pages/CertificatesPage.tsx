@@ -11,6 +11,7 @@ import { FilterAccordion } from '@/components/catalog/FilterAccordion'
 import { PillTabs, type PillTabItem } from '@/components/ui/PillTabs'
 import { CertificateCard } from '@/components/certificates/CertificateCard'
 import { AtlasCertificateCard } from '@/components/certificates/AtlasCertificateCard'
+import { AtlasCertificateCardFigma } from '@/components/certificates/AtlasCertificateCardFigma'
 import { CertificateActionPanel } from '@/components/certificates/CertificateActionPanel'
 import { useAccount } from '@/context/AccountContext'
 import { useFeatureFlag } from '@/context/FeatureFlagContext'
@@ -311,13 +312,28 @@ export function CertificatesPage({
               }
             />
           ) : (
-            <div role="list" style={gridStyle}>
+            /* One full-width row per certificate on the Atlas desktop (Figma 737:1477, 2026-11-18, Eric). */
+            <div role="list" style={atlasCards && !phoneFrame ? ATLAS_ROWS : gridStyle}>
               {filtered.map((cert) => (
                 // `display: grid` makes the card stretch to fill the
                 // equal-height grid cell (its single child defaults to
                 // stretch), so every card matches the tallest in its row.
                 <div key={cert.id} role="listitem" style={{ display: 'grid' }}>
-                  {atlasCards ? (
+                  {atlasCards && !phoneFrame ? (
+                    <AtlasCertificateCardFigma
+                      data={cert}
+                      onOpen={setDetailId}
+                      onTranscript={() =>
+                        setParams((prev) => {
+                          const next = new URLSearchParams(prev)
+                          next.set('section', 'transcripts')
+                          return next
+                        })
+                      }
+                      openAnyStatus={atlasOpenAll}
+                      inProgress={inProgressIds?.includes(cert.id)}
+                    />
+                  ) : atlasCards ? (
                     <AtlasCertificateCard
                       data={cert}
                       onOpen={phoneFrame ? toggleExpanded : setDetailId}
@@ -421,6 +437,7 @@ const noteStyle: CSSProperties = {
   color: 'var(--color-text-secondary)',
 }
 
+const ATLAS_ROWS: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 16 }
 const gridStyle: CSSProperties = {
   display: 'grid',
   gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))',

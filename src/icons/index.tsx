@@ -69,6 +69,7 @@ import CircleInfoRegularSvg from './circle-info-regular.svg?react'
 import PenFieldRegularSvg from './pen-field-regular.svg?react'
 import ClipboardListCheckRegularSvg from './clipboard-list-check-regular.svg?react'
 import AngleRightRegularSvg from './angle-right-regular.svg?react'
+import ClipboardListRegularSvg from './clipboard-list-regular.svg?react'
 import AngleRightSolidSvg from './angle-right-solid.svg?react'
 import AngleDownSolidSvg from './angle-down-solid.svg?react'
 import AngleDownRegularSvg from './angle-down-regular.svg?react'
@@ -344,6 +345,7 @@ export const CircleInfoRegular = makeIcon(CircleInfoRegularSvg) // FA: circle-in
 export const PenFieldRegular = makeIcon(PenFieldRegularSvg) // FA: pen-field (regular)
 export const ClipboardListCheckRegular = makeIcon(ClipboardListCheckRegularSvg) // FA: clipboard-list-check (regular)
 export const AngleRightRegular = makeIcon(AngleRightRegularSvg) // FA: angle-right (regular)
+export const ClipboardListRegular = makeIcon(ClipboardListRegularSvg) // FA: clipboard-list (regular)
 export const AngleRightSolid = makeIcon(AngleRightSolidSvg) // FA: angle-right (solid)
 export const AngleDownSolid = makeIcon(AngleDownSolidSvg) // FA: angle-down (solid)
 export const AngleDownRegular = makeIcon(AngleDownRegularSvg) // FA: angle-down (regular)

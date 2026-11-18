@@ -55,6 +55,9 @@ export type Certificate = {
   title: string
   /** e.g. "Appraisal Continuing Education". */
   profession: string
+  /** The Atlas certificate card's "Line of authority:" fact (Figma 737:1477, 2026-11-18, Eric) — the XCEL insurance
+   *  certificates only, invented for the demo; absent → the fact is not drawn. */
+  lineOfAuthority?: string
   /** Full state name shown in the meta row, e.g. "South Carolina". */
   state: string
   hours: number
@@ -172,6 +175,7 @@ const _XCEL_CERTS: Certificate[] = [
   // ── Completed ──────────────────────────────────────────────────────────
   {
     id: 'cert-xcel-lh-prelicense',
+    lineOfAuthority: 'Life and Health',
     courseId: 'mc-xcel-lh-prelicense',
     title: 'Life & Health Pre-Licensing — Completion',
     profession: INSURANCE_PRELICENSE,
@@ -186,6 +190,7 @@ const _XCEL_CERTS: Certificate[] = [
   {
     // Matches `mc-xcel-annuity-training`.
     id: 'cert-xcel-annuity-training',
+    lineOfAuthority: 'Life and Health',
     courseId: 'mc-xcel-annuity-training',
     title: 'Annuity Initial Training',
     profession: INSURANCE_CE,
@@ -199,6 +204,7 @@ const _XCEL_CERTS: Certificate[] = [
   },
   {
     id: 'cert-xcel-ltc-refresher',
+    lineOfAuthority: 'Health',
     title: 'Long-Term Care Refresher Training',
     profession: INSURANCE_CE,
     state: 'Florida',
@@ -211,6 +217,7 @@ const _XCEL_CERTS: Certificate[] = [
   },
   {
     id: 'cert-xcel-flood',
+    lineOfAuthority: 'Property and Casualty',
     title: 'Flood Insurance (NFIP) Training',
     profession: INSURANCE_CE,
     state: 'Florida',
@@ -223,6 +230,7 @@ const _XCEL_CERTS: Certificate[] = [
   },
   {
     id: 'cert-xcel-personal-lines',
+    lineOfAuthority: 'Personal Lines',
     title: 'Personal Lines Pre-Licensing — Completion',
     profession: INSURANCE_PRELICENSE,
     state: 'Texas',
@@ -237,6 +245,7 @@ const _XCEL_CERTS: Certificate[] = [
   // ── Externally completed ───────────────────────────────────────────────
   {
     id: 'cert-xcel-ext-aml',
+    lineOfAuthority: 'All Lines',
     title: 'Anti-Money Laundering (AML) Training',
     profession: INSURANCE_CE,
     state: 'Florida',
@@ -250,6 +259,7 @@ const _XCEL_CERTS: Certificate[] = [
   },
   {
     id: 'cert-xcel-ext-medicare',
+    lineOfAuthority: 'Health',
     title: 'Medicare Advantage and Part D Certification',
     profession: INSURANCE_CE,
     state: 'Florida',
@@ -265,6 +275,7 @@ const _XCEL_CERTS: Certificate[] = [
   // ── Action required ────────────────────────────────────────────────────
   {
     id: 'cert-xcel-ar-pc-prelicense-proctor',
+    lineOfAuthority: 'Property and Casualty',
     title: 'Property & Casualty Pre-Licensing — Completion',
     profession: INSURANCE_PRELICENSE,
     state: 'Florida',
@@ -278,6 +289,7 @@ const _XCEL_CERTS: Certificate[] = [
   },
   {
     id: 'cert-xcel-ar-ethics-affidavit',
+    lineOfAuthority: 'All Lines',
     courseId: 'mc-xcel-ethics',
     title: 'Insurance Ethics',
     profession: INSURANCE_CE,
@@ -292,6 +304,7 @@ const _XCEL_CERTS: Certificate[] = [
   },
   {
     id: 'cert-xcel-ar-ltc-initial-survey',
+    lineOfAuthority: 'Health',
     courseId: 'mc-xcel-ltc-training',
     title: 'Long-Term Care Initial Training',
     profession: INSURANCE_CE,
@@ -306,6 +319,7 @@ const _XCEL_CERTS: Certificate[] = [
   },
   {
     id: 'cert-xcel-ar-personal-lines-document',
+    lineOfAuthority: 'Personal Lines',
     title: 'Personal Lines Coverage Update',
     profession: INSURANCE_CE,
     state: 'Texas',
@@ -319,6 +333,7 @@ const _XCEL_CERTS: Certificate[] = [
   },
   {
     id: 'cert-xcel-ar-health-marketplace-payment',
+    lineOfAuthority: 'Health',
     title: 'Health Insurance Marketplace and ACA Update',
     profession: INSURANCE_CE,
     state: 'Florida',

@@ -298,7 +298,8 @@ describe('the certificates page draws the shared card', () => {
 
   it('draws the Atlas card when the control says atlas', () => {
     renderShell(`section=certificates&version=${BASELINE}&ff=atlas-certificates-card-style:atlas`)
-    expect(screen.getAllByText('Certificate').length).toBeGreaterThan(0)
+    // The Figma 737:1477 card (2026-11-18): its View Certificate link, and the shared card's capitals nowhere.
+    expect(screen.getAllByText('View Certificate').length).toBeGreaterThan(0)
     expect(screen.queryByText('COMPLETED')).toBeNull()
   })
 })
@@ -309,7 +310,8 @@ describe('the certificates page draws the shared card', () => {
 describe('the not-yet-earned treatment survives where it is still wanted', () => {
   it('Eric’s version still paints its certificate as not yet earned', () => {
     renderShell(`section=certificates&version=${ERIC_WIP}`)
-    expect(screen.getByText('In-Progress')).toBeTruthy()
+    // The Figma 737:1477 card's badge (2026-11-18); 'In-Progress' on the card before it.
+    expect(screen.getByText('In Progress')).toBeTruthy()
   })
 })
 
