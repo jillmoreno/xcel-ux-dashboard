@@ -935,6 +935,11 @@ export function AtlasHomeJillMain({
   const [whiteHead, setWhiteHead] = useState(false)
   // The picked course is the My Courses card's — `?atlasCourse=`, the same param a card click sets.
   const activeTab = tabs.find((t) => t.id === searchParams.get(ATLAS_HOME_COURSE_PARAM)) ?? tabs[0]
+  /* A COURSE FROM MY COURSES THAT IS NOT A TAB (2026-11-18, Eric: "when a course has been opened on the home page from the My
+     Courses page that is not one of the top course tabs, make all course tabs switch to their default state") — no tab is
+     picked then. `activeTab` keeps its first-tab fallback for the title and cover, which the card's course outranks anyway. */
+  const homeCourseParam = searchParams.get(ATLAS_HOME_COURSE_PARAM)
+  const pickedTabId = homeCourseParam != null && !tabs.some((t) => t.id === homeCourseParam) ? '' : (activeTab?.id ?? path.id)
   // The demo's course: the one Invited Product Detail sells (2026-10-15,
   // Eric's request), in place of the course data's title.
   /* A My Courses card's course, when the learner came from one (2026-11-04,
@@ -1177,7 +1182,7 @@ export function AtlasHomeJillMain({
             SemiBold with a Regular angle-down after it; the others cut to an ellipsis as far as the line needs (same day, Eric —
             after an hour with the picked course left out). */}
         {SHOW_COURSE_BOXES && tabs.length > 1 ? (
-          <CourseBoxes courses={tabs} pickedId={activeTab?.id ?? path.id} onPick={selectCourse} />
+          <CourseBoxes courses={tabs} pickedId={pickedTabId} onPick={selectCourse} />
         ) : null}
         <div
           style={
@@ -1200,7 +1205,7 @@ export function AtlasHomeJillMain({
         {showInCardTabs && SHOW_COURSE_TABS && tabs.length > 1 ? (
           // 8 less under the tabs than the head's 24 gap (2026-11-10, Eric) — on White, where the head is a column.
           <div style={onWhite ? { marginBottom: -8 } : { display: 'contents' }}>
-            <AtlasCourseTabs courses={tabs} activeId={activeTab?.id ?? path.id} onSelect={selectCourse} onAllCourses={onAllCourses ?? (() => go('courses'))} keepActiveOpen />
+            <AtlasCourseTabs courses={tabs} activeId={pickedTabId} onSelect={selectCourse} onAllCourses={onAllCourses ?? (() => go('courses'))} keepActiveOpen />
           </div>
         ) : null}
         {/* 32, the row below's gap (2026-10-13, Eric's request), so the title
