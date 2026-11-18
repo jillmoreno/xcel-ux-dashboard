@@ -15,7 +15,7 @@ import {
 } from '@/data/inviteFlows'
 import { PartnerCodeAskModal } from '@/components/e2e/PartnerCodeAsk'
 import { SigningOutDialog } from '@/components/e2e/SigningOutDialog'
-import { PartnerCodeEntryDialog, UnsupportedItemDialog } from '@/components/e2e/SignedInCartDialogs'
+import { UnsupportedItemDialog } from '@/components/e2e/SignedInCartDialogs'
 import { SIGNING_OUT_MS, V3_DROPPED_PARAM, V3_SIGNED_OUT_PARAM, useV3SignedInCart } from '@/data/inviteFlowsV3'
 import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { INVITE_FLOW_VERSION_FLAG, resolveInviteFlowVersion } from '@/data/inviteFlowVersions'
@@ -84,7 +84,6 @@ export function XcelCartPage() {
       ? '/end-to-end-demo/partner-code'
       : '/end-to-end-demo/checkout'
   const [signingOut, setSigningOut] = useState(false)
-  const [entering, setEntering] = useState(false)
   const [dropping, setDropping] = useState(false)
   /* Signed out after a No: on to the checkout as a guest, where Verify your
      email opens. A mixed cart's extra item goes with the sign-out. */
@@ -121,11 +120,13 @@ export function XcelCartPage() {
      anyone's). */
   const onSignedInAnswer = (answer: 'yes' | 'no'): boolean => {
     if (!signedInAsk) return false
-    if (answer === 'yes') {
-      setAsking(false)
-      setEntering(true)
-      return true
-    }
+    /* ⚠ YES DOES NOTHING — 2026-11-18, Afsana: remove the "Enter your
+       Partner Code" dialog "such that when a user clicks 'Yes' … nothing
+       happens". The question stays open. `PartnerCodeEntryDialog` is kept in
+       `SignedInCartDialogs.tsx`, unwired; restoring it is putting
+       `setAsking(false); setEntering(true)` back here, with the `entering`
+       state and its render below. */
+    if (answer === 'yes') return true
     if (signedInCart.cart === 'none') return false
     setAsking(false)
     if (signedInCart.cart === 'mixed') setDropping(true)
@@ -143,7 +144,6 @@ export function XcelCartPage() {
   return (
     <div style={PAGE}>
       {signingOut ? <SigningOutDialog /> : null}
-      {entering ? <PartnerCodeEntryDialog onCancel={() => setEntering(false)} /> : null}
       {dropping && signedInCart ? (
         <UnsupportedItemDialog
           items={signedInCart.dropped}

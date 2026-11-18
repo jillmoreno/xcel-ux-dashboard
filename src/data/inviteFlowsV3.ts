@@ -345,8 +345,9 @@ export function directEmailFlowV3(flow: InviteFlowV3, email: V3EmailAccount): In
    cart, and what happens depends on what is in it —
 
      Checkout asks the Partner Code question first, whatever the cart holds
-     (2026-11-02). Yes collects the code — and a code leads to a partner
-     site this prototype does not have, so that is the end of the walk. No:
+     (2026-11-02). Yes does nothing (2026-11-18 — it opened "Enter your
+     Partner Code", which led to a partner site this prototype does not
+     have). No:
 
      targeted   only the 526 targeted SKUs: they are signed out ("Signing
                 you out", with a platform-update notice), then the new guest
