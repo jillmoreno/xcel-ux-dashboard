@@ -10,7 +10,8 @@ import { ReleasePanel } from '@/components/prototype/ReleasePanel'
 import { groupByFeature, stageOf } from '@/data/designBranches'
 import { groupForRelease, waitingCount } from '@/data/releaseQueue'
 import { isBranchOnBoard, titleFromBranch, type BranchDeploy } from '@/data/branchStore'
-import { parseBranch } from '@/data/branchName'
+import { parseBranch, reviewHref, reviewPathFor, DEFAULT_REVIEW_PATH } from '@/data/branchName'
+import { PROTOTYPE_FEATURES, PROTOTYPE_SCOPES } from '@/data/prototypeFeatures'
 import { selectBranchDeploys, slugifyBranch, REVIEW_PATH } from '../../netlify/lib/branchDeploys'
 import { decidedOn, isMergedInto, parseCompare, parseMarker } from '../../netlify/lib/branchGit'
 import type { StoredLink } from '@/data/linkStore'
@@ -237,9 +238,13 @@ describe('the Design section', () => {
     render(<DesignPanel />)
     expect(await screen.findByRole('heading', { name: 'Streak' })).toBeInTheDocument()
     const link = screen.getByRole('link', { name: /Streak/ })
+    /* ⚠ `&section=compass`, and the assertion used to read without it. This
+       case pinned the bug: a Compass branch opened the ATLAS home, because
+       every row used one constant. The row now opens where its surface
+       lives — see `reviewHref`. */
     expect(link).toHaveAttribute(
       'href',
-      'https://feat-compass-streak--ux-design-xceldashboard.netlify.app/dashboard-rebrand?demo=1',
+      'https://feat-compass-streak--ux-design-xceldashboard.netlify.app/dashboard-rebrand?demo=1&section=compass',
     )
     expect(link).toHaveAttribute('target', '_blank')
     expect(screen.getByText('Compass')).toBeInTheDocument()
@@ -367,6 +372,71 @@ describe('parseBranch — the only thing a designer authors', () => {
   it('still lists a branch that follows no shape at all', () => {
     expect(parseBranch('docs/hub-resources')).toMatchObject({ scope: null, feature: 'Hub resources' })
     expect(parseBranch('streak')).toMatchObject({ scope: null, feature: 'Streak' })
+  })
+
+  /* ── the scope word anywhere, and the path it implies (2026-11-18) ──────── */
+
+  it('finds the scope word anywhere in the name, not just first', () => {
+    /* The real branch list is what forced this: two thirds of the rows sat
+       under "Other branches", and the two below are why — the word was right
+       there, just not in front. Silent, because a name that does not match is
+       not an error. */
+    expect(parseBranch('erics-atlas-primary')).toMatchObject({
+      scope: 'atlas',
+      feature: 'Primary',
+      featureKey: 'atlas:primary',
+    })
+    expect(parseBranch('session-2026-11-13-compass-course')).toMatchObject({
+      scope: 'compass',
+      // The feature is what FOLLOWS the scope, so the date prefix the author
+      // used for their own reasons does not become the row's title.
+      feature: 'Course',
+      featureKey: 'compass:course',
+    })
+  })
+
+  it('a name that already followed the convention parses exactly as before', () => {
+    // The scope is word 0 and `rest` is everything after it — which is what
+    // the first-word-only code computed. This is the no-change guarantee.
+    expect(parseBranch('feat/compass-study-planner')).toMatchObject({
+      scope: 'compass',
+      feature: 'Study planner',
+      featureKey: 'compass:study-planner',
+    })
+    expect(parseBranch('feat/compass')).toMatchObject({ scope: 'compass', feature: 'Compass' })
+  })
+
+  it('a branch with no scope word anywhere is still Other', () => {
+    // The fix infers; it does not guess. Nothing in these names says a surface.
+    for (const b of ['feat/retire-prototype-links', 'feat/design-section', 'test/session-1']) {
+      expect(parseBranch(b).scope, b).toBeNull()
+    }
+  })
+
+  it('a branch is reviewed where its SURFACE lives, not at one constant', () => {
+    /* Until 2026-11-18 every row opened `/dashboard-rebrand?demo=1`, so a
+       Compass branch opened the Atlas home and an Invite branch opened the
+       Atlas home. The path now comes from the scope's Prototypes row, so
+       there is one answer to "where does Compass live" rather than two. */
+    const at = (b: string) => reviewHref('https://x--site.netlify.app', parseBranch(b).scope)
+    expect(at('feat/compass-three-views')).toBe('https://x--site.netlify.app/dashboard-rebrand?demo=1&section=compass')
+    expect(at('feat/home-state-licensing-links')).toBe('https://x--site.netlify.app/dashboard-rebrand?demo=1&section=dashboard')
+    expect(at('feat/invite-flow-v3')).toBe('https://x--site.netlify.app/end-to-end-demo/find?demo=1')
+    // No scope, nothing known about where the work is: the historic default.
+    expect(at('feat/design-section')).toBe(`https://x--site.netlify.app${DEFAULT_REVIEW_PATH}`)
+  })
+
+  it('every scope resolves to its own Prototypes row\u2019s route', () => {
+    /* The anti-duplication pin. If someone adds a second table of "where each
+       surface lives", this is what should fail. Admin is the exception by
+       design — a placeholder row with no `to`, so its branches get the
+       default. */
+    for (const sc of PROTOTYPE_SCOPES) {
+      const row = PROTOTYPE_FEATURES.find((f) => f.category === 'prototype' && f.prototypeScope === sc.id)
+      expect(reviewPathFor(sc.id), sc.id).toBe(row?.to || DEFAULT_REVIEW_PATH)
+    }
+    expect(reviewPathFor('admin')).toBe(DEFAULT_REVIEW_PATH)
+    expect(reviewPathFor(null)).toBe(DEFAULT_REVIEW_PATH)
   })
   it('furthest-along wins the row\'s one word', () => {
     const b = served({ branch: 'feat/x', onStage: true, released: true })

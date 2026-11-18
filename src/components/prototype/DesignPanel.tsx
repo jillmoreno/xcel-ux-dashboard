@@ -33,7 +33,7 @@ import { type ActionMenuItem } from '@/components/ui/ActionMenu'
 import { HubRow, type HubRowTag } from './HubRow'
 import { GeneratedThumb } from './GeneratedThumb'
 import { safeBranchHref, useBranches, type BranchIndex } from '@/data/branchStore'
-import { scopeLabel, scopeOwner } from '@/data/branchName'
+import { reviewHref, scopeLabel, scopeOwner } from '@/data/branchName'
 import { groupByFeature, stageOf, type DesignRow, type DesignStage } from '@/data/designBranches'
 import type { FeatureAccent, PrototypeScope } from '@/data/prototypeFeatures'
 import { LINK_PRODUCTS, type LinkProduct } from '@/data/linkStore'
@@ -271,7 +271,10 @@ function discussHref(row: DesignRow): string {
   const p = new URLSearchParams()
   p.set('section', 'demo')
   p.set('add', '1')
-  p.set('url', row.deploy.reviewUrl)
+  // The SAME address the row's own Open build uses — scope-correct, not the
+  // old constant. A note whose link lands somewhere other than the row's link
+  // is the confusion this section exists to remove.
+  p.set('url', reviewHref(row.deploy.url, row.parsed.scope))
   p.set('title', row.parsed.variant ? `${row.parsed.feature} — ${row.parsed.variant}` : row.parsed.feature)
   p.set('feature', row.parsed.feature)
   const product = row.parsed.scope ? SCOPE_PRODUCT[row.parsed.scope] : undefined
@@ -281,7 +284,10 @@ function discussHref(row: DesignRow): string {
 
 function DesignRowCard({ row }: { row: DesignRow }) {
   const { deploy, parsed, stage } = row
-  const href = deploy.build === 'ready' ? safeBranchHref(deploy.reviewUrl) : null
+  /* Scope-derived since 2026-11-18 — `deploy.reviewUrl` is the server's
+     generic guess (`/dashboard-rebrand?demo=1` for every branch) and is kept
+     only as the shape a scopeless branch falls back to. See `reviewHref`. */
+  const href = deploy.build === 'ready' ? safeBranchHref(reviewHref(deploy.url, parsed.scope)) : null
   const [copied, setCopied] = useState(false)
 
   const tags: HubRowTag[] = [
