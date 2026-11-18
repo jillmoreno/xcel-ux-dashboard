@@ -49,7 +49,8 @@ const STATE_IMAGES: Record<string, Record<string, string>> = {
     'Empty password': `${MODALS}/log-in--empty.png`,
     'Password entered': `${MODALS}/log-in--entered.png`,
     'Direct Email — address pre-filled': `${MODALS}/log-in--direct-email.png`,
-    'Direct Email — not a valid email': `${MODALS}/log-in--direct-email-invalid.png`,
+    /* "Direct Email — not a valid email" went on 2026-11-18: the field is
+       locked now. Its picture is kept in the folder. */
     'Wrong password': `${MODALS}/log-in--wrong.png`,
     'Check your email': `${MODALS}/log-in--check-email.png`,
     'Resend link waiting': `${MODALS}/log-in--resend-waiting.png`,

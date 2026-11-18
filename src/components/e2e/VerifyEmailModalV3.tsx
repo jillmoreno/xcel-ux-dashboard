@@ -216,7 +216,6 @@ export function VerifyEmailModalV3({
           <LoginStep
             email={email}
             supplied={Boolean(suppliedEmail)}
-            onEmailChange={setEmail}
             onLoggedIn={() => setStep('signing-in')}
           />
         ) : (
@@ -571,14 +570,12 @@ function formatCountdown(seconds: number): string {
 function LoginStep({
   email,
   supplied,
-  onEmailChange,
   onLoggedIn,
 }: {
   email: string
   /** Direct Email: the partner supplied the address, and Log in shows it in
-   *  an email field, filled and editable (2026-11-13, Afsana). */
+   *  an Email field, filled and locked (2026-11-18, Afsana). */
   supplied: boolean
-  onEmailChange: (email: string) => void
   onLoggedIn: () => void
 }) {
   const [password, setPassword] = useState('')
@@ -606,9 +603,7 @@ function LoginStep({
     return () => window.clearTimeout(t)
   }, [linkWait])
   const canResend = linkWait <= 0
-  /* Direct Email's field can be edited, so it has to hold an address too. */
-  const ready = password !== '' && (!supplied || looksLikeEmail(email))
-  const badEmail = supplied && email.trim() !== '' && !looksLikeEmail(email)
+  const ready = password !== ''
   if (resetting) {
     return (
       <ResetPasswordStep
@@ -718,8 +713,9 @@ function LoginStep({
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-        {/* Direct Email's address, pre-filled from the invitation and
-            editable — no lock, no grey (2026-11-13, Afsana). */}
+        {/* Direct Email's address, pre-filled from the email step and locked —
+            the checkout's grey, no lock icon (2026-11-18, Afsana; editable
+            from 2026-11-13 until the email step came first). */}
         {supplied ? (
           <div style={FIELD_AND_ERROR}>
             <label htmlFor="login-email" style={FIELD_GROUP}>
@@ -729,19 +725,13 @@ function LoginStep({
               <input
                 id="login-email"
                 type="email"
-                required
-                autoComplete="email"
                 value={email}
-                onChange={(e) => onEmailChange(e.target.value)}
-                aria-invalid={badEmail}
-                aria-describedby={badEmail ? 'login-email-invalid' : undefined}
+                disabled
+                readOnly
                 className="cre-e2e-input cre-e2e-input-v3"
-                /* No red stroke here — the line under it is enough (2026-11-18,
-                   Afsana). */
-                style={FIELD}
+                style={{ ...FIELD, ...FIELD_DISABLED }}
               />
             </label>
-            {badEmail ? <EmailInvalid id="login-email-invalid" /> : null}
           </div>
         ) : null}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
