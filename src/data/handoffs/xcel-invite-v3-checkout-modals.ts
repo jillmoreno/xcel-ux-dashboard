@@ -80,14 +80,14 @@ const feature: PrototypeFeature = {
         order: 1,
         name: 'Enter your email to continue',
         tabLabel: 'Enter your email',
-        location: 'Over the checkout, on every flow except Direct Email with an Atlas account (that one opens on Log in to continue). src/components/e2e/VerifyEmailModalV3.tsx — the email step.',
+        location: 'Over the checkout, on every flow — Direct Email with an Atlas account included since 2026-11-18. src/components/e2e/VerifyEmailModalV3.tsx — the email step.',
         summary:
           'The XCEL logo, "Enter your email to continue", a line under it, one email field and Continue. The email decides what comes next: Log in to continue if it has an Atlas account, the one-time code if it does not. The line reads "Provide your email address. We will use it to find your existing account or create one." on every flow, B2B2C and B2C, whatever the account turns out to be. No code is sent until Continue.',
         variants: [
           { name: 'Empty', when: 'On open. Continue is off.' },
           { name: 'Valid email', when: 'The field holds something shaped like an email address. Continue turns on.' },
           { name: 'Not a valid email', when: 'The field holds something that is not an email address. As the learner types, "Please enter a valid email address" shows in red under the field — nothing on the field itself; Continue stays off. It goes the moment it is an address, and an empty field shows no error.', why: 'The learner learns why Continue is off while they are still in the field, rather than guessing.' },
-          { name: 'Pre-filled (Direct Email)', when: 'Direct Email when the address has no Atlas account. The field opens holding the address the partner supplied, and Continue is on.', why: 'The learner sees where the code is going before it is sent, instead of a code arriving unannounced.' },
+          { name: 'Pre-filled (Direct Email)', when: 'Direct Email, with an Atlas account or without. The field opens holding the address the partner supplied, and Continue is on; Continue sends the code, or opens Log in to continue when the address has Atlas.', why: 'The learner sees where the code is going, or which account they are signing in to, before anything happens.' },
         ],
         ctas: [
           { name: 'Continue', does: 'Off until the email is valid. Then opens Log in to continue if the email has an Atlas account, otherwise Verify your email (the one-time code).' },
@@ -246,7 +246,7 @@ const feature: PrototypeFeature = {
         order: 4,
         name: 'Log in to continue',
         tabLabel: 'Log in',
-        location: 'Over the checkout, after Enter your email when the email has an Atlas account — or first, on Direct Email, with the address pre-filled in an editable field. src/components/e2e/VerifyEmailModalV3.tsx — LoginStep.',
+        location: 'Over the checkout, after Enter your email when the email has an Atlas account — on Direct Email too (since 2026-11-18), where Log in still shows the address pre-filled in an editable field. src/components/e2e/VerifyEmailModalV3.tsx — LoginStep.',
         summary:
           'The XCEL logo, "Log in to continue", and "Welcome back, [first name]! Sign in to [email, bold] to finish checking out." — the address in the sentence. On Direct Email the line is "Welcome back, [first name]! Sign in to finish checking out." and the address is in an Email field above the password, pre-filled from the invitation and editable. A password field with show and hide, Forgot password?, Log in, and under it, centred, "Can’t log in? Visit our help center" with the link in brick red. Forgot password? turns the modal into Check your email; following the link opens Reset your password.',
         variants: [

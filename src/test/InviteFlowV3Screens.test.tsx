@@ -277,6 +277,7 @@ describe('Invite Flow V3 — the Direct Email invitation', () => {
     vi.useFakeTimers({ shouldAdvanceTime: true })
     try {
       renderAt(CHECKOUT, `${DIRECT},invite-v3-email-account:atlas`)
+      await userEvent.click(screen.getByRole('button', { name: 'Continue' }))
       await userEvent.type(screen.getByLabelText(/^Password/), 'anything')
       await userEvent.click(screen.getByRole('button', { name: 'Log in' }))
       await act(() => vi.advanceTimersByTimeAsync(LOADING_HANDOFF_MS))
@@ -287,11 +288,18 @@ describe('Invite Flow V3 — the Direct Email invitation', () => {
     }
   })
 
-  it('after Purchase, asks the learner to log in when the address has Atlas', () => {
+  it('after Purchase, asks for the email first when the address has Atlas, then Log in', async () => {
     renderAt(CHECKOUT, `${DIRECT},invite-v3-email-account:atlas`)
+    /* The email step first, filled with the invitation's address — as without
+       Atlas (2026-11-18). */
+    expect(screen.queryByRole('dialog', { name: 'Log in to continue' })).not.toBeInTheDocument()
+    const ask = screen.getByRole('dialog', { name: 'Enter your email to continue' })
+    expect(within(ask).getByLabelText(/^Email\s*\*?$/)).toHaveValue(E2E_LEARNER_EMAIL)
+    await userEvent.click(within(ask).getByRole('button', { name: 'Continue' }))
     const dialog = screen.getByRole('dialog', { name: 'Log in to continue' })
+    /* Log in keeps its design: the line, and the address pre-filled in an
+       editable Email field — no lock (2026-11-13). */
     expect(dialog).toHaveAccessibleDescription('Welcome back, Jordan! Sign in to finish checking out.')
-    /* The supplied address, pre-filled and editable — no lock (2026-11-13). */
     const field = within(dialog).getByLabelText(/^Email\s*\*?$/)
     expect(field).toHaveValue(E2E_LEARNER_EMAIL)
     expect(field).toBeEnabled()
@@ -344,6 +352,7 @@ describe('Invite Flow V3 — the email check', () => {
 
   it('says when the Direct Email log-in address is not valid, and offers the help center', async () => {
     renderAt(CHECKOUT, 'invite-flow-version:v3,invite-v3-model:b2b,invite-v3-flow-b2b:direct-email,invite-v3-email-account:atlas')
+    await userEvent.click(within(screen.getByRole('dialog', { name: 'Enter your email to continue' })).getByRole('button', { name: 'Continue' }))
     const dialog = screen.getByRole('dialog', { name: 'Log in to continue' })
     const field = within(dialog).getByLabelText(/^Email\s*\*?$/)
     await userEvent.clear(field)
