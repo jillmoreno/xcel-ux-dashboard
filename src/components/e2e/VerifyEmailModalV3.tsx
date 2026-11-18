@@ -733,7 +733,9 @@ function LoginStep({
                 aria-invalid={badEmail}
                 aria-describedby={badEmail ? 'login-email-invalid' : undefined}
                 className="cre-e2e-input cre-e2e-input-v3"
-                style={badEmail ? { ...FIELD, ...FIELD_INVALID } : FIELD}
+                /* No red stroke here — the line under it is enough (2026-11-18,
+                   Afsana). A wrong password keeps its stroke. */
+                style={FIELD}
               />
             </label>
             {badEmail ? <EmailInvalid id="login-email-invalid" /> : null}
