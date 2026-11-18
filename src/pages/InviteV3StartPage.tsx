@@ -70,17 +70,15 @@ export function InviteV3StartPage() {
               : 'Every screen, modal and state of each flow, in the order the flow walks them. Click one to see it full size.'}
           </p>
         </header>
-        {tab === 'flows' ? (
-          /* The whole prototype, with its Hub bar and design controls — every
-             flow above in one place (2026-11-18, Afsana). */
-          <p style={PROTOTYPE_NOTE}>
-            To access the prototype that captures all of these flows, click{' '}
-            <a href={FULL_PROTOTYPE} style={PROTOTYPE_LINK}>
-              here
-            </a>
-            . Reach out to Afsana if you have any questions.
-          </p>
-        ) : null}
+        {/* The whole prototype, with its Hub bar and design controls — every
+            flow in one place (2026-11-18, Afsana) — on both tabs. */}
+        <p style={PROTOTYPE_NOTE}>
+          To access the prototype that captures all of these flows, click{' '}
+          <a href={FULL_PROTOTYPE} style={PROTOTYPE_LINK}>
+            here
+          </a>
+          . Reach out to Afsana if you have any questions.
+        </p>
         <div>
           <PillTabs
             label="View"
