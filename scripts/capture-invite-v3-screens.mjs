@@ -489,6 +489,9 @@ async function b2c(page, flowId, cart, account, slug) {
   const w = new Walk(page, flowId, slug)
   await go(page, startUrl(flowId, { account, cart }))
   await w.shot('Your cart', `${{ targeted: 'Targeted course', mixed: 'Targeted course and an unsupported item', none: 'Nothing targeted' }[cart]}${signedIn ? ', signed in' : ', signed out'}`)
+  /* Nothing targeted: Checkout goes nowhere — today's OCD checkout, not
+     mocked (2026-11-18). The cart is the whole walk. */
+  if (cart === 'none') return w
   await w.click('Checkout', { wait: 600 })
   await w.shot('Do you have a Partner Code?', 'Question over the cart')
   if (cart === 'targeted' && !atlas) {
@@ -504,17 +507,13 @@ async function b2c(page, flowId, cart, account, slug) {
     await w.shot(name, 'Notice over the cart')
     await w.click('Proceed to checkout', { wait: 400 })
   }
-  if (signedIn && cart !== 'none') {
+  if (signedIn) {
     await w.waitDialog('Signing you out')
     await w.shot('Signing you out', 'Hold', { settle: 100 })
     await w.waitDialogGone('Signing you out')
   }
   await page.waitForURL(/\/checkout/, { timeout: 10000 })
   await page.waitForTimeout(800)
-  if (cart === 'none') {
-    await checkout(w, { label: 'Checkout', places: false, arrival: 'On arrival — no email check' })
-    return w
-  }
   if (atlas) {
     await loginCheck(w, { fromEmailAsk: true, forgot: cart === 'targeted', brief: cart === 'mixed' })
   } else {
@@ -592,6 +591,20 @@ async function main() {
       /* A fresh folder each run: old numbered files would otherwise linger. */
       if (fs.existsSync(dir)) fs.rmSync(dir, { recursive: true })
       const context = await browser.newContext({ viewport: VIEWPORT, deviceScaleFactor: 1 })
+      /* The pictures are of the flow, not of which flow it is — the stand-alone
+         walk's light blue banner (`InviteFlowBanner`) is hidden on every page
+         (2026-11-18, Afsana: "the pictures do not need to include the banner"). */
+      await context.addInitScript(() => {
+        const hide = () => {
+          if (document.getElementById('capture-hide-banner')) return
+          const style = document.createElement('style')
+          style.id = 'capture-hide-banner'
+          style.textContent = '[data-invite-flow-banner] { display: none !important; }'
+          document.head.appendChild(style)
+        }
+        if (document.head) hide()
+        else document.addEventListener('DOMContentLoaded', hide)
+      })
       const page = await context.newPage()
       let w = null
       try {

@@ -397,8 +397,10 @@ export function signedInFlowV3(
   signedOut: boolean,
 ): InviteFlowV3 {
   if (cart === 'none') {
-    /* The existing checkout is the last screen (Afsana, 2026-11-02). */
-    return { ...flow, base: 'xcel-signed-in', screens: ['cart', 'pc-modal', ...CHECKOUT] }
+    /* The cart is the last screen — Checkout goes nowhere, to today's OCD
+       checkout, not mocked here (2026-11-18, Afsana; until then the walk went
+       on to the existing checkout). */
+    return { ...flow, base: 'xcel-signed-in', screens: ['cart'] }
   }
   const check = email === 'atlas' ? ['verify-login-1', 'login-1', 'login-2'] : [...VERIFY, ...CODE]
   const ending = email === 'atlas' ? ['ready'] : NEW_PASSWORD
@@ -425,7 +427,8 @@ export function signedInFlowV3(
  *  targeted it ends on the existing checkout, as signed in — but blank, since
  *  no account is signed in to fill it. */
 export function ocdCartFlowV3(flow: InviteFlowV3, cart: V3CartContents, email: V3EmailAccount): InviteFlowV3 {
-  if (cart === 'none') return { ...flow, base: 'b2c-guest', screens: ['cart', 'pc-modal', 'checkout-1', ...CHECKOUT] }
+  /* Nothing targeted: the cart is the last screen (2026-11-18), as signed in. */
+  if (cart === 'none') return { ...flow, base: 'b2c-guest', screens: ['cart'] }
   const check = email === 'atlas' ? ['verify-login-1', 'login-1', 'login-2'] : [...VERIFY, ...CODE]
   const ending = email === 'atlas' ? ['ready'] : NEW_PASSWORD
   /* Logged in to Atlas: the checkout arrives filled from the account (2026-11-04). */

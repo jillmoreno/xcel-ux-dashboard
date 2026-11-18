@@ -65,6 +65,8 @@ export function XcelCartPage() {
      first, then the partner's invitation — so Checkout here hands over to the
      invitation email, and the notice waits for the secure checkout. */
   const signedInAsk = signedInCart != null && !signedOut
+  /* Nothing targeted: the walk ends at Checkout (2026-11-18). */
+  const endsAtCart = signedInCart?.cart === 'none'
   /* WHERE CHECKOUT GOES. On the `page` arm the partner-code question is a step
      of its own between here and the checkout; on the `modal` arm the checkout
      draws it over itself, so this goes straight there. Flows that already have
@@ -235,15 +237,21 @@ export function XcelCartPage() {
                     that opens one of the flow's own pages, and it carries the
                     whole query string so the state, the line of authority and
                     the flow all survive the crossing. */}
+                {/* ⚠ NOTHING TARGETED: CHECKOUT GOES NOWHERE — 2026-11-18,
+                    Afsana. Signed in or not, Has Atlas or not, the learner
+                    goes on to today's OCD checkout, which this prototype does
+                    not mock — so the walk ends at this button, before the
+                    Partner Code question. */}
                 <button
                   type="button"
                   className="cre-e2e-cta"
                   style={CHECKOUT}
-                  onClick={() =>
-                    signedInAsk || asksHere
-                      ? setAsking(true)
-                      : navigate({ pathname: checkoutPath, search: params.toString() })
-                  }
+                  title={endsAtCart ? 'The end of this flow — the current OCD checkout, not mocked here' : undefined}
+                  onClick={() => {
+                    if (endsAtCart) return
+                    if (signedInAsk || asksHere) setAsking(true)
+                    else navigate({ pathname: checkoutPath, search: params.toString() })
+                  }}
                 >
                   Checkout
                 </button>
