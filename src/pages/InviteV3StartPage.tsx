@@ -69,6 +69,17 @@ export function InviteV3StartPage() {
               : 'Every screen, modal and state of each flow, in the order the flow walks them. Click one to see it full size.'}
           </p>
         </header>
+        {tab === 'flows' ? (
+          /* The whole prototype, with its Hub bar and design controls — every
+             flow above in one place (2026-11-18, Afsana). */
+          <p style={PROTOTYPE_NOTE}>
+            To access the prototype that captures all of these flows, click{' '}
+            <a href={FULL_PROTOTYPE} style={PROTOTYPE_LINK}>
+              here
+            </a>
+            .
+          </p>
+        ) : null}
         <div>
           <PillTabs
             label="View"
@@ -218,6 +229,25 @@ const PAGE: CSSProperties = {
 }
 
 const COLUMN: CSSProperties = { maxWidth: 760, margin: '0 auto', display: 'grid', gap: 32 }
+
+/* The branch build's address, in full (2026-11-18, Afsana). */
+const FULL_PROTOTYPE = 'https://feat-invite-flow-v3--ux-design-xceldashboard.netlify.app/end-to-end-demo/qr?demo=1&version=jill-atlas-main'
+
+const PROTOTYPE_NOTE: CSSProperties = {
+  margin: 0,
+  padding: '14px 16px',
+  fontSize: 15,
+  lineHeight: '22px',
+  background: 'var(--color-fixed-light)',
+  border: '1px solid var(--color-e2e-card-outline)',
+  borderRadius: 8,
+}
+
+const PROTOTYPE_LINK: CSSProperties = {
+  color: 'var(--color-xcel-brick-600)',
+  fontWeight: 800,
+  textDecoration: 'underline',
+}
 
 const LOGO: CSSProperties = { display: 'block', width: 132, height: 42, objectFit: 'contain' }
 
