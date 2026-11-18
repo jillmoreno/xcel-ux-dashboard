@@ -132,92 +132,102 @@
               "state": "Products: Standard"
             },
             {
-              "file": "direct-email/atlas/03-log-in-to-continue-empty-password-log-in-disabled.png",
+              "file": "direct-email/atlas/03-enter-your-email-to-continue-pre-filled-with-the-invited-add.png",
+              "title": "Enter your email to continue",
+              "state": "Pre-filled with the invited address"
+            },
+            {
+              "file": "direct-email/atlas/04-enter-your-email-to-continue-invalid-email-address.png",
+              "title": "Enter your email to continue",
+              "state": "Invalid email address"
+            },
+            {
+              "file": "direct-email/atlas/05-log-in-to-continue-empty-password-log-in-disabled.png",
               "title": "Log in to continue",
               "state": "Empty password, Log in disabled"
             },
             {
-              "file": "direct-email/atlas/04-log-in-to-continue-invalid-email-address.png",
+              "file": "direct-email/atlas/06-log-in-to-continue-invalid-email-address.png",
               "title": "Log in to continue",
               "state": "Invalid email address"
             },
             {
-              "file": "direct-email/atlas/05-log-in-to-continue-wrong-password.png",
+              "file": "direct-email/atlas/07-log-in-to-continue-wrong-password.png",
               "title": "Log in to continue",
               "state": "Wrong password"
             },
             {
-              "file": "direct-email/atlas/06-check-your-email-reset-link-sent-resend-link-counting-down.png",
+              "file": "direct-email/atlas/08-check-your-email-reset-link-sent-resend-link-counting-down.png",
               "title": "Check your email",
               "state": "Reset link sent, Resend link counting down"
             },
             {
-              "file": "direct-email/atlas/07-check-your-email-resend-link-available.png",
+              "file": "direct-email/atlas/09-check-your-email-resend-link-available.png",
               "title": "Check your email",
               "state": "Resend link available"
             },
             {
-              "file": "direct-email/atlas/08-reset-your-password-empty-reset-password-disabled.png",
+              "file": "direct-email/atlas/10-reset-your-password-empty-reset-password-disabled.png",
               "title": "Reset your password",
               "state": "Empty, Reset password disabled"
             },
             {
-              "file": "direct-email/atlas/09-reset-your-password-passwords-do-not-match.png",
+              "file": "direct-email/atlas/11-reset-your-password-passwords-do-not-match.png",
               "title": "Reset your password",
               "state": "Passwords do not match"
             },
             {
-              "file": "direct-email/atlas/10-reset-your-password-filled-reset-password-enabled.png",
+              "file": "direct-email/atlas/12-reset-your-password-filled-reset-password-enabled.png",
               "title": "Reset your password",
               "state": "Filled, Reset password enabled"
             },
             {
-              "file": "direct-email/atlas/11-log-in-to-continue-your-password-has-been-reset.png",
+              "file": "direct-email/atlas/13-log-in-to-continue-your-password-has-been-reset.png",
               "title": "Log in to continue",
               "state": "Your password has been reset"
             },
             {
-              "file": "direct-email/atlas/12-log-in-to-continue-password-entered.png",
+              "file": "direct-email/atlas/14-log-in-to-continue-password-entered.png",
               "title": "Log in to continue",
               "state": "Password entered"
             },
             {
-              "file": "direct-email/atlas/13-signing-you-in-hold.png",
+              "file": "direct-email/atlas/15-signing-you-in-hold.png",
               "title": "Signing you in",
               "state": "Hold"
             },
             {
-              "file": "direct-email/atlas/14-secure-checkout-after-the-email-check.png",
+              "file": "direct-email/atlas/16-secure-checkout-after-the-email-check.png",
               "title": "Secure Checkout",
               "state": "After the email check"
             },
             {
-              "file": "direct-email/atlas/15-secure-checkout-payment-card-form-empty.png",
+              "file": "direct-email/atlas/17-secure-checkout-payment-card-form-empty.png",
               "title": "Secure Checkout",
               "state": "Payment — card form empty"
             },
             {
-              "file": "direct-email/atlas/16-secure-checkout-ready-to-place-the-order.png",
+              "file": "direct-email/atlas/18-secure-checkout-ready-to-place-the-order.png",
               "title": "Secure Checkout",
               "state": "Ready to place the order"
             },
             {
-              "file": "direct-email/atlas/17-secure-checkout-ready-to-place-the-order-full-page.png",
+              "file": "direct-email/atlas/19-secure-checkout-ready-to-place-the-order-full-page.png",
               "title": "Secure Checkout",
               "state": "Ready to place the order — full page"
             },
             {
-              "file": "direct-email/atlas/18-placing-your-order-hold.png",
+              "file": "direct-email/atlas/20-placing-your-order-hold.png",
               "title": "Placing your order",
               "state": "Hold"
             },
             {
-              "file": "direct-email/atlas/19-start-learning-ready-to-start-the-course.png",
+              "file": "direct-email/atlas/21-start-learning-ready-to-start-the-course.png",
               "title": "Start learning",
               "state": "Ready to start the course"
             },
             {
-              "file": "direct-email/atlas/20-setting-up-your-account-hold.png",
+              "file": "direct-email/atlas/22-setting-up-your-account-hold.png",
               "title": "Setting up your account",
               "state": "Hold"
             }

@@ -218,9 +218,21 @@ async function nameStep(w) {
 }
 
 /** The log-in widget a learner with Atlas gets. `withEmailField`: the Direct Email log-in shows the address in a field. */
-async function loginCheck(w, { fromEmailAsk = false, email = 'jordan@example.com', forgot = true, brief = false, waitResend = false } = {}) {
+async function loginCheck(w, { fromEmailAsk = false, prefilled = false, email = 'jordan@example.com', forgot = true, brief = false, waitResend = false } = {}) {
   const p = w.page
-  if (fromEmailAsk) {
+  /* Direct Email with Atlas: the email step opens filled with the invited
+     address, then Log in (2026-11-18). */
+  if (prefilled) {
+    const ask = w.dialog('Enter your email to continue')
+    await w.waitDialog('Enter your email to continue')
+    const field = ask.getByLabel(/^Email\s*\*?$/)
+    await w.shot('Enter your email to continue', 'Pre-filled with the invited address')
+    const was = await field.inputValue()
+    await field.fill('jordan@')
+    await w.shot('Enter your email to continue', 'Invalid email address')
+    await field.fill(was)
+    await w.click('Continue', { scope: ask })
+  } else if (fromEmailAsk) {
     const ask = w.dialog('Enter your email to continue')
     await w.waitDialog('Enter your email to continue')
     const field = ask.getByLabel(/^Email\s*\*?$/)
@@ -400,7 +412,7 @@ async function directEmail(page, account) {
   await productPage(w, await pdpTitle(page), 'Products: Standard')
   await w.click(/^Purchase standard/i, { exact: false, wait: 900 })
   if (atlas) {
-    await loginCheck(w, { waitResend: true })
+    await loginCheck(w, { prefilled: true, waitResend: true })
   } else {
     await codeCheck(w)
     await nameStep(w)

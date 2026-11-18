@@ -334,7 +334,9 @@ export function directEmailFlowV3(flow: InviteFlowV3, email: V3EmailAccount): In
     ...flow,
     screens:
       email === 'atlas'
-        ? [...start, 'login-1', 'login-2', ...CHECKOUT, 'placing', 'ready']
+        ? /* Enter your email first, filled with the invitation's address,
+             then Log in — as without Atlas (2026-11-18, Afsana). */
+          [...start, 'verify-login-1', 'verify-login-2', 'login-1', 'login-2', ...CHECKOUT, 'placing', 'ready']
         : [...start, ...VERIFY, ...CODE, 'checkout-1', ...CHECKOUT, 'placing', ...NEW_PASSWORD],
   }
 }
