@@ -948,11 +948,13 @@ describe('Invite Flow V3 — not signed in to XCEL (OCD)', () => {
     expect(screen.getByTestId('where').textContent).toContain('dropped=1')
   })
 
-  it('collects a partner code on Yes, as when signed in', async () => {
+  it('does nothing on Yes, as when signed in', async () => {
     cartAt('none')
     await userEvent.click(screen.getByRole('button', { name: 'Checkout' }))
     await userEvent.click(screen.getByRole('button', { name: 'YES' }))
-    expect(screen.getByRole('dialog', { name: 'Enter your Partner Code' })).toBeInTheDocument()
+    expect(screen.queryByRole('dialog', { name: 'Enter your Partner Code' })).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'YES' })).toBeInTheDocument()
+    expect(screen.queryByText('Checkout page')).not.toBeInTheDocument()
   })
 })
 
@@ -1126,17 +1128,15 @@ describe('Invite Flow V3 — signed in to XCEL (OCD)', () => {
     expect(screen.queryByText(/have been removed from your cart/)).not.toBeInTheDocument()
   })
 
-  it('collects a partner code on Yes, whatever the cart holds', async () => {
+  it('does nothing on Yes, whatever the cart holds — no code to enter', async () => {
     for (const cart of ['targeted', 'mixed', 'none']) {
       const { unmount } = cartAt(`${SIGNED_IN},invite-v3-cart:${cart}`)
       await userEvent.click(screen.getByRole('button', { name: 'Checkout' }))
       await userEvent.click(screen.getByRole('button', { name: 'YES' }))
-      const entry = screen.getByRole('dialog', { name: 'Enter your Partner Code' })
-      const go = within(entry).getByRole('button', { name: 'Go to Partner Site' })
-      expect(go).toBeDisabled()
-      await userEvent.type(within(entry).getByLabelText('Partner code'), 'ACME')
-      expect(go).toBeEnabled()
+      expect(screen.queryByRole('dialog', { name: 'Enter your Partner Code' })).not.toBeInTheDocument()
+      expect(screen.getByRole('button', { name: 'YES' })).toBeInTheDocument()
       expect(screen.queryByRole('dialog', { name: 'Signing you out' })).not.toBeInTheDocument()
+      expect(screen.queryByText('Checkout page')).not.toBeInTheDocument()
       unmount()
     }
   })

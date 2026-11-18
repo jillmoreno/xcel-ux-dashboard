@@ -4008,7 +4008,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     surfaces: ['invite:v3-b2c-signed-in'],
     group: 'Navigation',
     label: 'Cart contents',
-    description: 'Invite Flow V3, signed in to XCEL or not. Checkout asks the Partner Code question first; Yes collects the code, whatever the cart. On No — targeted SKUs only: on to the new guest checkout (signed out first, if signed in). Mixed: a dialog says what will be dropped, then the same. No targeted SKUs: the existing checkout, which ends the walk.',
+    description: 'Invite Flow V3, signed in to XCEL or not. Checkout asks the Partner Code question first; Yes does nothing, whatever the cart. On No — targeted SKUs only: on to the new guest checkout (signed out first, if signed in). Mixed: a dialog says what will be dropped, then the same. No targeted SKUs: the existing checkout, which ends the walk.',
     defaultEnabled: true,
     defaultVariant: 'targeted',
     variants: [
