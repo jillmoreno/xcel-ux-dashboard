@@ -297,12 +297,13 @@ describe('Invite Flow V3 — the Direct Email invitation', () => {
     expect(within(ask).getByLabelText(/^Email\s*\*?$/)).toHaveValue(E2E_LEARNER_EMAIL)
     await userEvent.click(within(ask).getByRole('button', { name: 'Continue' }))
     const dialog = screen.getByRole('dialog', { name: 'Log in to continue' })
-    /* Log in keeps its design: the line, and the address pre-filled in an
-       editable Email field — no lock (2026-11-13). */
+    /* Log in keeps its design: the line, and the address pre-filled in the
+       Email field — locked, the checkout's grey, no lock icon (2026-11-18). */
     expect(dialog).toHaveAccessibleDescription('Welcome back, Jordan! Sign in to finish checking out.')
     const field = within(dialog).getByLabelText(/^Email\s*\*?$/)
     expect(field).toHaveValue(E2E_LEARNER_EMAIL)
-    expect(field).toBeEnabled()
+    expect(field).toBeDisabled()
+    expect(field.style.background).toBe('var(--color-e2e-form-locked-v3)')
     expect(within(dialog).queryByAltText('Locked')).not.toBeInTheDocument()
     expect(screen.queryByRole('dialog', { name: 'Verify your email' })).not.toBeInTheDocument()
   })
@@ -350,18 +351,17 @@ describe('Invite Flow V3 — the email check', () => {
     expect(screen.queryByText('Please enter a valid email address')).not.toBeInTheDocument()
   })
 
-  it('says when the Direct Email log-in address is not valid, and offers the help center', async () => {
+  it('carries an address changed on the email step into Direct Email’s locked log-in field, and offers the help center', async () => {
     renderAt(CHECKOUT, 'invite-flow-version:v3,invite-v3-model:b2b,invite-v3-flow-b2b:direct-email,invite-v3-email-account:atlas')
-    await userEvent.click(within(screen.getByRole('dialog', { name: 'Enter your email to continue' })).getByRole('button', { name: 'Continue' }))
+    const ask = screen.getByRole('dialog', { name: 'Enter your email to continue' })
+    const given = within(ask).getByLabelText(/^Email\s*\*?$/)
+    await userEvent.clear(given)
+    await userEvent.type(given, 'jordan@example.com')
+    await userEvent.click(within(ask).getByRole('button', { name: 'Continue' }))
     const dialog = screen.getByRole('dialog', { name: 'Log in to continue' })
     const field = within(dialog).getByLabelText(/^Email\s*\*?$/)
-    await userEvent.clear(field)
-    await userEvent.type(field, 'jordan@')
-    expect(field).toHaveAccessibleDescription('Please enter a valid email address')
-    /* The line is enough — no red stroke under the field (2026-11-18). */
-    expect(field.style.boxShadow).toBe('')
-    await userEvent.type(field, 'example.com')
-    expect(within(dialog).queryByText('Please enter a valid email address')).not.toBeInTheDocument()
+    expect(field).toHaveValue('jordan@example.com')
+    expect(field).toBeDisabled()
     expect(dialog).toHaveTextContent('Can’t log in? Visit our help center')
     expect(within(dialog).getByRole('button', { name: 'Visit our help center' })).toBeInTheDocument()
   })
