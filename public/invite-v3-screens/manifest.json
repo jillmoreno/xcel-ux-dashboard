@@ -1,0 +1,1468 @@
+{
+  "capturedAt": "2026-11-18",
+  "flows": [
+    {
+      "id": "direct-email",
+      "label": "Direct Email",
+      "model": "b2b",
+      "variants": [
+        {
+          "label": "No Atlas account",
+          "slug": "no-atlas",
+          "shots": [
+            {
+              "file": "direct-email/no-atlas/01-youre-invited-to-get-licensed-invitation-email-open.png",
+              "title": "You’re Invited to Get Licensed",
+              "state": "Invitation email open"
+            },
+            {
+              "file": "direct-email/no-atlas/02-youve-been-invited-products-standard.png",
+              "title": "You’ve been invited",
+              "state": "Products: Standard"
+            },
+            {
+              "file": "direct-email/no-atlas/03-enter-your-email-to-continue-pre-filled-with-the-invited-add.png",
+              "title": "Enter your email to continue",
+              "state": "Pre-filled with the invited address"
+            },
+            {
+              "file": "direct-email/no-atlas/04-verify-your-email-empty-code-countdown-running.png",
+              "title": "Verify your email",
+              "state": "Empty code, countdown running"
+            },
+            {
+              "file": "direct-email/no-atlas/05-verify-your-email-wrong-code.png",
+              "title": "Verify your email",
+              "state": "Wrong code"
+            },
+            {
+              "file": "direct-email/no-atlas/06-verify-your-email-expired-code.png",
+              "title": "Verify your email",
+              "state": "Expired code"
+            },
+            {
+              "file": "direct-email/no-atlas/07-verify-your-email-code-entered-confirm-enabled.png",
+              "title": "Verify your email",
+              "state": "Code entered, Confirm enabled"
+            },
+            {
+              "file": "direct-email/no-atlas/08-email-verified-hold-continuing.png",
+              "title": "Email verified",
+              "state": "Hold — continuing"
+            },
+            {
+              "file": "direct-email/no-atlas/09-enter-your-name-to-continue-empty-continue-disabled.png",
+              "title": "Enter your name to continue",
+              "state": "Empty, Continue disabled"
+            },
+            {
+              "file": "direct-email/no-atlas/10-enter-your-name-to-continue-filled.png",
+              "title": "Enter your name to continue",
+              "state": "Filled"
+            },
+            {
+              "file": "direct-email/no-atlas/11-secure-checkout-after-the-email-check.png",
+              "title": "Secure Checkout",
+              "state": "After the email check"
+            },
+            {
+              "file": "direct-email/no-atlas/12-secure-checkout-save-and-continue-with-required-fields-empty.png",
+              "title": "Secure Checkout",
+              "state": "Save and continue with required fields empty"
+            },
+            {
+              "file": "direct-email/no-atlas/13-secure-checkout-student-information-filled.png",
+              "title": "Secure Checkout",
+              "state": "Student information filled"
+            },
+            {
+              "file": "direct-email/no-atlas/14-secure-checkout-payment-card-form-empty.png",
+              "title": "Secure Checkout",
+              "state": "Payment — card form empty"
+            },
+            {
+              "file": "direct-email/no-atlas/15-secure-checkout-ready-to-place-the-order.png",
+              "title": "Secure Checkout",
+              "state": "Ready to place the order"
+            },
+            {
+              "file": "direct-email/no-atlas/16-secure-checkout-ready-to-place-the-order-full-page.png",
+              "title": "Secure Checkout",
+              "state": "Ready to place the order — full page"
+            },
+            {
+              "file": "direct-email/no-atlas/17-placing-your-order-hold.png",
+              "title": "Placing your order",
+              "state": "Hold"
+            },
+            {
+              "file": "direct-email/no-atlas/18-finish-setting-up-your-account-empty-confirm-disabled.png",
+              "title": "Finish setting up your account",
+              "state": "Empty, Confirm disabled"
+            },
+            {
+              "file": "direct-email/no-atlas/19-finish-setting-up-your-account-passwords-do-not-match.png",
+              "title": "Finish setting up your account",
+              "state": "Passwords do not match"
+            },
+            {
+              "file": "direct-email/no-atlas/20-finish-setting-up-your-account-filled-confirm-enabled.png",
+              "title": "Finish setting up your account",
+              "state": "Filled, Confirm enabled"
+            },
+            {
+              "file": "direct-email/no-atlas/21-setting-up-your-account-hold.png",
+              "title": "Setting up your account",
+              "state": "Hold"
+            }
+          ]
+        },
+        {
+          "label": "Has Atlas account",
+          "slug": "atlas",
+          "shots": [
+            {
+              "file": "direct-email/atlas/01-youre-invited-to-get-licensed-invitation-email-open.png",
+              "title": "You’re Invited to Get Licensed",
+              "state": "Invitation email open"
+            },
+            {
+              "file": "direct-email/atlas/02-youve-been-invited-products-standard.png",
+              "title": "You’ve been invited",
+              "state": "Products: Standard"
+            },
+            {
+              "file": "direct-email/atlas/03-log-in-to-continue-empty-password-log-in-disabled.png",
+              "title": "Log in to continue",
+              "state": "Empty password, Log in disabled"
+            },
+            {
+              "file": "direct-email/atlas/04-log-in-to-continue-invalid-email-address.png",
+              "title": "Log in to continue",
+              "state": "Invalid email address"
+            },
+            {
+              "file": "direct-email/atlas/05-log-in-to-continue-wrong-password.png",
+              "title": "Log in to continue",
+              "state": "Wrong password"
+            },
+            {
+              "file": "direct-email/atlas/06-check-your-email-reset-link-sent-resend-link-counting-down.png",
+              "title": "Check your email",
+              "state": "Reset link sent, Resend link counting down"
+            },
+            {
+              "file": "direct-email/atlas/07-check-your-email-resend-link-available.png",
+              "title": "Check your email",
+              "state": "Resend link available"
+            },
+            {
+              "file": "direct-email/atlas/08-reset-your-password-empty-reset-password-disabled.png",
+              "title": "Reset your password",
+              "state": "Empty, Reset password disabled"
+            },
+            {
+              "file": "direct-email/atlas/09-reset-your-password-passwords-do-not-match.png",
+              "title": "Reset your password",
+              "state": "Passwords do not match"
+            },
+            {
+              "file": "direct-email/atlas/10-reset-your-password-filled-reset-password-enabled.png",
+              "title": "Reset your password",
+              "state": "Filled, Reset password enabled"
+            },
+            {
+              "file": "direct-email/atlas/11-log-in-to-continue-your-password-has-been-reset.png",
+              "title": "Log in to continue",
+              "state": "Your password has been reset"
+            },
+            {
+              "file": "direct-email/atlas/12-log-in-to-continue-password-entered.png",
+              "title": "Log in to continue",
+              "state": "Password entered"
+            },
+            {
+              "file": "direct-email/atlas/13-signing-you-in-hold.png",
+              "title": "Signing you in",
+              "state": "Hold"
+            },
+            {
+              "file": "direct-email/atlas/14-secure-checkout-after-the-email-check.png",
+              "title": "Secure Checkout",
+              "state": "After the email check"
+            },
+            {
+              "file": "direct-email/atlas/15-secure-checkout-payment-card-form-empty.png",
+              "title": "Secure Checkout",
+              "state": "Payment — card form empty"
+            },
+            {
+              "file": "direct-email/atlas/16-secure-checkout-ready-to-place-the-order.png",
+              "title": "Secure Checkout",
+              "state": "Ready to place the order"
+            },
+            {
+              "file": "direct-email/atlas/17-secure-checkout-ready-to-place-the-order-full-page.png",
+              "title": "Secure Checkout",
+              "state": "Ready to place the order — full page"
+            },
+            {
+              "file": "direct-email/atlas/18-placing-your-order-hold.png",
+              "title": "Placing your order",
+              "state": "Hold"
+            },
+            {
+              "file": "direct-email/atlas/19-start-learning-ready-to-start-the-course.png",
+              "title": "Start learning",
+              "state": "Ready to start the course"
+            },
+            {
+              "file": "direct-email/atlas/20-setting-up-your-account-hold.png",
+              "title": "Setting up your account",
+              "state": "Hold"
+            }
+          ]
+        },
+        {
+          "label": "Products",
+          "slug": "products",
+          "shots": [
+            {
+              "file": "direct-email/products/01-youve-been-invited-products-standard.png",
+              "title": "You’ve been invited",
+              "state": "Products: Standard"
+            },
+            {
+              "file": "direct-email/products/02-youve-been-invited-products-standard-full-page.png",
+              "title": "You’ve been invited",
+              "state": "Products: Standard — full page"
+            },
+            {
+              "file": "direct-email/products/03-youve-been-invited-products-multi-product.png",
+              "title": "You’ve been invited",
+              "state": "Products: Multi-product"
+            },
+            {
+              "file": "direct-email/products/04-youve-been-invited-products-multi-product-full-page.png",
+              "title": "You’ve been invited",
+              "state": "Products: Multi-product — full page"
+            },
+            {
+              "file": "direct-email/products/05-youve-been-invited-products-premier.png",
+              "title": "You’ve been invited",
+              "state": "Products: Premier"
+            },
+            {
+              "file": "direct-email/products/06-youve-been-invited-products-premier-full-page.png",
+              "title": "You’ve been invited",
+              "state": "Products: Premier — full page"
+            },
+            {
+              "file": "direct-email/products/07-youve-been-invited-products-california.png",
+              "title": "You’ve been invited",
+              "state": "Products: California"
+            },
+            {
+              "file": "direct-email/products/08-youve-been-invited-products-california-full-page.png",
+              "title": "You’ve been invited",
+              "state": "Products: California — full page"
+            },
+            {
+              "file": "direct-email/products/09-youve-been-invited-products-multi-product-old.png",
+              "title": "You’ve been invited",
+              "state": "Products: Multi-product (Old)"
+            },
+            {
+              "file": "direct-email/products/10-youve-been-invited-products-multi-product-old-full-page.png",
+              "title": "You’ve been invited",
+              "state": "Products: Multi-product (Old) — full page"
+            },
+            {
+              "file": "direct-email/products/11-select-your-state-and-line-of-authority-opened-on-the-curren.png",
+              "title": "Select your state and line of authority",
+              "state": "Opened on the current course"
+            },
+            {
+              "file": "direct-email/products/12-select-your-state-and-line-of-authority-state-list-filtered-.png",
+              "title": "Select your state and line of authority",
+              "state": "State list filtered while typing"
+            },
+            {
+              "file": "direct-email/products/13-select-your-state-and-line-of-authority-changed-continue-ena.png",
+              "title": "Select your state and line of authority",
+              "state": "Changed, Continue enabled"
+            },
+            {
+              "file": "direct-email/products/14-youve-been-invited-after-continue-texas-life.png",
+              "title": "You’ve been invited",
+              "state": "After Continue — Texas Life"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "qr",
+      "label": "QR Code",
+      "model": "b2b",
+      "variants": [
+        {
+          "label": "No Atlas account",
+          "slug": "no-atlas",
+          "shots": [
+            {
+              "file": "qr/no-atlas/01-qr-code-partners-qr-code.png",
+              "title": "QR code",
+              "state": "Partner’s QR code"
+            },
+            {
+              "file": "qr/no-atlas/02-select-your-state-and-line-of-authority-empty-continue-disab.png",
+              "title": "Select your state and line of authority",
+              "state": "Empty, Continue disabled"
+            },
+            {
+              "file": "qr/no-atlas/03-select-your-state-and-line-of-authority-state-dropdown-open.png",
+              "title": "Select your state and line of authority",
+              "state": "State dropdown open"
+            },
+            {
+              "file": "qr/no-atlas/04-select-your-state-and-line-of-authority-state-filtered-while.png",
+              "title": "Select your state and line of authority",
+              "state": "State filtered while typing"
+            },
+            {
+              "file": "qr/no-atlas/05-select-your-state-and-line-of-authority-state-chosen-line-of.png",
+              "title": "Select your state and line of authority",
+              "state": "State chosen, line of authority not yet"
+            },
+            {
+              "file": "qr/no-atlas/06-select-your-state-and-line-of-authority-filled-continue-enab.png",
+              "title": "Select your state and line of authority",
+              "state": "Filled, Continue enabled"
+            },
+            {
+              "file": "qr/no-atlas/07-youve-been-invited-products-standard.png",
+              "title": "You’ve been invited",
+              "state": "Products: Standard"
+            },
+            {
+              "file": "qr/no-atlas/08-enter-your-email-to-continue-empty-continue-disabled.png",
+              "title": "Enter your email to continue",
+              "state": "Empty, Continue disabled"
+            },
+            {
+              "file": "qr/no-atlas/09-enter-your-email-to-continue-invalid-email-address.png",
+              "title": "Enter your email to continue",
+              "state": "Invalid email address"
+            },
+            {
+              "file": "qr/no-atlas/10-enter-your-email-to-continue-filled.png",
+              "title": "Enter your email to continue",
+              "state": "Filled"
+            },
+            {
+              "file": "qr/no-atlas/11-verify-your-email-empty-code-countdown-running.png",
+              "title": "Verify your email",
+              "state": "Empty code, countdown running"
+            },
+            {
+              "file": "qr/no-atlas/12-verify-your-email-wrong-code.png",
+              "title": "Verify your email",
+              "state": "Wrong code"
+            },
+            {
+              "file": "qr/no-atlas/13-verify-your-email-expired-code.png",
+              "title": "Verify your email",
+              "state": "Expired code"
+            },
+            {
+              "file": "qr/no-atlas/14-verify-your-email-code-entered-confirm-enabled.png",
+              "title": "Verify your email",
+              "state": "Code entered, Confirm enabled"
+            },
+            {
+              "file": "qr/no-atlas/15-email-verified-hold-continuing.png",
+              "title": "Email verified",
+              "state": "Hold — continuing"
+            },
+            {
+              "file": "qr/no-atlas/16-enter-your-name-to-continue-empty-continue-disabled.png",
+              "title": "Enter your name to continue",
+              "state": "Empty, Continue disabled"
+            },
+            {
+              "file": "qr/no-atlas/17-enter-your-name-to-continue-filled.png",
+              "title": "Enter your name to continue",
+              "state": "Filled"
+            },
+            {
+              "file": "qr/no-atlas/18-secure-checkout-after-the-email-check.png",
+              "title": "Secure Checkout",
+              "state": "After the email check"
+            },
+            {
+              "file": "qr/no-atlas/19-secure-checkout-save-and-continue-with-required-fields-empty.png",
+              "title": "Secure Checkout",
+              "state": "Save and continue with required fields empty"
+            },
+            {
+              "file": "qr/no-atlas/20-secure-checkout-student-information-filled.png",
+              "title": "Secure Checkout",
+              "state": "Student information filled"
+            },
+            {
+              "file": "qr/no-atlas/21-secure-checkout-payment-card-form-empty.png",
+              "title": "Secure Checkout",
+              "state": "Payment — card form empty"
+            },
+            {
+              "file": "qr/no-atlas/22-secure-checkout-ready-to-place-the-order.png",
+              "title": "Secure Checkout",
+              "state": "Ready to place the order"
+            },
+            {
+              "file": "qr/no-atlas/23-secure-checkout-ready-to-place-the-order-full-page.png",
+              "title": "Secure Checkout",
+              "state": "Ready to place the order — full page"
+            },
+            {
+              "file": "qr/no-atlas/24-placing-your-order-hold.png",
+              "title": "Placing your order",
+              "state": "Hold"
+            },
+            {
+              "file": "qr/no-atlas/25-finish-setting-up-your-account-empty-confirm-disabled.png",
+              "title": "Finish setting up your account",
+              "state": "Empty, Confirm disabled"
+            },
+            {
+              "file": "qr/no-atlas/26-finish-setting-up-your-account-passwords-do-not-match.png",
+              "title": "Finish setting up your account",
+              "state": "Passwords do not match"
+            },
+            {
+              "file": "qr/no-atlas/27-finish-setting-up-your-account-filled-confirm-enabled.png",
+              "title": "Finish setting up your account",
+              "state": "Filled, Confirm enabled"
+            },
+            {
+              "file": "qr/no-atlas/28-setting-up-your-account-hold.png",
+              "title": "Setting up your account",
+              "state": "Hold"
+            }
+          ]
+        },
+        {
+          "label": "Has Atlas account",
+          "slug": "atlas",
+          "shots": [
+            {
+              "file": "qr/atlas/01-qr-code-partners-qr-code.png",
+              "title": "QR code",
+              "state": "Partner’s QR code"
+            },
+            {
+              "file": "qr/atlas/02-select-your-state-and-line-of-authority-empty-continue-disab.png",
+              "title": "Select your state and line of authority",
+              "state": "Empty, Continue disabled"
+            },
+            {
+              "file": "qr/atlas/03-select-your-state-and-line-of-authority-state-dropdown-open.png",
+              "title": "Select your state and line of authority",
+              "state": "State dropdown open"
+            },
+            {
+              "file": "qr/atlas/04-select-your-state-and-line-of-authority-state-filtered-while.png",
+              "title": "Select your state and line of authority",
+              "state": "State filtered while typing"
+            },
+            {
+              "file": "qr/atlas/05-select-your-state-and-line-of-authority-state-chosen-line-of.png",
+              "title": "Select your state and line of authority",
+              "state": "State chosen, line of authority not yet"
+            },
+            {
+              "file": "qr/atlas/06-select-your-state-and-line-of-authority-filled-continue-enab.png",
+              "title": "Select your state and line of authority",
+              "state": "Filled, Continue enabled"
+            },
+            {
+              "file": "qr/atlas/07-youve-been-invited-products-standard.png",
+              "title": "You’ve been invited",
+              "state": "Products: Standard"
+            },
+            {
+              "file": "qr/atlas/08-enter-your-email-to-continue-empty-continue-disabled.png",
+              "title": "Enter your email to continue",
+              "state": "Empty, Continue disabled"
+            },
+            {
+              "file": "qr/atlas/09-enter-your-email-to-continue-invalid-email-address.png",
+              "title": "Enter your email to continue",
+              "state": "Invalid email address"
+            },
+            {
+              "file": "qr/atlas/10-enter-your-email-to-continue-filled.png",
+              "title": "Enter your email to continue",
+              "state": "Filled"
+            },
+            {
+              "file": "qr/atlas/11-log-in-to-continue-empty-password-log-in-disabled.png",
+              "title": "Log in to continue",
+              "state": "Empty password, Log in disabled"
+            },
+            {
+              "file": "qr/atlas/12-log-in-to-continue-wrong-password.png",
+              "title": "Log in to continue",
+              "state": "Wrong password"
+            },
+            {
+              "file": "qr/atlas/13-check-your-email-reset-link-sent-resend-link-counting-down.png",
+              "title": "Check your email",
+              "state": "Reset link sent, Resend link counting down"
+            },
+            {
+              "file": "qr/atlas/14-reset-your-password-empty-reset-password-disabled.png",
+              "title": "Reset your password",
+              "state": "Empty, Reset password disabled"
+            },
+            {
+              "file": "qr/atlas/15-reset-your-password-passwords-do-not-match.png",
+              "title": "Reset your password",
+              "state": "Passwords do not match"
+            },
+            {
+              "file": "qr/atlas/16-reset-your-password-filled-reset-password-enabled.png",
+              "title": "Reset your password",
+              "state": "Filled, Reset password enabled"
+            },
+            {
+              "file": "qr/atlas/17-log-in-to-continue-your-password-has-been-reset.png",
+              "title": "Log in to continue",
+              "state": "Your password has been reset"
+            },
+            {
+              "file": "qr/atlas/18-log-in-to-continue-password-entered.png",
+              "title": "Log in to continue",
+              "state": "Password entered"
+            },
+            {
+              "file": "qr/atlas/19-signing-you-in-hold.png",
+              "title": "Signing you in",
+              "state": "Hold"
+            },
+            {
+              "file": "qr/atlas/20-secure-checkout-after-the-email-check.png",
+              "title": "Secure Checkout",
+              "state": "After the email check"
+            },
+            {
+              "file": "qr/atlas/21-secure-checkout-payment-card-form-empty.png",
+              "title": "Secure Checkout",
+              "state": "Payment — card form empty"
+            },
+            {
+              "file": "qr/atlas/22-secure-checkout-ready-to-place-the-order.png",
+              "title": "Secure Checkout",
+              "state": "Ready to place the order"
+            },
+            {
+              "file": "qr/atlas/23-secure-checkout-ready-to-place-the-order-full-page.png",
+              "title": "Secure Checkout",
+              "state": "Ready to place the order — full page"
+            },
+            {
+              "file": "qr/atlas/24-placing-your-order-hold.png",
+              "title": "Placing your order",
+              "state": "Hold"
+            },
+            {
+              "file": "qr/atlas/25-start-learning-ready-to-start-the-course.png",
+              "title": "Start learning",
+              "state": "Ready to start the course"
+            },
+            {
+              "file": "qr/atlas/26-setting-up-your-account-hold.png",
+              "title": "Setting up your account",
+              "state": "Hold"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "xcel-signed-out",
+      "label": "Not signed into XCEL (OCD)",
+      "model": "b2c",
+      "variants": [
+        {
+          "label": "Targeted only · No Atlas account",
+          "slug": "targeted-no-atlas",
+          "shots": [
+            {
+              "file": "xcel-signed-out/targeted-no-atlas/01-your-cart-targeted-course-signed-out.png",
+              "title": "Your cart",
+              "state": "Targeted course, signed out"
+            },
+            {
+              "file": "xcel-signed-out/targeted-no-atlas/02-do-you-have-a-partner-code-question-over-the-cart.png",
+              "title": "Do you have a Partner Code?",
+              "state": "Question over the cart"
+            },
+            {
+              "file": "xcel-signed-out/targeted-no-atlas/03-enter-your-email-to-continue-empty-continue-disabled.png",
+              "title": "Enter your email to continue",
+              "state": "Empty, Continue disabled"
+            },
+            {
+              "file": "xcel-signed-out/targeted-no-atlas/04-enter-your-email-to-continue-invalid-email-address.png",
+              "title": "Enter your email to continue",
+              "state": "Invalid email address"
+            },
+            {
+              "file": "xcel-signed-out/targeted-no-atlas/05-enter-your-email-to-continue-filled.png",
+              "title": "Enter your email to continue",
+              "state": "Filled"
+            },
+            {
+              "file": "xcel-signed-out/targeted-no-atlas/06-verify-your-email-empty-code-countdown-running.png",
+              "title": "Verify your email",
+              "state": "Empty code, countdown running"
+            },
+            {
+              "file": "xcel-signed-out/targeted-no-atlas/07-verify-your-email-wrong-code.png",
+              "title": "Verify your email",
+              "state": "Wrong code"
+            },
+            {
+              "file": "xcel-signed-out/targeted-no-atlas/08-verify-your-email-expired-code.png",
+              "title": "Verify your email",
+              "state": "Expired code"
+            },
+            {
+              "file": "xcel-signed-out/targeted-no-atlas/09-verify-your-email-code-entered-confirm-enabled.png",
+              "title": "Verify your email",
+              "state": "Code entered, Confirm enabled"
+            },
+            {
+              "file": "xcel-signed-out/targeted-no-atlas/10-email-verified-hold-continuing.png",
+              "title": "Email verified",
+              "state": "Hold — continuing"
+            },
+            {
+              "file": "xcel-signed-out/targeted-no-atlas/11-enter-your-name-to-continue-empty-continue-disabled.png",
+              "title": "Enter your name to continue",
+              "state": "Empty, Continue disabled"
+            },
+            {
+              "file": "xcel-signed-out/targeted-no-atlas/12-enter-your-name-to-continue-filled.png",
+              "title": "Enter your name to continue",
+              "state": "Filled"
+            },
+            {
+              "file": "xcel-signed-out/targeted-no-atlas/13-secure-checkout-after-the-email-check.png",
+              "title": "Secure Checkout",
+              "state": "After the email check"
+            },
+            {
+              "file": "xcel-signed-out/targeted-no-atlas/14-secure-checkout-save-and-continue-with-required-fields-empty.png",
+              "title": "Secure Checkout",
+              "state": "Save and continue with required fields empty"
+            },
+            {
+              "file": "xcel-signed-out/targeted-no-atlas/15-secure-checkout-student-information-filled.png",
+              "title": "Secure Checkout",
+              "state": "Student information filled"
+            },
+            {
+              "file": "xcel-signed-out/targeted-no-atlas/16-secure-checkout-payment-card-form-empty.png",
+              "title": "Secure Checkout",
+              "state": "Payment — card form empty"
+            },
+            {
+              "file": "xcel-signed-out/targeted-no-atlas/17-secure-checkout-ready-to-place-the-order.png",
+              "title": "Secure Checkout",
+              "state": "Ready to place the order"
+            },
+            {
+              "file": "xcel-signed-out/targeted-no-atlas/18-secure-checkout-ready-to-place-the-order-full-page.png",
+              "title": "Secure Checkout",
+              "state": "Ready to place the order — full page"
+            },
+            {
+              "file": "xcel-signed-out/targeted-no-atlas/19-placing-your-order-hold.png",
+              "title": "Placing your order",
+              "state": "Hold"
+            },
+            {
+              "file": "xcel-signed-out/targeted-no-atlas/20-finish-setting-up-your-account-empty-confirm-disabled.png",
+              "title": "Finish setting up your account",
+              "state": "Empty, Confirm disabled"
+            },
+            {
+              "file": "xcel-signed-out/targeted-no-atlas/21-finish-setting-up-your-account-passwords-do-not-match.png",
+              "title": "Finish setting up your account",
+              "state": "Passwords do not match"
+            },
+            {
+              "file": "xcel-signed-out/targeted-no-atlas/22-finish-setting-up-your-account-filled-confirm-enabled.png",
+              "title": "Finish setting up your account",
+              "state": "Filled, Confirm enabled"
+            },
+            {
+              "file": "xcel-signed-out/targeted-no-atlas/23-setting-up-your-account-hold.png",
+              "title": "Setting up your account",
+              "state": "Hold"
+            }
+          ]
+        },
+        {
+          "label": "Targeted only · Has Atlas account",
+          "slug": "targeted-atlas",
+          "shots": [
+            {
+              "file": "xcel-signed-out/targeted-atlas/01-your-cart-targeted-course-signed-out.png",
+              "title": "Your cart",
+              "state": "Targeted course, signed out"
+            },
+            {
+              "file": "xcel-signed-out/targeted-atlas/02-do-you-have-a-partner-code-question-over-the-cart.png",
+              "title": "Do you have a Partner Code?",
+              "state": "Question over the cart"
+            },
+            {
+              "file": "xcel-signed-out/targeted-atlas/03-enter-your-email-to-continue-empty-continue-disabled.png",
+              "title": "Enter your email to continue",
+              "state": "Empty, Continue disabled"
+            },
+            {
+              "file": "xcel-signed-out/targeted-atlas/04-enter-your-email-to-continue-invalid-email-address.png",
+              "title": "Enter your email to continue",
+              "state": "Invalid email address"
+            },
+            {
+              "file": "xcel-signed-out/targeted-atlas/05-enter-your-email-to-continue-filled.png",
+              "title": "Enter your email to continue",
+              "state": "Filled"
+            },
+            {
+              "file": "xcel-signed-out/targeted-atlas/06-log-in-to-continue-empty-password-log-in-disabled.png",
+              "title": "Log in to continue",
+              "state": "Empty password, Log in disabled"
+            },
+            {
+              "file": "xcel-signed-out/targeted-atlas/07-log-in-to-continue-wrong-password.png",
+              "title": "Log in to continue",
+              "state": "Wrong password"
+            },
+            {
+              "file": "xcel-signed-out/targeted-atlas/08-check-your-email-reset-link-sent-resend-link-counting-down.png",
+              "title": "Check your email",
+              "state": "Reset link sent, Resend link counting down"
+            },
+            {
+              "file": "xcel-signed-out/targeted-atlas/09-reset-your-password-empty-reset-password-disabled.png",
+              "title": "Reset your password",
+              "state": "Empty, Reset password disabled"
+            },
+            {
+              "file": "xcel-signed-out/targeted-atlas/10-reset-your-password-passwords-do-not-match.png",
+              "title": "Reset your password",
+              "state": "Passwords do not match"
+            },
+            {
+              "file": "xcel-signed-out/targeted-atlas/11-reset-your-password-filled-reset-password-enabled.png",
+              "title": "Reset your password",
+              "state": "Filled, Reset password enabled"
+            },
+            {
+              "file": "xcel-signed-out/targeted-atlas/12-log-in-to-continue-your-password-has-been-reset.png",
+              "title": "Log in to continue",
+              "state": "Your password has been reset"
+            },
+            {
+              "file": "xcel-signed-out/targeted-atlas/13-log-in-to-continue-password-entered.png",
+              "title": "Log in to continue",
+              "state": "Password entered"
+            },
+            {
+              "file": "xcel-signed-out/targeted-atlas/14-signing-you-in-hold.png",
+              "title": "Signing you in",
+              "state": "Hold"
+            },
+            {
+              "file": "xcel-signed-out/targeted-atlas/15-secure-checkout-after-the-email-check.png",
+              "title": "Secure Checkout",
+              "state": "After the email check"
+            },
+            {
+              "file": "xcel-signed-out/targeted-atlas/16-secure-checkout-payment-card-form-empty.png",
+              "title": "Secure Checkout",
+              "state": "Payment — card form empty"
+            },
+            {
+              "file": "xcel-signed-out/targeted-atlas/17-secure-checkout-ready-to-place-the-order.png",
+              "title": "Secure Checkout",
+              "state": "Ready to place the order"
+            },
+            {
+              "file": "xcel-signed-out/targeted-atlas/18-secure-checkout-ready-to-place-the-order-full-page.png",
+              "title": "Secure Checkout",
+              "state": "Ready to place the order — full page"
+            },
+            {
+              "file": "xcel-signed-out/targeted-atlas/19-placing-your-order-hold.png",
+              "title": "Placing your order",
+              "state": "Hold"
+            },
+            {
+              "file": "xcel-signed-out/targeted-atlas/20-start-learning-ready-to-start-the-course.png",
+              "title": "Start learning",
+              "state": "Ready to start the course"
+            },
+            {
+              "file": "xcel-signed-out/targeted-atlas/21-setting-up-your-account-hold.png",
+              "title": "Setting up your account",
+              "state": "Hold"
+            }
+          ]
+        },
+        {
+          "label": "Mixed · No Atlas account",
+          "slug": "mixed-no-atlas",
+          "shots": [
+            {
+              "file": "xcel-signed-out/mixed-no-atlas/01-your-cart-targeted-course-and-an-unsupported-item-signed-out.png",
+              "title": "Your cart",
+              "state": "Targeted course and an unsupported item, signed out"
+            },
+            {
+              "file": "xcel-signed-out/mixed-no-atlas/02-do-you-have-a-partner-code-question-over-the-cart.png",
+              "title": "Do you have a Partner Code?",
+              "state": "Question over the cart"
+            },
+            {
+              "file": "xcel-signed-out/mixed-no-atlas/03-1-item-in-your-cart-is-not-supported-notice-over-the-cart.png",
+              "title": "1 item in your cart is not supported",
+              "state": "Notice over the cart"
+            },
+            {
+              "file": "xcel-signed-out/mixed-no-atlas/04-enter-your-email-to-continue-filled.png",
+              "title": "Enter your email to continue",
+              "state": "Filled"
+            },
+            {
+              "file": "xcel-signed-out/mixed-no-atlas/05-verify-your-email-empty-code-countdown-running.png",
+              "title": "Verify your email",
+              "state": "Empty code, countdown running"
+            },
+            {
+              "file": "xcel-signed-out/mixed-no-atlas/06-verify-your-email-code-entered-confirm-enabled.png",
+              "title": "Verify your email",
+              "state": "Code entered, Confirm enabled"
+            },
+            {
+              "file": "xcel-signed-out/mixed-no-atlas/07-email-verified-hold-continuing.png",
+              "title": "Email verified",
+              "state": "Hold — continuing"
+            },
+            {
+              "file": "xcel-signed-out/mixed-no-atlas/08-enter-your-name-to-continue-empty-continue-disabled.png",
+              "title": "Enter your name to continue",
+              "state": "Empty, Continue disabled"
+            },
+            {
+              "file": "xcel-signed-out/mixed-no-atlas/09-enter-your-name-to-continue-filled.png",
+              "title": "Enter your name to continue",
+              "state": "Filled"
+            },
+            {
+              "file": "xcel-signed-out/mixed-no-atlas/10-secure-checkout-after-the-email-check.png",
+              "title": "Secure Checkout",
+              "state": "After the email check"
+            },
+            {
+              "file": "xcel-signed-out/mixed-no-atlas/11-secure-checkout-ready-to-place-the-order.png",
+              "title": "Secure Checkout",
+              "state": "Ready to place the order"
+            },
+            {
+              "file": "xcel-signed-out/mixed-no-atlas/12-placing-your-order-hold.png",
+              "title": "Placing your order",
+              "state": "Hold"
+            },
+            {
+              "file": "xcel-signed-out/mixed-no-atlas/13-finish-setting-up-your-account-empty-confirm-disabled.png",
+              "title": "Finish setting up your account",
+              "state": "Empty, Confirm disabled"
+            },
+            {
+              "file": "xcel-signed-out/mixed-no-atlas/14-finish-setting-up-your-account-filled-confirm-enabled.png",
+              "title": "Finish setting up your account",
+              "state": "Filled, Confirm enabled"
+            },
+            {
+              "file": "xcel-signed-out/mixed-no-atlas/15-setting-up-your-account-hold.png",
+              "title": "Setting up your account",
+              "state": "Hold"
+            }
+          ]
+        },
+        {
+          "label": "Mixed · Has Atlas account",
+          "slug": "mixed-atlas",
+          "shots": [
+            {
+              "file": "xcel-signed-out/mixed-atlas/01-your-cart-targeted-course-and-an-unsupported-item-signed-out.png",
+              "title": "Your cart",
+              "state": "Targeted course and an unsupported item, signed out"
+            },
+            {
+              "file": "xcel-signed-out/mixed-atlas/02-do-you-have-a-partner-code-question-over-the-cart.png",
+              "title": "Do you have a Partner Code?",
+              "state": "Question over the cart"
+            },
+            {
+              "file": "xcel-signed-out/mixed-atlas/03-1-item-in-your-cart-is-not-supported-notice-over-the-cart.png",
+              "title": "1 item in your cart is not supported",
+              "state": "Notice over the cart"
+            },
+            {
+              "file": "xcel-signed-out/mixed-atlas/04-enter-your-email-to-continue-filled.png",
+              "title": "Enter your email to continue",
+              "state": "Filled"
+            },
+            {
+              "file": "xcel-signed-out/mixed-atlas/05-log-in-to-continue-empty-password-log-in-disabled.png",
+              "title": "Log in to continue",
+              "state": "Empty password, Log in disabled"
+            },
+            {
+              "file": "xcel-signed-out/mixed-atlas/06-log-in-to-continue-password-entered.png",
+              "title": "Log in to continue",
+              "state": "Password entered"
+            },
+            {
+              "file": "xcel-signed-out/mixed-atlas/07-signing-you-in-hold.png",
+              "title": "Signing you in",
+              "state": "Hold"
+            },
+            {
+              "file": "xcel-signed-out/mixed-atlas/08-secure-checkout-after-the-email-check.png",
+              "title": "Secure Checkout",
+              "state": "After the email check"
+            },
+            {
+              "file": "xcel-signed-out/mixed-atlas/09-secure-checkout-ready-to-place-the-order.png",
+              "title": "Secure Checkout",
+              "state": "Ready to place the order"
+            },
+            {
+              "file": "xcel-signed-out/mixed-atlas/10-placing-your-order-hold.png",
+              "title": "Placing your order",
+              "state": "Hold"
+            },
+            {
+              "file": "xcel-signed-out/mixed-atlas/11-start-learning-ready-to-start-the-course.png",
+              "title": "Start learning",
+              "state": "Ready to start the course"
+            },
+            {
+              "file": "xcel-signed-out/mixed-atlas/12-setting-up-your-account-hold.png",
+              "title": "Setting up your account",
+              "state": "Hold"
+            }
+          ]
+        },
+        {
+          "label": "None targeted",
+          "slug": "none",
+          "shots": [
+            {
+              "file": "xcel-signed-out/none/01-your-cart-nothing-targeted-signed-out.png",
+              "title": "Your cart",
+              "state": "Nothing targeted, signed out"
+            },
+            {
+              "file": "xcel-signed-out/none/02-do-you-have-a-partner-code-question-over-the-cart.png",
+              "title": "Do you have a Partner Code?",
+              "state": "Question over the cart"
+            },
+            {
+              "file": "xcel-signed-out/none/03-checkout-on-arrival-no-email-check.png",
+              "title": "Checkout",
+              "state": "On arrival — no email check"
+            },
+            {
+              "file": "xcel-signed-out/none/04-checkout-save-and-continue-with-required-fields-empty.png",
+              "title": "Checkout",
+              "state": "Save and continue with required fields empty"
+            },
+            {
+              "file": "xcel-signed-out/none/05-checkout-student-information-filled.png",
+              "title": "Checkout",
+              "state": "Student information filled"
+            },
+            {
+              "file": "xcel-signed-out/none/06-checkout-payment-card-form-empty.png",
+              "title": "Checkout",
+              "state": "Payment — card form empty"
+            },
+            {
+              "file": "xcel-signed-out/none/07-checkout-ready-to-place-the-order.png",
+              "title": "Checkout",
+              "state": "Ready to place the order"
+            },
+            {
+              "file": "xcel-signed-out/none/08-checkout-ready-to-place-the-order-full-page.png",
+              "title": "Checkout",
+              "state": "Ready to place the order — full page"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "xcel-signed-in",
+      "label": "Signed into XCEL (OCD)",
+      "model": "b2c",
+      "variants": [
+        {
+          "label": "Targeted only · No Atlas account",
+          "slug": "targeted-no-atlas",
+          "shots": [
+            {
+              "file": "xcel-signed-in/targeted-no-atlas/01-your-cart-targeted-course-signed-in.png",
+              "title": "Your cart",
+              "state": "Targeted course, signed in"
+            },
+            {
+              "file": "xcel-signed-in/targeted-no-atlas/02-do-you-have-a-partner-code-question-over-the-cart.png",
+              "title": "Do you have a Partner Code?",
+              "state": "Question over the cart"
+            },
+            {
+              "file": "xcel-signed-in/targeted-no-atlas/03-signing-you-out-hold.png",
+              "title": "Signing you out",
+              "state": "Hold"
+            },
+            {
+              "file": "xcel-signed-in/targeted-no-atlas/04-enter-your-email-to-continue-empty-continue-disabled.png",
+              "title": "Enter your email to continue",
+              "state": "Empty, Continue disabled"
+            },
+            {
+              "file": "xcel-signed-in/targeted-no-atlas/05-enter-your-email-to-continue-invalid-email-address.png",
+              "title": "Enter your email to continue",
+              "state": "Invalid email address"
+            },
+            {
+              "file": "xcel-signed-in/targeted-no-atlas/06-enter-your-email-to-continue-filled.png",
+              "title": "Enter your email to continue",
+              "state": "Filled"
+            },
+            {
+              "file": "xcel-signed-in/targeted-no-atlas/07-verify-your-email-empty-code-countdown-running.png",
+              "title": "Verify your email",
+              "state": "Empty code, countdown running"
+            },
+            {
+              "file": "xcel-signed-in/targeted-no-atlas/08-verify-your-email-wrong-code.png",
+              "title": "Verify your email",
+              "state": "Wrong code"
+            },
+            {
+              "file": "xcel-signed-in/targeted-no-atlas/09-verify-your-email-expired-code.png",
+              "title": "Verify your email",
+              "state": "Expired code"
+            },
+            {
+              "file": "xcel-signed-in/targeted-no-atlas/10-verify-your-email-code-entered-confirm-enabled.png",
+              "title": "Verify your email",
+              "state": "Code entered, Confirm enabled"
+            },
+            {
+              "file": "xcel-signed-in/targeted-no-atlas/11-email-verified-hold-continuing.png",
+              "title": "Email verified",
+              "state": "Hold — continuing"
+            },
+            {
+              "file": "xcel-signed-in/targeted-no-atlas/12-enter-your-name-to-continue-empty-continue-disabled.png",
+              "title": "Enter your name to continue",
+              "state": "Empty, Continue disabled"
+            },
+            {
+              "file": "xcel-signed-in/targeted-no-atlas/13-enter-your-name-to-continue-filled.png",
+              "title": "Enter your name to continue",
+              "state": "Filled"
+            },
+            {
+              "file": "xcel-signed-in/targeted-no-atlas/14-secure-checkout-after-the-email-check.png",
+              "title": "Secure Checkout",
+              "state": "After the email check"
+            },
+            {
+              "file": "xcel-signed-in/targeted-no-atlas/15-secure-checkout-save-and-continue-with-required-fields-empty.png",
+              "title": "Secure Checkout",
+              "state": "Save and continue with required fields empty"
+            },
+            {
+              "file": "xcel-signed-in/targeted-no-atlas/16-secure-checkout-student-information-filled.png",
+              "title": "Secure Checkout",
+              "state": "Student information filled"
+            },
+            {
+              "file": "xcel-signed-in/targeted-no-atlas/17-secure-checkout-payment-card-form-empty.png",
+              "title": "Secure Checkout",
+              "state": "Payment — card form empty"
+            },
+            {
+              "file": "xcel-signed-in/targeted-no-atlas/18-secure-checkout-ready-to-place-the-order.png",
+              "title": "Secure Checkout",
+              "state": "Ready to place the order"
+            },
+            {
+              "file": "xcel-signed-in/targeted-no-atlas/19-secure-checkout-ready-to-place-the-order-full-page.png",
+              "title": "Secure Checkout",
+              "state": "Ready to place the order — full page"
+            },
+            {
+              "file": "xcel-signed-in/targeted-no-atlas/20-placing-your-order-hold.png",
+              "title": "Placing your order",
+              "state": "Hold"
+            },
+            {
+              "file": "xcel-signed-in/targeted-no-atlas/21-finish-setting-up-your-account-empty-confirm-disabled.png",
+              "title": "Finish setting up your account",
+              "state": "Empty, Confirm disabled"
+            },
+            {
+              "file": "xcel-signed-in/targeted-no-atlas/22-finish-setting-up-your-account-passwords-do-not-match.png",
+              "title": "Finish setting up your account",
+              "state": "Passwords do not match"
+            },
+            {
+              "file": "xcel-signed-in/targeted-no-atlas/23-finish-setting-up-your-account-filled-confirm-enabled.png",
+              "title": "Finish setting up your account",
+              "state": "Filled, Confirm enabled"
+            },
+            {
+              "file": "xcel-signed-in/targeted-no-atlas/24-setting-up-your-account-hold.png",
+              "title": "Setting up your account",
+              "state": "Hold"
+            }
+          ]
+        },
+        {
+          "label": "Targeted only · Has Atlas account",
+          "slug": "targeted-atlas",
+          "shots": [
+            {
+              "file": "xcel-signed-in/targeted-atlas/01-your-cart-targeted-course-signed-in.png",
+              "title": "Your cart",
+              "state": "Targeted course, signed in"
+            },
+            {
+              "file": "xcel-signed-in/targeted-atlas/02-do-you-have-a-partner-code-question-over-the-cart.png",
+              "title": "Do you have a Partner Code?",
+              "state": "Question over the cart"
+            },
+            {
+              "file": "xcel-signed-in/targeted-atlas/03-signing-you-out-hold.png",
+              "title": "Signing you out",
+              "state": "Hold"
+            },
+            {
+              "file": "xcel-signed-in/targeted-atlas/04-enter-your-email-to-continue-empty-continue-disabled.png",
+              "title": "Enter your email to continue",
+              "state": "Empty, Continue disabled"
+            },
+            {
+              "file": "xcel-signed-in/targeted-atlas/05-enter-your-email-to-continue-invalid-email-address.png",
+              "title": "Enter your email to continue",
+              "state": "Invalid email address"
+            },
+            {
+              "file": "xcel-signed-in/targeted-atlas/06-enter-your-email-to-continue-filled.png",
+              "title": "Enter your email to continue",
+              "state": "Filled"
+            },
+            {
+              "file": "xcel-signed-in/targeted-atlas/07-log-in-to-continue-empty-password-log-in-disabled.png",
+              "title": "Log in to continue",
+              "state": "Empty password, Log in disabled"
+            },
+            {
+              "file": "xcel-signed-in/targeted-atlas/08-log-in-to-continue-wrong-password.png",
+              "title": "Log in to continue",
+              "state": "Wrong password"
+            },
+            {
+              "file": "xcel-signed-in/targeted-atlas/09-check-your-email-reset-link-sent-resend-link-counting-down.png",
+              "title": "Check your email",
+              "state": "Reset link sent, Resend link counting down"
+            },
+            {
+              "file": "xcel-signed-in/targeted-atlas/10-reset-your-password-empty-reset-password-disabled.png",
+              "title": "Reset your password",
+              "state": "Empty, Reset password disabled"
+            },
+            {
+              "file": "xcel-signed-in/targeted-atlas/11-reset-your-password-passwords-do-not-match.png",
+              "title": "Reset your password",
+              "state": "Passwords do not match"
+            },
+            {
+              "file": "xcel-signed-in/targeted-atlas/12-reset-your-password-filled-reset-password-enabled.png",
+              "title": "Reset your password",
+              "state": "Filled, Reset password enabled"
+            },
+            {
+              "file": "xcel-signed-in/targeted-atlas/13-log-in-to-continue-your-password-has-been-reset.png",
+              "title": "Log in to continue",
+              "state": "Your password has been reset"
+            },
+            {
+              "file": "xcel-signed-in/targeted-atlas/14-log-in-to-continue-password-entered.png",
+              "title": "Log in to continue",
+              "state": "Password entered"
+            },
+            {
+              "file": "xcel-signed-in/targeted-atlas/15-signing-you-in-hold.png",
+              "title": "Signing you in",
+              "state": "Hold"
+            },
+            {
+              "file": "xcel-signed-in/targeted-atlas/16-secure-checkout-after-the-email-check.png",
+              "title": "Secure Checkout",
+              "state": "After the email check"
+            },
+            {
+              "file": "xcel-signed-in/targeted-atlas/17-secure-checkout-payment-card-form-empty.png",
+              "title": "Secure Checkout",
+              "state": "Payment — card form empty"
+            },
+            {
+              "file": "xcel-signed-in/targeted-atlas/18-secure-checkout-ready-to-place-the-order.png",
+              "title": "Secure Checkout",
+              "state": "Ready to place the order"
+            },
+            {
+              "file": "xcel-signed-in/targeted-atlas/19-secure-checkout-ready-to-place-the-order-full-page.png",
+              "title": "Secure Checkout",
+              "state": "Ready to place the order — full page"
+            },
+            {
+              "file": "xcel-signed-in/targeted-atlas/20-placing-your-order-hold.png",
+              "title": "Placing your order",
+              "state": "Hold"
+            },
+            {
+              "file": "xcel-signed-in/targeted-atlas/21-start-learning-ready-to-start-the-course.png",
+              "title": "Start learning",
+              "state": "Ready to start the course"
+            },
+            {
+              "file": "xcel-signed-in/targeted-atlas/22-setting-up-your-account-hold.png",
+              "title": "Setting up your account",
+              "state": "Hold"
+            }
+          ]
+        },
+        {
+          "label": "Mixed · No Atlas account",
+          "slug": "mixed-no-atlas",
+          "shots": [
+            {
+              "file": "xcel-signed-in/mixed-no-atlas/01-your-cart-targeted-course-and-an-unsupported-item-signed-in.png",
+              "title": "Your cart",
+              "state": "Targeted course and an unsupported item, signed in"
+            },
+            {
+              "file": "xcel-signed-in/mixed-no-atlas/02-do-you-have-a-partner-code-question-over-the-cart.png",
+              "title": "Do you have a Partner Code?",
+              "state": "Question over the cart"
+            },
+            {
+              "file": "xcel-signed-in/mixed-no-atlas/03-1-item-in-your-cart-is-not-supported-notice-over-the-cart.png",
+              "title": "1 item in your cart is not supported",
+              "state": "Notice over the cart"
+            },
+            {
+              "file": "xcel-signed-in/mixed-no-atlas/04-signing-you-out-hold.png",
+              "title": "Signing you out",
+              "state": "Hold"
+            },
+            {
+              "file": "xcel-signed-in/mixed-no-atlas/05-enter-your-email-to-continue-filled.png",
+              "title": "Enter your email to continue",
+              "state": "Filled"
+            },
+            {
+              "file": "xcel-signed-in/mixed-no-atlas/06-verify-your-email-empty-code-countdown-running.png",
+              "title": "Verify your email",
+              "state": "Empty code, countdown running"
+            },
+            {
+              "file": "xcel-signed-in/mixed-no-atlas/07-verify-your-email-code-entered-confirm-enabled.png",
+              "title": "Verify your email",
+              "state": "Code entered, Confirm enabled"
+            },
+            {
+              "file": "xcel-signed-in/mixed-no-atlas/08-email-verified-hold-continuing.png",
+              "title": "Email verified",
+              "state": "Hold — continuing"
+            },
+            {
+              "file": "xcel-signed-in/mixed-no-atlas/09-enter-your-name-to-continue-empty-continue-disabled.png",
+              "title": "Enter your name to continue",
+              "state": "Empty, Continue disabled"
+            },
+            {
+              "file": "xcel-signed-in/mixed-no-atlas/10-enter-your-name-to-continue-filled.png",
+              "title": "Enter your name to continue",
+              "state": "Filled"
+            },
+            {
+              "file": "xcel-signed-in/mixed-no-atlas/11-secure-checkout-after-the-email-check.png",
+              "title": "Secure Checkout",
+              "state": "After the email check"
+            },
+            {
+              "file": "xcel-signed-in/mixed-no-atlas/12-secure-checkout-ready-to-place-the-order.png",
+              "title": "Secure Checkout",
+              "state": "Ready to place the order"
+            },
+            {
+              "file": "xcel-signed-in/mixed-no-atlas/13-placing-your-order-hold.png",
+              "title": "Placing your order",
+              "state": "Hold"
+            },
+            {
+              "file": "xcel-signed-in/mixed-no-atlas/14-finish-setting-up-your-account-empty-confirm-disabled.png",
+              "title": "Finish setting up your account",
+              "state": "Empty, Confirm disabled"
+            },
+            {
+              "file": "xcel-signed-in/mixed-no-atlas/15-finish-setting-up-your-account-filled-confirm-enabled.png",
+              "title": "Finish setting up your account",
+              "state": "Filled, Confirm enabled"
+            },
+            {
+              "file": "xcel-signed-in/mixed-no-atlas/16-setting-up-your-account-hold.png",
+              "title": "Setting up your account",
+              "state": "Hold"
+            }
+          ]
+        },
+        {
+          "label": "Mixed · Has Atlas account",
+          "slug": "mixed-atlas",
+          "shots": [
+            {
+              "file": "xcel-signed-in/mixed-atlas/01-your-cart-targeted-course-and-an-unsupported-item-signed-in.png",
+              "title": "Your cart",
+              "state": "Targeted course and an unsupported item, signed in"
+            },
+            {
+              "file": "xcel-signed-in/mixed-atlas/02-do-you-have-a-partner-code-question-over-the-cart.png",
+              "title": "Do you have a Partner Code?",
+              "state": "Question over the cart"
+            },
+            {
+              "file": "xcel-signed-in/mixed-atlas/03-1-item-in-your-cart-is-not-supported-notice-over-the-cart.png",
+              "title": "1 item in your cart is not supported",
+              "state": "Notice over the cart"
+            },
+            {
+              "file": "xcel-signed-in/mixed-atlas/04-signing-you-out-hold.png",
+              "title": "Signing you out",
+              "state": "Hold"
+            },
+            {
+              "file": "xcel-signed-in/mixed-atlas/05-enter-your-email-to-continue-filled.png",
+              "title": "Enter your email to continue",
+              "state": "Filled"
+            },
+            {
+              "file": "xcel-signed-in/mixed-atlas/06-log-in-to-continue-empty-password-log-in-disabled.png",
+              "title": "Log in to continue",
+              "state": "Empty password, Log in disabled"
+            },
+            {
+              "file": "xcel-signed-in/mixed-atlas/07-log-in-to-continue-password-entered.png",
+              "title": "Log in to continue",
+              "state": "Password entered"
+            },
+            {
+              "file": "xcel-signed-in/mixed-atlas/08-signing-you-in-hold.png",
+              "title": "Signing you in",
+              "state": "Hold"
+            },
+            {
+              "file": "xcel-signed-in/mixed-atlas/09-secure-checkout-after-the-email-check.png",
+              "title": "Secure Checkout",
+              "state": "After the email check"
+            },
+            {
+              "file": "xcel-signed-in/mixed-atlas/10-secure-checkout-ready-to-place-the-order.png",
+              "title": "Secure Checkout",
+              "state": "Ready to place the order"
+            },
+            {
+              "file": "xcel-signed-in/mixed-atlas/11-placing-your-order-hold.png",
+              "title": "Placing your order",
+              "state": "Hold"
+            },
+            {
+              "file": "xcel-signed-in/mixed-atlas/12-start-learning-ready-to-start-the-course.png",
+              "title": "Start learning",
+              "state": "Ready to start the course"
+            },
+            {
+              "file": "xcel-signed-in/mixed-atlas/13-setting-up-your-account-hold.png",
+              "title": "Setting up your account",
+              "state": "Hold"
+            }
+          ]
+        },
+        {
+          "label": "None targeted",
+          "slug": "none",
+          "shots": [
+            {
+              "file": "xcel-signed-in/none/01-your-cart-nothing-targeted-signed-in.png",
+              "title": "Your cart",
+              "state": "Nothing targeted, signed in"
+            },
+            {
+              "file": "xcel-signed-in/none/02-do-you-have-a-partner-code-question-over-the-cart.png",
+              "title": "Do you have a Partner Code?",
+              "state": "Question over the cart"
+            },
+            {
+              "file": "xcel-signed-in/none/03-checkout-on-arrival-no-email-check.png",
+              "title": "Checkout",
+              "state": "On arrival — no email check"
+            },
+            {
+              "file": "xcel-signed-in/none/04-checkout-payment-card-form-empty.png",
+              "title": "Checkout",
+              "state": "Payment — card form empty"
+            },
+            {
+              "file": "xcel-signed-in/none/05-checkout-ready-to-place-the-order.png",
+              "title": "Checkout",
+              "state": "Ready to place the order"
+            },
+            {
+              "file": "xcel-signed-in/none/06-checkout-ready-to-place-the-order-full-page.png",
+              "title": "Checkout",
+              "state": "Ready to place the order — full page"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
