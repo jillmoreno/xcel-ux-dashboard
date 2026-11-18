@@ -196,7 +196,7 @@ const TILE: CSSProperties = {
 const THUMB: CSSProperties = {
   display: 'block',
   width: '100%',
-  aspectRatio: '1280 / 800',
+  aspectRatio: '1440 / 900',
   objectFit: 'cover',
   objectPosition: 'top',
   borderBottom: '1px solid var(--color-e2e-card-outline)',
@@ -223,7 +223,7 @@ const FIGURE: CSSProperties = {
   margin: 0,
   display: 'grid',
   gap: 12,
-  maxWidth: 'min(1280px, 100%)',
+  maxWidth: 'min(1440px, 100%)',
   maxHeight: '100%',
   padding: 16,
   boxSizing: 'border-box',
