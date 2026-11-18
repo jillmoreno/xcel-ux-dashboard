@@ -173,7 +173,9 @@ export function InvitedConfirmationPageV3() {
                 <div style={FIELD_GROUP}>
                   <label style={FIELD_GROUP}>
                     <span style={FIELD_LABEL}>Confirm password</span>
-                    <span style={mismatch ? { ...INPUT_SHELL, border: '1px solid var(--color-error-600)' } : INPUT_SHELL}>
+                    {/* No red outline on a mismatch — "Passwords do not match." under
+                        it is enough (2026-11-18, Afsana). */}
+                    <span style={INPUT_SHELL}>
                       <input
                         type={confirmShown ? 'text' : 'password'}
                         value={confirm}

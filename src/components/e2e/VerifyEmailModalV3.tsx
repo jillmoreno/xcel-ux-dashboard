@@ -169,7 +169,9 @@ export function VerifyEmailModalV3({
                   aria-invalid={badEmail}
                   aria-describedby={badEmail ? 'verify-email-invalid' : undefined}
                   className="cre-e2e-input cre-e2e-input-v3"
-                  style={badEmail ? { ...FIELD, ...FIELD_INVALID } : FIELD}
+                  /* No red stroke — the line under it is enough (2026-11-18,
+                     Afsana). */
+                  style={FIELD}
                 />
               </label>
               {badEmail ? <EmailInvalid id="verify-email-invalid" /> : null}
@@ -734,7 +736,7 @@ function LoginStep({
                 aria-describedby={badEmail ? 'login-email-invalid' : undefined}
                 className="cre-e2e-input cre-e2e-input-v3"
                 /* No red stroke here — the line under it is enough (2026-11-18,
-                   Afsana). A wrong password keeps its stroke. */
+                   Afsana). */
                 style={FIELD}
               />
             </label>
@@ -760,7 +762,9 @@ function LoginStep({
                 }}
                 aria-invalid={failed}
                 aria-describedby={failed ? 'login-failed' : undefined}
-                style={failed ? { ...FIELD, paddingRight: 40, ...FIELD_INVALID } : { ...FIELD, paddingRight: 40 }}
+                /* No red stroke on a wrong password either — the line under it is
+                   enough (2026-11-18, Afsana). */
+                style={{ ...FIELD, paddingRight: 40 }}
               />
               <button
                 type="button"
@@ -898,7 +902,9 @@ function ResetPasswordStep({ email, onReset }: { email: string; onReset: () => v
                 aria-invalid={mismatch}
                 aria-describedby={mismatch ? 'reset-mismatch' : undefined}
                 className="cre-e2e-input cre-e2e-input-v3"
-                style={mismatch ? { ...FIELD, paddingRight: 40, ...FIELD_INVALID } : { ...FIELD, paddingRight: 40 }}
+                /* No red stroke — the line under it is enough (2026-11-18,
+                   Afsana). */
+                style={{ ...FIELD, paddingRight: 40 }}
               />
               <button
                 type="button"
@@ -1107,8 +1113,8 @@ const CODE_BOX: CSSProperties = {
    `border` shorthand above. */
 const CODE_BOX_INVALID: CSSProperties = { boxShadow: 'inset 0 -2px 0 var(--color-error-600)' }
 
-/* The same stroke under the log-in password on a wrong password. */
-const FIELD_INVALID: CSSProperties = CODE_BOX_INVALID
+/* The fields themselves take no stroke — email, password and confirm show
+   only the red line under them (2026-11-18, Afsana). The code boxes keep it. */
 
 /* A field with its error line under it, 6px apart — as the password's. */
 const FIELD_AND_ERROR: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 6 }

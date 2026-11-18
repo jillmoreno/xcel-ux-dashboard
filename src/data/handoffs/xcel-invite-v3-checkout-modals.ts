@@ -86,14 +86,14 @@ const feature: PrototypeFeature = {
         variants: [
           { name: 'Empty', when: 'On open. Continue is off.' },
           { name: 'Valid email', when: 'The field holds something shaped like an email address. Continue turns on.' },
-          { name: 'Not a valid email', when: 'The field holds something that is not an email address. As the learner types, "Please enter a valid email address" shows in red under the field, with a red stroke along its bottom; Continue stays off. Both go the moment it is an address, and an empty field shows no error.', why: 'The learner learns why Continue is off while they are still in the field, rather than guessing.' },
+          { name: 'Not a valid email', when: 'The field holds something that is not an email address. As the learner types, "Please enter a valid email address" shows in red under the field — nothing on the field itself; Continue stays off. It goes the moment it is an address, and an empty field shows no error.', why: 'The learner learns why Continue is off while they are still in the field, rather than guessing.' },
           { name: 'Pre-filled (Direct Email)', when: 'Direct Email when the address has no Atlas account. The field opens holding the address the partner supplied, and Continue is on.', why: 'The learner sees where the code is going before it is sent, instead of a code arriving unannounced.' },
         ],
         ctas: [
           { name: 'Continue', does: 'Off until the email is valid. Then opens Log in to continue if the email has an Atlas account, otherwise Verify your email (the one-time code).' },
         ],
         statesMatrix: [
-          { question: 'What if the email is not valid?', answer: '"Please enter a valid email address" in red under the field, 12px, with a 2px red stroke along its bottom, shown as the learner types. Continue stays off until it is an address.' },
+          { question: 'What if the email is not valid?', answer: '"Please enter a valid email address" in red under the field, 12px, shown as the learner types — no red stroke on the field. Continue stays off until it is an address.' },
           { question: 'What if the field is empty?', answer: 'No error — there is nothing to judge yet. Continue is off.' },
           { question: 'Can the learner close it?', answer: 'No. There is no ✕ and no Escape — the checkout behind it cannot be used until the email is checked.' },
         ],
@@ -254,11 +254,11 @@ const feature: PrototypeFeature = {
           { name: 'Password entered', when: 'Anything in the field. Log in turns on.' },
           { name: 'Direct Email — address pre-filled', when: 'Direct Email with an Atlas account. An Email address field holds the invited address, editable like any field — no lock, no grey; the line drops the address. Log in needs a password and a valid email.', why: 'The learner sees which account they are signing in to, and can sign in with another address if the invitation went to a different one.' },
           { name: 'Direct Email — not a valid email', when: 'Direct Email, the Email address field edited into something that is not an address. "Please enter a valid email address" in red under it, as the learner types; the field itself keeps its usual outline. Log in stays off.' },
-          { name: 'Wrong password', when: 'Log in with a password that does not match. Red text under the field — "We couldn’t log you in. Please try again." — and a red stroke along the field’s bottom. Editing the password clears both.' },
+          { name: 'Wrong password', when: 'Log in with a password that does not match. Red text under the field — "We couldn’t log you in. Please try again." — and nothing on the field itself. Editing the password clears it.' },
           { name: 'Check your email', when: 'Forgot password? was clicked. The modal becomes "Check your email": "We sent a password reset link to [email, bold]. Follow the instructions in the email to reset your password. Be sure to check your spam or junk folders." Under it, the address in an Email address field, disabled — grey, no lock. Resend link (primary), the countdown under it while it waits, then Back to sign in (secondary).' },
           { name: 'Resend link waiting', when: 'Check your email, straight after a link is sent and after every resend. Resend link is disabled for 30 seconds, and a line under it counts down: "You can resend the link in 0:30". The line goes when the button turns on.', why: 'A link has just gone out; a second request before the first can arrive only multiplies the emails.' },
           { name: 'Reset your password', when: 'The learner followed the reset link (in the demo: a click anywhere on Check your email except its two buttons). The XCEL logo, "Reset your password", "Create a new password for [email, bold].", Password, the strength meter and "Password must:" with the seven rules, Confirm new password, and Reset password.', why: 'The same meter and rules as the password the learner creates at the end of the flow, so a new password is held to the same bar and looks the same.' },
-          { name: 'Passwords don’t match', when: 'Reset your password, with Confirm new password filled and different. "Passwords do not match." in red under it, and a red stroke along its bottom. Reset password stays off.' },
+          { name: 'Passwords don’t match', when: 'Reset your password, with Confirm new password filled and different. "Passwords do not match." in red under it — no red stroke on the field. Reset password stays off.' },
           { name: 'Password reset', when: 'Reset password was clicked. Back to Log in to continue, the password field empty, with a green banner under the heading: "Your password has been reset." A proposal — see Questions.' },
         ],
         ctas: [
@@ -273,7 +273,7 @@ const feature: PrototypeFeature = {
         ],
         statesMatrix: [
           { question: 'What if the Direct Email address is not valid?', answer: '"Please enter a valid email address" in red under the field as the learner types — no red stroke on the field. Log in stays off.' },
-          { question: 'What if the password is wrong?', answer: '"We couldn’t log you in. Please try again." in red under the field, 12px, with a 2px red stroke along its bottom. Log in stays on.' },
+          { question: 'What if the password is wrong?', answer: '"We couldn’t log you in. Please try again." in red under the field, 12px — no red stroke on the field. Log in stays on.' },
           { question: 'How long is Resend link disabled?', answer: '30 seconds after each send, counted down under the button.' },
           { question: 'Can the learner change the address on Check your email?', answer: 'No. It is shown in a disabled field — grey, no lock. To use a different address they go Back to sign in.' },
         ],
@@ -287,7 +287,7 @@ const feature: PrototypeFeature = {
           tokens: [
             { role: 'Field', token: '--color-e2e-field' },
             { role: 'Field focus ring', token: '--color-e2e-field-focus-v3' },
-            { role: 'Error text and stroke', token: '--color-error-600' },
+            { role: 'Error text', token: '--color-error-600' },
             { role: 'Primary button', token: '--color-xcel-brick-600' },
             { role: 'Secondary button — outline and text', token: '--color-xcel-brick-600' },
             { role: 'Secondary button — fill', token: '--color-fixed-light' },
@@ -484,7 +484,7 @@ const feature: PrototypeFeature = {
         },
         {
           question: 'How are a wrong code, an expired code and a wrong password shown?',
-          decision: 'Red 12px text under the boxes or field — "Invalid code. Please try again.", "The code has expired. Request another code.", "We couldn’t log you in. Please try again." — with a 2px red stroke along the bottom. Smaller than the lead text so it reads as a note on the field, not a new heading.',
+          decision: 'Red 12px text under the boxes or field — "Invalid code. Please try again.", "The code has expired. Request another code.", "We couldn’t log you in. Please try again.". The code boxes also get a 2px red stroke along the bottom; the log-in fields do not (2026-11-18). Smaller than the lead text so it reads as a note on the field, not a new heading.',
           status: 'Decided',
         },
         {

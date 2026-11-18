@@ -161,7 +161,7 @@ const feature: PrototypeFeature = {
         variants: [
           { name: 'Empty', when: 'On arrival. No rule is met; Confirm is off.' },
           { name: 'Typing', when: 'Each rule ticks as it is met, and the meter fills — Weak, Fair, Good, Strong.' },
-          { name: 'Passwords don’t match', when: 'Confirm password has something in it and differs from the password. Its border turns red and "Passwords do not match." appears under it.', why: 'It waits for the second field to have something in it, so the learner is not told off before they have typed.' },
+          { name: 'Passwords don’t match', when: 'Confirm password has something in it and differs from the password. "Passwords do not match." appears under it; the field keeps its usual outline.', why: 'It waits for the second field to have something in it, so the learner is not told off before they have typed.' },
           { name: 'Ready', when: 'All seven rules are met and both fields match. Confirm turns on.' },
         ],
         ctas: [
@@ -188,7 +188,7 @@ const feature: PrototypeFeature = {
             { role: 'Rule met', token: '--color-success-700' },
             { role: 'Rule pending', token: '--color-text-secondary' },
             { role: 'Meter — weak / fair', token: '--color-error-600, --color-warning-600' },
-            { role: 'Mismatch border and text', token: '--color-error-600' },
+            { role: 'Mismatch text', token: '--color-error-600' },
             { role: 'Confirm, on', token: '--color-xcel-brick-600' },
             { role: 'Confirm, off', token: '--color-e2e-form-locked' },
           ],
