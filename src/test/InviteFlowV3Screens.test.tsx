@@ -246,7 +246,7 @@ describe('Invite Flow V3 — the Direct Email invitation', () => {
     const ask = screen.getByRole('dialog', { name: 'Enter your email to continue' })
     expect(ask).toHaveAccessibleDescription('Provide your email address. We will use it to find your existing account or create one.')
     /* Filled with the invitation's address. */
-    expect(within(ask).getByLabelText(/Email address/)).toHaveValue(E2E_LEARNER_EMAIL)
+    expect(within(ask).getByLabelText(/^Email\s*\*?$/)).toHaveValue(E2E_LEARNER_EMAIL)
     await userEvent.click(within(ask).getByRole('button', { name: 'Continue' }))
     const dialog = screen.getByRole('dialog', { name: 'Verify your email' })
     expect(dialog).toHaveTextContent(E2E_LEARNER_EMAIL)
@@ -292,7 +292,7 @@ describe('Invite Flow V3 — the Direct Email invitation', () => {
     const dialog = screen.getByRole('dialog', { name: 'Log in to continue' })
     expect(dialog).toHaveAccessibleDescription('Welcome back, Jordan! Sign in to finish checking out.')
     /* The supplied address, pre-filled and editable — no lock (2026-11-13). */
-    const field = within(dialog).getByLabelText(/Email address/)
+    const field = within(dialog).getByLabelText(/^Email\s*\*?$/)
     expect(field).toHaveValue(E2E_LEARNER_EMAIL)
     expect(field).toBeEnabled()
     expect(within(dialog).queryByAltText('Locked')).not.toBeInTheDocument()
@@ -330,7 +330,7 @@ describe('Invite Flow V3 — the email check', () => {
     expect(go).toBeDisabled()
     /* An empty field says nothing; a half-typed one says why Continue is off. */
     expect(screen.queryByText('Please enter a valid email address')).not.toBeInTheDocument()
-    const field = screen.getByLabelText(/Email address/)
+    const field = within(screen.getByRole('dialog')).getByLabelText(/^Email\s*\*?$/)
     await userEvent.type(field, 'sam@example')
     expect(go).toBeDisabled()
     expect(field).toHaveAccessibleDescription('Please enter a valid email address')
@@ -345,7 +345,7 @@ describe('Invite Flow V3 — the email check', () => {
   it('says when the Direct Email log-in address is not valid, and offers the help center', async () => {
     renderAt(CHECKOUT, 'invite-flow-version:v3,invite-v3-model:b2b,invite-v3-flow-b2b:direct-email,invite-v3-email-account:atlas')
     const dialog = screen.getByRole('dialog', { name: 'Log in to continue' })
-    const field = within(dialog).getByLabelText(/Email address/)
+    const field = within(dialog).getByLabelText(/^Email\s*\*?$/)
     await userEvent.clear(field)
     await userEvent.type(field, 'jordan@')
     expect(field).toHaveAccessibleDescription('Please enter a valid email address')
@@ -361,7 +361,7 @@ describe('Invite Flow V3 — the email check', () => {
     vi.useFakeTimers({ shouldAdvanceTime: true })
     try {
       renderAt(CHECKOUT, V3_B2B)
-      await userEvent.type(screen.getByLabelText(/Email address/), 'sam@example.com')
+      await userEvent.type(within(screen.getByRole('dialog')).getByLabelText(/^Email\s*\*?$/), 'sam@example.com')
       await userEvent.click(screen.getByRole('button', { name: 'Continue' }))
 
       const dialog = screen.getByRole('dialog')
@@ -389,7 +389,7 @@ describe('Invite Flow V3 — the email check', () => {
 
   it('takes any six digits, then locks the verified address on the checkout', async () => {
     renderAt(CHECKOUT, V3_B2B)
-    await userEvent.type(screen.getByLabelText(/Email address/), 'sam@example.com')
+    await userEvent.type(within(screen.getByRole('dialog')).getByLabelText(/^Email\s*\*?$/), 'sam@example.com')
     await userEvent.click(screen.getByRole('button', { name: 'Continue' }))
 
     expect(screen.getByRole('heading', { name: 'Verify your email' })).toBeInTheDocument()
@@ -429,7 +429,7 @@ describe('Invite Flow V3 — the email check', () => {
     vi.useFakeTimers({ shouldAdvanceTime: true })
     try {
       renderAt(CHECKOUT, `${V3_B2B},invite-v3-email-account:atlas`)
-      await userEvent.type(screen.getByLabelText(/Email address/), 'sam@example.com')
+      await userEvent.type(within(screen.getByRole('dialog')).getByLabelText(/^Email\s*\*?$/), 'sam@example.com')
       await userEvent.click(screen.getByRole('button', { name: 'Continue' }))
       await userEvent.type(screen.getByLabelText(/^Password/), 'anything')
       await userEvent.click(screen.getByRole('button', { name: 'Log in' }))
@@ -443,7 +443,7 @@ describe('Invite Flow V3 — the email check', () => {
 
   it('turns down the demo’s wrong code under the boxes, and clears it when a digit changes', async () => {
     renderAt(CHECKOUT, V3_B2B)
-    await userEvent.type(screen.getByLabelText(/Email address/), 'sam@example.com')
+    await userEvent.type(within(screen.getByRole('dialog')).getByLabelText(/^Email\s*\*?$/), 'sam@example.com')
     await userEvent.click(screen.getByRole('button', { name: 'Continue' }))
     await userEvent.type(screen.getByLabelText('Digit 1 of 6'), '000000')
     await userEvent.click(screen.getByRole('button', { name: 'Confirm' }))
@@ -466,7 +466,7 @@ describe('Invite Flow V3 — the email check', () => {
     vi.useFakeTimers({ shouldAdvanceTime: true })
     try {
       renderAt(CHECKOUT, V3_B2B)
-      await userEvent.type(screen.getByLabelText(/Email address/), 'sam@example.com')
+      await userEvent.type(within(screen.getByRole('dialog')).getByLabelText(/^Email\s*\*?$/), 'sam@example.com')
       await userEvent.click(screen.getByRole('button', { name: 'Continue' }))
       await userEvent.type(screen.getByLabelText('Digit 1 of 6'), '999999')
       await userEvent.click(screen.getByRole('button', { name: 'Confirm' }))
@@ -490,7 +490,7 @@ describe('Invite Flow V3 — the email check', () => {
 
   it('turns down the demo’s wrong password on Log in, and clears it when the password changes', async () => {
     renderAt(CHECKOUT, `${V3_B2B},invite-v3-email-account:atlas`)
-    await userEvent.type(screen.getByLabelText(/Email address/), 'jordan@example.com')
+    await userEvent.type(within(screen.getByRole('dialog')).getByLabelText(/^Email\s*\*?$/), 'jordan@example.com')
     await userEvent.click(screen.getByRole('button', { name: 'Continue' }))
     const password = screen.getByLabelText(/^Password/)
     await userEvent.type(password, 'wrong')
@@ -510,7 +510,7 @@ describe('Invite Flow V3 — the email check', () => {
     vi.useFakeTimers({ shouldAdvanceTime: true })
     try {
       renderAt(CHECKOUT, `${V3_B2B},invite-v3-email-account:atlas`)
-      await userEvent.type(screen.getByLabelText(/Email address/), 'jordan@example.com')
+      await userEvent.type(within(screen.getByRole('dialog')).getByLabelText(/^Email\s*\*?$/), 'jordan@example.com')
       await userEvent.click(screen.getByRole('button', { name: 'Continue' }))
       await userEvent.click(screen.getByRole('button', { name: 'Forgot password?' }))
 
@@ -522,7 +522,7 @@ describe('Invite Flow V3 — the email check', () => {
       expect(within(dialog).queryByLabelText(/^Password/)).not.toBeInTheDocument()
 
       /* The address, in a field nobody can change (2026-11-13). */
-      const field = within(dialog).getByLabelText('Email address')
+      const field = within(dialog).getByLabelText(/^Email\s*\*?$/)
       expect(field).toHaveValue('jordan@example.com')
       expect(field).toBeDisabled()
 
@@ -550,7 +550,7 @@ describe('Invite Flow V3 — the email check', () => {
 
   it('a click on Check your email opens Reset your password; Reset password returns to Log in with a banner', async () => {
     renderAt(CHECKOUT, `${V3_B2B},invite-v3-email-account:atlas`)
-    await userEvent.type(screen.getByLabelText(/Email address/), 'jordan@example.com')
+    await userEvent.type(within(screen.getByRole('dialog')).getByLabelText(/^Email\s*\*?$/), 'jordan@example.com')
     await userEvent.click(screen.getByRole('button', { name: 'Continue' }))
     await userEvent.click(screen.getByRole('button', { name: 'Forgot password?' }))
 
@@ -750,7 +750,7 @@ describe('Invite Flow V3 — the Has Atlas sign-in', () => {
     vi.useFakeTimers({ shouldAdvanceTime: true })
     try {
       renderAt(CHECKOUT, `${V3_B2B},invite-v3-email-account:atlas`)
-      await userEvent.type(screen.getByLabelText(/Email address/), 'jordan@example.com')
+      await userEvent.type(within(screen.getByRole('dialog')).getByLabelText(/^Email\s*\*?$/), 'jordan@example.com')
       await userEvent.click(screen.getByRole('button', { name: 'Continue' }))
 
       expect(screen.getByRole('heading', { name: 'Log in to continue' })).toBeInTheDocument()
@@ -758,7 +758,7 @@ describe('Invite Flow V3 — the Has Atlas sign-in', () => {
       const dialog = screen.getByRole('dialog')
       expect(dialog).toHaveTextContent('Welcome back, Jordan! Sign in to jordan@example.com to finish checking out.')
       expect(within(dialog).getByText('jordan@example.com').tagName).toBe('STRONG')
-      expect(within(dialog).queryByLabelText(/Email address/)).not.toBeInTheDocument()
+      expect(within(dialog).queryByLabelText(/^Email\s*\*?$/)).not.toBeInTheDocument()
       expect(within(dialog).queryAllByRole('textbox')).toHaveLength(0)
       const logIn = screen.getByRole('button', { name: 'Log in' })
       expect(logIn).toBeDisabled()
@@ -778,7 +778,7 @@ describe('Invite Flow V3 — the Has Atlas sign-in', () => {
     vi.useFakeTimers({ shouldAdvanceTime: true })
     try {
       renderAt(CHECKOUT, 'invite-flow-version:v3,invite-v3-model:b2c,invite-v3-flow-b2c:xcel-signed-out,invite-v3-email-account:atlas,partner-code-ask:modal&partner=no')
-      await userEvent.type(screen.getByLabelText(/Email address/), 'jordan@example.com')
+      await userEvent.type(within(screen.getByRole('dialog')).getByLabelText(/^Email\s*\*?$/), 'jordan@example.com')
       await userEvent.click(screen.getByRole('button', { name: 'Continue' }))
       await userEvent.type(screen.getByLabelText(/^Password/), 'anything')
       await userEvent.click(screen.getByRole('button', { name: 'Log in' }))
@@ -1092,7 +1092,7 @@ describe('Invite Flow V3 — the OCD flows’ checkout after an Atlas log-in', (
         /* The cart answers the partner question on a real walk; here, No. */
         const no = screen.queryByRole('button', { name: 'NO' })
         if (no) await userEvent.click(no)
-        await userEvent.type(screen.getByLabelText(/Email address/), 'sam@example.com')
+        await userEvent.type(within(screen.getByRole('dialog')).getByLabelText(/^Email\s*\*?$/), 'sam@example.com')
         await userEvent.click(screen.getByRole('button', { name: 'Continue' }))
         await userEvent.type(screen.getByLabelText(/^Password/), 'anything')
         await userEvent.click(screen.getByRole('button', { name: 'Log in' }))

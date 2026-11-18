@@ -155,8 +155,10 @@ export function VerifyEmailModalV3({
 
             <div style={FIELD_AND_ERROR}>
               <label htmlFor="verify-email" style={FIELD_GROUP}>
+                {/* "Email", not "Email address" — every V3 modal (2026-11-18,
+                    Afsana). */}
                 <span style={FIELD_LABEL}>
-                  Email address<span aria-hidden>*</span>
+                  Email<span aria-hidden>*</span>
                 </span>
                 <input
                   id="verify-email"
@@ -646,7 +648,7 @@ function LoginStep({
             — grey, no lock, as the checkout's fixed fields (2026-11-13,
             Afsana). */}
         <label htmlFor="reset-email" style={FIELD_GROUP}>
-          <span style={FIELD_LABEL}>Email address</span>
+          <span style={FIELD_LABEL}>Email</span>
           <input id="reset-email" type="email" value={email.trim()} disabled readOnly style={{ ...FIELD, ...FIELD_DISABLED }} />
         </label>
         {/* Resend link, primary, over Back to sign in, secondary (2026-11-05,
@@ -723,7 +725,7 @@ function LoginStep({
           <div style={FIELD_AND_ERROR}>
             <label htmlFor="login-email" style={FIELD_GROUP}>
               <span style={FIELD_LABEL}>
-                Email address <span aria-hidden>*</span>
+                Email <span aria-hidden>*</span>
               </span>
               <input
                 id="login-email"
