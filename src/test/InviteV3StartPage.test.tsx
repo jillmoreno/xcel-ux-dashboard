@@ -73,7 +73,7 @@ describe('the stand-alone invite flow page', () => {
     ])
   })
 
-  it('links the whole prototype from a note on the Flows tab only', async () => {
+  it('links the whole prototype from a note, on both tabs', async () => {
     render(
       <MemoryRouter initialEntries={['/invite-v3']}>
         <InviteV3StartPage />
@@ -84,6 +84,9 @@ describe('the stand-alone invite flow page', () => {
       'href',
       'https://feat-invite-flow-v3--ux-design-xceldashboard.netlify.app/end-to-end-demo/qr?demo=1&version=jill-atlas-main',
     )
+    await userEvent.click(screen.getByRole('tab', { name: 'Screens' }))
+    expect(screen.getByText(/To access the prototype that captures all of these flows, click/)).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'here' })).toBeInTheDocument()
   })
 
   it('opens each Start in a new tab, as a secondary button that says so', () => {
