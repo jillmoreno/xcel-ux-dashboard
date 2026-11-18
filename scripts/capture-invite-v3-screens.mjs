@@ -4,7 +4,7 @@
  *
  * Walks the four Invite Flow V3 flows (Direct Email, QR Code, Not signed into
  * XCEL, Signed into XCEL) in a headless Chromium and screenshots every
- * screen, modal and distinct state at 1280×800, writing
+ * screen, modal and distinct state at 1440×900, writing
  *
  *   public/invite-v3-screens/<flowId>/<variantSlug>/NN-<slug>.png
  *   public/invite-v3-screens/manifest.json
@@ -63,7 +63,10 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const OUT = path.join(ROOT, 'public/invite-v3-screens')
 const BASE = (process.argv[2] ?? 'http://localhost:5210').replace(/\/$/, '')
 const ONLY = process.argv[3] ?? null
-const VIEWPORT = { width: 1280, height: 800 }
+/* 1440 wide, not 1280 (2026-11-18, Afsana: the product pages "appear to not
+   capture the full original width"). Eric's product page footer runs to
+   1417px, so at 1280 the full-page shots had a white strip down the right. */
+const VIEWPORT = { width: 1440, height: 900 }
 
 /* ---------- start URLs (mirrors InviteV3StartPage's startHref) ---------- */
 
