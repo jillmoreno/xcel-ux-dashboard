@@ -249,7 +249,8 @@ async function loginCheck(w, { fromEmailAsk = false, prefilled = false, email = 
   const d = w.dialog('Log in to continue')
   await w.shot('Log in to continue', 'Empty password, Log in disabled')
   const emailField = d.getByLabel(/^Email\s*\*?$/)
-  if (await emailField.count()) {
+  /* Direct Email's log-in field is locked since 2026-11-18 — nothing to type. */
+  if ((await emailField.count()) && (await emailField.isEditable())) {
     const was = await emailField.inputValue()
     await emailField.fill('jordan@')
     await w.shot('Log in to continue', 'Invalid email address')
