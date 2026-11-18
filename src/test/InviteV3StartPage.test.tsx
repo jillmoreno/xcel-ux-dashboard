@@ -84,6 +84,9 @@ describe('the stand-alone invite flow page', () => {
       'href',
       'https://feat-invite-flow-v3--ux-design-xceldashboard.netlify.app/end-to-end-demo/email?demo=1&version=jill-atlas-main',
     )
+    /* In a new tab, as the Starts open (2026-11-18). */
+    expect(screen.getByRole('link', { name: 'here' })).toHaveAttribute('target', '_blank')
+    expect(screen.getByRole('link', { name: 'here' })).toHaveAttribute('rel', 'noopener noreferrer')
     await userEvent.click(screen.getByRole('tab', { name: 'Screens' }))
     expect(screen.getByText(/To access the prototype that captures all of these flows, click/)).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'here' })).toBeInTheDocument()
