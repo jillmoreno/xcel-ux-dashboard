@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { render, screen, within } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import userEvent from '@testing-library/user-event'
@@ -83,5 +83,65 @@ describe('the stand-alone invite flow page', () => {
     const url = new URL(within(row).getAllByRole('link')[0].getAttribute('href')!, 'http://x')
     expect(url.pathname).toBe('/end-to-end-demo/cart')
     expect(url.searchParams.get('pkg')).toBe('premier')
+  })
+})
+
+/* The Screens tab (2026-11-18): pictures listed by a manifest the capture
+   script writes. A tiny stand-in manifest is enough to pin the layout. */
+describe('the stand-alone page’s Screens tab', () => {
+  const manifest = {
+    capturedAt: '2026-11-18',
+    flows: [
+      {
+        id: 'direct-email',
+        label: 'Direct Email',
+        model: 'b2b',
+        variants: [
+          {
+            label: 'No Atlas account',
+            slug: 'no-atlas',
+            shots: [
+              { file: 'direct-email/no-atlas/01-email.png', title: 'Invitation email', state: 'Unread' },
+              { file: 'direct-email/no-atlas/02-code.png', title: 'Verify your email', state: 'Wrong code' },
+            ],
+          },
+        ],
+      },
+    ],
+  }
+  beforeEach(() => {
+    vi.stubGlobal('fetch', vi.fn(async () => ({ ok: true, json: async () => manifest })))
+  })
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+
+  it('opens on Flows, and Screens lists each flow’s pictures with their states', async () => {
+    render(
+      <MemoryRouter initialEntries={['/invite-v3']}>
+        <InviteV3StartPage />
+      </MemoryRouter>,
+    )
+    expect(screen.getByRole('tab', { name: 'Flows' })).toHaveAttribute('aria-selected', 'true')
+    expect(screen.getByRole('heading', { name: 'Direct Email' })).toBeInTheDocument()
+    await userEvent.click(screen.getByRole('tab', { name: 'Screens' }))
+    expect(await screen.findByRole('button', { name: '2. Verify your email — Wrong code' })).toBeInTheDocument()
+    expect(screen.getByText(/Captured 2026-11-18/)).toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: 'No Atlas account' })).not.toBeInTheDocument()
+  })
+
+  it('opens a picture full size, and steps through them', async () => {
+    render(
+      <MemoryRouter initialEntries={['/invite-v3?tab=screens']}>
+        <InviteV3StartPage />
+      </MemoryRouter>,
+    )
+    await userEvent.click(await screen.findByRole('button', { name: '1. Invitation email — Unread' }))
+    const dialog = screen.getByRole('dialog', { name: 'Invitation email — Unread' })
+    expect(within(dialog).getByRole('img')).toHaveAttribute('src', '/invite-v3-screens/direct-email/no-atlas/01-email.png')
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Next' }))
+    expect(screen.getByRole('dialog', { name: 'Verify your email — Wrong code' })).toBeInTheDocument()
+    await userEvent.keyboard('{Escape}')
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
   })
 })
