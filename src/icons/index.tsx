@@ -108,6 +108,11 @@ import ArrowRightSolidSvg from './arrow-right-solid.svg?react'
 // 7.3.1 — Regular, as the design names, beside the registry's Light copies.
 import CalendarRegularSvg from './calendar-regular.svg?react'
 import FileLinesRegularSvg from './file-lines-regular.svg?react'
+// 7.3.1 Regular (2026-11-18, Eric) — the Atlas account nav, at Quick Links' weight.
+import UserRegularSvg from './user-regular.svg?react'
+import BellRegularSvg from './bell-regular.svg?react'
+import ReceiptRegularSvg from './receipt-regular.svg?react'
+import GiftRegularSvg from './gift-regular.svg?react'
 import PlusRegularSvg from './plus-regular.svg?react'
 import MagnifyingGlassRegularSvg from './magnifying-glass-regular.svg?react'
 import GearRegularSvg from './gear-regular.svg?react'
@@ -371,6 +376,10 @@ export const Bullseye = makeIcon(BullseyeSvg) // FA: bullseye
 export const ArrowRightSolid = makeIcon(ArrowRightSolidSvg) // FA: arrow-right (solid)
 export const CalendarRegular = makeIcon(CalendarRegularSvg) // FA: calendar (regular)
 export const FileLinesRegular = makeIcon(FileLinesRegularSvg) // FA: file-lines (regular)
+export const UserRegular = makeIcon(UserRegularSvg) // FA: user (regular)
+export const BellRegular = makeIcon(BellRegularSvg) // FA: bell (regular)
+export const ReceiptRegular = makeIcon(ReceiptRegularSvg) // FA: receipt (regular)
+export const GiftRegular = makeIcon(GiftRegularSvg) // FA: gift (regular)
 export const PlusRegular = makeIcon(PlusRegularSvg) // FA: plus (regular)
 export const MagnifyingGlassRegular = makeIcon(MagnifyingGlassRegularSvg) // FA: magnifying-glass (regular)
 export const GearRegular = makeIcon(GearRegularSvg) // FA: gear (regular)

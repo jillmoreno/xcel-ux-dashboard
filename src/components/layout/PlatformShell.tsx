@@ -19,7 +19,7 @@ import { CourseLauncherProvider, useCourseLauncher } from './CourseLauncherConte
 import { ResourceLauncherProvider, useResourceLauncher } from './ResourceLauncherContext'
 import { CatalogPage } from '@/pages/CatalogPage'
 import { MyCoursesPage } from '@/pages/MyCoursesPage'
-import { AtlasAccountLinksCard, AtlasJourneyLinksCard } from '@/components/compass/AtlasJourneyLinksCard'
+import { AtlasAccountLinksCard, AtlasJourneyLinksCard, QUICK_LINKS_W } from '@/components/compass/AtlasJourneyLinksCard'
 import { useAtlasAccountPages } from '@/components/account/useAtlasAccountPages'
 import { AtlasCourseCardFigma } from '@/components/compass/AtlasCourseCardFigma'
 import {
@@ -1511,7 +1511,9 @@ function PlatformShellBody() {
                  version; renaming it there would rename the nav for Testing,
                  Testing 2/3 and Hybrid as well. This is the page's own
                  heading, and only on the Atlas chrome that draws it. */
-              title={active === 'certificates' ? 'My Certificates' : SECTION_TITLES[active]}
+              // "Certificates and Transcripts" since 2026-11-18 (Eric), to match its Quick Links row — the heading and the path's
+              // last crumb both read it.
+              title={active === 'certificates' ? 'Certificates and Transcripts' : SECTION_TITLES[active]}
               onBack={() => handleSelect('dashboard')}
               /* THE MY ACCOUNT PAGES' PATH — "Home / My Account / Profile" on every width (2026-11-10, Eric; until then the
                  phone's alone, and through Profile: "Home / Profile / Transcripts"). My Account opens its first page, Profile. */
@@ -2870,10 +2872,13 @@ function MyCoursesSection() {
 function AccountSection({
   active,
   onSelect,
+  onHome,
   body,
 }: {
   active: AccountSectionId
   onSelect: (id: AccountSectionId) => void
+  /** Home — the account card's first row (2026-11-18, Eric). */
+  onHome?: () => void
   body: ReactNode
 }) {
   const atlas = useAtlasAccountPages()
@@ -2899,7 +2904,7 @@ function AccountSection({
       }}
     >
       {/* As wide as Home's Quick Links, though its own rows are shorter (2026-11-12, Eric). */}
-      <AtlasAccountLinksCard active={active} onSelect={onSelect} style={{ ...WIP_QUICK_LINKS_LIFTED, minWidth: HOME_QUICK_LINKS_W }} />
+      <AtlasAccountLinksCard active={active} onSelect={onSelect} onHome={onHome} style={{ ...WIP_QUICK_LINKS_LIFTED, minWidth: HOME_QUICK_LINKS_W }} />
       <div style={{ minWidth: 0 }}>{body}</div>
     </div>
   )
@@ -2909,7 +2914,7 @@ function AccountSection({
    card's (AtlasHomeEricV3): 230 wide, 24 in, outlined in Secondary 100
    darkened 5%. */
 // 234, so the longest label's hover weight fits on one line (2026-10-14).
-const WIP_QUICK_LINKS_W = 234
+const WIP_QUICK_LINKS_W = QUICK_LINKS_W // 280 since 2026-11-18 (the longer labels), 234 before
 const WIP_QUICK_LINKS: CSSProperties = { border: '1px solid color-mix(in srgb, var(--color-atlas-slate-100) 95%, black)', padding: 24 }
 /* Its standard position on the End-to-End version (2026-11-03, Eric's
    request): level with the "Back to Home" crumb, as Home's sits at the top of
@@ -2926,7 +2931,7 @@ const E2E_QUICK_LINKS_LIFT = 16.5 + 6 + 34 + 24
 const E2E_QUICK_LINKS_COLUMN_W = 8 + WIP_QUICK_LINKS_W + 8
 /* Home's Quick Links as drawn — fit to "Applying for a License" and its 24 either side (measured 2026-11-12). The account
    pages' card takes it as a minimum so the two read as one card. */
-const HOME_QUICK_LINKS_W = 231.625
+const HOME_QUICK_LINKS_W = QUICK_LINKS_W // Home's column since 2026-11-18; the measured 231.625 before
 // …and Home's 20 corners, not the card's own 12 (2026-11-03).
 /* ⚠ 7.5 IN, NOT 8 (2026-11-04, Eric: the icons and text "shifting one or two
    pixels to the right" from Home). These pages centre an odd 1081 column, so
@@ -3131,7 +3136,7 @@ function renderBody(
         // Payment Methods were archived, and two until today.
         <AccountSectionPlaceholder id={active} />
       )
-    return <AccountSection active={active} onSelect={(id) => onSelect(id)} body={body} />
+    return <AccountSection active={active} onSelect={(id) => onSelect(id)} onHome={() => onSelect('dashboard')} body={body} />
   }
   // (Gift Recipients — purchase-for-others tracking — is an account section
   // above; `/account/gift-recipients` redirects here.)

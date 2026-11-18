@@ -127,6 +127,11 @@ export const ATLAS_COURSE_CARD_W = 265 // Figma 706:2416's card (2026-11-12, Eri
  */
 export const ATLAS_MY_COURSES_COLUMNS = 3
 
+/** The Quick Links rail grew 234 → 280 for its longer labels (2026-11-18, Eric — `QUICK_LINKS_W` in
+ *  AtlasJourneyLinksCard). The page grows by the same 46, or the rail takes it from the cards and My Courses drops to
+ *  two a row (Eric: "increase the body … to allow 3 columns of course cards"). */
+export const ATLAS_QUICK_LINKS_GROWTH = 46
+
 /** My Courses' centred content: the links card, a 24 gap, then three cards with
  *  16 between (2026-10-06, Eric's request: "center all of the page content").
  *  The header takes the same width so the title lines up with it. */
@@ -134,7 +139,9 @@ export const ATLAS_MY_COURSES_WIDTH =
   ATLAS_MY_COURSES_ASIDE_W +
   24 +
   ATLAS_MY_COURSES_COLUMNS * ATLAS_COURSE_CARD_W +
-  (ATLAS_MY_COURSES_COLUMNS - 1) * 16
+  (ATLAS_MY_COURSES_COLUMNS - 1) * 16 +
+  ATLAS_QUICK_LINKS_GROWTH
+
 
 /**
  * THE LEARNER'S REAL LIBRARY AS ATLAS CARDS — 2026-11-02, Jillienne's request

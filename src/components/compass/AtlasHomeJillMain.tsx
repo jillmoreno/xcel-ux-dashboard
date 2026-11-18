@@ -63,7 +63,7 @@ import { AngleDownRegular,
 } from '@/icons'
 import { COMPASS_BUTTON } from './compassButton'
 import { AtlasExamDateCard } from './AtlasExamDateCard'
-import { AtlasJourneyLinksCard } from './AtlasJourneyLinksCard'
+import { AtlasJourneyLinksCard, QUICK_LINKS_W, QUICK_LINKS_W_BEFORE } from './AtlasJourneyLinksCard'
 import { ATLAS_HOME_REFRESH } from '@/components/layout/atlasHomeRefresh'
 import { CircleCheckSolid, TriangleExclamation, CalendarExclamation } from '@/icons'
 import { AtlasCourseProgressStates, type ProgressStage } from './AtlasCourseProgressStates'
@@ -854,6 +854,9 @@ export function AtlasHomeJillMain({
   const stackedTiles = (useFeatureFlag('atlas-v3-link-tiles').variant ?? 'stacked') !== 'inline'
   // The Design bar's Quick Links side (2026-10-13) — Left (default) or Right.
   const quickLinksRight = useFeatureFlag('atlas-wip-quick-links-side').variant === 'right'
+  // Desktop, i.e. not the tablet or phone frame (2026-11-18) — see the row's left padding below.
+  const homeBreakpointVariant = useFeatureFlag('home-breakpoint').variant
+  const homeBreakpointDesktop = homeBreakpointVariant !== 'mobile' && homeBreakpointVariant !== 'tablet'
   // COMPLETED (Design bar's Progress = Completed 100%, 2026-10-09, Eric): no
   // Course progress card, and Step 1 becomes the Congratulations block.
   // Clicking the Course progress card steps the Design bar's Progress itself
@@ -1118,7 +1121,15 @@ export function AtlasHomeJillMain({
   return (
     // 40 between Quick Links and the course card on White, 8 more than WIP's
     // 32 (2026-10-14, Eric's request) — White's card has no padding of its own.
-    <div style={onWhite ? WHITE_PAGE : PAGE}>
+    /* The rail grew 46 for its longer labels (QUICK_LINKS_W, 2026-11-18, Eric). This row is centred, so 46 more on its
+       left keeps Quick Links on the x it shares with My Courses, Certificates and the account pages, instead of
+       the whole row sliding 23 left. Desktop only — the tablet and phone frames lay Home out themselves. */
+    <div
+      style={{
+        ...(onWhite ? WHITE_PAGE : PAGE),
+        ...(!quickLinksRight && homeBreakpointDesktop ? { paddingLeft: QUICK_LINKS_W - QUICK_LINKS_W_BEFORE } : null),
+      }}
+    >
       {/* ── The course card ── */}
       {/* NO COURSE TABS on V3 (2026-10-08, Eric's request: "remove from v3"),
           so the card takes its full 48 on top. The tabs' data stays — the
@@ -1619,7 +1630,7 @@ export function AtlasHomeJillMain({
       {/* 234, not 230 (2026-10-14, Eric's request): at 230 "Applying for a
           License" wrapped when hover took it to Medium — it needs 134.6 of the
           row, and 230 left 133. */}
-      <div style={{ width: 234, flex: 'none', display: 'flex', flexDirection: 'column', gap: 24, order: quickLinksRight ? undefined : -1 }}>
+      <div style={{ width: QUICK_LINKS_W /* 280 since 2026-11-18, was 234 */, flex: 'none', display: 'flex', flexDirection: 'column', gap: 24, order: quickLinksRight ? undefined : -1 }}>
         {/* THE EXAM-DATE CARD — Figma component 224:4118, all four states and
             a working calendar (2026-10-07, Eric's request). FIRST in the rail,
             above Quick Links, since 2026-10-13 (Eric's request). */}
@@ -2251,10 +2262,13 @@ function StopLink({ label, onOpen }: { label: string; onOpen?: () => void }) {
       <span aria-hidden style={EXAM_MARK_COL}>
         <span style={MARK_CURRENT} />
       </span>
+      {/* NO SHEET FOR NOW (2026-11-18, Eric: "keep their previous styling, just remove the link to the sheet, they will link to
+          something at some point") — Exam Information under Step 2, Applying for a License under Step 3. Still the link's
+          button, colour and hover; the click does nothing. Set STOP_LINKS_LIVE true to open their sheets again. */}
       <button
         type="button"
         className="cre-atlas-journey-link"
-        onClick={onOpen}
+        onClick={STOP_LINKS_LIVE ? onOpen : () => {}}
         disabled={!onOpen}
         style={EXAM_INFO_LINK}
       >
@@ -2263,6 +2277,8 @@ function StopLink({ label, onOpen }: { label: string; onOpen?: () => void }) {
     </span>
   )
 }
+/** The journey's stop links (Exam Information, Applying for a License) opening their sheets — off since 2026-11-18 (Eric). */
+const STOP_LINKS_LIVE = false
 
 function Step({
   number,

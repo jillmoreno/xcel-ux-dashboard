@@ -12,6 +12,11 @@ import {
   ClipboardListCheckRegular,
   FileCertificateRegular,
   HouseRegular,
+  UserRegular,
+  BellRegular,
+  FileLinesRegular,
+  ReceiptRegular,
+  GiftRegular,
   NotebookRegular,
   PenFieldRegular,
 } from '@/icons'
@@ -34,7 +39,12 @@ export const ATLAS_OPEN_PARAM = 'open'
 /** The Home link — built, hidden for now (2026-10-07). */
 const SHOW_HOME_LINK: boolean = true // back on (2026-11-12, Eric: "add a button above My Courses for Home")
 /** The card's "Quick Links" title — off since 2026-11-12 (Eric: "remove the quick links text"). */
+// Off (2026-11-12, Eric: "remove the quick links text"); back on for part of 2026-11-18, then off again the same day
+// (Eric: "remove the Quick Links title from the left nav").
 const SHOW_QUICK_LINKS_TITLE: boolean = false
+// The account pages' "My Account" title stays off — it shared SHOW_QUICK_LINKS_TITLE until 2026-11-18, and the ask was the
+// Quick Links title.
+const SHOW_ACCOUNT_LINKS_TITLE: boolean = false
 
 export type AtlasJourneyLinksCardProps = {
   onOpenStep?: (id: string) => void
@@ -149,28 +159,39 @@ export function AtlasJourneyLinksCard({ onOpenStep, onOpenRequirements, style, w
         ) : null}
         <SideLink icon={<BookRegular size={13} aria-hidden />} label="My Courses" count={coursesCount} active={here('courses')} onClick={() => go('courses', undefined, linksOff && !learningPagesLive)} />
         {/* 15% larger in WIP's card (2026-10-13, Eric's request): 15, not 13 —
-            the wide certificate glyph read small beside the book. */}
-        <SideLink icon={<FileCertificateRegular size={withoutCoursePages ? 15 : 13} aria-hidden />} label="My Certificates" active={here('certificates')} onClick={() => go('certificates', undefined, linksOff && !learningPagesLive)} />
+            the wide certificate glyph read small beside the book.
+            "Certificates and Transcripts" since 2026-11-18 (Eric; "My Certificates" before). */}
+        <SideLink icon={<FileCertificateRegular size={withoutCoursePages ? 15 : 13} aria-hidden />} label="Certificates and Transcripts" active={here('certificates')} onClick={() => go('certificates', undefined, linksOff && !learningPagesLive)} />
         {withoutCoursePages ? null : (
         <>
         <SideLink icon={<NotebookRegular size={13} aria-hidden />} label="Flashcards" active={here('course', 'flashcards')} onClick={() => go('course', { coursePage: 'flashcards' })} />
         <SideLink icon={<BallotCheckRegular size={13} aria-hidden />} label="Exam Simulator" active={here('course', 'exam-simulator')} onClick={() => go('course', { coursePage: 'exam-simulator' })} />
         </>
         )}
-        <SideLink
-          icon={<CircleInfoRegular size={13} aria-hidden />}
-          label="Exam Information"
-          onClick={onOpenStep ? () => onOpenStep(EXAM_DETAILS_STEP_ID) : homeAndOpen('exam-details')}
-        />
-        <SideLink
-          icon={<PenFieldRegular size={13} aria-hidden />}
-          label="Applying for a License"
-          onClick={onOpenStep ? () => onOpenStep(apply.id) : homeAndOpen(`step:${apply.id}`)}
-        />
+        {/* Exam Information and Applying for a License, OFF the rail (2026-11-18, Eric: "remove exam information and applying
+            for license links") — kept; set SHOW_SHEET_LINKS true to bring both back. Their sheets still open from Home's steps. */}
+        {SHOW_SHEET_LINKS ? (
+          <>
+            <SideLink
+              icon={<CircleInfoRegular size={13} aria-hidden />}
+              label="Exam Information"
+              onClick={onOpenStep ? () => onOpenStep(EXAM_DETAILS_STEP_ID) : homeAndOpen('exam-details')}
+            />
+            <SideLink
+              icon={<PenFieldRegular size={13} aria-hidden />}
+              label="Applying for a License"
+              onClick={onOpenStep ? () => onOpenStep(apply.id) : homeAndOpen(`step:${apply.id}`)}
+            />
+          </>
+        ) : null}
         <SideLink
           icon={<ClipboardListCheckRegular size={13} aria-hidden />}
-          label="State Requirements"
-          onClick={onOpenRequirements ?? homeAndOpen('requirements')}
+          // "State Licensing Requirements" since 2026-11-18 (Eric; "State Requirements" before).
+          label="State Licensing Requirements"
+          /* NO ACTION for now (2026-11-18, Eric: "it will be coded to load another page or document at some point"). A no-op
+             rather than no handler, so the row still looks and hovers like its neighbours instead of drawing disabled. It
+             opened the State Requirements sheet — set REQUIREMENTS_LINK_LIVE true to put that back. */
+          onClick={REQUIREMENTS_LINK_LIVE ? (onOpenRequirements ?? homeAndOpen('requirements')) : () => {}}
         />
       </ul>
     </nav>
@@ -188,10 +209,14 @@ export function AtlasJourneyLinksCard({ onOpenStep, onOpenRequirements, style, w
 export function AtlasAccountLinksCard({
   active,
   onSelect,
+  onHome,
   style,
 }: {
   active: AccountSectionId
   onSelect: (id: AccountSectionId) => void
+  /** The Home row above Profile (2026-11-18, Eric: "add the home link above the profile") — Quick Links' own Home row,
+   *  same house icon. Absent, no row. */
+  onHome?: () => void
   style?: CSSProperties
 }) {
   const { brand } = useAccount()
@@ -199,14 +224,28 @@ export function AtlasAccountLinksCard({
   return (
     <nav aria-label="Account sections" className="cre-quick-links-card" style={{ ...SIDE_CARD, ...style, ...QUICK_LINKS_FRAME }}>
       {/* No "My Account" title (2026-11-12, Eric) — like Quick Links', kept behind SHOW_QUICK_LINKS_TITLE. */}
-      {SHOW_QUICK_LINKS_TITLE ? <p style={TITLE}>My Account</p> : null}
+      {SHOW_ACCOUNT_LINKS_TITLE ? <p style={TITLE}>My Account</p> : null}
       <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 16 }}>
-        {accountSectionsFor(brand, giftRecipientsOn).map(({ id, label, icon: Icon }) => (
+        {onHome ? <SideLink icon={<HouseRegular size={13} aria-hidden />} label="Home" onClick={onHome} /> : null}
+        {accountSectionsFor(brand, giftRecipientsOn).map(({ id, label, icon }) => {
+          const Icon = ACCOUNT_ICONS_REGULAR[id] ?? icon
+          return (
           <SideLink key={id} icon={<Icon size={13} aria-hidden />} label={label} active={id === active} onClick={() => onSelect(id)} />
-        ))}
+          )
+        })}
       </ul>
     </nav>
   )
+}
+
+/* THE ACCOUNT ROWS IN REGULAR (2026-11-18, Eric: "the same weight as the icons on the learner home") — Quick Links' house,
+   book and certificate are Regular; the shared section list carries Light, which the account dropdown keeps. */
+const ACCOUNT_ICONS_REGULAR: Partial<Record<AccountSectionId, typeof UserRegular>> = {
+  profile: UserRegular,
+  notifications: BellRegular,
+  transcripts: FileLinesRegular,
+  purchases: ReceiptRegular,
+  'gift-recipients': GiftRegular,
 }
 
 function SideLink({
@@ -266,6 +305,18 @@ function SideLink({
   )
 }
 
+/** THE QUICK LINKS RAIL'S WIDTH, ONE NUMBER FOR EVERY PAGE (2026-11-18, Eric: "allow the left links rail to expand
+ *  horizontally enough to fit … adjust the left rail width on all pages not just the homepage"). The card is fit-content
+ *  and measured 279.5 once "Certificates and Transcripts" and "State Licensing Requirements" came in — so Home's column,
+ *  My Courses', Certificates' and the account pages' all take 280, and the card no longer spills 8 past its column.
+ *  It was 234 (2026-10-14, sized to "Applying for a License"). */
+export const QUICK_LINKS_W = 280
+/** Exam Information and Applying for a License on the rail — off since 2026-11-18 (Eric). */
+const SHOW_SHEET_LINKS = false
+/** State Licensing Requirements opening its sheet — off since 2026-11-18 (Eric); it will load a page or document later. */
+const REQUIREMENTS_LINK_LIVE = false
+/** What it was — Home's row pads the difference so the rail keeps its x (see AtlasHomeJillMain). */
+export const QUICK_LINKS_W_BEFORE = 234
 const SIDE_CARD: CSSProperties = {
   display: 'flex',
   flexDirection: 'column',

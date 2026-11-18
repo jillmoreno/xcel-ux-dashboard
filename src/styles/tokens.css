@@ -3759,6 +3759,11 @@ a.cre-library-card-title::after {
 .cre-link-action:hover::after {
   opacity: 1;
 }
+/* The bar is OFF app-wide (2026-11-18, Eric: "globally, do not underline text links") — the TEXT LINKS block at the end
+   of this file. Kept, not deleted: remove this rule to bring the hover bar back. */
+.cre-link-action::after {
+  display: none !important;
+}
 .cre-link-action:focus-visible {
   outline: 2px solid currentColor;
   outline-offset: 2px;
@@ -8160,3 +8165,80 @@ thead .cre-admin-sticky-col { background: var(--admin-fill-soft); }
   border-color: transparent !important;
   background: var(--color-secondary-100) !important;
 }
+
+/* ── TEXT LINKS, APP-WIDE (2026-11-18, Eric: "globally, do not underline text links, increase the weight 1 level on
+   hover"). ONE block at the end of the file rather than thirty edits, because the underline lived in ~25 class rules
+   across five stylesheets AND ~28 inline `textDecoration: 'underline'` styles — `!important` here is what reaches the
+   inline ones. The rules above still carry their old underline lines; this block is what wins. Delete it to go back.
+
+   1. NO UNDERLINE, at rest or on hover, on anything a link or a button draws, or inside one. Strike-throughs (prices,
+      done tasks, the planner's off days) are left alone — they are the only other text-decoration in the app. */
+:is(a, button, [role='link'], [role='button'], .cre-stop-title, .cre-cert-card-title, .cre-tag-cert-link, .cre-admin-name,
+    .cre-uxlinks-title, .cre-gift-email):not(s, del, [style*='line-through']),
+:is(a, button, [role='link'], [role='button']) :not(s, del, [style*='line-through'], .num, .sw--off, .d) {
+  text-decoration-line: none !important;
+}
+/* …and the two underlines that are not text-decoration: `.cre-link-action`'s `::after` bar (hidden beside its own rules,
+   up the file) and the sheet Close's bottom border. The link-action darkening stays. */
+.cre-sheet-close:hover { border-bottom-color: transparent !important; }
+
+/* 2. ONE WEIGHT HEAVIER ON HOVER (and keyboard focus) — +100, which Open Sans can always do: it loads as a 300–800
+   variable font (index.html). CSS cannot add to an element's own weight, so the step is spelled out per resting
+   weight: by the class's weight where a stylesheet sets it, by the inline `font-weight: N` React writes everywhere
+   else. A link that sets no weight of its own (it inherits — some `.cre-link-action` titles) is not stepped. */
+:is(.cre-atlas-header-link, .cre-compass-crumb-link, .cre-atlas-topnav-link, .cre-pace-sheet__text-button, .cre-ov__link,
+    .cre-planner__plink, .cre-planner__mlink, .cre-planner__under .ul, .mx-root .sc-manage, .mx-root .hub-mcard-manage
+   ):is(:hover, :focus-visible) { font-weight: 700 !important; }
+.cre-ov__calc > button:is(:hover, :focus-visible) { font-weight: 600 !important; }
+.cre-ov__skip:is(:hover, :focus-visible) { font-weight: 500 !important; }
+
+:is(
+  :is(a:not([class]), :is(a, button)[style*='text-decoration: underline'], .cre-resource-cta, .cre-clp-title-link,
+      .cre-tag-cert-link, .cre-recap-go, .cre-recap-ticket-go, .cre-membership-crumb, .cre-mrc-cta, .cre-gift-row-cta,
+      .cre-gift-cta, .cre-collection-link, .cre-gift-email, .cre-uxlinks-title, .cre-admin-name, .cre-atlas-card-review,
+      .cre-link-action, .cre-crumb-link, .cre-atlas-journey-link, .cre-sheet-close, .cre-e2e-textlink
+     ):is(:hover, :focus-visible),
+  .cre-journey-stop:is(:hover, :focus-visible) .cre-stop-title,
+  .cre-cert-card:is(:hover, :focus-visible) .cre-cert-card-title,
+  .cre-course-card:hover .cre-tag-cert-link
+)[style*='font-weight: 300'] { font-weight: 400 !important; }
+:is(
+  :is(a:not([class]), :is(a, button)[style*='text-decoration: underline'], .cre-resource-cta, .cre-clp-title-link,
+      .cre-tag-cert-link, .cre-recap-go, .cre-recap-ticket-go, .cre-membership-crumb, .cre-mrc-cta, .cre-gift-row-cta,
+      .cre-gift-cta, .cre-collection-link, .cre-gift-email, .cre-uxlinks-title, .cre-admin-name, .cre-atlas-card-review,
+      .cre-link-action, .cre-crumb-link, .cre-atlas-journey-link, .cre-sheet-close, .cre-e2e-textlink
+     ):is(:hover, :focus-visible),
+  .cre-journey-stop:is(:hover, :focus-visible) .cre-stop-title,
+  .cre-cert-card:is(:hover, :focus-visible) .cre-cert-card-title,
+  .cre-course-card:hover .cre-tag-cert-link
+)[style*='font-weight: 400'] { font-weight: 500 !important; }
+:is(
+  :is(a:not([class]), :is(a, button)[style*='text-decoration: underline'], .cre-resource-cta, .cre-clp-title-link,
+      .cre-tag-cert-link, .cre-recap-go, .cre-recap-ticket-go, .cre-membership-crumb, .cre-mrc-cta, .cre-gift-row-cta,
+      .cre-gift-cta, .cre-collection-link, .cre-gift-email, .cre-uxlinks-title, .cre-admin-name, .cre-atlas-card-review,
+      .cre-link-action, .cre-crumb-link, .cre-atlas-journey-link, .cre-sheet-close, .cre-e2e-textlink
+     ):is(:hover, :focus-visible),
+  .cre-journey-stop:is(:hover, :focus-visible) .cre-stop-title,
+  .cre-cert-card:is(:hover, :focus-visible) .cre-cert-card-title,
+  .cre-course-card:hover .cre-tag-cert-link
+)[style*='font-weight: 500'] { font-weight: 600 !important; }
+:is(
+  :is(a:not([class]), :is(a, button)[style*='text-decoration: underline'], .cre-resource-cta, .cre-clp-title-link,
+      .cre-tag-cert-link, .cre-recap-go, .cre-recap-ticket-go, .cre-membership-crumb, .cre-mrc-cta, .cre-gift-row-cta,
+      .cre-gift-cta, .cre-collection-link, .cre-gift-email, .cre-uxlinks-title, .cre-admin-name, .cre-atlas-card-review,
+      .cre-link-action, .cre-crumb-link, .cre-atlas-journey-link, .cre-sheet-close, .cre-e2e-textlink
+     ):is(:hover, :focus-visible),
+  .cre-journey-stop:is(:hover, :focus-visible) .cre-stop-title,
+  .cre-cert-card:is(:hover, :focus-visible) .cre-cert-card-title,
+  .cre-course-card:hover .cre-tag-cert-link
+)[style*='font-weight: 600'] { font-weight: 700 !important; }
+:is(
+  :is(a:not([class]), :is(a, button)[style*='text-decoration: underline'], .cre-resource-cta, .cre-clp-title-link,
+      .cre-tag-cert-link, .cre-recap-go, .cre-recap-ticket-go, .cre-membership-crumb, .cre-mrc-cta, .cre-gift-row-cta,
+      .cre-gift-cta, .cre-collection-link, .cre-gift-email, .cre-uxlinks-title, .cre-admin-name, .cre-atlas-card-review,
+      .cre-link-action, .cre-crumb-link, .cre-atlas-journey-link, .cre-sheet-close, .cre-e2e-textlink
+     ):is(:hover, :focus-visible),
+  .cre-journey-stop:is(:hover, :focus-visible) .cre-stop-title,
+  .cre-cert-card:is(:hover, :focus-visible) .cre-cert-card-title,
+  .cre-course-card:hover .cre-tag-cert-link
+)[style*='font-weight: 700'] { font-weight: 800 !important; }

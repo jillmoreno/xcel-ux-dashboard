@@ -22,10 +22,9 @@ const HOME_ROWS = [
   // Home back at the top (2026-11-12, Eric: "add a button above My Courses for Home").
   'Home',
   'My Courses',
-  'My Certificates',
-  'Exam Information',
-  'Applying for a License',
-  'State Requirements',
+  'Certificates and Transcripts',
+  // Exam Information and Applying for a License off the rail since 2026-11-18 (Eric).
+  'State Licensing Requirements',
 ]
 /* The course's own pages. `withoutCoursePages` is what keeps them off this
    rail, and it is the prop the previews dropped. */
@@ -36,7 +35,7 @@ describe('the Quick Links previews match the Home', () => {
      render a cropped iframe of the page rather than the card, so there are no
      rows of ours to count in them. */
   for (const variant of ['Default', 'Hover / focus']) {
-    it(`"${variant}" draws the Home's six rows and no others`, () => {
+    it(`"${variant}" draws the Home's four rows and no others`, () => {
       const node = atlasHandoffVariantRender('atlas-home-quick-links', variant)
       expect(node, `no render registered for "${variant}"`).toBeTruthy()
       /* The handoff page sits inside the app's Router, so the preview has to

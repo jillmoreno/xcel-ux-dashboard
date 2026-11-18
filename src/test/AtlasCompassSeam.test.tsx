@@ -299,13 +299,13 @@ describe('the walk’s Study Journey steps', () => {
     expect(page.queryByText('Do you know your state exam date?')).toBeNull()
     expect(page.queryByRole('button', { name: /Not Yet/ })).toBeNull()
     /* The second stop opens the SAME sheet Quick Links' own Exam Information
-       opens — hence two of them on the page, not one. If this ever reads 1,
-       either the row went or the rail's link did. */
-    expect(page.getAllByRole('button', { name: 'Exam Information' })).toHaveLength(2)
+       opened — two of them on the page until 2026-11-18, when the rail's row
+       went (Eric). One now: the step's. */
+    expect(page.getAllByRole('button', { name: 'Exam Information' })).toHaveLength(1)
     /* Step 3 gained the same shape on 2026-10-19 — "add a circle link
        option, blue style, under this that is: Applying for a License" — and
-       it opens the rail's sheet, hence two of these as well. */
-    expect(page.getAllByRole('button', { name: 'Applying for a License' })).toHaveLength(2)
+       it opens the rail's sheet — one of these now too, the rail's row gone (2026-11-18). */
+    expect(page.getAllByRole('button', { name: 'Applying for a License' })).toHaveLength(1)
     expect(document.querySelector('[data-cta-id="home.state-requirements"]')).toBeNull()
     /* ⚠ THE JOURNEY'S ORDER AND NAMES ARE SHARED, AND DELIBERATELY SO
        (2026-10-19, Jillienne: "Order should be: Pre-Licensing Education >

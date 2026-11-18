@@ -152,10 +152,10 @@ describe('Home’s Quick Links reach the two learning pages', () => {
     expect(screen.getByRole('heading', { name: 'My Courses' })).toBeTruthy()
   })
 
-  it('My Certificates opens My Certificates', () => {
+  it('Certificates and Transcripts opens My Certificates', () => {
     renderShell(`section=dashboard&version=${BASELINE}`)
-    clickRow('My Certificates')
-    expect(screen.getByRole('heading', { name: 'My Certificates' })).toBeTruthy()
+    clickRow('Certificates and Transcripts')
+    expect(screen.getByRole('heading', { name: 'Certificates and Transcripts' })).toBeTruthy()
   })
 
   /* The rows go quiet again with the control off — which is what they did
@@ -184,9 +184,9 @@ describe('My Certificates on the Atlas baseline', () => {
   /* The heading read "Certificates" while the only link that reaches it — the
      Quick Links row — said "My Certificates", and My Courses beside it already
      carries the possessive. */
-  it('is headed "My Certificates"', () => {
+  it('is headed "Certificates and Transcripts"', () => {
     renderShell(`section=certificates&version=${BASELINE}`)
-    expect(screen.getByRole('heading', { name: 'My Certificates' })).toBeTruthy()
+    expect(screen.getByRole('heading', { name: 'Certificates and Transcripts' })).toBeTruthy()
   })
 
   it('draws no Quick Links rail', () => {

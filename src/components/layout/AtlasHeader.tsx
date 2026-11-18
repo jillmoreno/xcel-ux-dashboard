@@ -178,11 +178,16 @@ export function AtlasHeader({
         </nav>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginLeft: 'auto' }}>
-          {/* Button only: the notifications panel is not designed yet. */}
+          {/* Opens the Notifications page (2026-11-18, Eric: "add link to the Notifications page") — `links.notifications`,
+              the profile menu's own Notifications address; a button with no click before. Without one, it still does nothing. */}
           <button
             type="button"
             className="cre-atlas-hdr-pill cre-atlas-hdr-pill--icon"
             aria-label={notificationCount ? `Notifications, ${notificationCount} unread` : 'Notifications'}
+            onClick={
+              pick('notifications') ??
+              (links.notifications ? () => window.location.assign(links.notifications as string) : undefined)
+            }
             style={{ position: 'relative' }}
           >
             {/* Glyph width (the bell's viewBox is 448×512), not a 22px square — as the icon font draws it. */}
