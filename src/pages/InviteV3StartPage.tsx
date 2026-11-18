@@ -1,5 +1,6 @@
 import { useState, type CSSProperties } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
+import { PillTabs } from '@/components/ui/PillTabs'
 import { FEATURE_FLAGS } from '@/context/FeatureFlagContext'
 import {
   INVITE_FLOWS_V3,
@@ -15,6 +16,7 @@ import {
 import { INVITE_FLOW_VERSION_FLAG } from '@/data/inviteFlowVersions'
 import { INVITE_LOA_PARAM, INVITE_STATE_PARAM } from '@/data/inviteMissingDetails'
 import { CART_PACKAGE_PARAM } from '@/data/xcelCourseFinder'
+import { InviteV3ScreensGallery } from './InviteV3ScreensGallery'
 import './inviteFlow.css'
 
 /**
@@ -35,8 +37,20 @@ import './inviteFlow.css'
  * otherwise set: whose email it is, and (B2C) what is in the cart. And
  * (B2B2C, 2026-11-18) which Products option Eric's product page shows — the
  * Design bar's `pdp-products`, read off the catalog so the two lists agree.
+ *
+ * TWO TABS SINCE 2026-11-18 — Flows (the Starts) and Screens (a picture of
+ * every screen, modal and state, `InviteV3ScreensGallery`). The tab is in the
+ * address (`?tab=screens`) so a ticket can link straight to the pictures.
  */
+type Tab = 'flows' | 'screens'
+const TABS: { id: Tab; label: string }[] = [
+  { id: 'flows', label: 'Flows' },
+  { id: 'screens', label: 'Screens' },
+]
+
 export function InviteV3StartPage() {
+  const [params, setParams] = useSearchParams()
+  const tab: Tab = params.get('tab') === 'screens' ? 'screens' : 'flows'
   const b2b = INVITE_FLOWS_V3.filter((f) => f.model === 'b2b')
   /* Not signed in first, then signed in (2026-11-18, Afsana) — this page's
      order only; the Design bar keeps the catalog's. */
@@ -45,17 +59,37 @@ export function InviteV3StartPage() {
   )
   return (
     <div style={PAGE}>
-      <main style={COLUMN}>
+      <main style={tab === 'screens' ? { ...COLUMN, maxWidth: 1120 } : COLUMN}>
         <img src="/brand/xcel-logo.webp" alt="XCEL Insurance Training by Colibri" style={LOGO} />
         <header style={{ display: 'grid', gap: 8 }}>
           <h1 style={TITLE}>Invite &amp; purchase flow</h1>
           <p style={LEAD}>
-            Pick a flow and start it. Each one runs the flow’s own pages, from the invitation to Setting up your
-            account, and stops there.
+            {tab === 'flows'
+              ? 'Pick a flow and start it. Each one runs the flow’s own pages, from the invitation to Setting up your account, and stops there.'
+              : 'Every screen, modal and state of each flow, in the order the flow walks them. Click one to see it full size.'}
           </p>
         </header>
-        <FlowGroup title="Partner invites (B2B2C)" flows={b2b} />
-        <FlowGroup title="Public site (B2C)" flows={b2c} />
+        <div>
+          <PillTabs
+            label="View"
+            items={TABS}
+            active={tab}
+            onChange={(id) => {
+              const next = new URLSearchParams(params)
+              if (id === 'screens') next.set('tab', 'screens')
+              else next.delete('tab')
+              setParams(next, { replace: true })
+            }}
+          />
+        </div>
+        {tab === 'flows' ? (
+          <>
+            <FlowGroup title="Partner invites (B2B2C)" flows={b2b} />
+            <FlowGroup title="Public site (B2C)" flows={b2c} />
+          </>
+        ) : (
+          <InviteV3ScreensGallery />
+        )}
       </main>
     </div>
   )
