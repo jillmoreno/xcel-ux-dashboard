@@ -36,3 +36,12 @@ pd-review-*.html
 # framework-protection hook for everyone); this one is per-machine and must not
 # be, or one person's local tweaks become everyone's.
 .claude/settings.local.json
+
+# Local dev credentials (2026-11-18). `netlify dev` loads these automatically.
+# They exist because the site's own BLOBS_TOKEN and github_token are marked
+# SECRET on Netlify, so the CLI cannot read them back to inject locally — only
+# the deployed runtime sees them. Anything in here is personal and must never
+# be committed.
+.env
+.env.*
+!.env.example

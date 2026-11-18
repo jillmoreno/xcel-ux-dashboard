@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url'
 import { DemoPanel } from '@/components/prototype/LinksPanel'
 import { DesignPanel } from '@/components/prototype/DesignPanel'
 import { ReleasePanel } from '@/components/prototype/ReleasePanel'
-import { groupByFeature, stageOf } from '@/data/designBranches'
+import { groupByFeature, listsOnDesign, SCOPES_ELSEWHERE, stageOf, UNNAMED_KEY } from '@/data/designBranches'
 import { groupForRelease, waitingCount } from '@/data/releaseQueue'
 import { isBranchOnBoard, titleFromBranch, type BranchDeploy } from '@/data/branchStore'
 import { parseBranch, reviewHref, reviewPathFor, DEFAULT_REVIEW_PATH } from '@/data/branchName'
@@ -230,7 +230,7 @@ describe('the Design section', () => {
   const ok = {
     configured: true,
     git: { configured: true, reason: '' },
-    branches: [served({ branch: 'feat/compass-streak' })],
+    branches: [served({ branch: 'feat/atlas-streak' })],
   }
 
   it('lists a built branch under its feature, open in a new tab, tagged with its scope', async () => {
@@ -238,18 +238,20 @@ describe('the Design section', () => {
     render(<DesignPanel />)
     expect(await screen.findByRole('heading', { name: 'Streak' })).toBeInTheDocument()
     const link = screen.getByRole('link', { name: /Streak/ })
-    /* ⚠ `&section=compass`, and the assertion used to read without it. This
-       case pinned the bug: a Compass branch opened the ATLAS home, because
-       every row used one constant. The row now opens where its surface
-       lives — see `reviewHref`. */
+    /* ⚠ `&section=dashboard`, and the assertion used to read without any
+       section at all. This case pinned the bug: every row opened the one
+       constant `/dashboard-rebrand?demo=1` whatever its scope. The row now
+       opens where its surface lives — see `reviewHref`.
+       (The fixture was a Compass branch until 2026-11-18, when Compass moved
+       to its own Hub and stopped listing here — see `SCOPES_ELSEWHERE`.) */
     expect(link).toHaveAttribute(
       'href',
-      'https://feat-compass-streak--ux-design-xceldashboard.netlify.app/dashboard-rebrand?demo=1&section=compass',
+      'https://feat-atlas-streak--ux-design-xceldashboard.netlify.app/dashboard-rebrand?demo=1&section=dashboard',
     )
     expect(link).toHaveAttribute('target', '_blank')
-    expect(screen.getByText('Compass')).toBeInTheDocument()
+    expect(screen.getByText('Atlas Learning')).toBeInTheDocument()
     expect(screen.getByText('In design')).toBeInTheDocument()
-    expect(screen.getByText(/feat\/compass-streak · built 2026-11-15/)).toBeInTheDocument()
+    expect(screen.getByText(/feat\/atlas-streak · built 2026-11-15/)).toBeInTheDocument()
   })
 
   /* The whole point: nothing is written. The section reads two endpoints and
@@ -266,7 +268,7 @@ describe('the Design section', () => {
       branches: {
         ...ok,
         branches: [
-          served({ branch: 'feat/compass-streak', build: 'building' }),
+          served({ branch: 'feat/atlas-streak', build: 'building' }),
           served({ branch: 'feat/atlas-home', build: 'failed' }),
         ],
       },
@@ -283,7 +285,7 @@ describe('the Design section', () => {
       branches: {
         ...ok,
         branches: [
-          served({ branch: 'feat/compass-streak', onStage: true }),
+          served({ branch: 'feat/atlas-streak', onStage: true }),
           served({ branch: 'feat/atlas-home', onStage: true, released: true }),
         ],
       },
@@ -305,8 +307,8 @@ describe('the Design section', () => {
       branches: {
         ...ok,
         branches: [
-          served({ branch: 'feat/compass-study-planner' }),
-          served({ branch: 'feat/compass-study-planner--dense' }),
+          served({ branch: 'feat/atlas-study-planner' }),
+          served({ branch: 'feat/atlas-study-planner--dense' }),
         ],
       },
     })
@@ -343,11 +345,76 @@ describe('the Design section', () => {
     render(<DemoPanel />)
     await screen.findByRole('button', { name: /Add the first link/ })
     expect(screen.queryByText('Branch builds')).not.toBeInTheDocument()
-    expect(screen.queryByText('feat/compass-streak')).not.toBeInTheDocument()
+    expect(screen.queryByText('feat/atlas-streak')).not.toBeInTheDocument()
   })
 })
 
 /* ── the branch name ──────────────────────────────────────────────────────── */
+
+describe('branches that name no surface', () => {
+  /* 2026-11-18, Jillienne: "I don't want EVERY branch to show on the design
+     page. not all of the branches are design related." A row earns its place
+     by naming its surface. The unnamed ones are kept FOR NOW, collected in one
+     group that asks for the rename, rather than dropped — so a designer sees
+     their branch and what to do, instead of wondering where it went. */
+  it('collect in one group, not a section each', () => {
+    const groups = groupByFeature(
+      ['feat/keycloak-change-password', 'test/session-1', 'session-2026-11-13-practice'].map((branch) =>
+        served({ branch }),
+      ),
+    )
+    expect(groups).toHaveLength(1)
+    expect(groups[0].key).toBe(UNNAMED_KEY)
+    expect(groups[0].feature).toBe('Needs a surface name')
+    expect(groups[0].rows).toHaveLength(3)
+  })
+
+  it('sort last, however recent — a to-do is not news', () => {
+    const groups = groupByFeature([
+      served({ branch: 'feat/keycloak-change-password', updated: '2026-11-18' }),
+      served({ branch: 'feat/atlas-streak', updated: '2026-11-01' }),
+    ])
+    expect(groups.map((g) => g.key)).toEqual(['atlas:streak', UNNAMED_KEY])
+  })
+
+  it('a named branch is untouched by any of it', () => {
+    const groups = groupByFeature([served({ branch: 'feat/atlas-streak' })])
+    expect(groups[0].key).toBe('atlas:streak')
+    expect(groups[0].feature).toBe('Streak')
+    expect(groups[0].scope).toBe('atlas')
+  })
+})
+
+describe('a scope that moved to its own Hub', () => {
+  /* Compass moved out on 2026-11-18. The branches stay in the repo and keep
+     building; the Design section just stops listing them. */
+  it('drops every compass branch, however it is named', () => {
+    const rows = [
+      'feat/compass-three-views',
+      'test/compass-html',
+      'feat/compass-planner-stc',
+      // ⚠ This one only reaches the exclusion because the scope word is
+      // looked for ANYWHERE in the name (the same day's other fix). Under
+      // first-word-only it parsed as Other and would have stayed on the page.
+      'session-2026-11-13-compass-course',
+    ].map((branch) => served({ branch }))
+    expect(groupByFeature(rows)).toEqual([])
+    for (const r of rows) expect(listsOnDesign(parseBranch(r.branch)), r.branch).toBe(false)
+  })
+
+  it('leaves every other branch exactly where it was', () => {
+    const kept = ['feat/invite-flow-v3', 'erics-atlas-primary', 'feat/design-section']
+    for (const b of kept) expect(listsOnDesign(parseBranch(b)), b).toBe(true)
+    const groups = groupByFeature(kept.map((branch) => served({ branch })))
+    expect(groups).toHaveLength(3)
+  })
+
+  it('is one list, and compass is on it', () => {
+    // The undo is deleting an entry here; the test names the fact so a silent
+    // re-add or removal is visible.
+    expect([...SCOPES_ELSEWHERE]).toEqual(['compass'])
+  })
+})
 
 describe('parseBranch — the only thing a designer authors', () => {
   it('reads scope and feature off the name', () => {
@@ -446,8 +513,8 @@ describe('parseBranch — the only thing a designer authors', () => {
   })
   it('groups newest activity first', () => {
     const g = groupByFeature([
-      served({ branch: 'feat/compass-a', updated: '2026-11-01' }),
-      served({ branch: 'feat/compass-b', updated: '2026-11-10' }),
+      served({ branch: 'feat/atlas-a', updated: '2026-11-01' }),
+      served({ branch: 'feat/atlas-b', updated: '2026-11-10' }),
     ])
     expect(g.map((x) => x.feature)).toEqual(['B', 'A'])
   })

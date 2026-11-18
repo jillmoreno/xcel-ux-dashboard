@@ -34,7 +34,7 @@ import { HubRow, type HubRowTag } from './HubRow'
 import { GeneratedThumb } from './GeneratedThumb'
 import { safeBranchHref, useBranches, type BranchIndex } from '@/data/branchStore'
 import { reviewHref, scopeLabel, scopeOwner } from '@/data/branchName'
-import { groupByFeature, stageOf, type DesignRow, type DesignStage } from '@/data/designBranches'
+import { groupByFeature, stageOf, UNNAMED_KEY, type DesignRow, type DesignStage } from '@/data/designBranches'
 import type { FeatureAccent, PrototypeScope } from '@/data/prototypeFeatures'
 import { LINK_PRODUCTS, type LinkProduct } from '@/data/linkStore'
 
@@ -129,6 +129,22 @@ const groupNameStyle: CSSProperties = {
   letterSpacing: 0.6,
   textTransform: 'uppercase',
   color: 'var(--ux-text-2)',
+}
+
+const renameHintStyle: CSSProperties = {
+  margin: '0 0 10px',
+  fontSize: 12,
+  lineHeight: 1.6,
+  color: 'var(--ux-text-2)',
+}
+
+const codeStyle: CSSProperties = {
+  fontFamily: 'var(--font-mono, ui-monospace, monospace)',
+  fontSize: 11,
+  padding: '1px 4px',
+  borderRadius: 3,
+  background: 'var(--ux-bg)',
+  color: 'var(--ux-text)',
 }
 
 const groupMetaStyle: CSSProperties = { fontSize: 12, color: 'var(--ux-text-3)' }
@@ -246,9 +262,25 @@ export function DesignPanel({ index: given }: { index?: BranchIndex } = {}) {
               <span style={groupMetaStyle}>
                 {[g.scope && scopeLabel(g.scope), g.scope && scopeOwner(g.scope) && `owner ${scopeOwner(g.scope)}`]
                   .filter(Boolean)
-                  .join(' · ') || 'Other branches'}
+                  .join(' · ') || 'not filed under a surface'}
               </span>
             </div>
+            {/* THE ASK, not a label (2026-11-18). This group used to read
+                "Other branches", which named the problem and said nothing
+                about it — so the rows sat there for weeks. A row earns its
+                place by naming its surface; this is the one line that says
+                how, right where the rows that need it are. */}
+            {g.key === UNNAMED_KEY && (
+              <p style={renameHintStyle}>
+                These don’t say which surface they’re for, so they aren’t filed yet. Rename the
+                branch to start with yours — <code style={codeStyle}>feat/atlas-…</code>,{' '}
+                <code style={codeStyle}>feat/compass-…</code>,{' '}
+                <code style={codeStyle}>feat/invite-…</code>,{' '}
+                <code style={codeStyle}>feat/admin-…</code> — and push. Or say{' '}
+                <code style={codeStyle}>/share-branch</code> and it offers the rename for you.
+                Branches that aren’t design work can be left as they are.
+              </p>
+            )}
             <div style={{ display: 'grid', gap: 10 }}>
               {g.rows.map((r) => (
                 <DesignRowCard key={r.deploy.branch} row={r} />
