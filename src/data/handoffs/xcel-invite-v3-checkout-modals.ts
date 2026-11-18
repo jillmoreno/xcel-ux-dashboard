@@ -464,7 +464,7 @@ const feature: PrototypeFeature = {
       items: [
         {
           question: 'When is the partner code asked?',
-          decision: 'After Checkout, on every B2C flow, whether or not the learner is signed into XCEL (OCD) — before the cart is changed or the email asked, because a partner code changes where the purchase happens.',
+          decision: 'After Checkout, on every B2C flow whose cart holds a targeted SKU (with none, Checkout does nothing), whether or not the learner is signed into XCEL (OCD) — before the cart is changed or the email asked, because a partner code changes where the purchase happens.',
           status: 'Decided',
         },
         {
