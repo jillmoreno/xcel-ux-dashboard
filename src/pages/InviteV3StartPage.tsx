@@ -74,7 +74,7 @@ export function InviteV3StartPage() {
             flow in one place (2026-11-18, Afsana) — on both tabs. */}
         <p style={PROTOTYPE_NOTE}>
           To access the prototype that captures all of these flows, click{' '}
-          <a href={FULL_PROTOTYPE} style={PROTOTYPE_LINK}>
+          <a href={FULL_PROTOTYPE} target="_blank" rel="noopener noreferrer" style={PROTOTYPE_LINK}>
             here
           </a>
           . Reach out to Afsana if you have any questions.
