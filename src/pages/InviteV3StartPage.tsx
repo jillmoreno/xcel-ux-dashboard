@@ -251,7 +251,7 @@ const PAGE: CSSProperties = {
 const COLUMN: CSSProperties = { maxWidth: 760, margin: '0 auto', display: 'grid', gap: 32 }
 
 /* The branch build's address, in full (2026-11-18, Afsana). */
-const FULL_PROTOTYPE = 'https://feat-invite-flow-v3--ux-design-xceldashboard.netlify.app/end-to-end-demo/qr?demo=1&version=jill-atlas-main'
+const FULL_PROTOTYPE = 'https://feat-invite-flow-v3--ux-design-xceldashboard.netlify.app/end-to-end-demo/email?demo=1&version=jill-atlas-main'
 
 const PROTOTYPE_NOTE: CSSProperties = {
   margin: 0,
