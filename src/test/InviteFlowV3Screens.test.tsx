@@ -335,6 +335,8 @@ describe('Invite Flow V3 — the email check', () => {
     expect(go).toBeDisabled()
     expect(field).toHaveAccessibleDescription('Please enter a valid email address')
     expect(field).toHaveAttribute('aria-invalid', 'true')
+    /* The line is enough — no red stroke under the field (2026-11-18). */
+    expect(field.style.boxShadow).toBe('')
     await userEvent.type(field, '.com')
     expect(go).toBeEnabled()
     expect(screen.queryByText('Please enter a valid email address')).not.toBeInTheDocument()
@@ -497,7 +499,8 @@ describe('Invite Flow V3 — the email check', () => {
     expect(screen.getByRole('alert')).toHaveTextContent('We couldn’t log you in. Please try again.')
     expect(screen.getByRole('heading', { name: 'Log in to continue' })).toBeInTheDocument()
     expect(password).toHaveAttribute('aria-describedby', 'login-failed')
-    expect(password.style.boxShadow).toBe('inset 0 -2px 0 var(--color-error-600)')
+    /* The line is enough — no red stroke under the field (2026-11-18). */
+    expect(password.style.boxShadow).toBe('')
 
     await userEvent.type(password, '!')
     expect(screen.queryByRole('alert')).not.toBeInTheDocument()
@@ -569,6 +572,7 @@ describe('Invite Flow V3 — the email check', () => {
     await userEvent.type(within(dialog).getByLabelText(/^Confirm new password/), 'Navarro#20')
     expect(within(dialog).getByRole('alert')).toHaveTextContent('Passwords do not match.')
     expect(reset).toBeDisabled()
+    expect(within(dialog).getByLabelText(/^Confirm new password/).style.boxShadow).toBe('')
     await userEvent.type(within(dialog).getByLabelText(/^Confirm new password/), '27')
     expect(reset).toBeEnabled()
 
@@ -651,6 +655,8 @@ describe('Invite Flow V3 — the endings', () => {
     await userEvent.type(confirm, 'Navarro#20')
     expect(screen.getByRole('alert')).toHaveTextContent('Passwords do not match.')
     expect(save).toBeDisabled()
+    /* The text is enough — no red outline on the field (2026-11-18). */
+    expect(confirm.parentElement!.style.border).not.toContain('error')
     await userEvent.type(confirm, '26')
     expect(screen.queryByRole('alert')).not.toBeInTheDocument()
     expect(save).toBeEnabled()
