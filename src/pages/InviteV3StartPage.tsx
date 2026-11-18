@@ -1,6 +1,7 @@
 import { useState, type CSSProperties } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { PillTabs } from '@/components/ui/PillTabs'
+import { ArrowUpRightFromSquare, ChevronDown } from '@/icons'
 import { FEATURE_FLAGS } from '@/context/FeatureFlagContext'
 import {
   INVITE_FLOWS_V3,
@@ -77,7 +78,7 @@ export function InviteV3StartPage() {
             <a href={FULL_PROTOTYPE} style={PROTOTYPE_LINK}>
               here
             </a>
-            .
+            . Reach out to Afsana if you have any questions.
           </p>
         ) : null}
         <div>
@@ -160,38 +161,59 @@ function FlowRow({ flow }: { flow: InviteFlowV3 }) {
         {b2c ? (
           <label style={CART_LABEL}>
             Cart
-            <select value={cart} onChange={(e) => setCart(e.target.value)} style={SELECT}>
-              {CARTS.map((c) => (
-                <option key={c.value} value={c.value}>
-                  {c.label}
-                </option>
-              ))}
-            </select>
+            <Dropdown value={cart} onChange={setCart} options={CARTS} />
           </label>
         ) : PRODUCTS.length > 0 ? (
           <label style={CART_LABEL}>
             Products
-            <select value={product} onChange={(e) => setProduct(e.target.value)} style={SELECT}>
-              {PRODUCTS.map((p) => (
-                <option key={p.value} value={p.value}>
-                  {p.label}
-                </option>
-              ))}
-            </select>
+            <Dropdown value={product} onChange={setProduct} options={PRODUCTS} />
           </label>
         ) : null}
         {starts.map((s) => (
+          /* Secondary, and in a new tab so this page stays open to start the
+             next one (2026-11-18, Afsana). The hover is `.cre-v3-start` in
+             inviteFlow.css. */
           <Link
             key={s.label}
             to={startHref(flow, s.account, b2c ? cart : null, b2c ? null : product)}
-            className="cre-e2e-cta"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="cre-v3-start"
             style={START}
           >
             {s.label}
+            <ArrowUpRightFromSquare size={13} aria-hidden />
+            <span style={VISUALLY_HIDDEN}> (opens in a new tab)</span>
           </Link>
         ))}
       </div>
     </article>
+  )
+}
+
+/** Cart and Products. Our own chevron, 12px in from the right like the
+ *  text is from the left — the browser's arrow sat against the edge
+ *  (2026-11-18, Afsana). */
+function Dropdown({
+  value,
+  onChange,
+  options,
+}: {
+  value: string
+  onChange: (value: string) => void
+  options: readonly { value: string; label: string }[]
+}) {
+  return (
+    <span style={{ position: 'relative', display: 'inline-flex' }}>
+      <select value={value} onChange={(e) => onChange(e.target.value)} style={SELECT}>
+        {options.map((o) => (
+          <option key={o.value} value={o.value}>
+            {o.label}
+          </option>
+        ))}
+      </select>
+      <ChevronDown size={14} aria-hidden style={SELECT_CHEVRON} />
+    </span>
   )
 }
 
@@ -293,12 +315,31 @@ const ACTIONS: CSSProperties = { display: 'flex', flexWrap: 'wrap', alignItems: 
 const START: CSSProperties = {
   display: 'inline-flex',
   alignItems: 'center',
+  gap: 8,
   minHeight: 40,
   padding: '0 16px',
   borderRadius: 8,
   fontSize: 14,
   fontWeight: 800,
   textDecoration: 'none',
+  whiteSpace: 'nowrap',
+}
+
+const SELECT_CHEVRON: CSSProperties = {
+  position: 'absolute',
+  right: 12,
+  top: '50%',
+  transform: 'translateY(-50%)',
+  color: 'var(--color-text-primary)',
+  pointerEvents: 'none',
+}
+
+const VISUALLY_HIDDEN: CSSProperties = {
+  position: 'absolute',
+  width: 1,
+  height: 1,
+  overflow: 'hidden',
+  clip: 'rect(0 0 0 0)',
   whiteSpace: 'nowrap',
 }
 
@@ -311,8 +352,10 @@ const CART_LABEL: CSSProperties = {
 }
 
 const SELECT: CSSProperties = {
+  appearance: 'none',
   minHeight: 40,
-  padding: '0 10px',
+  padding: '0 36px 0 12px',
+  cursor: 'pointer',
   borderRadius: 8,
   border: '1px solid var(--color-e2e-card-outline)',
   background: 'var(--color-e2e-field)',

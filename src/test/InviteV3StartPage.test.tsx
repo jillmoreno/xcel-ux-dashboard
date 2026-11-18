@@ -86,6 +86,23 @@ describe('the stand-alone invite flow page', () => {
     )
   })
 
+  it('opens each Start in a new tab, as a secondary button that says so', () => {
+    render(
+      <MemoryRouter initialEntries={['/invite-v3']}>
+        <InviteV3StartPage />
+      </MemoryRouter>,
+    )
+    const starts = screen.getAllByRole('link', { name: /Atlas account \(opens in a new tab\)/ })
+    expect(starts).toHaveLength(8)
+    for (const link of starts) {
+      expect(link).toHaveAttribute('target', '_blank')
+      expect(link).toHaveAttribute('rel', 'noopener noreferrer')
+      expect(link).toHaveClass('cre-v3-start')
+      expect(link.querySelector('svg')).not.toBeNull()
+    }
+    expect(screen.getByText(/Reach out to Afsana if you have any questions\./)).toBeInTheDocument()
+  })
+
   it('fills the cart for the flows that start there', () => {
     render(
       <MemoryRouter>
@@ -140,7 +157,7 @@ describe('the stand-alone page’s Screens tab', () => {
     await userEvent.click(screen.getByRole('tab', { name: 'Screens' }))
     expect(await screen.findByRole('button', { name: '2. Verify your email — Wrong code' })).toBeInTheDocument()
     expect(screen.getByText(/Captured 2026-11-18/)).toBeInTheDocument()
-    expect(screen.queryByRole('link', { name: 'No Atlas account' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: /No Atlas account/ })).not.toBeInTheDocument()
   })
 
   it('opens a picture full size, and steps through them', async () => {

@@ -362,3 +362,19 @@
   /* !important: the icon carries an inline display of its own. */
   display: none !important;
 }
+
+/* /invite-v3's Start buttons — secondary: white, black outline and text;
+   a light grey fill on hover (2026-11-18, Afsana). */
+.cre-v3-start {
+  background: var(--color-fixed-light);
+  color: var(--color-fixed-dark);
+  border: 1px solid var(--color-fixed-dark);
+  transition: background-color 0.15s ease;
+}
+.cre-v3-start:hover {
+  background: var(--color-neutral-100);
+}
+.cre-v3-start:focus-visible {
+  outline: 2px solid var(--color-fixed-dark);
+  outline-offset: 2px;
+}
