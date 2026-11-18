@@ -82,7 +82,7 @@ describe('the stand-alone invite flow page', () => {
     expect(screen.getByText(/To access the prototype that captures all of these flows, click/)).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'here' })).toHaveAttribute(
       'href',
-      'https://feat-invite-flow-v3--ux-design-xceldashboard.netlify.app/end-to-end-demo/qr?demo=1&version=jill-atlas-main',
+      'https://feat-invite-flow-v3--ux-design-xceldashboard.netlify.app/end-to-end-demo/email?demo=1&version=jill-atlas-main',
     )
     await userEvent.click(screen.getByRole('tab', { name: 'Screens' }))
     expect(screen.getByText(/To access the prototype that captures all of these flows, click/)).toBeInTheDocument()
