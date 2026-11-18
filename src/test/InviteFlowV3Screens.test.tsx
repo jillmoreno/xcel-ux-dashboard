@@ -1204,11 +1204,31 @@ describe('Invite Flow V3 — signed in to XCEL (OCD)', () => {
       </MemoryRouter>,
     )
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    expect(screen.queryByText(/This is the email on your XCEL account/)).not.toBeInTheDocument()
     await userEvent.click(screen.getByRole('button', { name: 'Save and continue' }))
     await userEvent.click(screen.getAllByRole('button', { name: /click to fill/i })[0])
     await userEvent.click(screen.getByRole('button', { name: 'Confirm Payment Method' }))
     await userEvent.click(screen.getByRole('button', { name: 'Place your order' }))
     expect(screen.queryByRole('dialog', { name: 'Placing your order' })).not.toBeInTheDocument()
+  })
+
+  it('asks a signed-out cart with nothing targeted for its email once — no Re-enter field', async () => {
+    const ff = 'invite-flow-version:v3,invite-v3-model:b2c,invite-v3-flow-b2c:xcel-signed-out,invite-v3-cart:none'
+    window.history.replaceState({}, '', `${CHECKOUT}?ff=${ff}`)
+    render(
+      <MemoryRouter initialEntries={[`${CHECKOUT}?ff=${ff}&lstate=Arizona&loa=Health&pkg=premier&partner=no`]}>
+        <AccountProvider>
+          <FeatureFlagProvider>
+            <Routes>
+              <Route path="/end-to-end-demo/checkout" element={<InvitedCheckoutRoute />} />
+            </Routes>
+          </FeatureFlagProvider>
+        </AccountProvider>
+      </MemoryRouter>,
+    )
+    expect(screen.getByText('Email address')).toBeInTheDocument()
+    expect(screen.queryByText('Re-enter email address')).not.toBeInTheDocument()
+    expect(screen.queryByText(/Your order confirmation will be sent here|Enter it twice/)).not.toBeInTheDocument()
   })
 
   it('takes a cart with nothing targeted to the existing checkout on No', async () => {
