@@ -215,7 +215,6 @@ export function VerifyEmailModalV3({
              whether or not the flow's `signsIn` does. */
           <LoginStep
             email={email}
-            supplied={Boolean(suppliedEmail)}
             onLoggedIn={() => setStep('signing-in')}
           />
         ) : (
@@ -569,13 +568,9 @@ function formatCountdown(seconds: number): string {
  *  is a password. Any password is accepted, as in the file. */
 function LoginStep({
   email,
-  supplied,
   onLoggedIn,
 }: {
   email: string
-  /** Direct Email: the partner supplied the address, and Log in shows it in
-   *  an Email field, filled and locked (2026-11-18, Afsana). */
-  supplied: boolean
   onLoggedIn: () => void
 }) {
   const [password, setPassword] = useState('')
@@ -698,42 +693,34 @@ function LoginStep({
             <span>Your password has been reset.</span>
           </p>
         ) : null}
-        {/* The address in the sentence, not a field (2026-11-03, Afsana) — it
-            was a locked email field above the password. */}
-        {supplied ? (
-          <p id="verify-email-lead" style={LEAD}>
-            Welcome back, {E2E_LEARNER_FIRST}! Sign in to finish checking out.
-          </p>
-        ) : (
-          <p id="verify-email-lead" style={LEAD}>
-            Welcome back, {E2E_LEARNER_FIRST}! Sign in to <strong style={{ fontWeight: 800 }}>{email.trim()}</strong>{' '}
-            to finish checking out.
-          </p>
-        )}
+        {/* The address goes in the locked field below, on every flow
+            (2026-11-18, Afsana). From 2026-11-03 it was bold in this sentence
+            on all but Direct Email. */}
+        <p id="verify-email-lead" style={LEAD}>
+          Welcome back, {E2E_LEARNER_FIRST}! Sign in to finish checking out.
+        </p>
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-        {/* Direct Email's address, pre-filled from the email step and locked —
-            the checkout's grey, no lock icon (2026-11-18, Afsana; editable
-            from 2026-11-13 until the email step came first). */}
-        {supplied ? (
-          <div style={FIELD_AND_ERROR}>
-            <label htmlFor="login-email" style={FIELD_GROUP}>
-              <span style={FIELD_LABEL}>
-                Email <span aria-hidden>*</span>
-              </span>
-              <input
-                id="login-email"
-                type="email"
-                value={email}
-                disabled
-                readOnly
-                className="cre-e2e-input cre-e2e-input-v3"
-                style={{ ...FIELD, ...FIELD_DISABLED }}
-              />
-            </label>
-          </div>
-        ) : null}
+        {/* The address from the email step, pre-filled and locked — the
+            checkout's grey, no lock icon — on every flow (2026-11-18,
+            Afsana). */}
+        <div style={FIELD_AND_ERROR}>
+          <label htmlFor="login-email" style={FIELD_GROUP}>
+            <span style={FIELD_LABEL}>
+              Email <span aria-hidden>*</span>
+            </span>
+            <input
+              id="login-email"
+              type="email"
+              value={email}
+              disabled
+              readOnly
+              className="cre-e2e-input cre-e2e-input-v3"
+              style={{ ...FIELD, ...FIELD_DISABLED }}
+            />
+          </label>
+        </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
           <label htmlFor="login-password" style={FIELD_GROUP}>
             <span style={FIELD_LABEL}>
