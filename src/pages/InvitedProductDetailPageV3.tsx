@@ -1159,8 +1159,8 @@ function ChooseCourseScreen({
           </div>
           <CourseChoiceFields
             idPrefix="v3-choose"
-            stateLabel="Choose your state"
-            loaLabel="Pick your line of authority"
+            stateLabel="State"
+            loaLabel="Line of authority"
             state={typed}
             onState={setTyped}
             loa={loa}
@@ -1294,8 +1294,9 @@ const CHOOSE_RULE: CSSProperties = {
 const CHOOSE_BODY: CSSProperties = {
   margin: 0,
   fontFamily: 'var(--font-e2e-avenir)',
-  fontSize: 14,
-  lineHeight: '21px',
+  /* 16, up from 14 (2026-11-18, Afsana). */
+  fontSize: 16,
+  lineHeight: '24px',
   color: 'var(--color-text-primary)',
 }
 
