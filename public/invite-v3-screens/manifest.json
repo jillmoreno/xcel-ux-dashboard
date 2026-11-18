@@ -273,32 +273,22 @@
               "state": "Products: California — full page"
             },
             {
-              "file": "direct-email/products/09-youve-been-invited-products-multi-product-old.png",
-              "title": "You’ve been invited",
-              "state": "Products: Multi-product (Old)"
-            },
-            {
-              "file": "direct-email/products/10-youve-been-invited-products-multi-product-old-full-page.png",
-              "title": "You’ve been invited",
-              "state": "Products: Multi-product (Old) — full page"
-            },
-            {
-              "file": "direct-email/products/11-select-your-state-and-line-of-authority-opened-on-the-curren.png",
+              "file": "direct-email/products/09-select-your-state-and-line-of-authority-opened-on-the-curren.png",
               "title": "Select your state and line of authority",
               "state": "Opened on the current course"
             },
             {
-              "file": "direct-email/products/12-select-your-state-and-line-of-authority-state-list-filtered-.png",
+              "file": "direct-email/products/10-select-your-state-and-line-of-authority-state-list-filtered-.png",
               "title": "Select your state and line of authority",
               "state": "State list filtered while typing"
             },
             {
-              "file": "direct-email/products/13-select-your-state-and-line-of-authority-changed-continue-ena.png",
+              "file": "direct-email/products/11-select-your-state-and-line-of-authority-changed-continue-ena.png",
               "title": "Select your state and line of authority",
               "state": "Changed, Continue enabled"
             },
             {
-              "file": "direct-email/products/14-youve-been-invited-after-continue-texas-life.png",
+              "file": "direct-email/products/12-youve-been-invited-after-continue-texas-life.png",
               "title": "You’ve been invited",
               "state": "After Continue — Texas Life"
             }
