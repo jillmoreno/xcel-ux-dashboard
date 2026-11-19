@@ -67,7 +67,7 @@ export function InviteV3StartPage() {
           <p style={LEAD}>
             {tab === 'flows'
               ? 'Pick a flow and start it. Each one runs the flow’s own pages, from the invitation to Setting up your account, and stops there.'
-              : 'Every screen, modal and state of each flow, in the order the flow walks them. Click one to see it full size.'}
+              : 'Each component and its states, once, with the flows that use it — then the pages. Click one to see it full size.'}
           </p>
         </header>
         {/* The whole prototype, with its Hub bar and design controls — every

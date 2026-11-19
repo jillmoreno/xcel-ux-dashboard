@@ -4,17 +4,28 @@
  *
  * Walks the four Invite Flow V3 flows (Direct Email, QR Code, Not signed into
  * XCEL, Signed into XCEL) in a headless Chromium and screenshots every
- * screen, modal and distinct state at 1440×900, writing
+ * screen, modal and distinct state at 1440×900.
  *
- *   public/invite-v3-screens/<flowId>/<variantSlug>/NN-<slug>.png
+ * ⚠ GROUPED BY COMPONENT, NOT BY WALK — 2026-11-19, Afsana: "an isolation of
+ * each component and their different states would be better instead of
+ * screenshots of the entire flow end to end". The walks still run end to end
+ * (that is the only way to reach most states), but each shot is filed under
+ * its component and state, once, with the flows that reach it:
+ *
+ *   - a modal is cropped to the modal (`[role=dialog]`);
+ *   - a card drawn on a page — the state picker, Finish setting up your
+ *     account — is cropped to its card (`CARD_TITLES`);
+ *   - everything else is a page, and stays the whole viewport.
+ *
+ *   public/invite-v3-screens/<modals|cards|pages>/<component>/NN-<state>.png
  *   public/invite-v3-screens/manifest.json
  *
  * Usage:  node scripts/capture-invite-v3-screens.mjs [baseUrl]
  *         (baseUrl defaults to http://localhost:5210 — a production build
  *         served with SPA fallback, e.g. `npx vite preview`.)
  *
- * Optional: a second arg filters to one flow id (e.g. `qr`) — the manifest is
- * then merged with the existing one rather than replaced.
+ * Always a full run: a component's states come from several flows, so one
+ * flow cannot be re-captured on its own any more.
  *
  * Playwright is not a repo dependency. This resolves `playwright-core` from
  * the npx cache (the same copy `npx playwright` installs), or from
@@ -62,7 +73,6 @@ const { chromium } = loadPlaywright()
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const OUT = path.join(ROOT, 'public/invite-v3-screens')
 const BASE = (process.argv[2] ?? 'http://localhost:5210').replace(/\/$/, '')
-const ONLY = process.argv[3] ?? null
 /* 1440 wide, not 1280 (2026-11-18, Afsana: the product pages "appear to not
    capture the full original width"). Eric's product page footer runs to
    1417px, so at 1280 the full-page shots had a white strip down the right. */
@@ -102,31 +112,57 @@ const slugify = (s) =>
     .replace(/^-|-$/g, '')
     .slice(0, 60)
 
+/* Cards drawn on a page rather than in a dialog, cropped to the card. */
+const CARD_TITLES = ['Select your state and line of authority', 'Finish setting up your account']
+
+/* Every shot of the run, in walk order, before it is grouped. */
+const ALL_SHOTS = []
+/* Which flow and variant is walking — set by `main` before each run. */
+let CURRENT = { flow: '', variant: '', model: '' }
+
 class Walk {
-  constructor(page, flowId, variantSlug) {
+  constructor(page) {
     this.page = page
-    this.dir = `${flowId}/${variantSlug}`
-    this.shots = []
-    this.n = 0
     this.hashes = new Set()
-    fs.mkdirSync(path.join(OUT, this.dir), { recursive: true })
   }
 
-  /** Screenshot the viewport (and optionally the full page) — skipped if identical to an earlier shot in this walk. */
+  /** One state: cropped to its modal or card, or the page's viewport (or the
+   *  full page). Skipped when identical to an earlier shot in this walk. */
   async shot(title, state, { fullPage = false, settle = 350 } = {}) {
     await this.page.waitForTimeout(settle)
-    const buf = await this.page.screenshot({ fullPage, animations: 'disabled', caret: 'hide' })
+    const shotOpts = { animations: 'disabled', caret: 'hide' }
+    let kind = 'page'
+    let buf = null
+    const dialog = this.page.locator('[role=dialog]:visible').last()
+    if (!fullPage && (await dialog.count())) {
+      kind = 'modal'
+      buf = await dialog.screenshot(shotOpts)
+    } else if (!fullPage && CARD_TITLES.includes(title)) {
+      const card = await this.page.evaluateHandle((t) => {
+        const h = [...document.querySelectorAll('h1,h2,h3')].find((e) => e.textContent.trim() === t)
+        let el = h
+        while (el && el !== document.body) {
+          const cs = getComputedStyle(el)
+          if (cs.boxShadow !== 'none' || parseFloat(cs.borderTopLeftRadius) >= 6) return el
+          el = el.parentElement
+        }
+        return h
+      }, title)
+      const el = card.asElement()
+      if (el) {
+        kind = 'card'
+        buf = await el.screenshot(shotOpts)
+      }
+    }
+    if (!buf) buf = await this.page.screenshot({ ...shotOpts, fullPage })
     const hash = createHash('sha1').update(buf).digest('hex')
     if (this.hashes.has(hash)) {
       console.log(`   = skip duplicate: ${title} · ${state}`)
       return
     }
     this.hashes.add(hash)
-    this.n += 1
-    const file = `${this.dir}/${String(this.n).padStart(2, '0')}-${slugify(`${title} ${state}`)}.png`
-    fs.writeFileSync(path.join(OUT, file), buf)
-    this.shots.push({ file, title, state })
-    console.log(`   ${String(this.n).padStart(2, '0')} ${title} · ${state}${fullPage ? ' (full page)' : ''}`)
+    ALL_SHOTS.push({ buf, hash, title, state, kind, ...CURRENT })
+    console.log(`   ${kind.padEnd(5)} ${title} · ${state}${fullPage ? ' (full page)' : ''}`)
   }
 
   btn(name, { exact = true, scope = null } = {}) {
@@ -407,7 +443,7 @@ async function pdpTitle(p) {
 
 async function directEmail(page, account) {
   const atlas = account === 'atlas'
-  const w = new Walk(page, 'direct-email', atlas ? 'atlas' : 'no-atlas')
+  const w = new Walk(page)
   await go(page, startUrl('direct-email', { account, product: 'standard' }))
   await w.shot('You’re Invited to Get Licensed', 'Invitation email open')
   await w.click('View invitation', { wait: 900 })
@@ -419,13 +455,13 @@ async function directEmail(page, account) {
     await codeCheck(w)
     await nameStep(w)
   }
-  await checkout(w)
+  await checkout(w, { arrival: atlas ? 'After Log in — filled from the account' : 'After the code — empty' })
   await ending(w, { atlas })
   return w
 }
 
 async function directEmailProducts(page) {
-  const w = new Walk(page, 'direct-email', 'products')
+  const w = new Walk(page)
   for (const [value, label] of PRODUCTS) {
     await go(page, startUrl('direct-email', { account: 'no-atlas', product: value }))
     await w.click('View invitation', { wait: 900 })
@@ -462,7 +498,7 @@ async function directEmailProducts(page) {
 
 async function qr(page, account) {
   const atlas = account === 'atlas'
-  const w = new Walk(page, 'qr', atlas ? 'atlas' : 'no-atlas')
+  const w = new Walk(page)
   await go(page, startUrl('qr', { account, product: 'standard' }))
   await w.shot('QR code', 'Partner’s QR code')
   await page.getByRole('button', { name: /Scan the code|QR code for/ }).first().click()
@@ -491,7 +527,7 @@ async function qr(page, account) {
     await codeCheck(w, { emailStates: true })
     await nameStep(w)
   }
-  await checkout(w)
+  await checkout(w, { arrival: atlas ? 'After Log in — filled from the account' : 'After the code — empty' })
   await ending(w, { atlas })
   return w
 }
@@ -500,7 +536,7 @@ async function qr(page, account) {
 async function b2c(page, flowId, cart, account, slug) {
   const atlas = account === 'atlas'
   const signedIn = flowId === 'xcel-signed-in'
-  const w = new Walk(page, flowId, slug)
+  const w = new Walk(page)
   await go(page, startUrl(flowId, { account, cart }))
   await w.shot('Your cart', `${{ targeted: 'Targeted course', mixed: 'Targeted course and an unsupported item', none: 'Nothing targeted' }[cart]}${signedIn ? ', signed in' : ', signed out'}`)
   /* Nothing targeted: Checkout goes nowhere — today's OCD checkout, not
@@ -536,7 +572,7 @@ async function b2c(page, flowId, cart, account, slug) {
   }
   /* A mixed cart walks the targeted cart's checkout once the item is dropped —
      its validation and card states are the targeted walk's, so skip them. */
-  await checkout(w, { brief: cart === 'mixed' })
+  await checkout(w, { brief: cart === 'mixed', arrival: atlas ? 'After Log in — filled from the account' : 'After the code — empty' })
   await ending(w, { atlas, brief: cart === 'mixed' })
   return w
 }
@@ -579,6 +615,42 @@ const PLAN = [
 
 /* ---------- run ---------- */
 
+/** File every shot under its component and state, once — the first walk
+ *  that reaches a state gives its picture, and every walk that reaches it
+ *  is listed.
+ *
+ *  ⚠ A PAGE IS KEPT ONCE PER MODEL, not once per flow: the checkout and the
+ *  ending carry each flow's name and price, so no two flows' pictures are
+ *  byte-identical, and keying on the picture filed the checkout 27 times.
+ *  B2B2C and B2C genuinely differ (partner price, the cart), so where a page
+ *  state appears in both, each is named for its model. */
+function group(shots) {
+  const components = new Map()
+  for (const s of shots) {
+    const key = `${s.kind}:${s.title}`
+    if (!components.has(key)) components.set(key, { kind: s.kind, title: s.title, flows: [], states: [] })
+    const c = components.get(key)
+    if (!c.flows.includes(s.flow)) c.flows.push(s.flow)
+    const where = `${s.flow} · ${s.variant}`
+    const model = s.kind === 'page' ? s.model : ''
+    const same = c.states.find((st) => st.state === s.state && st.model === model)
+    if (same) {
+      if (!same.seenIn.includes(where)) same.seenIn.push(where)
+      continue
+    }
+    c.states.push({ state: s.state, model, buf: s.buf, seenIn: [where] })
+  }
+  for (const c of components.values()) {
+    /* Decide every name first, then rename — renaming as it goes left the
+       second model's states unnamed. */
+    const both = c.states.map((st) => Boolean(st.model) && c.states.some((o) => o !== st && o.state === st.state))
+    c.states.forEach((st, n) => {
+      if (both[n]) st.state = `${st.state} — ${st.model}`
+    })
+  }
+  return [...components.values()]
+}
+
 async function main() {
   try {
     const r = await fetch(`${BASE}/invite-v3`)
@@ -587,23 +659,12 @@ async function main() {
     console.error(`capture-invite-v3-screens: ${BASE} is not answering (${e.message}). Serve a build there first.`)
     process.exit(1)
   }
-  const manifestPath = path.join(OUT, 'manifest.json')
-  const previous = ONLY && fs.existsSync(manifestPath) ? JSON.parse(fs.readFileSync(manifestPath, 'utf8')) : null
   const browser = await chromium.launch()
-  const flows = []
   const failures = []
   for (const flow of PLAN) {
-    if (ONLY && flow.id !== ONLY) {
-      const kept = previous?.flows.find((f) => f.id === flow.id)
-      if (kept) flows.push(kept)
-      continue
-    }
-    const variants = []
     for (const v of flow.variants) {
       console.log(`\n${flow.id} / ${v.slug}`)
-      const dir = path.join(OUT, flow.id, v.slug)
-      /* A fresh folder each run: old numbered files would otherwise linger. */
-      if (fs.existsSync(dir)) fs.rmSync(dir, { recursive: true })
+      CURRENT = { flow: flow.label, variant: v.label, model: flow.model === 'b2c' ? 'B2C' : 'B2B2C' }
       const context = await browser.newContext({ viewport: VIEWPORT, deviceScaleFactor: 1 })
       /* The pictures are of the flow, not of which flow it is — the stand-alone
          walk's light blue banner (`InviteFlowBanner`) is hidden on every page
@@ -620,24 +681,36 @@ async function main() {
         else document.addEventListener('DOMContentLoaded', hide)
       })
       const page = await context.newPage()
-      let w = null
       try {
-        w = await v.run(page)
+        await v.run(page)
       } catch (e) {
         console.error(`   ! ${flow.id}/${v.slug} stopped: ${e.message.split('\n')[0]}`)
         failures.push(`${flow.id}/${v.slug}: ${e.message.split('\n')[0]}`)
-        await page.screenshot({ path: path.join(dir, 'zz-error.png') }).catch(() => {})
       }
       await context.close()
-      variants.push({ label: v.label, slug: v.slug, shots: w?.shots ?? [] })
     }
-    flows.push({ id: flow.id, label: flow.label, model: flow.model, variants })
   }
   await browser.close()
+
+  /* A fresh folder each run: old files would otherwise linger. */
+  if (fs.existsSync(OUT)) fs.rmSync(OUT, { recursive: true })
+  const folder = { modal: 'modals', card: 'cards', page: 'pages' }
+  const components = group(ALL_SHOTS).map((c) => {
+    const id = slugify(c.title)
+    const dir = path.join(OUT, folder[c.kind], id)
+    fs.mkdirSync(dir, { recursive: true })
+    const states = c.states.map((st, n) => {
+      const file = `${folder[c.kind]}/${id}/${String(n + 1).padStart(2, '0')}-${slugify(st.state)}.png`
+      fs.writeFileSync(path.join(OUT, file), st.buf)
+      return { file, state: st.state, seenIn: st.seenIn }
+    })
+    return { id: `${c.kind}-${id}`, title: c.title, kind: c.kind, flows: c.flows, states }
+  })
+  const manifestPath = path.join(OUT, 'manifest.json')
   const today = new Date().toISOString().slice(0, 10)
-  fs.writeFileSync(manifestPath, JSON.stringify({ capturedAt: today, flows }, null, 2) + '\n')
-  const count = flows.reduce((n, f) => n + f.variants.reduce((m, v) => m + v.shots.length, 0), 0)
-  console.log(`\n${count} shots → ${path.relative(ROOT, manifestPath)}`)
+  fs.writeFileSync(manifestPath, JSON.stringify({ capturedAt: today, components }, null, 2) + '\n')
+  const count = components.reduce((n, c) => n + c.states.length, 0)
+  console.log(`\n${components.length} components, ${count} states → ${path.relative(ROOT, manifestPath)}`)
   if (failures.length) {
     console.error(`\n${failures.length} walk(s) stopped early:\n  ${failures.join('\n  ')}`)
     process.exitCode = 1
