@@ -32,7 +32,7 @@ import { PartnerHeader } from '@/components/e2e/PartnerHeader'
 import { TopoBackground } from '@/components/e2e/TopoBackground'
 import { TakingYouToCourseDialog } from '@/components/e2e/TakingYouToCourseDialog'
 import { InvitePasswordChecklistV3 } from '@/components/e2e/InvitePasswordChecklistV3'
-import { Eye, EyeSlash } from '@/icons'
+import { PasswordEyeV3 } from '@/components/e2e/PasswordEyeV3'
 import { ConfirmationReceiptV3 } from '@/components/e2e/ConfirmationReceiptV3'
 import { CART_PACKAGE_PARAM, cartPackage } from '@/data/xcelCourseFinder'
 import { usePartnerAttribution } from '@/data/inviteFlows'
@@ -160,7 +160,7 @@ export function InvitedConfirmationPageV3() {
                       aria-pressed={shown}
                       style={EYE}
                     >
-                      {shown ? <EyeSlash size={16} aria-hidden /> : <Eye size={16} aria-hidden />}
+                      <PasswordEyeV3 slashed={shown} />
                     </button>
                   </span>
                 </label>
@@ -188,7 +188,7 @@ export function InvitedConfirmationPageV3() {
                         aria-pressed={confirmShown}
                         style={EYE}
                       >
-                        {confirmShown ? <EyeSlash size={16} aria-hidden /> : <Eye size={16} aria-hidden />}
+                        <PasswordEyeV3 slashed={confirmShown} />
                       </button>
                     </span>
                   </label>
@@ -369,8 +369,8 @@ const PASSWORD_INPUT: CSSProperties = {
   color: 'var(--color-text-primary)',
 }
 
-/* The icon set's Eye / Eye Slash, matching Update Password in Account Details
-   (2026-11-19, Afsana: "all eye icons should match in the password fields"). */
+/* Keycloak's eye, no pupil — `PasswordEyeV3`, the same as every V3 password
+   field and Change Password in Account Details (2026-11-19, Afsana). */
 const EYE: CSSProperties = {
   flex: 'none',
   color: 'var(--color-text-secondary)',
