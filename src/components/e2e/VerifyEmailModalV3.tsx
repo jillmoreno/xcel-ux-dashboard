@@ -733,8 +733,10 @@ function LoginStep({
           </button>
         </div>
         {/* Demo only — the email's link, so a reviewer can find the reset
-            page without knowing the whole modal is clickable. */}
-        <p style={{ ...NOTE, textAlign: 'center' }}>
+            page without knowing the whole modal is clickable.
+            `data-demo-only`: the screenshot scripts hide it, so the pictures
+            developers read show the design alone (2026-11-19, Afsana). */}
+        <p data-demo-only style={{ ...NOTE, textAlign: 'center' }}>
           Demo:{' '}
           <button type="button" className="cre-e2e-textlink" style={TEXT_LINK} onClick={openResetLink}>
             open the reset link in a new tab
@@ -888,7 +890,7 @@ function PasswordResetDone() {
       <span aria-hidden style={VERIFIED_RING}>
         <Check size={24} style={{ stroke: 'currentColor', strokeWidth: 28 }} />
       </span>
-      <h2 id="verify-email-title" style={TITLE}>
+      <h2 id="verify-email-title" style={RESET_DONE_LINE}>
         Your password has been successfully reset!
       </h2>
     </div>
@@ -1073,6 +1075,17 @@ const RULE: CSSProperties = {
   borderRadius: 1,
   background: '#dcdcdc',
   margin: '2px 0 4px',
+}
+
+/* Password reset's line: smaller than a title and not bold (2026-11-19,
+   Afsana) — 16px regular, a step above the 14px body. */
+const RESET_DONE_LINE: CSSProperties = {
+  margin: 0,
+  fontFamily: 'var(--font-e2e-avenir)',
+  fontWeight: 400,
+  fontSize: 16,
+  lineHeight: '24px',
+  color: 'var(--color-text-primary)',
 }
 
 const LEAD: CSSProperties = {
