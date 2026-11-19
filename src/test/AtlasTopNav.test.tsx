@@ -34,8 +34,16 @@ function Search() {
    cases below that pin "Eric's keeps…" pin the `atlas` ARM, reached the way a
    reviewer reaches it: `?ff=`, which the provider reads off `window.location`
    rather than the router. `afterEach` puts the URL back. */
+/* ⚠ AND THE VERSION IS PINNED ALONGSIDE IT — 2026-11-16. `compass-mvp-version`
+   defaults to `refined` on this branch, which replaces the rail these cases
+   are about with Jeff's shell; they are about the CURRENT Compass's rails, so
+   they say so rather than inheriting a branch default. */
 function atlasArm() {
-  window.history.replaceState({}, '', '/dashboard-rebrand?ff=compass-surface:atlas')
+  window.history.replaceState(
+    {},
+    '',
+    '/dashboard-rebrand?ff=compass-surface:atlas,compass-mvp-version:current',
+  )
 }
 /* HER RAIL WITHOUT THE WORKSPACE — 2026-11-04. `compass-workspace` defaults
    ON, so the rail carries a sixth row wherever it is not turned off. The two
@@ -43,9 +51,22 @@ function atlasArm() {
    her 2026-10-15 design and the Workspace is an addition on top; the case
    below them pins the sixth. Same `?ff=` door as `atlasArm`. */
 function noWorkspace() {
-  window.history.replaceState({}, '', '/dashboard-rebrand?ff=compass-workspace:off')
+  window.history.replaceState(
+    {},
+    '',
+    '/dashboard-rebrand?ff=compass-workspace:off,compass-mvp-version:current',
+  )
 }
 afterEach(() => window.history.replaceState({}, '', '/'))
+/* See `renderRail`. Adds the version pin only when the URL does not already
+   carry one, so the two arm helpers above keep their own query. */
+function pinCurrentCompass() {
+  const url = new URL(window.location.href)
+  const ff = url.searchParams.get('ff')
+  if (ff?.includes('compass-mvp-version')) return
+  url.searchParams.set('ff', ff ? `compass-mvp-version:current,${ff}` : 'compass-mvp-version:current')
+  window.history.replaceState({}, '', `${url.pathname}${url.search}`)
+}
 function renderNav(search: string, expanding = false) {
   const sep = search.startsWith('?') ? '&' : '?'
   const url = `/dashboard-rebrand${search}${sep}version=eric-atlas-v1`
@@ -221,6 +242,13 @@ describe('the Compass rail is Anjani’s on Hybrid', () => {
     /* `extra` goes through the ROUTER, not `window.location`: the page is
        seeded from `useSearchParams`, where `?ff=` is read off the window. Two
        doors, and using the wrong one renders the default page silently. */
+    /* ⚠ AND THE VERSION IS SAID OUT LOUD — 2026-11-16. `compass-mvp-version`
+       defaults to `refined` on this branch, which swaps Anjani's rail for
+       Jeff's shell; every case here is about HER rail, so it names the
+       Compass it means instead of inheriting the branch's default. Added
+       only when nothing upstream has already pinned it, so `atlasArm()` and
+       `noWorkspace()` still win. */
+    pinCurrentCompass()
     render(
       <MemoryRouter initialEntries={[`/dashboard-rebrand?version=${version}&section=compass${extra}`]}>
         <AccountProvider>

@@ -52,6 +52,10 @@ describe('Invite flow versions', () => {
     expect(INVITE_FLOW_VERSIONS.map((v) => v.id)).toContain('v2')
   })
 
+  it("carries a V3 for Afsana's concept", () => {
+    expect(inviteFlowVersionLabel('v3')).toBe("Invite Flow V3 — Afsana's concept")
+  })
+
   it('every row says what it is, and when', () => {
     for (const version of INVITE_FLOW_VERSIONS) {
       expect(version.label.trim().length).toBeGreaterThan(0)

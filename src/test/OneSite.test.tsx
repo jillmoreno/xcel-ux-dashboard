@@ -80,6 +80,8 @@ function renderAt(Page: React.ComponentType, path: string) {
  *  value of the env var produces anything less. */
 const ALL_SECTIONS = [
   'Prototypes',
+  'Design',
+  'Release',
   'Refinement',
   'Research',
   'Resources',

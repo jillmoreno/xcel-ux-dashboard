@@ -1,4 +1,5 @@
 import { useFeatureFlag } from '@/context/FeatureFlagContext'
+import { useInviteDetailsMissing } from '@/data/inviteMissingDetails'
 import {
   INVITE_FLOW_VERSION_FLAG,
   resolveInviteFlowVersion,
@@ -6,13 +7,20 @@ import {
 } from '@/data/inviteFlowVersions'
 import { InviteEmailPage } from './InviteEmailPage'
 import { InviteEmailPageV2 } from './InviteEmailPageV2'
+import { InviteEmailPageV3 } from './InviteEmailPageV3'
 import { InvitedProductDetailPage } from './InvitedProductDetailPage'
 import { InvitedProductDetailPageV2 } from './InvitedProductDetailPageV2'
+import { InvitedProductDetailPageV3 } from './InvitedProductDetailPageV3'
+import { ProductDetailPageV3Multi } from './ProductDetailPageV3Multi'
 import { InvitedCheckoutPage } from './InvitedCheckoutPage'
 import { InvitedCheckoutPageV2 } from './InvitedCheckoutPageV2'
+import { InvitedCheckoutPageV3 } from './InvitedCheckoutPageV3'
 import { InvitedConfirmationPage } from './InvitedConfirmationPage'
 import { InvitedConfirmationPageV2 } from './InvitedConfirmationPageV2'
+import { InvitedConfirmationPageV3 } from './InvitedConfirmationPageV3'
 import { XcelSplitConfirmationPage } from './XcelSplitConfirmationPage'
+import { XcelQrInvitePage } from './XcelQrInvitePage'
+import { XcelQrInvitePageV3 } from './XcelQrInvitePageV3'
 import {
   passwordSetFromEmailedLink,
   useInviteFlow,
@@ -22,7 +30,8 @@ import {
 /**
  * THE INVITE FLOW'S VERSION SWITCH — 2026-10-22, with `inviteFlowVersions.ts`.
  *
- * One component per route, each choosing between the V1 page and its V2 fork.
+ * One component per route, each choosing between the V1 page, its V2 fork and
+ * V3 (Afsana's concept, a fork of V2 — 2026-10-29).
  * The choice is made HERE rather than inside the pages, which is what keeps the
  * fork honest: neither page knows a second version exists, so neither grows a
  * conditional, and either can be rewritten without reading the other.
@@ -55,16 +64,35 @@ function useInviteFlowVersion(): InviteFlowVersionId {
   return resolveInviteFlowVersion(flag.variant)
 }
 
+/** The QR code. Not versioned until V3 (2026-10-30): V1 and V2 share the
+ *  partner's phone share card; V3 draws the code alone, as Afsana's file does. */
+export function QrInviteRoute() {
+  return useInviteFlowVersion() === 'v3' ? <XcelQrInvitePageV3 /> : <XcelQrInvitePage />
+}
+
 export function InviteEmailRoute() {
-  return useInviteFlowVersion() === 'v2' ? <InviteEmailPageV2 /> : <InviteEmailPage />
+  const version = useInviteFlowVersion()
+  if (version === 'v3') return <InviteEmailPageV3 />
+  return version === 'v2' ? <InviteEmailPageV2 /> : <InviteEmailPage />
 }
 
 export function InvitedProductDetailRoute() {
-  return useInviteFlowVersion() === 'v2' ? <InvitedProductDetailPageV2 /> : <InvitedProductDetailPage />
+  const version = useInviteFlowVersion()
+  /* V3's product page is Eric's multi-product page while its flag is on
+     (2026-11-17) — see `ProductDetailPageV3Multi`. ⚠ NOT WHILE THE COURSE IS
+     UNKNOWN: V3's own page asks it first ("Select your state and line of
+     authority", the QR code's step 2), and Continue writes the pick and
+     redraws this route — as Eric's page, on the course picked. */
+  const ericPdp = useFeatureFlag('invite-v3-eric-pdp').enabled
+  const askingCourse = useInviteDetailsMissing()
+  if (version === 'v3') return ericPdp && !askingCourse ? <ProductDetailPageV3Multi /> : <InvitedProductDetailPageV3 />
+  return version === 'v2' ? <InvitedProductDetailPageV2 /> : <InvitedProductDetailPage />
 }
 
 export function InvitedCheckoutRoute() {
-  return useInviteFlowVersion() === 'v2' ? <InvitedCheckoutPageV2 /> : <InvitedCheckoutPage />
+  const version = useInviteFlowVersion()
+  if (version === 'v3') return <InvitedCheckoutPageV3 />
+  return version === 'v2' ? <InvitedCheckoutPageV2 /> : <InvitedCheckoutPage />
 }
 
 /**
@@ -92,10 +120,13 @@ export function InvitedCheckoutRoute() {
  * the flow would be worse than one that picks the nearest real treatment.
  */
 export function InvitedConfirmationRoute() {
-  const v2 = useInviteFlowVersion() === 'v2'
+  const version = useInviteFlowVersion()
   const flow = useInviteFlow()
   const style = useOrderConfirmationStyle()
-  if (!v2) return <InvitedConfirmationPage />
+  if (version === 'v1') return <InvitedConfirmationPage />
+  /* V3 has one ending page of its own, Afsana's (2026-10-30): a password or
+     "Start learning", per flow — `inviteEndingV3`. */
+  if (version === 'v3') return <InvitedConfirmationPageV3 />
   if (passwordSetFromEmailedLink(flow)) return <InvitedConfirmationPageV2 />
   return <XcelSplitConfirmationPage tone={style === 'split' ? 'dark' : 'light'} />
 }

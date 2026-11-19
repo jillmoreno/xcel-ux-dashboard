@@ -661,6 +661,38 @@ export type PrototypeFeature = {
    */
   lastUpdated?: string
   /**
+   * DEACTIVATED LINK — 2026-11-17, Jillienne: "deactivate the links to the
+   * main prototypes and stage prototypes so that the users get an error
+   * screen … on the error screen shown to the user is where the message
+   * should be."
+   *
+   * When true the row still DRAWS as a live row — title, tags, thumbnail,
+   * chevron, kebab — and still takes a click, but the click lands on
+   * `/prototype-unavailable/<id>` instead of the product. That screen carries
+   * the message: the links are being replaced, check with UX Team/Product
+   * Owner for the new one. ⚠ NO INDIVIDUAL IS NAMED — it named the scope's
+   * `owner` for half a day on 2026-11-17, until Jillienne read her own name
+   * on the live screen.
+   *
+   * ⚠ NOT `status: 'coming-soon'`, and the difference is the point. A
+   * coming-soon row is drawn DISABLED with nothing to click (the Admin
+   * placeholder, and the end-to-end row while it was held back on
+   * 2026-10-14). That takes the link away silently — a reader learns nothing
+   * and has nobody to ask. Here the click is kept precisely so there is
+   * somewhere to put the message.
+   *
+   * ⚠ `to` IS LEFT ALONE. The row keeps its real route on record, so the
+   * smoke test still holds it to the one-build rule (same origin, a product
+   * door, `?demo=1`, nothing pinned) and REACTIVATING IS DELETING THIS LINE.
+   * Only `ProjectRow`'s rendered href changes, under Main and Stage alike —
+   * one screen for both, because the stage origin is behind its own copy of
+   * the site password and a retired screen served from there would be a login
+   * wall first.
+   *
+   * Prototypes rows only; meaningless anywhere else.
+   */
+  linkRetired?: boolean
+  /**
    * DEV HANDOFF ROWS ONLY (2026-10-27, Jillienne on the Development board:
    * "above the feature tag, add the designer tag and last updated tag, same
    * styling we do on the prototypes page … feature could be updated to Atlas,
@@ -966,7 +998,7 @@ const AUTHORED_FEATURES: PrototypeFeature[] = [
     // All four opening rows re-stamped at the 2026-10-15 ship that retired the
     // demo site: the shared chrome every row renders — the demo bar, the
     // version picker, the prototype bar — changed under all of them.
-    lastUpdated: '2026-11-05T02:22:02Z',
+    lastUpdated: '2026-11-17T17:25:23Z',
     pinned: true,
     // An in-app route, not a document. `to` is what makes the tile navigate
     // rather than open a new tab, and it is also what the row's live preview
@@ -1050,6 +1082,11 @@ const AUTHORED_FEATURES: PrototypeFeature[] = [
     // Flagged at the time and deliberately not renamed here; renaming the
     // first row of Prototypes is its own decision.
     to: '/dashboard-rebrand?demo=1&journey=full',
+    /* LINK DEACTIVATED 2026-11-17 (Jillienne) — the row still takes a click;
+       the click lands on the retired-link screen, which carries the message.
+       The `to` above is the real route, kept on record: reactivating is
+       deleting this line. See `linkRetired`. */
+    linkRetired: true,
     brands: ['xcel'],
   },
   {
@@ -1093,7 +1130,7 @@ const AUTHORED_FEATURES: PrototypeFeature[] = [
     status: 'ready',
     category: 'prototype',
     prototypeScope: 'invite',
-    lastUpdated: '2026-10-27T13:58:58Z',
+    lastUpdated: '2026-11-17T17:25:23Z',
     pinned: true,
     // ⚠ `/find`, THE GUEST'S FIRST SCREEN — 2026-10-23: "clicking on this
     // should default to the guest view but the wrong screen is showing
@@ -1108,6 +1145,11 @@ const AUTHORED_FEATURES: PrototypeFeature[] = [
     // `?ff=` pin, no pinned version. Which PAGE of a flow a row starts on is
     // the owner's call (`UxDashboard.smoke.test.tsx`).
     to: '/end-to-end-demo/find?demo=1',
+    /* LINK DEACTIVATED 2026-11-17 (Jillienne) — the row still takes a click;
+       the click lands on the retired-link screen, which carries the message.
+       The `to` above is the real route, kept on record: reactivating is
+       deleting this line. See `linkRetired`. */
+    linkRetired: true,
     brands: ['xcel'],
   },
   {
@@ -1145,9 +1187,14 @@ const AUTHORED_FEATURES: PrototypeFeature[] = [
     status: 'ready',
     category: 'prototype',
     prototypeScope: 'atlas',
-    lastUpdated: '2026-11-03T14:34:45Z',
+    lastUpdated: '2026-11-16T19:25:06Z',
     pinned: true,
     to: '/dashboard-rebrand?demo=1&section=dashboard',
+    /* LINK DEACTIVATED 2026-11-17 (Jillienne) — the row still takes a click;
+       the click lands on the retired-link screen, which carries the message.
+       The `to` above is the real route, kept on record: reactivating is
+       deleting this line. See `linkRetired`. */
+    linkRetired: true,
     brands: ['xcel'],
   },
   {
@@ -1190,12 +1237,17 @@ const AUTHORED_FEATURES: PrototypeFeature[] = [
     status: 'ready',
     category: 'prototype',
     prototypeScope: 'compass',
-    lastUpdated: '2026-11-05T02:22:02Z',
+    lastUpdated: '2026-11-16T19:25:06Z',
     pinned: true,
     // Same-origin product route at the committed baseline — the smoke test
     // asserts every Prototypes row has this shape. `section=compass` is the
     // deep link `PlatformShell` honours under either navigation.
     to: '/dashboard-rebrand?demo=1&section=compass',
+    /* LINK DEACTIVATED 2026-11-17 (Jillienne) — the row still takes a click;
+       the click lands on the retired-link screen, which carries the message.
+       The `to` above is the real route, kept on record: reactivating is
+       deleting this line. See `linkRetired`. */
+    linkRetired: true,
     brands: ['xcel'],
   },
   {
@@ -1248,6 +1300,217 @@ const AUTHORED_FEATURES: PrototypeFeature[] = [
     category: 'exploration',
     externalUrl: `${PROTOTYPE_BASE}/xcel-lms-walkthrough.html`,
     livePreviewUrl: `${PROTOTYPE_BASE}/xcel-lms-walkthrough.html`,
+    brands: ['xcel'],
+  },
+  /* ⚠ THE TWO READINESS STATES, AND ONLY THE TWO (2026-11-06). Anjani's
+     Compass Overview V2 explores Readiness across sixteen states, but those
+     live in a Design-canvas EXPORT whose runtime re-fetches its own page and
+     mis-slices it when served over http — the page renders its own JavaScript
+     as text. Tested twice; a sibling `.dc.html` does not help, because the
+     second request is for the page itself. So the prototype cannot be a row
+     here without shipping a modified copy of her file, and these two
+     self-contained exports of the states that matter can.
+
+     The sixteen states ARE in the product, ported, behind the Design bar's
+     Overview version → Readiness V2 and Readiness stage controls. */
+  {
+    id: 'xcel-compass-readiness-58',
+    title: 'Compass Readiness — Developing (58%)',
+    accent: 'blue',
+    /* ⚠ `monitor`, not a gauge — the icon set here is four names wide
+       (grid · calendar · flag · monitor) and a readiness dial is not one of
+       them. Adding an icon is a registry decision, not a row's to make. */
+    icon: 'monitor',
+    blurb:
+      'The Compass Overview rebuilt around exam Readiness, mid-journey. A three-arc ring reads outside in — Exam Simulator, practice coverage, Readiness — over a blueprint-weighted table of the five exam topics that expands into sub-topics, and a panel comparing what the learner answered against how sure they were. Readiness comes from Exam Prep practice only; course lessons do not feed it.',
+    tileBlurb:
+      '58% · Developing. The ring, the topic table and the confidence panel at the point where the work is still ahead of you.',
+    kind: 'explore',
+    kindLabel: 'Standalone HTML',
+    status: 'ready',
+    category: 'exploration',
+    externalUrl: `${PROTOTYPE_BASE}/xcel-compass-readiness-58.html`,
+    livePreviewUrl: `${PROTOTYPE_BASE}/xcel-compass-readiness-58.html`,
+    brands: ['xcel'],
+  },
+  {
+    id: 'xcel-compass-readiness-86',
+    title: 'Compass Readiness — Ready to pass (86%)',
+    accent: 'blue',
+    icon: 'monitor',
+    blurb:
+      'The same page once every topic has reached Ready: the recommended activity becomes "Book your Florida state exam", the rings close, and the confidence panel reads "Calibrated. The confidence gap is closed." Booking happens in Atlas and opens only when all five topics are at 85%.',
+    tileBlurb:
+      '86% · Ready. The end state of the same design — what it looks like when the page has nothing left to ask for.',
+    kind: 'explore',
+    kindLabel: 'Standalone HTML',
+    status: 'ready',
+    category: 'exploration',
+    externalUrl: `${PROTOTYPE_BASE}/xcel-compass-readiness-86.html`,
+    livePreviewUrl: `${PROTOTYPE_BASE}/xcel-compass-readiness-86.html`,
+    brands: ['xcel'],
+  },
+  /*
+   * THE THREE COMPASS VERSIONS, ONE ROW EACH — 2026-11-10, Jillienne: "I
+   * wanted 3 different rows. 1 per version, and i dont want it in the
+   * refinement section."
+   *
+   * ⚠ EXPLORATIONS, NOT PROTOTYPES, and the reason is mechanical rather than
+   * taste. Prototypes holds ONE row per scope and every row is `main`'s build
+   * with no pins — `UxDashboard.smoke.test.tsx` refuses a second `compass`
+   * row in as many words ("a second row for a scope is a Refinement job") and
+   * refuses `?ff=` on any row there. Three rows that each pin a version is
+   * exactly the shape that rule exists to stop, so they live where a row may
+   * argue rather than report.
+   *
+   * ⚠ THEY ARE ROUTES, WHERE EVERY OTHER EXPLORATION IS A DOCUMENT, and that
+   * is deliberate: the three versions are IN the product behind one flag, and
+   * a document of any of them would be a second copy to keep in step. The
+   * type has always allowed it (`to` is explore-only, not prototype-only);
+   * nothing here is bent to make it work.
+   *
+   * ⚠ AN `?ff=` PIN TRACKS `main`, which CLAUDE.md names as the thing that has
+   * bitten before: when `compass-mvp-version` changes underneath, these rows
+   * go stale silently — no error, they just quietly become something else.
+   * That is the accepted cost of a row per version. If one of these ever has
+   * to NOT move (a user test, a sign-off), that is `freeze-for-testing`'s
+   * frozen branch, not a row here.
+   *
+   * ⚠ ANJANI'S ROW PINS `current` RATHER THAN OMITTING THE PARAM. The arm is
+   * the flag's default today, so the pin changes nothing — until the default
+   * moves, at which point the row that says "Anjani's version" would open
+   * somebody else's. The pin is what keeps the title true.
+   */
+  {
+    /*
+     * THE FIRST PAGE AUDIT OF REFINED — 2026-11-12. Jillienne, after the real
+     * Florida course list landed on the Your Course page: "lets do a full ux
+     * audit on the Your Course page", and then "publish".
+     *
+     * ⚠ IT IS AN EXPLORATION, NOT A HANDOFF. Nothing here is ready for a
+     * developer: findings 1-8 are open design decisions, and the page they
+     * are about is a version still being composed. A `devStatus` would put it
+     * on the Development board, which `sectionOf` reads before the category.
+     *
+     * ⚠ THE AUDIT ORDER IS THE POINT, and the document says so: most of these
+     * were invisible while the page carried its own nineteen typed chapters
+     * and became obvious the moment it had to describe a course that exists.
+     * The next page's audit should follow the same order — real data first,
+     * then the eye.
+     */
+    id: 'xcel-compass-refined-course-audit',
+    title: 'Compass Refined — Your Course UX Audit',
+    accent: 'gold',
+    icon: 'grid',
+    blurb:
+      'A UX audit of the Refined version\u2019s Your Course page, read against the actual Florida Life & Health section list. Covers what the real course changed (three missing rows, three contradictions it exposed), what the page gets right at forty-one rows, and eight open findings \u2014 55% of the page locked, two units of progress, two rings disagreeing, and three styling decisions from the Overview that never reached this page.',
+    tileBlurb:
+      'The first page-by-page audit of Refined: what the real course list changed, what works at forty-one rows, and eight open findings.',
+    /* ⚠ `explore`, NOT `guided`. A guided row opens its own gateway page and
+       the smoke test refuses an `externalUrl` on one — it would hijack the
+       row. This is a document to read, like the other Explorations, so it
+       opens the document. `kindLabel` keeps the tag honest about which
+       kind. */
+    kind: 'explore',
+    kindLabel: 'Audit',
+    status: 'ready',
+    category: 'exploration',
+    externalUrl: `${PROTOTYPE_BASE}/xcel-compass-refined-course-audit.html`,
+    livePreviewUrl: `${PROTOTYPE_BASE}/xcel-compass-refined-course-audit.html`,
+    brands: ['xcel'],
+  },
+  {
+    id: 'xcel-compass-v-anjani',
+    title: "Compass — Anjani's version",
+    accent: 'teal',
+    icon: 'monitor',
+    blurb:
+      "Compass as it ships: her rail — Overview, Learn, Workspace, Study planner, Ask Rubi, Progress — over an EXAM PREP group whose three rows are LOCKED behind the exam-prep gate. The Overview is the learning journey, the 62% ring and the assignments table. This is the baseline the other two rows are arguing with, and the one the Prototypes Compass row opens.",
+    tileBlurb:
+      "What ships today — her six-row rail, the learning journey Overview, and exam prep behind a gate.",
+    kind: 'explore',
+    status: 'ready',
+    category: 'exploration',
+    to: '/dashboard-rebrand?demo=1&section=compass&ff=compass-mvp-version:current',
+    brands: ['xcel'],
+  },
+  {
+    id: 'xcel-compass-v-jeff',
+    title: "Compass — Jeff's version",
+    accent: 'blue',
+    icon: 'monitor',
+    blurb:
+      "His thirteen-page MVP of 2026-11-09, ported into the product: a different rail — Overview, Learn and Study planner, then an EXAM PREP rule over Prep Review, Practice, Flashcards, Exam Simulator and Readiness, all of them reachable rather than gated. The structural argument is that row order: planning is part of learning, exam prep is what follows it, and Readiness is what the other four feed.",
+    tileBlurb:
+      "His eight-row rail with exam prep open rather than gated, and Readiness as the thing it all feeds.",
+    kind: 'explore',
+    status: 'ready',
+    category: 'exploration',
+    to: '/dashboard-rebrand?demo=1&section=compass&ff=compass-mvp-version:jeff',
+    brands: ['xcel'],
+  },
+  {
+    id: 'xcel-compass-v-refined',
+    title: 'Compass — Refined version',
+    accent: 'gold',
+    icon: 'monitor',
+    blurb:
+      "The third answer, built page by page from the other two. Today it is Jeff's shell with the Readiness page rebuilt against Nina Conrad's \u201cCompass Rapid Insights: Your Exam Prep\u201d (Nov 2026) \u2014 one comparable scale for every topic, the gap to Ready stated as time against the exam date, and plain language throughout. The remaining pages are being audited one at a time against both versions, with titles brought into line across the set as each lands.",
+    tileBlurb:
+      "Being composed page by page from both versions. Readiness is rebuilt on the research; the rest is in progress.",
+    kind: 'explore',
+    status: 'ready',
+    inProgress: true,
+    category: 'exploration',
+    to: '/dashboard-rebrand?demo=1&section=compass&ff=compass-mvp-version:refined',
+    brands: ['xcel'],
+  },
+  {
+    /* THE COMPARE ROW (2026-11-16) — V1 beside Refined, widget by widget, on
+       `/compare/compass-readiness`. ⚠ AN EXPLORATION, NOT A PROTOTYPE, for the
+       same reason as the three version rows above it: it is a view OF the
+       product, not a door into it — a route of this build that sets each
+       Readiness block from Jeff's page next to the Refined one, with the
+       layout, the hero arm and the open/closed states on switches, and a
+       note under every widget saved for everyone. `src/data/compareDecks.ts`
+       lists the decks; adding a page there is what adds a second row here. */
+    id: 'xcel-compass-compare-readiness',
+    title: 'Compass Readiness — V1 beside Refined',
+    accent: 'teal',
+    icon: 'grid',
+    blurb:
+      "Jeff's Readiness page (V1) and the Refined rebuild set side by side, widget by widget — the score, Do this next, the trend, Readiness by topic, the footnote — each drawn by the real component at full size, nothing scaled. A layout switch (side by side · one version · stacked), the Refined hero's two arms on a toggle, the levels panel and the topic rows lined up open or closed on both sides, and a notes box under each widget that saves for everyone who opens the page. Where the refined version gets decided; the Compass Version Map under Hub Resources is the reference beside it.",
+    tileBlurb:
+      'Every Readiness widget, V1 next to Refined, with the variants on switches and a note under each.',
+    kind: 'explore',
+    status: 'ready',
+    inProgress: true,
+    category: 'exploration',
+    to: '/compare/compass-readiness',
+    brands: ['xcel'],
+  },
+  {
+    id: 'xcel-compass-mvp',
+    title: "Compass MVP — Jeff's version (13 pages)",
+    accent: 'blue',
+    icon: 'monitor',
+    blurb:
+      "Jeff's whole Compass, not one screen of it: thirteen pages behind a Pages menu at the bottom left — Overview, Learn, the Chapter 2 lesson with Rubi and the Workspace, Prep Review, Flashcards (topic and study session), Practice (and a question set), Readiness, Study planner, and the Exam Simulator with a simulated Pearson VUE sitting. The rail groups the last five under EXAM PREP, which is the structural argument: learning and exam preparation are two modes of one product, and Readiness is what connects them.",
+    tileBlurb:
+      "Thirteen pages of Compass as one document. Use the Pages menu, bottom left, to move between them.",
+    kind: 'explore',
+    kindLabel: 'Standalone HTML',
+    status: 'ready',
+    category: 'exploration',
+    /* ⚠ THIS ONE SERVES, where `compass-prototype-b-v3.html` could not. Both
+       are design-canvas exports, but v3's runtime re-fetched its own page over
+       http and mis-sliced the template, printing its own JavaScript as text —
+       which is why that file is still not on a row. This export inlines every
+       page in a `PAGES` map and injects it with `iframe.srcdoc`, taking React
+       from a blob URL, so it has nothing to re-fetch. Verified rendering over
+       http on all thirteen pages before this row was written. */
+    externalUrl: `${PROTOTYPE_BASE}/xcel-compass-mvp.html`,
+    livePreviewUrl: `${PROTOTYPE_BASE}/xcel-compass-mvp.html`,
     brands: ['xcel'],
   },
   {

@@ -1,0 +1,1761 @@
+/* REFINED'S STAGE-AWARE OVERVIEW — a frozen fork of `compassReadiness.css`,
+   2026-11-10.
+
+   ⚠ WHY THIS PAGE MOVED AT ALL. Jillienne: "jeffs version has all of this
+   logic built in, will that also be carried over to refined?" The sixteen
+   learner states are Jeff's, from his Oct 30 Overview prototype, ported on
+   2026-11-05 — but onto the `compass:overview` surface, which is the CURRENT
+   version. His thirteen-page MVP reads no flags at all, so Refined forked a
+   static page. This brings the stage-aware Overview across.
+
+   ⚠ FORKED, NOT SHARED, by the freeze rule: the original still draws the
+   current version's Overview under `compass-overview-version: v2`, and
+   Refined's header decisions must not reach it. Scoping overrides under
+   `.crf` would have been a tenth of this file and would have left Refined
+   moving whenever that page is edited — which is the thing freeze-on-fork
+   was chosen to stop.
+
+   ⚠ THE MODEL IS NOT FORKED. `compassReadinessModel.ts` and
+   `compassReadinessFixtures.ts` are imported, not copied — the sixteen states
+   are the DATA, and both versions must describe the same learner or the
+   comparison is about the numbers instead of the design.
+
+   Verbatim but for the prefix; Refined's own decisions are at the end. */
+
+/* THE READINESS PAGES (2026-11-05) — "Your exam prep" and "Your learning
+   journey", from `Compass-Overview-Prototype-V2_2.html`.
+
+   ⚠ HIS PALETTE IS ANJANI'S COMPASS SYSTEM, which this repo already maps.
+   `compassWorkspace.css` did the same mapping for her Workspace on
+   2026-11-04, and these are the same colours doing the same jobs, so the
+   mapping is repeated here rather than re-decided:
+
+     ink        #1F1D18  → --color-compass-page-heading
+     body       #42464F  → --color-compass-page-body
+     muted      #615C55  → --color-compass-page-muted
+     faint      #8E939B  → --color-text-tertiary
+     hairline   #E6E2D8  → --color-compass-page-rule
+     edge       #C3BBA5  → --color-compass-page-edge-ish (her stronger rule)
+     steel      #3D5A73  → --color-primary-500   (#2d5872 — the same decision)
+     steel-deep #2F4A63  → --color-primary-600
+     green      #2F7A5A  → --color-success-700
+     amber-deep #835B16  → --color-warning-700
+     rubi       #B4552F  → --color-compass-page-rubi
+
+   The rest — the washes, the violet the Exam Simulator ring uses, the amber
+   that is Readiness itself — have no token here and are declared once below.
+   A tone is never written as a hex anywhere else: the fixture carries NAMES,
+   and this block is where a name becomes a colour.
+
+   ⚠ EVERY RULE IS SCOPED UNDER `.crf-rd`. */
+
+.crf-rd {
+  --rd-ink: var(--color-compass-page-heading);
+  --rd-body: var(--color-compass-page-body);
+  --rd-muted: var(--color-compass-page-muted);
+  --rd-faint: var(--color-text-tertiary);
+  --rd-hairline: var(--color-compass-page-rule);
+  --rd-edge: #c3bba5;
+  --rd-wash: #efebe2;
+  --rd-paper: #faf9f6;
+  --rd-white: #fff;
+  --rd-steel: var(--color-primary-500);
+  --rd-steel-deep: var(--color-primary-600);
+  --rd-steel-light: #8fb0c9;
+  --rd-steel-edge: #c7d5e2;
+  --rd-steel-wash: #f5f8fb;
+  --rd-amber: #c08a2e;
+  --rd-amber-deep: var(--color-warning-700);
+  --rd-amber-edge: #a87420;
+  --rd-amber-wash: #f6e8cc;
+  --rd-green: var(--color-success-700);
+  --rd-green-deep: #1f6b3a;
+  --rd-green-edge: #b9d6c4;
+  --rd-green-wash: #f1f7f3;
+  --rd-rubi: var(--color-compass-page-rubi);
+  --rd-violet: #6b4fa0;
+
+  font-family: var(--font-body);
+  color: var(--rd-ink);
+  max-width: 1180px;
+}
+.crf-rd .serif {
+  font-family: var(--font-heading-serif), Georgia, serif;
+}
+
+.crf-rd .crf-rd-hello {
+  margin: 0 0 6px;
+  font-size: 14px;
+  color: var(--rd-muted);
+}
+.crf-rd .crf-rd-h1 {
+  margin: 0 0 8px;
+  font-size: 40px;
+  line-height: 1.1;
+  font-weight: 700;
+}
+.crf-rd .crf-rd-h2 {
+  margin: 0;
+  font-size: 26px;
+  line-height: 1.2;
+  font-weight: 700;
+}
+.crf-rd .crf-rd-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 20px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--rd-hairline);
+  font-size: 14px;
+  color: var(--rd-muted);
+}
+.crf-rd .crf-rd-phase {
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--rd-green);
+}
+.crf-rd .crf-rd-cert {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--rd-wash);
+  font-size: 13px;
+}
+.crf-rd .crf-rd-eyebrow {
+  margin: 0 0 4px;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--rd-ink);
+}
+.crf-rd .crf-rd-label {
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--rd-muted);
+}
+.crf-rd .crf-rd-note {
+  margin: 0;
+  font-size: 12px;
+  color: var(--rd-muted);
+}
+
+/* ---- recommended next ---- */
+.crf-rd .crf-rd-next {
+  display: flex;
+  align-items: flex-start;
+  gap: 24px;
+  flex-wrap: wrap;
+  padding: 22px 24px;
+  margin-bottom: 18px;
+  border: 1px solid var(--rd-steel-edge);
+  border-radius: 14px;
+  background: var(--rd-steel-wash);
+}
+.crf-rd .crf-rd-next > div:first-child {
+  flex: 1 1 420px;
+}
+.crf-rd .crf-rd-next-title {
+  margin: 0 0 6px;
+  font-size: 26px;
+  line-height: 1.2;
+  font-weight: 700;
+}
+.crf-rd .crf-rd-next-sub,
+.crf-rd .crf-rd-covers {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  font-size: 14px;
+  color: var(--rd-muted);
+}
+.crf-rd .crf-rd-covers {
+  margin-top: 8px;
+}
+.crf-rd .crf-rd-next-aside {
+  flex: 1 1 240px;
+  max-width: 300px;
+  padding-left: 22px;
+  border-left: 1px solid var(--rd-steel-edge);
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--rd-body);
+}
+.crf-rd .crf-rd-next-aside p {
+  margin: 0;
+}
+.crf-rd .crf-rd-next-cta {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+}
+.crf-rd .crf-rd-primary {
+  min-height: 44px;
+  padding: 0 22px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--rd-steel-deep);
+  color: #fff;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+.crf-rd .crf-rd-primary.crf-rd-small {
+  min-height: 34px;
+  padding: 0 14px;
+  font-size: 13px;
+}
+.crf-rd .crf-rd-quiet {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--rd-muted);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  text-decoration: underline;
+}
+.crf-rd .crf-rd-link {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.crf-rd .crf-rd-link--rubi {
+  color: var(--rd-rubi);
+}
+
+/* ---- readiness + Rubi ---- */
+.crf-rd .crf-rd-pair {
+  display: flex;
+  gap: 0;
+  flex-wrap: wrap;
+  margin-bottom: 26px;
+  border: 1px solid var(--rd-hairline);
+  border-radius: 14px;
+  overflow: hidden;
+  background: #fff;
+}
+.crf-rd .crf-rd-ready {
+  flex: 1 1 520px;
+  padding: 20px 24px;
+}
+.crf-rd .crf-rd-ready-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+.crf-rd .crf-rd-ready-body {
+  display: flex;
+  gap: 22px;
+  align-items: flex-start;
+}
+.crf-rd .crf-rd-ring {
+  position: relative;
+  width: 200px;
+  height: 200px;
+  flex: 0 0 200px;
+}
+.crf-rd .crf-rd-track {
+  stroke: #e6e8eb;
+}
+.crf-rd .crf-rd-pill {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  display: inline-block;
+  padding: 4px 8px;
+  border: 1.5px solid;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--rd-steel-deep);
+  white-space: nowrap;
+}
+.crf-rd .crf-rd-path {
+  flex: 1 1 auto;
+  min-width: 0;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.crf-rd .crf-rd-path-row {
+  display: grid;
+  grid-template-columns: 12px minmax(120px, auto) 1fr auto;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--rd-hairline);
+  font-size: 13px;
+}
+.crf-rd .crf-rd-path-row:last-child {
+  border-bottom: 0;
+}
+.crf-rd .crf-rd-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 6px;
+}
+.crf-rd .crf-rd-path-label {
+  font-weight: 600;
+}
+.crf-rd .crf-rd-path-bar {
+  display: block;
+  height: 5px;
+  border-radius: 3px;
+  background: var(--rd-hairline);
+  overflow: hidden;
+}
+.crf-rd .crf-rd-path-bar > span {
+  display: block;
+  height: 5px;
+  border-radius: 3px;
+}
+.crf-rd .crf-rd-path-value {
+  white-space: nowrap;
+}
+.crf-rd .crf-rd-basis {
+  margin: 12px 0 0;
+  font-size: 12px;
+  color: var(--rd-muted);
+}
+
+/* ⚠ RUBI'S PANEL IS THE WARM ONE — the only cream surface on the page, which
+   is how her system marks "this is Rubi talking" rather than a label. */
+.crf-rd .crf-rd-rubi {
+  flex: 1 1 360px;
+  padding: 20px 24px;
+  border-left: 1px solid var(--rd-hairline);
+  background: var(--rd-paper);
+}
+.crf-rd .crf-rd-rubi-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--rd-rubi);
+}
+.crf-rd .crf-rd-rubi-path {
+  color: var(--rd-muted);
+  letter-spacing: 0;
+  text-transform: none;
+  font-weight: 400;
+}
+.crf-rd .crf-rd-rubi-title {
+  margin: 6px 0 8px;
+  font-size: 22px;
+  line-height: 1.25;
+  font-weight: 700;
+}
+.crf-rd .crf-rd-rubi-why {
+  margin: 0 0 12px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--rd-body);
+}
+.crf-rd .crf-rd-rubi-effect {
+  margin: 0 0 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--rd-hairline);
+  font-size: 13px;
+}
+.crf-rd .crf-rd-rubi-cta {
+  min-height: 42px;
+  padding: 0 20px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--rd-rubi);
+  color: #fff;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* ---- the topic table ---- */
+.crf-rd .crf-rd-table-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+.crf-rd .crf-rd-summary {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: var(--rd-muted);
+}
+.crf-rd .crf-rd-grid {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+.crf-rd .crf-rd-grid th {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--rd-edge);
+  text-align: left;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--rd-muted);
+  font-weight: 600;
+}
+.crf-rd .crf-rd-grid td {
+  padding: 14px 10px;
+  border-bottom: 1px solid var(--rd-hairline);
+  vertical-align: middle;
+}
+.crf-rd .crf-rd-right {
+  text-align: right;
+}
+.crf-rd .crf-rd-expander {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.crf-rd .crf-rd-expander b {
+  display: block;
+  font-size: 15px;
+}
+.crf-rd .crf-rd-weight {
+  display: block;
+  font-size: 12px;
+  color: var(--rd-muted);
+}
+.crf-rd .crf-rd-cov {
+  display: block;
+  width: 150px;
+  height: 5px;
+  margin-top: 6px;
+  border-radius: 3px;
+  background: var(--rd-hairline);
+  overflow: hidden;
+}
+.crf-rd .crf-rd-cov > span {
+  display: block;
+  height: 5px;
+  background: var(--rd-steel);
+}
+.crf-rd .crf-rd-readiness {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.crf-rd .crf-rd-band {
+  display: inline-flex;
+  width: 54px;
+  gap: 2px;
+}
+.crf-rd .crf-rd-band > span {
+  display: block;
+  height: 5px;
+  border-radius: 1px;
+}
+.crf-rd .crf-rd-band--wide {
+  width: 260px;
+}
+/* One cell per question. */
+.crf-rd .crf-rd-cells {
+  display: flex;
+  gap: 2px;
+}
+.crf-rd .crf-rd-cells > span {
+  flex: 1 1 0;
+  height: 14px;
+  border-radius: 2px;
+}
+.crf-rd .crf-rd-subs > td {
+  padding-top: 0;
+  background: var(--rd-paper);
+}
+.crf-rd .crf-rd-subs-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0 6px;
+}
+.crf-rd .crf-rd-sub {
+  display: grid;
+  grid-template-columns: minmax(180px, 1.4fr) 1.4fr auto auto;
+  align-items: center;
+  gap: 14px;
+  padding: 9px 0;
+  border-top: 1px solid var(--rd-hairline);
+  font-size: 13px;
+}
+.crf-rd .crf-rd-sub-name {
+  font-weight: 600;
+}
+
+/* ---- confidence ---- */
+.crf-rd .crf-rd-evidence {
+  margin-top: 28px;
+}
+.crf-rd .crf-rd-evidence-pair {
+  display: flex;
+  gap: 0;
+  flex-wrap: wrap;
+  border-top: 1px solid var(--rd-edge);
+}
+.crf-rd .crf-rd-ev {
+  flex: 1 1 360px;
+  padding: 18px 24px 18px 0;
+}
+.crf-rd .crf-rd-ev + .crf-rd-ev {
+  padding-left: 24px;
+  border-left: 1px solid var(--rd-hairline);
+}
+.crf-rd .crf-rd-ev-head {
+  margin: 6px 0 12px;
+  font-size: 20px;
+  font-weight: 700;
+}
+.crf-rd .crf-rd-ev-bar {
+  display: grid;
+  grid-template-columns: 110px 1fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 5px 0;
+  font-size: 13px;
+  color: var(--rd-muted);
+}
+.crf-rd .crf-rd-ev p {
+  margin: 8px 0 0;
+  font-size: 13px;
+}
+.crf-rd .crf-rd-ev-links {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+.crf-rd .crf-rd-gate {
+  margin: 26px 0 0;
+  padding-top: 16px;
+  border-top: 1px solid var(--rd-hairline);
+  font-size: 12px;
+  color: var(--rd-muted);
+}
+
+/* ---- the journey page ---- */
+.crf-rd .crf-rd-cert--phase {
+  background: var(--rd-steel-wash);
+  color: var(--rd-steel-deep);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+/* ⚠ THE BANNER ONLY APPEARS WHERE THE RULES CHANGE, so it is allowed to be
+   loud: a numbered list of how this surface works. */
+.crf-rd .crf-rd-banner {
+  margin-bottom: 18px;
+  padding: 16px 20px;
+  border: 1px solid var(--rd-steel-edge);
+  border-radius: 12px;
+  background: var(--rd-steel-wash);
+}
+.crf-rd .crf-rd-banner ol {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+}
+.crf-rd .crf-rd-banner li {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  flex: 1 1 260px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--rd-body);
+}
+.crf-rd .crf-rd-banner b {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  flex: 0 0 20px;
+  border-radius: 50%;
+  background: var(--rd-steel-deep);
+  color: #fff;
+  font-size: 11px;
+}
+.crf-rd .crf-rd-progress {
+  flex: 1 1 360px;
+  padding: 20px 24px;
+  border-left: 1px solid var(--rd-hairline);
+}
+.crf-rd .crf-rd-qe {
+  margin-bottom: 26px;
+  padding: 20px 24px;
+  border: 1px solid var(--rd-hairline);
+  border-radius: 14px;
+  background: #fff;
+}
+.crf-rd .crf-rd-qe-body {
+  display: flex;
+  gap: 32px;
+  flex-wrap: wrap;
+  align-items: flex-start;
+}
+.crf-rd .crf-rd-prog {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+.crf-rd .crf-rd-prog-ring {
+  position: relative;
+  width: 150px;
+  height: 150px;
+  flex: 0 0 150px;
+}
+.crf-rd .crf-rd-prog-num {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  line-height: 1.1;
+}
+.crf-rd .crf-rd-prog-num b {
+  font-size: 26px;
+  font-weight: 700;
+}
+.crf-rd .crf-rd-prog-num span {
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--rd-muted);
+}
+.crf-rd .crf-rd-prog-side p {
+  margin: 0 0 6px;
+}
+.crf-rd .crf-rd-prog-side b {
+  display: block;
+  font-size: 15px;
+}
+.crf-rd .crf-rd-empty {
+  margin: 14px 0 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--rd-muted);
+}
+.crf-rd .crf-rd-steps {
+  flex: 1 1 320px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.crf-rd .crf-rd-steps li {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--rd-hairline);
+}
+.crf-rd .crf-rd-steps li:last-child {
+  border-bottom: 0;
+}
+.crf-rd .crf-rd-step-n {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  flex: 0 0 22px;
+  border-radius: 50%;
+  border: 1px solid var(--rd-edge);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--rd-muted);
+}
+.crf-rd .crf-rd-steps li.is-done .crf-rd-step-n {
+  background: var(--rd-green);
+  border-color: var(--rd-green);
+  color: #fff;
+}
+.crf-rd .crf-rd-steps li.is-current .crf-rd-step-n {
+  background: var(--rd-steel-deep);
+  border-color: var(--rd-steel-deep);
+  color: #fff;
+}
+.crf-rd .crf-rd-steps b {
+  display: block;
+  font-size: 14px;
+}
+.crf-rd .crf-rd-step-status {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+}
+.crf-rd .crf-rd-focus-row {
+  display: flex;
+  gap: 18px;
+  flex-wrap: wrap;
+  margin-bottom: 26px;
+}
+.crf-rd .crf-rd-rubi--card {
+  flex: 1 1 320px;
+  border: 1px solid var(--rd-hairline);
+  border-left: 0;
+  border-radius: 14px;
+}
+.crf-rd .crf-rd-tools {
+  flex: 2 1 520px;
+}
+.crf-rd .crf-rd-tools-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+.crf-rd .crf-rd-tool {
+  flex: 1 1 180px;
+  padding: 14px 16px;
+  border: 1px solid var(--rd-hairline);
+  border-radius: 12px;
+  background: #fff;
+}
+.crf-rd .crf-rd-tool b {
+  display: block;
+  margin: 8px 0 4px;
+  font-size: 15px;
+}
+.crf-rd .crf-rd-tool-icon {
+  color: var(--rd-steel);
+}
+.crf-rd .crf-rd-tool-status {
+  display: block;
+  margin-top: 8px;
+  font-size: 13px;
+  font-weight: 600;
+}
+/* The tabs over the table. */
+.crf-rd .crf-rd-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 14px;
+  border-bottom: 1px solid var(--rd-hairline);
+}
+.crf-rd .crf-rd-tab {
+  padding: 10px 16px;
+  border: 0;
+  border-bottom: 3px solid transparent;
+  background: none;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  color: var(--rd-body);
+}
+.crf-rd .crf-rd-tab b {
+  display: block;
+  font-size: 15px;
+}
+.crf-rd .crf-rd-tab.is-on {
+  border-bottom-color: var(--rd-steel-deep);
+  background: var(--rd-steel-wash);
+  color: var(--rd-ink);
+}
+/* The share-of-the-exam pie. */
+.crf-rd .crf-rd-pie {
+  display: inline-block;
+  width: 22px;
+  height: 22px;
+  flex: 0 0 22px;
+  border-radius: 50%;
+}
+
+.crf-rd .crf-rd-lpct {
+  margin-left: 10px;
+  font-weight: 700;
+}
+
+.crf-rd .crf-rd-ready--intro {
+  margin-bottom: 26px;
+  border: 1px solid var(--rd-green-edge);
+  border-radius: 14px;
+  background: var(--rd-paper);
+}
+.crf-rd .crf-rd-path-row--intro {
+  grid-template-columns: minmax(160px, 1.4fr) 1fr auto;
+}
+
+/* ════════════════════════════════════════════════════════════════════════
+   REFINED'S OWN DECISIONS — everything above is the photograph.
+   ════════════════════════════════════════════════════════════════════════ */
+
+/* The course eyebrow, same shape as the other two Refined headers. */
+/* ⚠ `crf-rd-brow`, NOT `crf-rd-eyebrow` — that class was already taken. The
+   stage pages use `crf-rd-eyebrow` for the teaching BANNER's eyebrow (u1 and
+   u5), so the course eyebrow landing on it restyled a different element on
+   two of the sixteen states. Caught on u3, where both are on screen. */
+/* ⚠ PRIMARY 500 SINCE 2026-11-12 — "make it the primary blue 500 color and
+   have it be the same on all the pages". `--rd-steel` is #3d5a73, the 500
+   from the ramp she sent.
+
+   ⚠ IT REPLACES HER 700 NAVY of 2026-11-11 (#243645), which this page had
+   and the other eleven did not — they were `--crf-muted`, a warm grey. The
+   argument the 700 was made on is unchanged and is kept below: the course
+   name is the thing the platform is about and the access date is a fact
+   about it, so the date stays muted and the two read as a name and its
+   footnote rather than as one line.
+
+   ⚠ NOT IN `tokens.css`. It is a neutral from her ramp, not the Compass
+   palette this page otherwise uses, and promoting a brand colour into the
+   system is a bigger decision than one eyebrow. Same call as the beige. */
+.crf-rd .crf-rd-brow {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0 0 7px;
+  color: var(--rd-steel);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  line-height: 1.3;
+  text-transform: uppercase;
+  flex-wrap: wrap;
+}
+.crf-rd .crf-rd-brow__dot {
+  color: inherit;
+  opacity: 0.55;
+}
+.crf-rd .crf-rd-brow__access {
+  color: var(--color-compass-page-muted);
+  text-transform: none;
+  letter-spacing: 0.01em;
+  font-weight: 400;
+}
+
+/* One page title — 32/40/600, matching every other Refined page. This one
+   was the third 40px/700 title in the set. */
+.crf-rd .crf-rd-h1 {
+  font-size: 32px;
+  line-height: 40px;
+  font-weight: 600;
+  letter-spacing: normal;
+  font-family: var(--font-heading-serif), Georgia, serif;
+}
+/* ⚠ AND OPEN SANS DECLARED BELOW IT, for the reason the other two
+   stylesheets record: a heading with no family inherits `--font-heading`,
+   which is Lato on this build, so dropping the `serif` class alone swaps one
+   wrong face for another. */
+.crf-rd :is(h2, h3, h4, h5, h6) {
+  font-family: var(--font-body);
+}
+
+/* ---------- the page's own padding, 2026-11-10 ----------
+   "what happened to the padding on the overview page?" — I took it away
+   without noticing.
+
+   ⚠ THIS PAGE NEVER CARRIED ITS OWN. On the current version it renders
+   inside `CompassLearningPage`'s padded column, so `.cre-rd` only ever
+   needed a max-width. Refined's shell puts it directly beside the rail, the
+   way the MVP pages sit — and those get their 38/44/72 from `.crf-page`,
+   which this page is not. So it rendered flush to the rail and to the top of
+   the viewport while every other Refined page had a margin.
+
+   The values are `.crf-page`'s exactly, not new ones: the complaint is that
+   this page stopped matching its neighbours, so matching them is the fix. */
+/* ⚠ 24px, MATCHING `.crf-page` — see the note there. It was 38, then 0 for
+   a day; this is the Overview's own wrapper and moves with the other one, or
+   the page a reviewer lands on is the one spaced differently. */
+.crf-rd {
+  flex: 999 1 560px;
+  min-width: 0;
+  box-sizing: border-box;
+  padding: 24px 44px 72px;
+  margin: 0 auto;
+}
+
+/* The header element, 2026-11-10 — the eyebrow and the title, nothing else.
+   It carries no layout of its own; the spacing it used to get from the loose
+   paragraphs is unchanged. */
+.crf-rd .crf-rd-head {
+  min-width: 0;
+}
+
+/* ---------- Course Progress + Your Next Step, as one — 2026-11-11 ----------
+   Three arrangements of the same content, differing in ONE decision: what
+   separates the two halves. See `CompassRefinedFocus.tsx`. */
+
+/* ⚠ THE PROGRESS SIDE IS THE LARGER ONE — 2026-11-11, "Keep the course
+   progress side larger than the Step 1 side." It was the narrower bay
+   (260–340px against the rest), which made the ring and its figures the
+   footnote and the lesson card the page. The three lines are what the
+   learner came to read. */
+.crf-rd .crf-focus {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(280px, 1fr);
+  align-items: stretch;
+  gap: 0;
+  margin: 0 0 18px;
+  /* ⚠ THE HERO'S OWN GROUND — 2026-11-11, "this is the style that the first
+     widget should be. but with the progress and Your Next Step." The card she
+     pointed at is Jeff's hero: one tinted panel with a soft steel edge, the
+     two halves divided by a hairline and nothing nested inside it. This was
+     a white card with a white sub-card on the right, which is two boxes
+     saying what one panel says. */
+  /* ⚠ A NEUTRAL STROKE — 2026-11-11: "make the stroke around this section the
+     light gray too." It was `--rd-steel-edge` (#c7d5e2), the blue it has
+     carried since the card took the hero's ground; with the progress bay now
+     white and its rows ruled in grey, a blue outline was the last blue thing
+     on that half. Same token as those rules, so the card and its rows are
+     drawn in one line colour. */
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 14px;
+  overflow: hidden;
+  /* ⚠ NO GROUND OF ITS OWN — 2026-11-11, "have the course progress side be
+     more of a beige color background and the your next step remains light
+     blue". The halves carry their own now, so a card colour here would show
+     only in the 1px the border covers.
+
+     ⚠ THE BEIGE RAMP IS HERS, given as hex with the ask: 100 #f3f1ed,
+     200 #e7e3db, 300 #dbd6c9. It is NOT in `tokens.css` — adding a brand
+     neutral ramp to the system is a bigger decision than one card's ground,
+     so it lives here until somebody makes it. */
+  /* ⚠ A 50 BELOW HER RAMP — 2026-11-11: "make the beige lighter". Her set
+     starts at 100 (#f3f1ed) and that was the note's ground; lighter than the
+     lightest she gave means mixing toward white rather than picking from the
+     three, so it is named for where it sits rather than pretending to be one
+     of hers. */
+  --crf-beige-50: color-mix(in srgb, #f3f1ed 55%, #fff);
+  --crf-beige-100: #f3f1ed;
+  --crf-beige-200: #e7e3db;
+  --crf-beige-300: #dbd6c9;
+}
+/* ⚠ ONE HALF ONLY, AND THE GRID COLLAPSES. Early states carry no hero and the
+   prep series carries no QE ring; a fixed two-column grid would leave an
+   empty bay where the missing half was. */
+.crf-rd .crf-focus > :only-child {
+  grid-column: 1 / -1;
+}
+@media (max-width: 900px) {
+  .crf-rd .crf-focus {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.crf-rd .crf-focus__prog {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 22px 26px 22px;
+  text-align: left;
+  /* ⚠ WHITE — 2026-11-11, "make this background white", reversing the beige
+     asked for an hour earlier after seeing it on screen. The ramp is kept and
+     is what the `panel` arm now draws, so the beige is still a click away
+     rather than deleted on a first look. */
+  background: var(--rd-white);
+}
+/* ⚠ TOP-ALIGNED, NOT CENTRED — 2026-11-11, "should be horizontally aligned
+   with the Course Progress eyebrow". Centring floated this half against the
+   taller one, so its eyebrow sat below the other and the two halves looked
+   like two unrelated blocks rather than one row. Same padding as the left, so
+   the two eyebrows share a line. */
+.crf-rd .crf-focus__next {
+  display: flex;
+  align-items: stretch;
+  padding: 22px 26px 22px;
+  min-width: 0;
+  /* What to do NEXT — the cool half, as it was. */
+  background: color-mix(in srgb, var(--rd-steel-edge) 22%, var(--rd-steel-wash));
+}
+/* ⚠ NO NESTED CARD — 2026-11-11. It was a white panel with its own accent
+   edge sitting inside the card; on the hero's tinted ground that is a box in
+   a box. The vertical hairline between the halves is the whole separation the
+   reference draws. */
+/* ⚠ A COLUMN THAT FILLS ITS HALF — 2026-11-11: "CTA and link should always
+   be fixed at the bottom of the section." The actions had floated under the
+   meta line, so their height moved with the title's: a two-line lesson name
+   pushed them down and a one-line name left them mid-card, and the two halves
+   never agreed on a baseline. `margin-top: auto` on the action row puts them
+   on the floor of the card whatever is above them. */
+.crf-rd .crf-focus__card {
+  display: flex;
+  flex-direction: column;
+  /* The minimum between the three blocks, applied equally — see the note on
+     `crf-focus__label`. */
+  gap: 10px;
+  width: 100%;
+  box-sizing: border-box;
+}
+.crf-rd .crf-focus__go {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 16px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--rd-steel-deep);
+  color: #fff;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.crf-rd .crf-focus__quiet {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--rd-steel-deep);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* ⚠ THE EYEBROWS STAY LEFT WHERE THE CONTENT IS CENTRED, which is Atlas's own
+   pattern on this card: "the label left, the thing it names centred". */
+/* ⚠ 600, NOT 700 — AND THE COLOUR DOES NOT MOVE, 2026-11-11: "I think its
+   too bold and needs to be a little more light gray that still passes
+   accessibility."
+
+   Measured before changing anything. `--rd-muted` is rgb(112,107,99): 5.29:1
+   on the white half, but only 4.61:1 on the blue one — a hair over the 4.5
+   floor that 11px text needs, so there is no room to lighten it. Every
+   candidate a step lighter lands between 3.6 and 4.2 on the blue and fails.
+
+   What was making it read heavy is the WEIGHT. 700 at 11px with 0.08em
+   tracking is a lot of ink for a label; 600 lifts it without touching
+   contrast, which is the half of the ask that could be met. */
+.crf-rd .crf-focus__eyebrow {
+  align-self: flex-start;
+  margin: 0;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--rd-muted);
+}
+
+/* --- the ring --- */
+.crf-rd .crf-focus__ring {
+  position: relative;
+  display: grid;
+  place-items: center;
+}
+.crf-rd .crf-focus__ringnum {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1.1;
+}
+/* ⚠ PLAYFAIR, AND IT IS A DELIBERATE EXCEPTION TO THE 32px RULE — 2026-11-11,
+   Jillienne on this figure: "this should be the playfair font." It renders at
+   30px, under the line drawn on 2026-11-10 ("anything below 32 px should be
+   open sans"). The rule was about HEADINGS picking the display face up by
+   accident; this is the one number the widget exists to show, and she asked
+   for it by name after seeing it set in Open Sans. The exception is named
+   here so the next person to apply the rule does not quietly undo it. */
+.crf-rd .crf-focus__ringnum b {
+  font-family: var(--font-heading-serif), Georgia, serif;
+  font-size: 30px;
+  font-weight: 700;
+  color: var(--rd-ink);
+}
+.crf-rd .crf-focus__ringnum span {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--rd-muted);
+}
+.crf-rd .crf-focus__lessons {
+  margin: 0;
+  font-size: 13px;
+  color: var(--rd-body);
+}
+
+/* --- the pace block, Atlas's fields --- */
+.crf-rd .crf-focus__rule {
+  width: 100%;
+  height: 1px;
+  background: var(--rd-hairline);
+  margin: 4px 0 2px;
+}
+.crf-rd .crf-focus__pace {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  text-align: left;
+}
+.crf-rd .crf-focus__gauge {
+  display: inline-flex;
+  color: var(--rd-steel);
+}
+.crf-rd .crf-focus__pace b {
+  display: block;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--rd-ink);
+}
+.crf-rd .crf-focus__hours {
+  display: block;
+  font-size: 12px;
+  color: var(--rd-muted);
+}
+.crf-rd .crf-focus__note {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--rd-muted);
+}
+.crf-rd .crf-focus__link {
+  margin-top: 2px;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--rd-steel-deep);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* --- the next step --- */
+.crf-rd .crf-focus__title {
+  margin: 0;
+  font-size: 22px;
+  line-height: 1.25;
+  font-weight: 700;
+  color: var(--rd-ink);
+}
+.crf-rd .crf-focus__sub {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--rd-body);
+}
+.crf-rd .crf-focus__lesson {
+  width: 100%;
+  margin: 8px 0 2px;
+  padding: 10px 12px;
+  border: 1px solid var(--rd-hairline);
+  border-radius: 10px;
+  background: var(--rd-white);
+}
+/* ⚠ NO BOTTOM MARGIN. The body below centres itself in the free space, and a
+   margin here is added to the TOP gap only — measured at 28px above the group
+   against 18 below, which is a centre that is not one. The card's own `gap`
+   keeps the minimum spacing, evenly on both sides. */
+.crf-rd .crf-focus__label {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--rd-muted);
+}
+/* ⚠ PLAYFAIR, AND THE SECOND NAMED EXCEPTION TO THE 32px RULE — 2026-11-11:
+   "have this be playfair font, same color as the main title of the page." It
+   renders at 15px, well under the line drawn on 2026-11-10; the ring figure
+   was the first exception, an hour earlier.
+
+   Both were asked for by name after being seen set in Open Sans, which is
+   what the rule is for — it stops headings picking the display face up by
+   ACCIDENT, and neither of these did. Worth restating the rule as "Open Sans
+   below 32px unless named" rather than leaving it absolute with two holes in
+   it; the test's allow-list is where that would live.
+
+   ⚠ AND THE COLOUR DID NOT ALREADY MATCH, though it looked as though it
+   should: `.crf-rd` sets `--rd-ink` (#1f1d18) and this took it, but the page
+   title computes to #3a3a3a — `--color-text-primary`, inherited from above
+   the Compass page rather than from the block it sits in. Two inks a shade
+   apart on one screen, which is exactly the kind of difference nobody sees
+   and everybody feels. Measured both; this now reads the title's. */
+.crf-rd .crf-focus__lessonname {
+  margin: 0 0 3px;
+  font-family: var(--font-heading-serif), Georgia, serif;
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--color-text-primary);
+}
+.crf-rd .crf-focus__lessonname svg {
+  color: var(--rd-rubi);
+  flex: 0 0 auto;
+}
+/* ⚠ NO `margin-top: auto` ANY MORE. The body below claims the slack at both
+   ends, which puts the actions on the floor as a consequence rather than by a
+   second rule — two auto margins in one column fight over the same space. */
+.crf-rd .crf-focus__cta {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+/* ---------- 1 · SPLIT — a vertical rule, two peers on one ground ---------- */
+/* ⚠ THE DIVIDER FOLLOWS THE OUTLINE — the same neutral grey. It was steel to
+   match a steel border; with the border grey, a blue line down the middle
+   would be the only one left and would read as a stray rather than as a
+   choice. One stroke colour on the whole card. */
+.crf-rd .crf-focus--split .crf-focus__next {
+  border-left: 1px solid var(--color-border-subtle);
+}
+
+/* ---------- 2 · PANEL — the ground does the separating ----------
+   State and action are different kinds of thing; a tinted left bay says so
+   without drawing a line through the card. */
+/* ⚠ `panel` IS WHERE THE BEIGE LIVES NOW. It was the arm that tinted the
+   progress bay; the beige became that tint for an hour and then came back out
+   of the default, so this is the arm it belongs to — white against blue on
+   `split`, warm against cool here. */
+.crf-rd .crf-focus--panel .crf-focus__prog {
+  background: var(--crf-beige-100);
+  border-right: 1px solid var(--crf-beige-300);
+}
+
+/* ---------- 3 · FIGURES — Atlas's labelled rows, ring beside them ----------
+   The densest of the three and the least like his: the plan stops being a
+   sentence and becomes three things you can read at a glance. */
+/* ⚠ `figures` NOW DIFFERS ONLY IN THE RING'S SIZE. Its distinction used to be
+   the labelled rows; those are every arrangement's content since the
+   three-line spec, so what is left is a smaller ring and more room for the
+   lines. Worth collapsing to two arms once the separator is picked. */
+.crf-rd .crf-focus--figures .crf-focus__figrow {
+  gap: 20px;
+}
+.crf-rd .crf-focus__figrow {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  width: 100%;
+}
+.crf-rd .crf-focus__figures {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin: 0;
+  min-width: 0;
+  flex: 1;
+}
+/* ⚠ THE ROW IS THE OLD CARD'S ROW: label left, value hard right, a hairline
+   under it. The last one draws no rule — a line under the final row is a line
+   under nothing. */
+.crf-rd .crf-focus__figures > div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  /* The Study Pace row carries a third child at 0% — the day-one note — and
+     it belongs on its own line beneath the value, not beside it.
+     ⚠ THE TWO GAPS ARE SET APART — 2026-11-11: "reduce the spacing above it."
+     The space above the note was the row's own 16px gap, not its margin, so
+     trimming the margin would have moved nothing. Only the pace row ever
+     wraps, so the row-gap reaches that note and nothing else. */
+  flex-wrap: wrap;
+  column-gap: 16px;
+  row-gap: 8px;
+  padding: 9px 0 10px;
+  /* ⚠ A NEUTRAL HAIRLINE, NOT THE STEEL ONE — 2026-11-11: "these divider
+     lines should be a light gray. not blue." They were `--rd-steel-edge`
+     (#c7d5e2), which is the card's BORDER colour: right around a blue bay,
+     wrong as a rule inside the white one, where it tinted every row.
+
+     ⚠ AND NOT `--rd-hairline` EITHER, which would have been the obvious
+     reach — that is #e0dbcd, a warm beige from Jeff's palette. Light grey
+     was the ask, so this is the system's own neutral subtle border. */
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+.crf-rd .crf-focus__figures > div:last-child {
+  border-bottom: 0;
+  padding-bottom: 2px;
+}
+/* ⚠ EYEBROW SHAPE AT REGULAR WEIGHT — 2026-11-11, in two steps: "these
+   should be regular style", then "keep these regular style, but all caps.
+   Eyebrow style."
+
+   So the capitals and the tracking come back and the WEIGHT does not. What
+   made these heavy was 700, not the case: 10px/700 uppercase is the bar's
+   label, and three of them stacked made the bay look like three sections
+   rather than three facts about one learner. At 400 the same shape reads as
+   a label on a row.
+
+   ⚠ 11px, BETWEEN THE TWO EARLIER SIZES. 10 was set for 700 and goes thin at
+   400; 13 was set for sentence case and is loud in capitals. */
+.crf-rd .crf-focus__figures dt {
+  flex: 0 0 auto;
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--rd-muted);
+}
+/* ⚠ 13px, DOWN FROM 15 — 2026-11-11, Jillienne on "8 of 41": "what is this
+   font size? it seems excessively large?" It was 15/600, which is exactly the
+   LESSON TITLE's size on the other half of the card — so a data value was
+   competing with the one heading in the widget, and the eye landed on the
+   count instead of on what to do next. It is also a wide jump from its own
+   10px label.
+
+   13 keeps it clearly above the 12px line beneath it and clearly below the
+   15px title opposite. The old Course-progress card set the same figure at
+   12px as a muted note; this stays a shade larger and in full ink, because
+   here it IS the row's content rather than a caption on a name. */
+.crf-rd .crf-focus__figures dd {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--rd-ink);
+  text-align: right;
+  /* The row is label | value, and the value is now two phrases: let it wrap
+     inside its own column rather than pushing the label off the left. */
+  min-width: 0;
+}
+/* ⚠ INLINE, NOT A SECOND LINE — 2026-11-11: "move these so they are in the
+   same line, divided by a small circle, still different font weights." So the
+   weights stay apart (the value at 600, this at 400) and only the line
+   breaks: one row, two registers, a dot between. */
+.crf-rd .crf-focus__under {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--rd-muted);
+}
+/* The small circle. Drawn rather than typed: a "·" at this size reads as
+   punctuation inside the phrase, and these are two phrases. */
+.crf-rd .crf-focus__sep {
+  display: inline-block;
+  width: 3px;
+  height: 3px;
+  margin: 0 7px;
+  border-radius: 50%;
+  background: var(--rd-muted);
+  vertical-align: middle;
+  opacity: 0.6;
+}
+
+/* ---------- the next-step tile, 2026-11-11 ----------
+   "this style icon, should be included in the your next step section based on
+   what the next step actually is."
+
+   ⚠ THE TILE IS THE LEARN PAGE'S `crf-tile`, borrowed rather than redrawn, so
+   the two surfaces badge a thing the same way. Only its ground changes: that
+   one sits on white and takes a steel wash, this one sits ON the steel wash
+   and would disappear into it. */
+.crf-rd .crf-focus__head {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  min-width: 0;
+}
+.crf-rd .crf-focus__tile {
+  background: var(--rd-white);
+  border: 1px solid var(--rd-steel-edge);
+  color: var(--rd-steel-deep);
+  /* A shade smaller than the Learn page's 36px: there it heads a whole
+     section, here it marks one line. */
+  flex: 0 0 32px;
+  width: 32px;
+  height: 32px;
+  margin-top: 1px;
+}
+
+/* The next-step mark — the glyph alone, on the section's own ground.
+   2026-11-11: "not white background". It had been `crf-tile`, a white badge,
+   which on the blue half read as a second card edge inside the card. */
+.crf-rd .crf-focus__mark {
+  display: inline-flex;
+  margin-bottom: 8px;
+  color: var(--rd-steel-deep);
+}
+
+/* The next step's middle — the mark, the title and the meta as one block,
+   centred between the eyebrow at the top and the actions at the bottom.
+   2026-11-11: "have these items be grouped together and centered vertically
+   within this space". `margin: auto 0` takes the free space at BOTH ends, so
+   the group centres and the actions land on the floor without a rule of their
+   own. */
+.crf-rd .crf-focus__body {
+  margin: auto 0;
+  min-width: 0;
+}
+
+/* The day-one pace note — inside the Study Pace row, in its own beige box.
+   2026-11-11: "in a container that is light beige."
+
+   ⚠ FULL WIDTH AND LEFT-SET, against a row whose values are right-aligned.
+   It is a sentence, not a figure: reading it from the right edge back would
+   be the row's alignment applied to the wrong kind of content. The beige is
+   her own 100 — the lightest of the three she gave — because this sits on
+   white and has to read as a note rather than as a second card. */
+/* ⚠ THE SELECTOR CARRIES `dd` DELIBERATELY. `.crf-rd .crf-focus__figures dd`
+   sets right-alignment and 600 weight for the VALUES, and it outranks a
+   two-class selector — so this box inherited both and the sentence set itself
+   from the right edge. Matching the same shape is what lets it win. */
+.crf-rd .crf-focus__figures dd.crf-focus__dayone {
+  width: 100%;
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: var(--crf-beige-50);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.5;
+  text-align: left;
+  color: var(--rd-body);
+}
+.crf-rd .crf-focus__inlink {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-weight: 600;
+  color: var(--rd-steel-deep);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* Rubi's actions — the primary and the way out, on one row. 2026-11-11.
+   The CTA keeps its own rule above; this only places the pair. */
+.crf-rd .crf-rd-rubi-actions {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+.crf-rd .crf-rd-rubi-quiet {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--rd-ink);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* ---------- the halves swapped, 2026-11-11 ----------
+   "make a variant of this component, that can be toggled in the design tools,
+   where the 2 sections are swapped."
+
+   ⚠ ORDER AND COLUMNS BOTH, or only one of them moves. `order` puts Your Next
+   Step first; the template has to flip with it, or the wider bay stays on the
+   left and the progress half arrives into a column sized for the other one.
+
+   ⚠ AND THE DIVIDER FOLLOWS. On `split` it is a left border on the next-step
+   half; swapped, that half is the first thing on the row and its left border
+   would draw down the card's own edge. It moves to the progress half, which
+   is now the second. */
+.crf-rd .crf-focus--swap {
+  grid-template-columns: minmax(280px, 1fr) minmax(0, 1.35fr);
+}
+.crf-rd .crf-focus--swap .crf-focus__next {
+  order: 1;
+}
+.crf-rd .crf-focus--swap .crf-focus__prog {
+  order: 2;
+}
+.crf-rd .crf-focus--split.crf-focus--swap .crf-focus__next {
+  border-left: 0;
+}
+.crf-rd .crf-focus--split.crf-focus--swap .crf-focus__prog {
+  border-left: 1px solid var(--color-border-subtle);
+}
+.crf-rd .crf-focus--panel.crf-focus--swap .crf-focus__prog {
+  border-right: 0;
+  border-left: 1px solid var(--crf-beige-300);
+}
+
+/* ---------- the next step's mark, two shapes — 2026-11-11 ----------
+   "make a variant of this that has the icon 40 px by 40 px in a graphical
+   circle with the course details beside it, trying to explore different
+   variations to help with vertical spacing of this widget."
+
+   ⚠ THE ASK NAMES ITS OWN PURPOSE. `stacked` spends a row of height on the
+   glyph; `circle` puts it beside the title and meta so the three occupy one
+   block. The other half of the card is three ruled rows, and the two halves
+   have to end up a similar height — which is the thing being explored, not
+   the icon. */
+.crf-rd .crf-focus__card--tile .crf-focus__body {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+/* ⚠ A ROUNDED SQUARE, NOT A DISC — 2026-11-11: "make the icon a square
+   version like used on the Your Course Page." That page's badge is
+   `crf-tile`: a 36px square at 8px radius. This keeps the 40px the variant
+   was asked for and takes the shape. */
+.crf-rd .crf-focus__card--tile .crf-focus__mark {
+  flex: 0 0 40px;
+  width: 40px;
+  height: 40px;
+  margin: 2px 0 0;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  background: var(--rd-white);
+  border: 1px solid var(--rd-steel-edge);
+}
+/* The name on its own line, its figures under it — "wrap the text so its
+   course title and then the other text on the 2nd line". */
+.crf-rd .crf-focus__bodytext {
+  min-width: 0;
+}
+
+/* The day-one note's offer, set under the sentence instead of inside it.
+   2026-11-11 — see `compass-overview-pace-note`. */
+.crf-rd .crf-focus__notelink {
+  display: block;
+  margin: 6px 0 0 auto;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-weight: 600;
+  color: var(--rd-steel-deep);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* The `link` arm of the day-one note: no box, no sentence, and on the row
+   itself. 2026-11-11, in two steps — "i want the entire beige container gone,
+   and just the simple link", then "add this in the same line as the Study
+   Pace".
+
+   ⚠ NO `width: 100%`, which is the whole of it. The base rule gives the note
+   the full row so it wraps to its own line; without it the `dd` stays a flex
+   item and the row reads label · value · control across one line. */
+.crf-rd .crf-focus__figures dd.crf-focus__dayone--bare {
+  width: auto;
+  padding: 0;
+  background: none;
+}
+.crf-rd .crf-focus__dayone--bare .crf-focus__notelink {
+  display: inline;
+  margin: 0;
+}
+
+/* The floating Ask Rubi on the stage pages — 2026-11-11, "this should also be
+   on the overview page."
+
+   ⚠ IT BORROWS `crf-ask` AND RE-ANCHORS IT. That rule positions against
+   `crf-page`, which these pages are not; `crf-rd` is the page here, so it
+   needs the positioning context and the button needs to sit inside this
+   page's own padding rather than the other one's. */
+.crf-rd {
+  position: relative;
+}
+/* ⚠ NO OFFSET OF ITS OWN — 2026-11-11: "spacing for this is off compared
+   with the other pages." It had `right: 0; top: 0`, which pins it to the
+   padding box's corner; `crf-ask`'s own rule is 40/24 and that is what every
+   MVP page draws. Measured both: Practice 40 and 24, this 0 and 0. The
+   override goes and the shared rule applies, so the pill cannot drift from
+   the pages it is copied from. `.crf-rd` still needs `position: relative`
+   above — that is the half this page genuinely lacked. */
+
+/* ---------- Rubi's first-run toast — 2026-11-11 ----------
+   "a message should appear where the ask rubi is, like a toast alert, in the
+   style with the navy button."
+
+   ⚠ IT SITS WHERE THE PILL SITS, which is why it is absolutely positioned
+   against `.crf-rd` like the pill and not placed in the flow: dismissing it
+   hands the same corner back, so the learner sees where she went. */
+.crf-rd .crf-rd-toast {
+  position: absolute;
+  right: 0;
+  top: 0;
+  z-index: 3;
+  width: min(420px, calc(100% - 32px));
+  box-sizing: border-box;
+  padding: 16px 18px 18px;
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 14px;
+  background: var(--rd-white);
+  box-shadow: 0 12px 34px rgb(0 0 0 / 12%);
+}
+.crf-rd .crf-rd-toast__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+.crf-rd .crf-rd-toast__eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0;
+  color: var(--rd-rubi);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.crf-rd .crf-rd-toast__x {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  margin: -2px -4px 0 0;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  color: var(--rd-muted);
+  cursor: pointer;
+}
+.crf-rd .crf-rd-toast__x:hover {
+  background: var(--color-neutral-100);
+}
+.crf-rd .crf-rd-toast__title {
+  margin: 14px 0 6px;
+  font-family: var(--font-heading-serif), Georgia, serif;
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1.25;
+  color: var(--color-text-primary);
+}
+.crf-rd .crf-rd-toast__why {
+  margin: 0 0 16px;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--rd-body);
+}
+.crf-rd .crf-rd-toast__cta {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+/* ⚠ THE NAVY IS THE PRIMARY, AND IT IS "START THE COURSE". A toast greeting
+   somebody who has not begun should not make meeting the tutor the first
+   thing the product asks of them. */
+.crf-rd .crf-rd-toast__go {
+  padding: 10px 18px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--rd-steel-deep);
+  color: #fff;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.crf-rd .crf-rd-toast__alt {
+  padding: 9px 16px;
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 8px;
+  background: var(--rd-white);
+  color: var(--color-text-primary);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.crf-rd .crf-rd-toast__quiet {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* ---------- the Rubi band — 2026-11-11 ----------
+   "on the actual overview page, a component similar to this should appear",
+   with a mock of one compact row: the eyebrow above, then the title, the body
+   and the actions across a single line.
+
+   ⚠ IT WAS A STACKED CARD and its height was the problem: four full-width
+   blocks for what is, on most states, one sentence and one button. Across a
+   row the same content is a band, and the page below it starts higher. */
+.crf-rd .crf-rd-rubi--card {
+  padding: 16px 20px 18px;
+}
+.crf-rd .crf-rd-rubi--card .crf-rd-rubi-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+  margin-top: 10px;
+}
+.crf-rd .crf-rd-rubi--card .crf-rd-rubi-title {
+  flex: 0 0 auto;
+  margin: 0;
+  font-family: var(--font-heading-serif), Georgia, serif;
+  font-size: 19px;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--color-text-primary);
+}
+.crf-rd .crf-rd-rubi--card .crf-rd-rubi-why {
+  flex: 1 1 auto;
+  margin: 0;
+  min-width: 0;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--rd-body);
+}
+.crf-rd .crf-rd-rubi--card .crf-rd-rubi-actions {
+  flex: 0 0 auto;
+  margin-top: 0;
+}
+
+/* ---------- Rubi's CTA, secondary — 2026-11-11 ----------
+   "this CTA and button style should match the Resume Lesson Style. make it a
+   secondary style button."
+
+   ⚠ IT WAS A FILLED RUBI-RED BUTTON, which made the loudest control on the
+   Overview an optional conversation: the next step's "Resume lesson" is what
+   the page is actually asking for, and it was the quieter of the two. Same
+   metrics as that button, outlined instead of filled.
+
+   ⚠ NO ARROW, THOUGH THE SHAPE IS SHARED. The arrow on "Resume lesson" says
+   the click moves you forward through the course; talking to Rubi does not,
+   and borrowing the glyph would borrow that claim. */
+/* ⚠ THE BLUE, STILL SECONDARY — 2026-11-11: "use the blue color, but keep it
+   secondary." So the edge and the label take `--rd-steel-deep`, the fill
+   stays white: it reads as the product's action rather than a neutral one,
+   without competing with the filled Resume lesson opposite. */
+.crf-rd .crf-rd-rubi--card .crf-rd-rubi-cta {
+  padding: 9px 16px;
+  border: 1px solid var(--rd-steel-deep);
+  border-radius: 8px;
+  background: var(--rd-white);
+  color: var(--rd-steel-deep);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.crf-rd .crf-rd-rubi--card .crf-rd-rubi-cta:hover {
+  background: var(--rd-steel-wash);
+}

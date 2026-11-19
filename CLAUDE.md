@@ -46,7 +46,9 @@ there is one site since 2026-10-15, and they are given its link.
 |---|---|---|---|
 | **Prototypes · Main** | this IS the product — released | one per surface, all on `main` | flag defaults on `main` |
 | **Prototypes · Stage** | decided by its owner, not yet released | the same rows, all on `stage` | flag defaults on `stage` |
-| **Refinement** | under discussion | as many as you like | Netlify Blobs, authored on the page |
+| **Design** (2026-11-16) | being worked on — every pushed branch | one per branch, grouped by feature | derived from Netlify + git; nobody authors it |
+| **Release** (2026-11-16) | on stage, not on main — Jillienne's inbox | one per waiting branch, by surface, Decided / Undecided | derived from git + the `.hub/decided/` markers |
+| **Refinement** | under discussion — notes, documents, decks | as many as you like | Netlify Blobs, authored on the page |
 
 **STAGE (2026-11-01).** A third place, between a Refinement link and `main`,
 because there was nothing between *decided* and *released*: an owner who had
@@ -69,6 +71,33 @@ owner's checkout, so two owners in one file collide there and not in a
 release. The Hub cannot read stage from main (same password, cross-origin),
 so what is WAITING on stage is the To Do Board's **On Stage** column, which
 `share-to-stage` files into, not a tag on the rows.
+
+**DESIGN IS BACK, DERIVED (2026-11-16).** Jillienne: the share-to-stage and
+Refinement links "are just adding more confusion and chaos." Every hand-off
+was a prefilled URL clicked through the site password into a Blobs row, and
+the same fact was authored three times. So the Hub now READS it: a new
+**Design** section between Prototypes and Refinement lists every branch
+Netlify has built lately (any state — a push is a row saying *Building…*),
+grouped by the feature its name says — `feat/<scope>-<feature>[--<variant>]`,
+`src/data/branchName.ts` — each row tagged *In design · On stage · Released*
+from git (`netlify/lib/branchGit.ts`, needs `GITHUB_TOKEN` on the Netlify
+project). The designer's whole job is **name the branch, push**.
+`share-branch` is checks · commit · push and says where the row is;
+`share-to-stage` files no card; the Prototypes *Staged* tag reads git first
+and the old cards second; the branch strip under Refinement is gone.
+Refinement is for what git cannot see — a note, a document, a deck — reached
+from the Design row's **Discuss in Refinement**. **RELEASE, the same day**:
+Jillienne: "I cannot tell what branch is ready on stage to be pushed to
+main." A rail row under Design lists every branch on stage and not on main,
+by surface, with one number (stage is N commits ahead of main) and a
+*Decided / Undecided* tag per branch from the marker `share-to-stage` now
+writes — `.hub/decided/<scope>.json`, one file per scope, honest because the
+Hub counts it only while its `commit` is ahead of main (`decidedOn` in
+`branchGit.ts`), so nothing is cleaned up after a release. The page says
+"Ready" or "Not yet"; `/release` checks the same files by the same rule.
+The Design row's caption names the next step (*next: /share-to-stage
+(owner)* · *waiting on Release*). `docs/gateway.md` has the rest. The 2026-10-15 "Design is retired" below is history: that Design was a
+list of feature rows by status; this one is derived and authored by nobody.
 
 **THE VOCABULARY (2026-11-01).** Jillienne settled the words designers read,
 after an audit found the same thing under several names and one name on
@@ -108,6 +137,29 @@ is behind one password; stakeholders are given its link and see everything
 the team sees, except the review recaps, which the production deploy 404s
 at the edge. The three `archivedItems.ts` rows dated 2026-10-15 say how it
 was wired. The user-test build is unaffected.
+
+**THE PROTOTYPES LINKS ARE DEACTIVATED (2026-11-17).** Jillienne: "deactivate
+the links to the main prototypes and stage prototypes so that the users get an
+error screen … on the error screen shown to the user is where the message
+should be." All four rows that open are marked `linkRetired` in
+`prototypeFeatures.ts`; under Main AND Stage the row renders
+`/prototype-unavailable/<id>` instead of the product, and that screen
+(`PrototypeLinkRetiredPage.tsx`) carries the message — the links are being
+replaced, check with UX Team/Product Owner for the new one (**no individual is
+named**: it named the scope's owner for half a day on 2026-11-17, until
+Jillienne read her own name on the live screen). **NOT `coming-soon`**,
+which is the other way to take a link away: that draws the row disabled with
+nothing to click, which hides the link and tells nobody anything. Here the
+click is kept precisely so there is somewhere to put the message. **Nothing
+about the rows' routes changed** — every `to` is still the real route and the
+smoke test still holds it to the one-build rule, so **reactivating a row is
+deleting its `linkRetired` line**, and `expectedHref` in
+`UxDashboard.smoke.test.tsx` is the single place the tests know about it. One
+screen for both builds on purpose: the stage origin is behind its own copy of
+the site password, so a retired screen served from there would be a login wall
+in front of the message. ⚠ New links are still OUTSTANDING from the scope
+owners — Eric (Atlas), Afsana & Eric (Invite), Anjani (Compass), Jillienne
+(end to end).
 
 Five rows as of the evening of 2026-10-14, the product first and then the
 doors around it: **End-to-End User Experience (Invite, Atlas, Compass)** — always the
@@ -229,7 +281,7 @@ It is now three things, and where a new screen belongs depends on which:
 
 | Surface | Lives in | Reached at |
 |---|---|---|
-| The UX Dashboard gateway | `src/pages/UxDashboardPage.tsx` + friends | `/`, `/prototype/:id`, `/research-rationale`, `/qa-notes`, `/links`, `/prds` (twelve sections — Prototypes · Refinement · Research · Resources · PRDs · Explorations · Development · Done · Archive · QA Notes · To Do Board · Hub Resources) |
+| The UX Dashboard gateway | `src/pages/UxDashboardPage.tsx` + friends | `/`, `/prototype/:id`, `/research-rationale`, `/qa-notes`, `/links`, `/prds` (fourteen sections — Prototypes · Design · Release · Refinement · Research · Resources · PRDs · Explorations · Development · Done · Archive · QA Notes · To Do Board · Hub Resources) |
 | The XCEL product app | `src/pages/*`, `src/components/*` | `/dashboard-rebrand` + ~28 product routes |
 | The standalone prototypes | `public/prototypes/*.html` | `/prototypes/…`, opened in a tab or iframed |
 
@@ -264,12 +316,15 @@ scope — the product IS React here now, exactly as it is in the LMS.
    you cannot conflict with whoever else is editing it. **Fork the layout, import
    the data:** if both versions duplicate the content, the comparison is no longer
    about your change. Say `/share-component` and it will do this with you.
-3. **Share it — say `/share-branch`.** One command, and it was three until
-   2026-10-15: it runs the type check and the tests, commits, pushes (Netlify
-   builds your branch at its own address), waits for that build, and hands you
-   a link that opens Refinement's **Add link** form already filled in — the
-   address, the title, the product, and the **feature** this is a chunk of. You
-   check the note and click Add. Then it offers to cut your next branch.
+3. **Share it — say `/share-branch`.** Since 2026-11-16 it is checks,
+   commit, push, and a line saying where the row is: the Hub's **Design**
+   section lists your branch on its own, under the feature its name says
+   (`feat/compass-study-planner` → Compass · "Study planner"; reuse the
+   words to add to a feature, `--variant` for a treatment of the same one),
+   *Building…* until Netlify finishes and then opening the build. No form,
+   no link to click, no card. Want to leave a note on where to look? The
+   row's ⋯ → **Discuss in Refinement** opens that form filled in. Then it
+   offers to cut your next branch.
 
    By hand, if you would rather: *"Run the type check, the tests and lint"*
    (add *"and the smoke suites"* if you touched `public/prototypes/`), then
@@ -286,10 +341,10 @@ scope — the product IS React here now, exactly as it is in the LMS.
 4. **Decided? Share it to stage — say `/share-to-stage`.** For a surface you
    own. It asks the flag questions (`decide-defaults`) if your branch has not
    answered them (which flag defaults become the surface's), merges today's
-   `stage` into your branch, runs the checks, pushes, moves `stage` to your
-   branch, waits for the stage build, and files the **On Stage** card. On the
-   Hub, Prototypes → **Stage** now opens your work; **Main** does not until
-   Jillienne runs `/release`. Then archive your Refinement row.
+   `stage` into your branch, runs the checks, pushes, and moves `stage` to
+   your branch. Your Design row says **On stage** on its own, and Prototypes
+   → **Stage** opens your work; **Main** does not until Jillienne runs
+   `/release`, after which the row says **Released**. No card to file.
 
 **You never run the site on your own computer.** There is no localhost step; the
 branch build IS the preview. Nothing here needs a terminal — every step above is

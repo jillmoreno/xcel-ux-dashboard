@@ -1,9 +1,9 @@
 ---
 name: share-to-stage
-description: Put the branch you are on onto STAGE — the build between a Refinement link and main. For a surface you own, it records which of the branch's flag defaults become the surface's defaults (the flag questions — `decide-defaults`, formerly promote-to-prototype — run here if the branch has not answered them yet), merges today's `stage` into the branch, runs the checks, pushes, fast-forwards `stage` to the branch, waits for Netlify to build the stage address, and files the card in the To Do Board's On Stage column. Nothing reaches main — Jillienne releases stage to main with `/release`. Trigger on "share to stage", "stage this", "put this on stage", "stage my branch", "promote to stage", "/share-to-stage".
-version: 1.0.0
+description: Put the branch you are on onto STAGE — the build between a Design row and main. For a surface you own, it records which of the branch's flag defaults become the surface's defaults (the flag questions — `decide-defaults`, formerly promote-to-prototype — run here if the branch has not answered them yet), writes the `.hub/decided/<scope>.json` marker the Hub's Release page and `/release` read, merges today's `stage` into the branch, runs the checks, pushes, and fast-forwards `stage` to the branch. Since 2026-11-16 it files NO card and hands over NO link — the Hub's Design row reads "On stage" from git, and the Prototypes row's Staged tag reads the same fact. Nothing reaches main — Jillienne releases stage to main with `/release`. Trigger on "share to stage", "stage this", "put this on stage", "stage my branch", "promote to stage", "/share-to-stage".
+version: 2.0.0
 author: UX Design — Colibri
-last_updated: 2026-11-01
+last_updated: 2026-11-16
 status: active
 ---
 
@@ -47,7 +47,7 @@ Three decisions Jillienne made that this skill encodes:
 
 | Word | Means |
 |---|---|
-| **Refinement link** | the designer's branch build, one chunk under discussion — `/share-branch` |
+| **Design row** | the designer's branch build, listed on the Hub's Design section because it was pushed — `/share-branch`. (A *Refinement link* is the same build with a hand-written note, 2026-10-15 → 2026-11-16 the only way it was listed.) |
 | **Stage** | the `stage` branch's build: what owners have decided, not yet released — **this skill** |
 | **Main** | the released product — `/release`, Jillienne only |
 | **Promote to prototype** | the owner recording which flags are their surface's defaults, on their branch. A decision, not a release. Folded into step 3 here. |
@@ -135,6 +135,30 @@ staging yet.
 If a promotion commit already covers every changed default, say so in one
 line and move on.
 
+**Then write the marker (2026-11-16)** — the Hub's Release page reads it,
+and `/release` refuses a surface without one. One file per scope, so two
+owners staging two surfaces never touch the same file:
+
+```bash
+SCOPE=compass                                 # the scope decided in this step
+PROMO=$(git log origin/main..HEAD --grep='promote' --format=%H -1)   # the promotion commit
+[ -n "$PROMO" ] || PROMO=$(git rev-parse HEAD) # no flag changed: the branch tip vouches
+mkdir -p .hub/decided
+node -e '
+const [scope,branch,by,commit]=process.argv.slice(1);
+const m={scope,branch,decidedAt:new Date().toISOString().slice(0,10),by,commit};
+require("fs").writeFileSync(`.hub/decided/${scope}.json`,JSON.stringify(m,null,2)+"\n")
+' "$SCOPE" "$(git rev-parse --abbrev-ref HEAD)" "$(git config user.name)" "$PROMO"
+git add .hub/decided && git commit -m "decide($SCOPE): defaults decided for stage"
+```
+
+`commit` is what makes the marker honest: the Hub counts it only while that
+commit is among the branch's commits main does not have
+(`netlify/lib/branchGit.ts`, `decidedOn`). After the release the file stays
+in the tree and vouches for nothing, so the next branch cut from main is not
+"decided" by accident, and nothing has to be cleaned up. A branch that
+stages more than one scope writes one file per scope.
+
 ⚠ **The default dashboard version is Jillienne's alone**, whatever the
 scope. If `dashboardVersions.ts` changed its default and the caller is not
 Jillienne, set it back to main's value on the branch (the skill above does
@@ -172,9 +196,8 @@ smoke`. The merge in step 4 can break something neither branch broke alone —
 that is the point of running the suite AFTER it.
 
 There is no row to stamp here: the Prototypes rows' `lastUpdated` is
-maintained by `/release`, and the Hub cannot read stage from main (see
-`src/data/stageBuild.ts`), so the record of *what is on stage and since when*
-is the To Do Board card in step 8.
+maintained by `/release`. The record of *what is on stage and since when* is
+git — the Hub's **Release** page reads it (2026-11-16).
 
 ### 6. Push the branch, then move stage to it
 
@@ -192,7 +215,7 @@ step 4 and now — `git fetch origin` and repeat from step 4. Never
 ⚠ `protect-main.mjs` does not block this: `stage` is not `main`. The GitHub
 rule on `main` is untouched too — this skill never names main in a push.
 
-### 7. Wait for the stage build
+### 7. Say what changed on the Hub — and stop
 
 Netlify builds `stage` at its own address, two to four minutes:
 
@@ -200,75 +223,53 @@ Netlify builds `stage` at its own address, two to four minutes:
 https://stage--ux-design-xceldashboard.netlify.app/dashboard-rebrand?demo=1
 ```
 
-Poll the deploys the way `share-branch` does (its step 9), then hand back the
-stage link for the surface — `&section=compass` for Compass,
+Do not poll for it, and do not file anything. **Since 2026-11-16 the Hub
+reads "on stage" from git** (`netlify/lib/branchGit.ts`: every commit of the
+branch is on `stage`), so the moment the fast-forward lands:
+
+- the branch's row in **Design** changes its tag from *In design* to *On
+  stage* and its caption to *waiting on Release*, on its own;
+- the surface's row in **Prototypes** draws its *Staged* tag from the same
+  fact — *Waiting on stage* under Main, *Staged ‹date› · ‹who›* under Stage;
+- the branch appears on Jillienne's **Release** page under its surface,
+  tagged *Decided* by the marker from step 3 — the page's "Ready" line is
+  what tells her `/release` will go through.
+
+There is no On Stage card to file any more. The To Do Board's column is
+still there for hand-written notes, but nothing on the Hub reads it.
+
+Hand back the stage link for the surface — `&section=compass` for Compass,
 `&section=dashboard` for Atlas, `/end-to-end-demo?demo=1` for the invite
-flow. Say in one line that **Prototypes → Stage** on the Hub now opens this,
-and Main does not until Jillienne releases.
+flow — and say in one line that **Prototypes → Stage** on the Hub opens this
+once the build finishes, and Main does not until Jillienne releases.
 
-### 8. File the card — On Stage
+### ⚠ A document is not a surface
 
-The To Do Board has an **On Stage** column (id `stage`), between Ready For
-Refinement and Ready for Prototype and Handoff. It is the answer to "what is
-waiting on a release, and since when" — the Hub's rows cannot carry a staged
-date, so the card does.
-
-If the chunk already has a card (it will, if `/share-branch` filed one), the
-right move is to MOVE that card, which only the page can do: open the board
-and say so. Otherwise open the add form prefilled:
-
-```bash
-OWNER=$(git config user.name | awk '{print $1}')
-node -e '
-const [site,title,note,url,owner,scope]=process.argv.slice(1);
-const q=new URLSearchParams({section:"todo-board",add:"1",column:"stage",title,note:`${note} ${url}`.trim(),owner,scope});
-console.log(`${site}/?${q}`)' "https://ux-design-xceldashboard.netlify.app" "$TITLE" "Staged $(date +%Y-%m-%d) —" "$STAGE_URL" "$OWNER" "$SCOPE"
-```
-
-### ⚠ First: does this branch actually change the surface it claims?
-
-Before putting a scope on the card, check that the branch changed REACT under
-that scope's paths — not only a document:
+Before saying the surface is staged, check that the branch changed REACT
+under that scope's paths — not only a document:
 
 ```bash
 git diff --name-only origin/main...HEAD -- src | grep -E '<the scope.s src paths>'
 git diff --name-only origin/main...HEAD -- public/prototypes
 ```
 
-**If the second has changes and the first has none, STOP and say this:**
+**If the second has changes and the first has none, say this:**
 
 > This branch changes a Compass **document** (`public/prototypes/…`), not the
-> Compass surface. The Prototypes row opens the REACT build, so Stage will
-> look exactly as it does now and the row will say "Staged" over something
-> unchanged. Two ways on: port the delta with `/port-prototype`, or file the
-> card with NO scope so the row stays honest.
+> Compass surface. Stage will look exactly as it does now. Port the delta
+> with `/port-prototype` if it is meant to be the surface.
 
-This is the failure the whole 2026-11-04 session came out of: Anjani shared a
-Compass document to stage, the share succeeded, the build went up, and her
-Prototypes row showed nothing. It read as a broken tool for a day. With the
-scope field added that afternoon it would have been WORSE — the row would have
-said "Staged · Anjani" over an unchanged Compass, which is a confident wrong
-answer rather than a blank one. Hence this check, before the scope goes on.
+This is the failure the 2026-11-04 session came out of: Anjani shared a
+Compass document to stage, the share succeeded, and her Prototypes row showed
+nothing. The row cannot say "Staged" over an unchanged build any more than it
+could then — the git fact is about the branch, and the branch name says
+which scope — so the check is now a warning rather than a field to leave
+blank. ⚠ The scope the Hub reads is the **first word of the branch name**
+(`feat/compass-…` → Compass; see `src/data/branchName.ts`). A branch named
+for the wrong scope stages under the wrong Prototypes row — say so in step 2
+if the name and the ownership check disagree.
 
-⚠ **`scope` IS WHAT MAKES THE PROTOTYPES ROW SAY ANYTHING** (2026-11-04). It
-is the scope id you decided the defaults for in step 3 — `compass`,
-`atlas`, `invite`, `end-to-end`, `admin` — and without it the card still
-files correctly and the row stays silent, which is exactly the failure this
-field was added to fix: Anjani shared Compass to stage on 2026-11-04, the
-share worked, and the Compass row looked identical because nothing on the
-Hub knew the card was about Compass. Set `SCOPE` alongside `TITLE` and
-`STAGE_URL`; if the branch staged more than one scope, file one card per
-scope rather than one card naming two.
-
-If the chunk already HAS a card you are moving rather than adding, the scope
-has to be set on it as well — the move is a drag on the board, which carries
-the field but cannot invent it. Say so: open the card, and if it was filed
-before this field existed, re-file it with the form above.
-
-Same rules as `share-branch` step 11: nothing saves until the button is
-clicked; the owner is resolved against the roster on the page.
-
-### 9. Tell Jillienne, and offer the row
+### 8. Tell Jillienne, and offer the row
 
 Finish with the three lines a release needs:
 
@@ -276,9 +277,11 @@ Finish with the three lines a release needs:
 > ‹link›. Promotion commit `abc1234` sets `compass-week-view` ON. Ready for
 > `/release` whenever you want it.
 
-Then ask whether the Refinement row should be **archived** now (the board is
-for things under discussion, and this one is decided) or left up until the
-release. Either is fine; archiving is the usual answer.
+If the branch also has a **Refinement** row (a note left from the row's
+"Discuss in Refinement"), ask whether it should be **archived** now — the
+board is for things under discussion, and this one is decided. The Design
+row needs nothing: it says *On stage* on its own and *Released* after
+`/release`.
 
 ## Guardrails
 
@@ -295,19 +298,16 @@ release. Either is fine; archiving is the usual answer.
   only thing that writes main, and it is Jillienne's.
 - **The default dashboard version is Jillienne's**, on stage as on main.
 - **A document is not a surface.** A branch that changes only
-  `public/prototypes/` gets its card WITHOUT a scope, and the designer is told
-  why — see step 8. A row that says "Staged" over an unchanged build is worse
-  than a row that says nothing.
-- **The card is the staged-date record,** and since 2026-11-04 it is also
-  what the Prototypes row READS to draw its "Staged" tag — which is why the
-  card must carry `scope`. Still do not invent a `stagedAt` field on the
-  Prototypes rows: the Hub cannot read the stage BUILD, and a hand-stamped
-  field in `prototypeFeatures.ts` would be a second copy of this record that
-  nobody remembers to update. The card is the one record; the row reads it.
+  `public/prototypes/` is told so — see step 7 — and the designer decides.
+- **No card, no link, no poll (2026-11-16).** "On stage" is a fact git
+  holds and the Hub reads; a card saying the same thing was a second copy
+  that went stale, and the link to file it was the step that kept failing.
+  Do not invent a `stagedAt` field on the Prototypes rows either — same
+  reason.
 - **Say what Stage shows now, and that Main does not.** Every time.
 
 ## The other two
 
-`share-branch` puts a chunk on Refinement from the designer's branch; this
-puts a decided chunk on Stage. `release` — Jillienne's — puts Stage on Main.
+`share-branch` pushes a branch, which puts it on the Hub's Design section;
+this puts a decided branch on Stage. `release` — Jillienne's — puts Stage on Main.
 Three shares, one lock.

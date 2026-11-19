@@ -110,7 +110,7 @@ async function checkoutPastPartnerCode(user: ReturnType<typeof userEvent.setup>)
 const at = () => screen.getByTestId('where').getAttribute('data-path')
 const query = () => new URLSearchParams(screen.getByTestId('where').getAttribute('data-search') ?? '')
 
-const GUEST = '/end-to-end-demo/find?ff=invite-flow-journey:b2c-guest'
+const GUEST = '/end-to-end-demo/find?ff=invite-flow-journey:b2c-guest,invite-flow-version:v2'
 
 describe('where each flow starts', () => {
   it('sends a guest to the public site and an invited learner to the email', () => {
@@ -134,7 +134,7 @@ describe('where each flow starts', () => {
 
   it('the QR card is the partner\u2019s screen, and says whose it is', async () => {
     const user = userEvent.setup()
-    renderJourney(`/end-to-end-demo/qr?ff=${INVITE_FLOW_FLAG}:qr-social`)
+    renderJourney(`/end-to-end-demo/qr?ff=${INVITE_FLOW_FLAG}:qr-social,invite-flow-version:v2`)
 
     expect(screen.getByRole('heading', { name: /Scan to start your licensing course/ })).toBeInTheDocument()
     /* The attribution the discount downstream rests on. */
@@ -460,7 +460,7 @@ describe('changing the flow', () => {
   }
 
   function renderAt(path: string, from: InviteFlowId, to: InviteFlowId) {
-    const entry = `${path}?ff=${INVITE_FLOW_FLAG}:${from}`
+    const entry = `${path}?ff=${INVITE_FLOW_FLAG}:${from},invite-flow-version:v2`
     window.history.replaceState({}, '', entry)
     return render(
       <MemoryRouter initialEntries={[entry]}>
@@ -508,7 +508,7 @@ describe('changing the flow', () => {
        behaviour is asking. */
     const user = userEvent.setup()
     const entry =
-      `/end-to-end-demo?ff=${INVITE_FLOW_FLAG}:qr-social` +
+      `/end-to-end-demo?ff=${INVITE_FLOW_FLAG}:qr-social,invite-flow-version:v2` +
       `&${INVITE_STATE_PARAM}=Texas&${INVITE_LOA_PARAM}=Personal+Lines`
     window.history.replaceState({}, '', entry)
     render(
@@ -543,7 +543,7 @@ describe('changing the flow', () => {
 
 describe('the cart', () => {
   const CART =
-    `/end-to-end-demo/cart?ff=${INVITE_FLOW_FLAG}:b2c-guest` +
+    `/end-to-end-demo/cart?ff=${INVITE_FLOW_FLAG}:b2c-guest,invite-flow-version:v2` +
     `&${INVITE_STATE_PARAM}=Florida&${INVITE_LOA_PARAM}=Life+and+Health&${CART_PACKAGE_PARAM}=premier`
 
   it('resolves the package from the address', () => {
@@ -608,10 +608,10 @@ describe('the cart', () => {
  */
 describe('the partner code question', () => {
   const base =
-    `?ff=${INVITE_FLOW_FLAG}:b2c-guest` +
+    `?ff=${INVITE_FLOW_FLAG}:b2c-guest,invite-flow-version:v2` +
     `&${INVITE_STATE_PARAM}=Florida&${INVITE_LOA_PARAM}=Life+and+Health&${CART_PACKAGE_PARAM}=premier`
   const withArm = (arm: 'page' | 'modal') =>
-    base.replace(`${INVITE_FLOW_FLAG}:b2c-guest`, `${INVITE_FLOW_FLAG}:b2c-guest,${PARTNER_CODE_ASK_FLAG}:${arm}`)
+    base.replace(`${INVITE_FLOW_FLAG}:b2c-guest,invite-flow-version:v2`, `${INVITE_FLOW_FLAG}:b2c-guest,invite-flow-version:v2,${PARTNER_CODE_ASK_FLAG}:${arm}`)
 
   it('only asks the flows that have no partner already', () => {
     /* An invited learner's partner is on their invitation and a scanned code
@@ -742,7 +742,7 @@ describe('the partner code question', () => {
        contents for a course they had not chosen. */
     const user = userEvent.setup()
     const standard =
-      `?ff=${INVITE_FLOW_FLAG}:b2c-guest,${PARTNER_CODE_ASK_FLAG}:modal` +
+      `?ff=${INVITE_FLOW_FLAG}:b2c-guest,invite-flow-version:v2,${PARTNER_CODE_ASK_FLAG}:modal` +
       `&${INVITE_STATE_PARAM}=Texas&${INVITE_LOA_PARAM}=Property+and+Casualty` +
       `&${CART_PACKAGE_PARAM}=standard`
     const { container } = renderJourney(`/end-to-end-demo/cart${standard}`)
@@ -829,7 +829,7 @@ describe('the partner code question', () => {
   })
 
   it('never asks a flow that already has a partner', () => {
-    const modal = `?ff=${INVITE_FLOW_FLAG}:qr-social,${PARTNER_CODE_ASK_FLAG}:modal`
+    const modal = `?ff=${INVITE_FLOW_FLAG}:qr-social,invite-flow-version:v2,${PARTNER_CODE_ASK_FLAG}:modal`
     renderJourney(`/end-to-end-demo/checkout${modal}`)
     expect(
       screen.queryByRole('dialog', { name: 'Do you have a Partner Code?*' }),
@@ -866,7 +866,7 @@ describe('the demo fill', () => {
        card fields already have. */
     const user = userEvent.setup()
     const { container } = renderJourney(
-      `/end-to-end-demo/checkout?ff=${INVITE_FLOW_FLAG}:b2c-guest&${PARTNER_CODE_PARAM}=no`,
+      `/end-to-end-demo/checkout?ff=${INVITE_FLOW_FLAG}:b2c-guest,invite-flow-version:v2&${PARTNER_CODE_PARAM}=no`,
     )
     const field = (label: string) =>
       [...container.querySelectorAll('label')].find((l) =>
@@ -888,7 +888,7 @@ describe('the demo fill', () => {
        and continue is the step being demonstrated. */
     const user = userEvent.setup()
     const { container } = renderJourney(
-      `/end-to-end-demo/checkout?ff=${INVITE_FLOW_FLAG}:b2c-guest&${PARTNER_CODE_PARAM}=no`,
+      `/end-to-end-demo/checkout?ff=${INVITE_FLOW_FLAG}:b2c-guest,invite-flow-version:v2&${PARTNER_CODE_PARAM}=no`,
     )
     await user.click(screen.getByRole('button', { name: 'Fill in the demo learner’s details' }))
 
@@ -909,7 +909,7 @@ describe('the demo fill', () => {
        arrives carrying the student's details and every arm opens the form
        empty. The shortcut therefore has something to fill in on all four. */
     for (const flow of ['b2b2c-email', 'b2b2c-no-email', 'b2c-guest', 'qr-social', 'b2b2c-verified'] as const) {
-      renderJourney(`/end-to-end-demo/checkout?ff=${INVITE_FLOW_FLAG}:${flow}`)
+      renderJourney(`/end-to-end-demo/checkout?ff=${INVITE_FLOW_FLAG}:${flow},invite-flow-version:v2`)
       expect(
         screen.getByRole('button', { name: 'Fill in the demo learner’s details' }),
         flow,
@@ -926,7 +926,7 @@ describe('the demo fill', () => {
   it('…and B2B2C with email still arrives knowing the one thing it was sent', () => {
     /* The email is what the partner DID pass, so it stays locked rather than
        joining the fields the learner has to type. */
-    renderJourney(`/end-to-end-demo/checkout?ff=${INVITE_FLOW_FLAG}:b2b2c-email`)
+    renderJourney(`/end-to-end-demo/checkout?ff=${INVITE_FLOW_FLAG}:b2b2c-email,invite-flow-version:v2`)
     expect(screen.getByDisplayValue('jordan.navarro@gmail.com')).toBeDisabled()
     expect(screen.getByRole('button', { name: 'Save and continue' })).toBeInTheDocument()
   })
@@ -937,7 +937,7 @@ describe('the order confirmation', () => {
      the flag's default made them break the day the default moved to `light` —
      a test that relies on a default is really a test of the default. */
   const ORDERED =
-    `/end-to-end-demo/order-confirmation?ff=${INVITE_FLOW_FLAG}:b2c-guest,${ORDER_CONFIRMATION_STYLE_FLAG}:receipt` +
+    `/end-to-end-demo/order-confirmation?ff=${INVITE_FLOW_FLAG}:b2c-guest,invite-flow-version:v2,${ORDER_CONFIRMATION_STYLE_FLAG}:receipt` +
     `&${INVITE_STATE_PARAM}=Florida&${INVITE_LOA_PARAM}=Life+and+Health&${CART_PACKAGE_PARAM}=premier`
 
   it('thanks them, with an order number and a way into the portal', () => {
@@ -980,7 +980,7 @@ describe('the order confirmation', () => {
  */
 describe('the thank-you page styles', () => {
   const ordered = (style: 'receipt' | 'split' | 'light', extra = '') =>
-    `/end-to-end-demo/order-confirmation?ff=${INVITE_FLOW_FLAG}:b2c-guest,${ORDER_CONFIRMATION_STYLE_FLAG}:${style}` +
+    `/end-to-end-demo/order-confirmation?ff=${INVITE_FLOW_FLAG}:b2c-guest,invite-flow-version:v2,${ORDER_CONFIRMATION_STYLE_FLAG}:${style}` +
     `&${INVITE_STATE_PARAM}=Florida&${INVITE_LOA_PARAM}=Life+and+Health&${CART_PACKAGE_PARAM}=premier${extra}`
   /* ⚠ THE RAIL IS OFF BY DEFAULT SINCE 2026-10-22, so a test that wants to
      look at it has to ask — which is the right way round: a test relying on a

@@ -24,7 +24,7 @@
  * this picker unchanged: its `VersionPickerItem` is the whole contract.
  */
 
-export type InviteFlowVersionId = 'v1' | 'v2'
+export type InviteFlowVersionId = 'v1' | 'v2' | 'v3'
 
 export type InviteFlowVersion = {
   id: InviteFlowVersionId
@@ -50,6 +50,14 @@ export const INVITE_FLOW_VERSIONS: InviteFlowVersion[] = [
     modifiedAt: '2026-10-22',
     description:
       'A fresh fork of V1 — the starting point for the checkout exploration. Identical to V1 on every screen today; iterate freely without touching V1, which is what the released End-to-End row still shows.',
+  },
+  {
+    id: 'v3',
+    label: "Invite Flow V3 — Afsana's concept",
+    createdAt: '2026-10-29',
+    modifiedAt: '2026-10-29',
+    description:
+      "Afsana's concept — a fresh fork of V2, taken as V2 stood on 2026-10-29. Identical to V2 on every screen today; iterate freely without touching V1 or V2.",
   },
 ]
 

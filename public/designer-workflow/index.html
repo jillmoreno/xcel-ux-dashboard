@@ -45,6 +45,25 @@
   routines and the morning task belong HERE, not there. The glossary and the
   troubleshooting table live here only — they were in both until today.
 
+  WHAT THE 2026-11-16 PASS CHANGED — sharing became "name the branch, push":
+
+      Part 4   rewritten. The Design section is back, DERIVED from the branch
+               list: a pushed branch is a row, under the feature its name
+               says, tagged Building / In design / On stage / Released from
+               Netlify and git. `/share-branch` no longer opens a form or
+               hands over a link; `/share-to-stage` no longer files a card.
+               Refinement is for notes and documents, reached from the row's
+               "Discuss in Refinement". Jillienne: the links "are just adding
+               more confusion and chaos".
+      Part 3   the note under steps 5–9 says the same.
+      Part 5   the stage step no longer moves a card.
+      Part 9   `/share-branch` and `/share-to-stage` rows.
+      Part 10  Design and Release rows in the sections table; "what went
+               away" corrected.
+      ⚠ The PDF was NOT regenerated in this pass (no weasyprint where the
+      edit was made) — run `weasyprint public/designer-workflow/index.html
+      public/designer-workflow/designer-workflow.pdf`.
+
   WHAT THE 2026-10-26 PASS CHANGED — the dev handoff became the designers' job:
 
       Part 6   NEW, "Writing the dev handoff", between Prototype and Reading
@@ -546,7 +565,7 @@
         <li><b class="t">Look at it the way a reviewer would.</b><p>Click through from the page they would start on, not straight to your component. Three bugs in September were invisible on a direct link and obvious on the first click.</p></li>
         <li><b class="t">Keep going.</b><p>Each further change is step 2, then <code>/share-branch</code> again. Rebase every few days (<a href="#rebase">Part 2</a>) so the final merge is boring. When the next change is really a different piece of work, start a new branch for it rather than letting this one grow.</p></li>
       </ol>
-      <div class="note"><p><b>Steps 5 to 9 are one command.</b> <code>/share-branch</code> runs the checks, commits, pushes, waits for the build and hands you the link, then opens the Refinement form — <a href="#refinement">Part 4</a>. The long way above is what it is doing, which is worth knowing for the day it stops halfway.</p></div>
+      <div class="note"><p><b>Steps 5 to 9 are one command.</b> <code>/share-branch</code> runs the checks, commits and pushes, and the Hub's Design section lists the branch on its own — <a href="#refinement">Part 4</a>. The long way above is what it is doing, which is worth knowing for the day it stops halfway.</p></div>
       <h3>First: which medium? &mdash; and it decides everything after</h3>
       <p>Some of us explore in a standalone HTML file under <code>public/prototypes/</code> rather than in the product&rsquo;s React. Both are right, for different moments, and picking the wrong one is the mistake this section exists to prevent.</p>
       <div class="tablewrap"><table>
@@ -591,20 +610,19 @@
     </section>
 
     <section id="refinement">
-      <h2><span class="part">Part 4</span>Sharing on Refinement</h2>
-      <p class="lead">Refinement is the board where work under discussion lives. Anyone adds to it, nothing on it is the source of truth, it filters by your name, and it has an archive.</p>
-      <p><b>A row is one chunk of work, not a branch you live on.</b> Since 15 October rows group under the <b>feature</b> they are chunks of, newest first. When a new chunk carries on from an older one, the older one folds under "1 earlier chunk" — still there, still clickable — so a feature keeps a history you can open in a review. One long-running branch gives you a single link and no history at all.</p>
-      <div class="rule-box">Finish a chunk, share it, start a new branch for the next.<small>That is the habit the board is built around, and the reason small branches pay you back.</small></div>
-      <h3>Adding your branch, the quick way</h3>
+      <h2><span class="part">Part 4</span>Sharing your branch &mdash; the Design section</h2>
+      <p class="lead">Since 16 November a pushed branch is a row on the Hub, under <b>Design</b>, on its own. You name the branch, you push, and the row appears &mdash; <i>Building&hellip;</i> for a few minutes, then it opens your build. Nothing to fill in, no link to click, no card to file.</p>
+      <p><b>The branch name is the only thing you write.</b> <code>feat/compass-study-planner</code> lists under Compass as "Study planner". The first word is the surface &mdash; <code>compass</code>, <code>atlas</code>, <code>invite</code> (or <code>checkout</code>), <code>admin</code> &mdash; and the rest is the feature. A second branch with the same feature words sits in the same group, so <b>adding to a feature that exists is reusing its words</b>, and a new feature is new words. Put <code>--</code> and a word on the end &mdash; <code>feat/compass-study-planner--dense</code> &mdash; for a variant of the same feature. A branch that follows none of this still lists, under "Other branches".</p>
+      <div class="rule-box">Name the branch, push. That is sharing.<small>The row says where the work is &mdash; In design, On stage, Released &mdash; and changes on its own as it moves.</small></div>
+      <h3>Sharing, the quick way</h3>
       <ol class="steps">
-        <li><p>On your branch in the Code tab:</p><div class="say"><span class="me">YOU</span><q>/share-branch</q></div><p>It was called <code>/promote-to-refinement</code> until 15 October, and that name still works. It was briefly <code>/share</code> — but that name belongs to Claude Code itself, so the skill never loaded, which is why it is <code>/share-branch</code> now.</p></li>
-        <li><p>Claude asks once — checks, commit, push, open the form? — then runs the type check and the tests, commits anything uncommitted, pushes, waits for Netlify to build your branch, works out its address and a title, and asks what feature this is a chunk of. Nothing reaches the board or the To Do Board until you click the button on each of the two forms it opens.</p></li>
-        <li><p>In the form, <b>Added by</b> is a pick-list of the five of you. Pick your own name. The product (Atlas, Compass, Both) is already chosen from what your branch touched; change it if it is wrong.</p>
-          <p><b>Feature</b> is what this chunk is part of — start typing and the features already on the board are offered, so take one if it fits. <b>Replaces</b> appears only when that feature already has chunks, and defaults to your own newest one; its first option, <i>Nothing — these sit side by side</i>, is the right answer when two treatments should both stay up.</p></li>
-        <li><p>Click <b>Add link</b>. Your row appears at the top of its feature group, showing your name, when it was last saved, and the product.</p></li>
-        <li><b class="t">Then the card.</b><p>The To Do Board's card sheet opens next, also filled in, in the <b>Ready For Refinement</b> column — the row is the thing to look at, the card is who is waiting on it. Click <b>Add card</b>. If this chunk already has a card on the board, say so and Claude asks rather than opening a second one. Then it offers to cut your next branch.</p></li>
+        <li><p>On your branch in the Code tab:</p><div class="say"><span class="me">YOU</span><q>/share-branch</q></div><p>It was called <code>/promote-to-refinement</code> until 15 October, and that name still works.</p></li>
+        <li><p>Claude asks once &mdash; checks, commit, push? &mdash; then runs the type check and the tests, commits anything uncommitted, pushes, and tells you the row is on the Hub under Design and the feature it read from your name. If the name has no surface word it offers a rename first, once.</p></li>
+        <li><p>Open the Hub, click <b>Design</b>. Your row is under its feature, tagged with the surface and your name, saying <i>Building&hellip;</i> until Netlify finishes. Then the row opens your build in a new tab. Nothing else to do.</p></li>
       </ol>
-      <p><b>Adding it by hand.</b> Open the Hub, click Refinement, click Add link, paste the branch link from <a href="#build">Part 3</a>, type a title and a one-line note on what to look at, pick your name, pick the product, name the feature, Save.</p>
+      <h3>Refinement &mdash; when you want to leave a note</h3>
+      <p>Refinement is still there, for the things git cannot see: an HTML exploration, a component review deck, or a note that says <i>where to look</i> on your build and what question you are asking. On your Design row, open the &#8942; menu and choose <b>Discuss in Refinement</b> &mdash; the Add form opens with the address and the feature filled in; write the note, pick your name, click <b>Add link</b>. Rows group under the feature, newest first, and fold older chunks under "1 earlier chunk".</p>
+      <p><b>Adding a Refinement row by hand.</b> Open the Hub, click Refinement, click Add link, paste the branch link from <a href="#build">Part 3</a>, type a title and a one-line note on what to look at, pick your name, pick the product, name the feature, Save.</p>
       <p><b>Finding things.</b> The pills above the list are the five names: All, Jill, Anjani, Eric, Afsana, Cody (the roster says <b>Jill</b>, which is what she signs). Click a name to see only that person's rows; click it again to clear. There is no product pill any more; the product is the tag on the row. Rows sit under their feature heading, so looking for a piece of work means looking for its name rather than its branch.</p>
       <h3>When a row's discussion is over</h3>
       <div class="tablewrap"><table>
@@ -637,7 +655,7 @@
       <div class="tablewrap"><table>
         <thead><tr><th>Place</th><th>What it means</th><th>Who puts it there</th><th>How</th></tr></thead>
         <tbody>
-          <tr><td class="k">Refinement link</td><td>Your branch link. One chunk, under discussion.</td><td>You</td><td><code>/share-branch</code> (<a href="#refinement">Part 4</a>)</td></tr>
+          <tr><td class="k">Design row</td><td>Your branch, listed because you pushed it. In design until you share it to stage.</td><td>You</td><td><code>/share-branch</code> (<a href="#refinement">Part 4</a>)</td></tr>
           <tr><td class="k">Stage</td><td>The <code>stage</code> branch's build. Your surface as you have decided it should be, open to everyone from Prototypes &rarr; Stage, not yet released.</td><td>The surface's owner, or Jill</td><td><code>/share-to-stage</code> (below)</td></tr>
           <tr><td class="k">Main</td><td>The released product. Prototypes &rarr; Main.</td><td>Jill only</td><td><code>/release</code></td></tr>
         </tbody>
@@ -659,7 +677,7 @@
         <li><p>On the Hub, <b>Prototypes &rarr; Stage</b> now opens your work for your surface. <b>Main does not</b>, yet. It also opens a card for the To Do Board's <b>On Stage</b> column, dated; click Add card. That column is the one place that says what is waiting on a release and since when.</p></li>
         <li><p>Tell Jill, in words: "My Compass branch is on stage." Include the stage link.</p></li>
         <li><p>Jill runs <code>/release</code>, which puts stage onto main. A few minutes later your surface's row under <b>Main</b> is your work, and its Updated tag changes to that moment. Main and Stage are the same build again until the next share.</p></li>
-        <li><p>Hide your Refinement row (<a href="#refinement">Part 4</a>), since the board is for things under discussion and this one is decided. Move your On Stage card along, or off the board.</p></li>
+        <li><p>If you left a Refinement note (<a href="#refinement">Part 4</a>), hide it, since the board is for things under discussion and this one is decided. The Design row needs nothing: it says <i>On stage</i> now and <i>Released</i> after Jill's release.</p></li>
         <li><p>Start the next piece from a fresh branch off main (<a href="#build">Part 3</a>, step 1). Do not keep working on the released branch.</p></li>
       </ol>
       <p>If you own the surface, you can also decide something should NOT go in. Say so, archive the Refinement row, and tell Jill; she has a routine that records why a branch was tried and declined.</p>
@@ -710,7 +728,9 @@
         <thead><tr><th>Group</th><th>Section</th><th>What it is for</th><th>Who adds to it</th></tr></thead>
         <tbody>
           <tr><td>Demo</td><td class="k">Prototypes</td><td>The product as it stands: one row per surface, with a Main &middot; Stage switch &mdash; Main is the released build, Stage is what owners have shared and Jill has not yet released.</td><td>Owners share to stage; Jill releases.</td></tr>
-          <tr><td>Design &amp; Research</td><td class="k">Refinement</td><td>Chunks of work under discussion, grouped by the feature they belong to. As many as you like. Filter by name, archive when done.</td><td>Anyone, on the page.</td></tr>
+          <tr><td>Design &amp; Research</td><td class="k">Design</td><td>Every branch pushed lately, grouped by the feature its name says, each row saying where it is: Building, In design, On stage, Released. Read from Netlify and git.</td><td>Nobody &mdash; push a branch and it is there.</td></tr>
+          <tr><td>Design &amp; Research</td><td class="k">Release</td><td>Jill's inbox: what is on stage and not yet on main, by surface, with whether each branch's flag defaults are decided. The count on the rail is how many branches are waiting.</td><td>Nobody &mdash; <code>/share-to-stage</code> puts a branch here, <code>/release</code> takes it off.</td></tr>
+          <tr><td>Design &amp; Research</td><td class="k">Refinement</td><td>Notes and documents under discussion &mdash; where to look on a build, an HTML exploration, a review deck &mdash; grouped by feature. Filter by name, archive when done.</td><td>Anyone, on the page.</td></tr>
           <tr><td>Design &amp; Research</td><td class="k">Research</td><td>Research links and rationale.</td><td>Anyone, on the page.</td></tr>
           <tr><td>Design &amp; Research</td><td class="k">Resources</td><td>Briefs, Figma files, references. Things that live elsewhere — including this guide.</td><td>Anyone, on the page.</td></tr>
           <tr><td>Design &amp; Research</td><td class="k">PRDs</td><td>The product requirements the designs answer.</td><td>Anyone, on the page.</td></tr>
@@ -723,7 +743,7 @@
           <tr><td>Team</td><td class="k">Hub Resources</td><td>The Hub's own guides — this one, Contributing, and the stakeholder page. Each opens in a new tab with a PDF beside it.</td><td>Code, not a board: the list changes when a file is added.</td></tr>
         </tbody>
       </table></div>
-      <p>What went away on 15 October, in case you look for it: the second "demo" website, the Public toggle on Refinement rows, the locked Designers group in the nav, the Design section, and the Atlas / Compass filter pills on Refinement. The old Exploration section is the Explorations row under PRDs.</p>
+      <p>What went away on 15 October, in case you look for it: the second "demo" website, the Public toggle on Refinement rows, the locked Designers group in the nav, and the Atlas / Compass filter pills on Refinement. The old Exploration section is the Explorations row under PRDs. The Design section that went that day listed feature rows by status; the Design section that came back on 16 November is a different thing &mdash; your branches, read from git.</p>
     </section>
 
     <section id="trouble">
@@ -776,9 +796,9 @@
         <thead><tr><th>Routine</th><th>Use it when</th><th>It asks you</th><th>It does</th><th>It never does</th></tr></thead>
         <tbody>
           <tr><td><code>/share-component</code></td><td>One component on your branch wants feedback and the rest of the branch would distract from it.</td><td>Which component (name it, or select it in the browser pane first). Which of its flag's variants to show side by side. A note telling the reviewer what to look at.</td><td>Finds the feature flag that drives the component. If there is none, shows you the flag it would add (its name, label, the one line it changes in your component) and waits for your yes. Checks the branch is pushed and built. Builds one review page with every variant stacked, each pinned. Opens Refinement's Add link form with it filled in.</td><td>Save the row (you click Add). Add a flag without showing you first. Share the whole branch.</td></tr>
-          <tr><td><code>/share-branch</code></td><td>A chunk of work is ready for the team to look at.</td><td>One yes, up front, covering the checks, the commit and the push. A title. A one-line note on what to look at. What feature this is a chunk of. Which product (it guesses from the files you touched: Compass files mean Compass).</td><td>Checks you are on a branch, not main. Says so if the branch has got long. Runs the type check and the tests. Commits anything uncommitted and pushes. Works out the Netlify address and waits for the build to finish. Opens Refinement's Add link form with everything filled in, your name included. Then opens the To Do Board's card sheet, filled in, in <b>Ready For Refinement</b>. Offers to cut your next branch.</td><td>Save the row or the card (you click <b>Add link</b>, then <b>Add card</b>). Run on main. Commit or push without the yes it asked you for.</td></tr>
+          <tr><td><code>/share-branch</code></td><td>A chunk of work is ready for the team to look at.</td><td>One yes, up front, covering the checks, the commit and the push. A yes or no to a rename, if the branch name has no surface word.</td><td>Checks you are on a branch, not main or stage. Reads the branch name and says where the row will land. Says so if the branch has got long. Runs the type check and the tests. Commits anything uncommitted and pushes. Tells you the row is on the Hub under Design. Offers to cut your next branch.</td><td>Open a form, hand you a link to click, or file a card &mdash; the row exists because the branch does. Run on main. Commit or push without the yes it asked you for.</td></tr>
           <tr><td><code>/dev-handoff-notes</code></td><td>The feature is built, the Refinement discussion has settled, and engineering needs to read it. Also when a component changes after its handoff was written.</td><td>Component by component: its states with when and why, every button and what it does, the edge cases as question and answer, the tokens and responsive behaviour, the decisions with their reasoning, the flag, the brands, member and non-member.</td><td>Reads the component you built and names where your words and the code disagree. Writes the row as its own file under <code>src/data/handoffs/</code>, named after the feature, status Not Ready, and runs the checks. Tells you what is still unwritten.</td><td>Invent a state or a reason you did not give. Touch the project list. Ship to main, or promote a surface you do not own.</td></tr>
-          <tr><td><code>/share-to-stage</code></td><td>Your branch is what your surface should become, and you own that surface. The step after Refinement, before Jill's release.</td><td>One yes, up front, covering the merge, the checks and the pushes. The <code>/promote-to-prototype</code> flag questions, if your branch has not answered them yet.</td><td>Checks every file you changed belongs to a surface you own. Runs the flag questions if needed. Merges today's stage into your branch (stops on a conflict and shows both sides). Runs the build and the tests. Pushes your branch and moves stage to it. Waits for the stage build and hands you the link. Opens the On Stage card filled in.</td><td>Touch main. Merge a surface you do not own. Force-push stage. Resolve a conflict for you.</td></tr>
+          <tr><td><code>/share-to-stage</code></td><td>Your branch is what your surface should become, and you own that surface. The step after Refinement, before Jill's release.</td><td>One yes, up front, covering the merge, the checks and the pushes. The <code>/promote-to-prototype</code> flag questions, if your branch has not answered them yet.</td><td>Checks every file you changed belongs to a surface you own. Runs the flag questions if needed. Merges today's stage into your branch (stops on a conflict and shows both sides). Runs the build and the tests. Pushes your branch and moves stage to it. Writes the decided-defaults marker and hands you the stage link. The Design row says <i>On stage &middot; waiting on Release</i>, the Prototypes row says <i>Staged</i>, and the branch appears on Jill's Release page tagged <i>Decided</i> &mdash; all read from git.</td><td>Touch main. Merge a surface you do not own. Force-push stage. Resolve a conflict for you.</td></tr>
         </tbody>
       </table></div>
       <h3>The design lead's: recognise, don't run</h3>

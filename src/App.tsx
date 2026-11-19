@@ -7,15 +7,20 @@ import { PrototypeHandoffDetailPage } from '@/pages/PrototypeHandoffDetailPage'
 import { ResearchRationalePage } from '@/pages/ResearchRationalePage'
 import { QaNotesPage } from '@/pages/QaNotesPage'
 import { LinksPage } from '@/pages/LinksPage'
+import { PrototypeLinkRetiredPage } from '@/pages/PrototypeLinkRetiredPage'
 import { PrdsPage } from '@/pages/PrdsPage'
 import { ComponentReviewPage } from '@/pages/ComponentReviewPage'
 import { VariantDeckPage } from '@/pages/VariantDeckPage'
 import { AtlasHeaderPreviewPage } from '@/pages/AtlasHeaderPreviewPage'
+import { ComparePage } from '@/pages/ComparePage'
+import { InviteV3StartPage } from '@/pages/InviteV3StartPage'
 /* THE INVITE FLOW IS VERSIONED SINCE 2026-10-22, so these four routes name a
    SWITCH rather than a page — each picks V1's page or its V2 fork from the
    `invite-flow-version` flag. The paths, and everything that depends on them,
-   are unchanged. See `InviteFlowRoutes.tsx` and `inviteFlowVersions.ts`. */
+   are unchanged. See `InviteFlowRoutes.tsx` and `inviteFlowVersions.ts`.
+   The QR code joined them with V3 (2026-10-30). */
 import {
+  QrInviteRoute,
   InviteEmailRoute,
   InvitedProductDetailRoute,
   InvitedCheckoutRoute,
@@ -27,7 +32,6 @@ import {
    `/end-to-end-demo` prefix so the demo bars, the version pin and
    `isInviteFlowPath` all keep working unchanged. */
 import { TwoPackageProductDetailPage } from '@/pages/TwoPackageProductDetailPage'
-import { XcelQrInvitePage } from '@/pages/XcelQrInvitePage'
 import { XcelFindCoursePage } from '@/pages/XcelFindCoursePage'
 import { XcelPackagesPage } from '@/pages/XcelPackagesPage'
 import { XcelCartPage } from '@/pages/XcelCartPage'
@@ -208,17 +212,37 @@ export default function App() {
       {/* Both redirect into the gateway shell, which owns the section chrome —
           see the note at the top of each page. */}
       <Route path="/links" element={<TestingGate><LinksPage /></TestingGate>} />
+      {/* THE RETIRED-LINK SCREEN (2026-11-17) — where a deactivated Prototypes
+          row lands. A Hub route rather than a product one, because the product
+          app is untouched: only the row's rendered href is re-pointed, and the
+          row's real `to` stays on record. `:featureId` names the row so the
+          screen can say which surface and whose it is; `?build=` says whether
+          the reader was reaching for Main or Stage. The bare path is the
+          fallback for a link pasted without an id. See
+          `PrototypeLinkRetiredPage.tsx` and `linkRetired` in
+          `prototypeFeatures.ts`. */}
+      <Route path="/prototype-unavailable" element={<TestingGate><PrototypeLinkRetiredPage /></TestingGate>} />
+      <Route path="/prototype-unavailable/:featureId" element={<TestingGate><PrototypeLinkRetiredPage /></TestingGate>} />
       <Route path="/prds" element={<TestingGate><PrdsPage /></TestingGate>} />
       {/* One component, every variant, stacked — the page a Refinement row
           points at when a designer wants the team to review ONE widget rather
           than their whole branch. Takes its entire definition from the URL, so
           it needs no per-component code. See `ComponentReviewPage`. */}
       <Route path="/review" element={<TestingGate><ComponentReviewPage /></TestingGate>} />
+      {/* The V3 invite flow on its own — the link a Jira ticket carries
+          (2026-11-17, Afsana). One Start per flow, no Hub or demo chrome, and
+          the walk stops at Setting up your account. See `InviteV3StartPage`. */}
+      <Route path="/invite-v3" element={<TestingGate><InviteV3StartPage /></TestingGate>} />
       {/* Variants & Copy decks — every state of a model, on every surface it
           feeds, with the exact strings it produces (carried from the Common
           LMS hub 2026-10-26; no deck is registered here yet). The one handoff
           surface aimed at stakeholders. */}
       <Route path="/variants/:deckId" element={<TestingGate><VariantDeckPage /></TestingGate>} />
+      {/* One surface, two versions, widget by widget — each block drawn by the
+          real component, side by side or stacked, with every variant on a
+          switch and a note under each row (2026-11-16). Decks are listed in
+          `src/data/compareDecks.ts`; the Readiness one is the first. */}
+      <Route path="/compare/:compareId" element={<TestingGate><ComparePage /></TestingGate>} />
       {/* The Atlas header on its own, not wired into the shell. See `AtlasHeader`. */}
       <Route path="/atlas-header-preview" element={<TestingGate><AtlasHeaderPreviewPage /></TestingGate>} />
       {/* The End-to-End Demo's first page, before its dashboard: blank under the
@@ -237,7 +261,7 @@ export default function App() {
             flow's pages. See `XcelFindCoursePage`. */}
         {/* THE QR / SOCIAL ARM'S FIRST SCREEN — the partner's share card
             (2026-10-23). `entryPathFor('qr-social')` points here. */}
-        <Route path="/end-to-end-demo/qr" element={<TestingGate><XcelQrInvitePage /></TestingGate>} />
+        <Route path="/end-to-end-demo/qr" element={<TestingGate><QrInviteRoute /></TestingGate>} />
         <Route path="/end-to-end-demo/find" element={<TestingGate><XcelFindCoursePage /></TestingGate>} />
         <Route path="/end-to-end-demo/packages" element={<TestingGate><XcelPackagesPage /></TestingGate>} />
         {/* …and the cart, which is where the guest journey leaves the

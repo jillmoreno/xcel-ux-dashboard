@@ -90,6 +90,18 @@ export type FeatureFlagVariant = {
    * it where the two genuinely differ.
    */
   badge?: string
+  /**
+   * THE GROUP THIS ROW BELONGS TO, in a dropdown — 2026-11-10, Jillienne on
+   * the Readiness stage menu: "add the divider lines in the dropdown we
+   * worked on to show like in this screen shot with the subheaders".
+   *
+   * ⚠ A STRING ON THE ROW, NOT A LIST OF GROUPS, so a flag that wants no
+   * grouping writes nothing and renders exactly as it always did. The bar
+   * starts a new heading whenever this value CHANGES down the list, which
+   * means the variants' own order is the grouping — there is no second place
+   * to keep in step, and a row cannot end up in a group it is not next to.
+   */
+  section?: string
 }
 
 export type FeatureFlagDefinition = {
@@ -218,6 +230,19 @@ export type FeatureFlagDefinition = {
    *  two Jump Back In versions (standard vs. quick-links) so only one
    *  ever renders. */
   mutexGroup?: string
+  /** Optional: leave this control OFF the Design bar while another control
+   *  is on one of these arms — a control that means nothing in that case
+   *  should not be there to be clicked. Read by `designControlsFor` from the
+   *  live flag values (see `liveFlagsForDesignBarRef`). 2026-11-04, Afsana:
+   *  Line of authority goes when Affidavit state is Non-state specific. */
+  hiddenWhen?: { flag: string; variants: string[] }
+  /** Optional: leave some of this control's VARIANTS off the Design bar
+   *  while another control is on an arm — `hide[arm]` lists them. The one
+   *  currently picked always stays, so the bar never shows a value it does
+   *  not list. Read live, like `hiddenWhen`. 2026-11-06, Afsana: each
+   *  Affidavit moment lists only the states that have a form at it. (Greying
+   *  them out instead needs a disabled option on the bar, which is Jill's.) */
+  variantsHiddenWhen?: { flag: string; hide: Record<string, string[]> }
 }
 
 /* ─── pages ────────────────────────────────────────────────────────── */
@@ -287,7 +312,34 @@ export const FLAG_DESIGNERS: { id: DesignerId; label: string }[] = [
  * design control is adding a flag and nothing else. That is the point: the bar
  * itself is protected chrome that nobody needs to edit.
  */
+/* THE LIVE FLAG VALUES, for `hiddenWhen` (2026-11-04). `designControlsFor`
+   is a catalog filter and `DesignControlsBar` — protected chrome — calls it
+   with a version and a surface, not with the flags. Rather than change the
+   bar, the provider leaves its current values here on every render; the bar
+   reads `useFeatureFlags()`, so it re-renders, and re-picks, after every
+   change. Null outside a provider, where `hiddenWhen` falls back to defaults. */
+const liveFlagsForDesignBarRef: { current: Record<string, FeatureFlagState> | null } = { current: null }
+
 export function designControlsFor(
+  versionId: string,
+  versionOwner: DesignerId,
+  surface?: string | null,
+): FeatureFlagDefinition[] {
+  /* `variantsHiddenWhen` — some arms off the bar while another control is on
+     a named arm (2026-11-06). The picked arm stays, whatever the rule says. */
+  return designControlsUnnarrowed(versionId, versionOwner, surface).map((def) => {
+    if (!def.variantsHiddenWhen || !def.variants) return def
+    const { flag, hide } = def.variantsHiddenWhen
+    const other = FEATURE_FLAGS.find((f) => f.key === flag)
+    const arm = liveFlagsForDesignBarRef.current?.[flag]?.variant ?? other?.defaultVariant
+    const gone = (arm != null && hide[arm]) || []
+    if (!gone.length) return def
+    const picked = liveFlagsForDesignBarRef.current?.[def.key]?.variant ?? def.defaultVariant
+    return { ...def, variants: def.variants.filter((v) => v.value === picked || !gone.includes(v.value)) }
+  })
+}
+
+function designControlsUnnarrowed(
   versionId: string,
   versionOwner: DesignerId,
   /* The surface on screen (`DesignSurfaceContext`), or null off a declared
@@ -296,6 +348,14 @@ export function designControlsFor(
 ): FeatureFlagDefinition[] {
   return FEATURE_FLAGS.filter((def) => {
     if (def.surface !== 'design') return false
+    /* `hiddenWhen` — off the bar while another control is on a named arm.
+       Outside a provider (tests) the other control reads as its default. */
+    if (def.hiddenWhen) {
+      const { flag, variants } = def.hiddenWhen
+      const other = FEATURE_FLAGS.find((f) => f.key === flag)
+      const arm = liveFlagsForDesignBarRef.current?.[flag]?.variant ?? other?.defaultVariant
+      if (arm != null && variants.includes(arm)) return false
+    }
     /* ⚠ A DECLARED SURFACE IS EXCLUSIVE IN BOTH DIRECTIONS — 2026-10-16,
        second pass, and the first one only did half of it.
 
@@ -1516,6 +1576,863 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'compass-content-version',
+    /* WHOSE COURSE CONTENT — 2026-11-05, the direct ask: "a design tool
+       dropdown to show Anjanis Version (current), Jeffs Version (what I will
+       upload), and then a Refined Version (to come later)".
+
+       ⚠ IT SWITCHES THE LESSON, NOT ITS CHROME, and that is why it sits beside
+       `compass-session-chrome` rather than inside it. That flag is already
+       LABELLED "Course content" and asks a different question — whole screen
+       or under the global header — which it asks of whichever version is on
+       screen. This one picks WHICH content renders; the two compose.
+
+       ⚠ TWO ARMS ARE EMPTY ON PURPOSE AND SAY SO ON SCREEN. Jeff's HTML has
+       not been uploaded yet and the refined version does not exist, so each
+       draws a panel naming what is missing and how to get back
+       (`CompassCourseContent`). The tempting alternative — fall back to
+       Anjani's until the file lands — is the one to not take: a reviewer who
+       picks Jeff and sees a lesson believes they are looking at Jeff's work,
+       and nothing on the screen corrects them.
+
+       ⚠ PORTING JEFF'S FILE IS REPLACING ONE ARM, not rewiring this. The
+       dispatcher, the dropdown and the two placeholder panels are the whole
+       mechanism; `/port-prototype` fills an arm. Read his RUNNING BUILD when
+       that happens — the Workspace port's four passes are what that skill is
+       made of.
+
+       ⚠ `anjani` IS THE DEFAULT because it is what ships. The arm is the
+       question; the baseline is not — the same rule `compass-session-chrome`
+       states. So this flag changes nothing until someone picks. */
+    surface: 'design',
+    /* Compass is Anjani's scope (`PROTOTYPE_SCOPES`), so the control is hers
+       even though two of its arms are not. ⚠ `DesignerId` carries no `jeff` —
+       he authors content, not a dashboard version, and inventing a designer id
+       to label one variant would put an empty tab in the Dashboard Versions
+       sheet. The variant's own label is where his name belongs. */
+    owner: 'anjani',
+    /* The two versions the session is reachable from — the same pair
+       `compass-session-chrome` names, for the same reason: the Compass row
+       opens Eric's default with no `version=` pin, and `hybrid-pacing` is
+       where the control was first asked for. */
+    versions: ['hybrid-pacing', 'eric-atlas-e2e'],
+    surfaces: ['compass:session'],
+    group: 'Widgets',
+    label: 'Course content version',
+    description:
+      'Which version of the lesson renders. Anjani’s is the seven-beat session in the product now (Video, Reading, Key terms, Infographic, Knowledge check, Worked example, Recap). Jeff’s and Refined are placeholders: each draws a panel naming what is missing instead of quietly falling back to hers, so nobody mistakes her lesson for his. Compose it with Course content above, which decides whether whichever version is on screen takes the whole screen or sits under the global header.',
+    variants: [
+      { value: 'anjani', label: 'Anjani’s version (current)', description: 'The session in the product now' },
+      { value: 'jeff', label: 'Jeff’s version', description: 'Not uploaded yet — draws a placeholder' },
+      { value: 'refined', label: 'Refined version', description: 'To come — draws a placeholder' },
+    ],
+    defaultVariant: 'anjani',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'compass-jeff-start',
+    /* HIS DEMO SETTINGS, QUESTION ONE — "Start the course as", 2026-11-05.
+       `/port-prototype` step 3: a prototype's own control bar becomes flags on
+       the DESIGN bar rather than a dialog inside the product. His dialog is
+       `PROTOTYPE C · DEMO ONLY` and restarts the course on a pick; this is the
+       same act, in the place this Hub puts every other variation.
+
+       ⚠ `fresh` IS THE DEFAULT BECAUSE IT IS HIS. His `componentDidMount`
+       calls `restartCourse('fresh')` unless a remembered preference says
+       otherwise, and his own dialog labels it "Best for testing with
+       learners". The story arm is the stakeholder walkthrough.
+
+       ⚠ PICKING EITHER RESTARTS THE COURSE, which is also his: "Restarting
+       clears anything added in this session." A control that quietly kept the
+       session's notes while changing which lessons are complete would be a
+       third state neither arm describes.
+
+       ⚠ HIS "Remember on this device" IS NOT PORTED. It writes
+       `compassB.demo` to localStorage so his prototype reopens the same way;
+       on the Hub a Design control already persists the same way, so a second
+       mechanism for the same thing would be one more place for the two to
+       disagree. */
+    surface: 'design',
+    owner: 'anjani',
+    versions: ['hybrid-pacing', 'eric-atlas-e2e'],
+    surfaces: ['compass:session'],
+    group: 'Widgets',
+    label: 'Course start (Jeff)',
+    description:
+      'How Jeff’s course player opens. New learner is his default: nothing complete, no markers, Lesson 1 current — what a learner test wants. Demo story restores his scripted progress — Lessons 1 and 2 complete, Lesson 3 in progress, with the seeded notes and flags — which is what a stakeholder walkthrough wants. Picking either restarts the course, as his dialog does. Only bites on the Jeff arm of Course content version.',
+    variants: [
+      { value: 'fresh', label: 'New learner', description: 'His default — nothing done yet' },
+      { value: 'story', label: 'Demo story', description: 'Lessons 1–2 complete, 9 markers' },
+    ],
+    defaultVariant: 'fresh',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'compass-jeff-exam-tips',
+    /* HIS DEMO SETTINGS, THE SECOND CHECKBOX — "Exam tip callouts in lesson
+       sections and in Rubi's section summaries. Off by default." Ported as a
+       toggle because that is what it is, and left OFF for the same reason the
+       arm above opens on New learner: the default is his, not the port's.
+
+       ⚠ THE TIPS ARE REAL CONTENT, not decoration — one per section on nine
+       of his sections, written as exam advice. They are in the fixtures either
+       way; this decides whether they are drawn. */
+    surface: 'design',
+    owner: 'anjani',
+    versions: ['hybrid-pacing', 'eric-atlas-e2e'],
+    surfaces: ['compass:session'],
+    group: 'Widgets',
+    label: 'Exam tips (Jeff)',
+    description:
+      'Jeff’s exam-tip callouts inside lesson sections. Off is his default. Only bites on the Jeff arm of Course content version.',
+    defaultEnabled: false,
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'compass-jeff-pointers',
+    /* HIS DEMO SETTINGS, THE FIRST CHECKBOX — "Show Rubi pointers · Pointer
+       cards above the prompt in Lesson 3." On by default, as his is.
+
+       ⚠ OFF MEANS NOT QUEUED, NOT QUEUED-AND-HIDDEN. His `queueNudge` returns
+       immediately when pointers are off, so turning them back on mid-session
+       does not deliver a backlog of three cards at once. That is the whole
+       difference between a control and a mute button. */
+    surface: 'design',
+    owner: 'anjani',
+    versions: ['hybrid-pacing', 'eric-atlas-e2e'],
+    surfaces: ['compass:session'],
+    group: 'Widgets',
+    label: 'Rubi pointers (Jeff)',
+    description:
+      'Jeff’s pointer cards above the lesson. Three of them, all in Lesson 3: one when a scripted session resumes, one when the scenario check is answered wrongly, one when section 3.4 comes into view. Each opens a conversation in the Compass rail; each can be snoozed for an hour or dismissed for good. On is his default. Only bites on the Jeff arm of Course content version.',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'compass-mvp-version',
+    /* WHOSE COMPASS — 2026-11-09, from `Compass-Prototype-MVP111926_v2.html`,
+       on the direct ask: "jeff has given me another prototype, and this needs
+       to get populated into my repo. page by page. with a tag that shows its
+       jeffs version."
+
+       ⚠ IT REPLACES THE WHOLE SURFACE, not one page of it, which is what makes
+       it different from `compass-content-version` (his LESSON) and
+       `compass-overview-version` (one page's body). His MVP is a thirteen-page
+       Compass with its own rail — three learning rows, an EXAM PREP rule, five
+       exam-prep rows — so there is no honest way to show one of his pages
+       inside the product's own navigation. The rail is part of the argument.
+
+       ⚠ `current` IS THE DEFAULT because it is what ships — the rule every
+       version control here follows: the arm is the question, the baseline is
+       not.
+
+       ⚠ THE ARM IS BEING FILLED PAGE BY PAGE. Readiness is ported; the other
+       seven rail rows draw a panel naming what is missing and pointing at the
+       document on the Hub. A silent fallback to the product's own page would
+       render shipped work under Jeff's name with nothing on screen to correct
+       a reviewer — the same decision `CompassContentPending` records.
+
+       ⚠ SCOPED TO HIS SURFACE AND THE OVERVIEW, so it is reachable from where
+       a reviewer starts (the Compass landing page) and still on the bar
+       wherever in his MVP they got to. Without the second scope, picking his
+       version would take its own dropdown off the bar.
+
+       ⚠ THE THIRD ARM IS `refined` — 2026-11-09, Jillienne: "I want a 3rd
+       page, so there is Anjanis Version, Jeffs Version, and the REFINED
+       Version." It is Jeff's shell — his rail, his other pages — with the
+       Readiness row opening `CompassReadinessRefined`: his page rebuilt
+       against Nina Conrad's "Compass Rapid Insights: Your Exam Prep" research
+       (Nov 2026) on the house Compass tokens. One page so far; it opens on
+       Readiness because that is the page that differs. Its surface is
+       `compass:refined`, scoped here for the same reason his is. */
+    surface: 'design',
+    owner: 'anjani',
+    versions: ['hybrid-pacing', 'eric-atlas-e2e'],
+    /* ⚠ ALL THREE REFINED IDS. A reviewer has to be able to leave Refined
+       from wherever they got to, so this is the one control that names every
+       page of it — see `DesignSurfaceId`. */
+    surfaces: [
+      'compass:jeff-mvp',
+      'compass:refined',
+      'compass:refined:overview',
+      'compass:refined:learn',
+      'compass:overview',
+    ],
+    group: 'Widgets',
+    label: 'Compass version',
+    description:
+      'Which Compass a reviewer is in. Current is what ships — Anjani’s rail and pages. Jeff’s MVP is his thirteen-page prototype of 2026-11-09, with his own rail: Overview, Learn and Study planner, then an EXAM PREP rule over Prep Review, Practice, Flashcards, Exam Simulator and Readiness. Refined is Jeff’s shell with the Readiness page rebuilt against the Nov 2026 "Your Exam Prep" research — one ring with the level inside it, the gap to Ready stated as time against the exam date, plain language, and every topic and sub-topic on one comparable scale. The whole prototype is on the Hub under Explorations.',
+    variants: [
+      { value: 'current', label: 'Current', description: 'What ships today' },
+      { value: 'jeff', label: 'Jeff’s MVP', description: 'His thirteen-page prototype' },
+      { value: 'refined', label: 'Refined', description: 'Readiness rebuilt on the research' },
+    ],
+    /* ⚠ `current`, AND IT WAS `refined` FOR A DAY — decided 2026-11-16 at the
+       share to stage.
+
+       ⚠ THE BRANCH DEFAULT AND THE STAGE DEFAULT ARE DIFFERENT QUESTIONS,
+       and this flag is where the difference bites. On a branch, a default is
+       how your work shows itself (CLAUDE.md step 2), so `refined` was right
+       there. On STAGE the same value decides what Prototypes → Stage →
+       Compass opens into for everyone, and Compass is Anjani's surface:
+       opening it on a shell she did not decide would be this branch
+       answering a question that is hers.
+
+       ⚠ SO REFINED LIVES ONE CLICK AWAY, on the Design bar, which is what
+       that bar is for. Everything else this branch staged — the twelve
+       Refined axes below — is unaffected: they decide how Refined draws once
+       you are in it, not whether you land there. */
+    defaultVariant: 'current',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'compass-overview-focus',
+    /* COURSE PROGRESS AND YOUR NEXT STEP, AS ONE CARD — 2026-11-11,
+       Jillienne: "these 2 components should be redesigned into 1 simple
+       component that shows the Course Progress on the left, and the Your Next
+       Step on the right. The Progress UI should more closely match the screen
+       from atlas with the pacing details as well. Please explore a few
+       variations before implementing them."
+
+       ⚠ THE CONTROL IS THE EXPLORATION. Three arrangements, live, flipped
+       from the bar — which is how this project explores, and what
+       `decide-defaults` later freezes. Writing three static mock-ups would
+       have put the comparison somewhere the product is not.
+
+       ⚠ THEY DIFFER IN ONE DECISION: what separates the two halves. A rule, a
+       tinted ground, or Atlas's labelled rows in place of prose. Three
+       designs that differed in several things each would make a pick
+       unexplainable — the reviewer could say which they liked and not why.
+
+       ⚠ `split` IS THE DEFAULT because it is the most conservative reading of
+       the ask: left and right as asked, nothing else re-decided. The arm is
+       the question; the baseline is not.
+
+       ⚠ THE COURSE SERIES ONLY. The unified states pair the progress ring
+       with the READINESS panel instead, which answers a different question,
+       so the hero stays its own card there until somebody decides otherwise. */
+    surface: 'design',
+    owner: 'anjani',
+    versions: ['hybrid-pacing', 'eric-atlas-e2e'],
+    /* ⚠ THE OVERVIEW'S CARD — 2026-11-14, scoped off Your Course, which
+       draws no such card and carried the three arms for nothing. */
+    surfaces: ['compass:refined:overview'],
+    group: 'Widgets',
+    label: 'Progress + next step',
+    description:
+      'How the Overview\u2019s first card arranges Course Progress and Your Next Step \u2014 one component since 2026-11-11, where his build stacked two. Split draws a vertical rule between the two halves. Panel tints the progress bay instead, so state and action read as different kinds of thing without a line. Figures replaces the pace sentence with Atlas\u2019s labelled rows beside a smaller ring \u2014 the densest, and the furthest from his. All three take the pace fields from Atlas\u2019s card; the stage\u2019s own note still renders under them.',
+    variants: [
+      { value: 'split', label: 'Split', description: 'A rule between the halves' },
+      { value: 'panel', label: 'Panel', description: 'The progress bay is tinted' },
+      { value: 'figures', label: 'Figures', description: 'Atlas\u2019s labelled rows' },
+    ],
+    defaultVariant: 'split',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'compass-course-rows',
+    /* THE CHAPTER LIST, AS ROWS OR AS A ROADMAP — 2026-11-12, Jillienne with
+       a reference screenshot: "ON Your Course, lets add a variant that shows
+       this type of styling. CTA should be in the top right. Bottom Right can
+       be a details link with chevron that expands and shows the other parts
+       of the course."
+
+       ⚠ THEY DIFFER IN WHAT A CHAPTER IS. `list` is a row — twenty-one of
+       them in one bordered card, scanned top to bottom, which is the shape
+       his build had and the shape the audit tuned. `cards` makes each chapter
+       its own card with a numbered chip, a status pill, the action top right
+       and a details link bottom right: a roadmap you browse rather than a
+       list you work down.
+
+       ⚠ `list` IS THE DEFAULT because it is the audited one. Findings 1, 2, 3,
+       6, 7 and 8 were measured against it and fixed on it; making the new
+       arm the baseline would retire that work by a flag default rather than
+       by a decision. The arm is the question.
+
+       ⚠ THE ENDING DOES NOT FORK. "Finish Your Course" stays its compact
+       strip on both — her call: a final exam, a survey and a certificate are
+       not chapters, and the contrast is what makes the end of the course read
+       as the end. */
+    surface: 'design',
+    owner: 'anjani',
+    versions: ['hybrid-pacing', 'eric-atlas-e2e'],
+    /* ⚠ YOUR COURSE'S LIST — 2026-11-14, scoped off the Overview, which
+       draws no chapter list. */
+    surfaces: ['compass:refined:learn'],
+    group: 'Widgets',
+    label: 'Course list',
+    description:
+      'How Your Course draws its twenty-one chapters. Rows is the audited list — one bordered card, a row per chapter, the action and the state in a right-hand column. Roadmap gives each chapter a card of its own: a numbered chip, a status pill, the action top right, what opens it bottom left and a Details link bottom right that expands the lessons and the chapter exam. The Course Introduction takes a mark instead of a number, not being a chapter. The ending — Final Exam, Course Survey, Certificate — is the same compact strip either way.',
+    variants: [
+      { value: 'list', label: 'Rows', description: 'The audited list' },
+      { value: 'cards', label: 'Roadmap', description: 'A card per chapter' },
+    ],
+    /* ⚠ DEFAULT SET FROM THE PAGE — 2026-11-16: "look at the current
+       settings and mark those design tools as default." The arm below is
+       what the Course page had been built to all week and what every
+       screenshot since 2026-11-13 shows; it was still opening on the
+       baseline it was compared against. */
+    defaultVariant: 'cards',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'compass-course-blurb',
+    /* ⚠ A SENTENCE UNDER EACH CHAPTER TITLE, AND EVERY ONE IS INVENTED. The
+       reference screenshot carries a description per module; the uploaded
+       course list is titles only. The twenty-one sentences in
+       `REFINED_CHAPTER_BLURBS` were written from the chapter names and from
+       what a Florida pre-licensing syllabus ordinarily covers.
+
+       ⚠ WHICH IS WHY IT IS OFF: "Make a toggle to show the blurb or not, have
+       it off on default." A reviewer who turns it on knows they asked for it.
+       A default-on invention is a figure somebody quotes back.
+
+       ⚠ A TOGGLE, NOT A THIRD ARM of `compass-course-rows`. It is a question
+       about CONTENT and the arm is a question about shape; as an arm you
+       could not see the rows with blurbs, which is a combination worth
+       looking at. */
+    surface: 'design',
+    owner: 'anjani',
+    versions: ['hybrid-pacing', 'eric-atlas-e2e'],
+    /* ⚠ YOUR COURSE'S LIST — 2026-11-14, scoped off the Overview, which
+       draws no chapter list. */
+    surfaces: ['compass:refined:learn'],
+    group: 'Widgets',
+    label: 'Chapter blurbs',
+    description:
+      'Draws a one-sentence description under each chapter title, on either course layout. ⚠ The sentences are INVENTED — the uploaded course list has no descriptions, and these were written from the chapter names against a typical Florida Life & Health syllabus. They are in REFINED_CHAPTER_BLURBS as one list, to be replaced with the course’s own copy. Off by default for that reason.',
+    defaultEnabled: false,
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'compass-course-status',
+    /* WHERE THE STATUS WORD SITS ON A ROADMAP CARD — 2026-11-14, Jillienne:
+       "i want a variant of this where the status, Locked, In Progress, Not
+       Started, Completed are directly under the Course details. In progress,
+       the progress bar will be to the right of it."
+
+       ⚠ IT IS A DIFFERENT QUESTION FROM `compass-course-mark`. That arm
+       decides what the MARK carries — a number, the state's glyph, the
+       module's type. This decides where the WORD goes, and the two combine:
+       the word can sit beside the mark, or under the title, whichever mark
+       is drawn.
+
+       ⚠ `tag` IS WHERE IT HAS BEEN. On the Number arm the word rides in the
+       same capsule as the number; on the others it is its own tag over by
+       the controls. `under` takes it out of both and puts it beneath the
+       title and its label, with the progress bar — which is a fact about the
+       same state — beside it rather than out in the row.
+
+       ⚠ ON THAT ARM THE ROW'S OWN BAR GOES. Two bars for one chapter would
+       be the two-rings problem of audit finding 4 in miniature. */
+    surface: 'design',
+    owner: 'anjani',
+    versions: ['hybrid-pacing', 'eric-atlas-e2e'],
+    surfaces: ['compass:refined:learn'],
+    group: 'Widgets',
+    label: 'Status position',
+    description:
+      'Where a roadmap card states what it is: Beside the mark, which is where it has been — in the same capsule as the number, or as its own tag by the controls on the icon arms — or Under the details, beneath the title and its label, with the progress bar for an open chapter sitting beside the word rather than out in the row. It combines with Roadmap mark: the mark keeps carrying whatever that arm says.',
+    variants: [
+      { value: 'tag', label: 'Beside the mark', description: 'Where it has been' },
+      { value: 'under', label: 'Under the details', description: 'Beneath the title' },
+    ],
+    /* ⚠ DEFAULT SET FROM THE PAGE — 2026-11-16: "look at the current
+       settings and mark those design tools as default." The arm below is
+       what the Course page had been built to all week and what every
+       screenshot since 2026-11-13 shows; it was still opening on the
+       baseline it was compared against. */
+    defaultVariant: 'under',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'compass-course-mark',
+    /* WHAT THE ROADMAP'S TAG LEADS WITH — 2026-11-13, Jillienne: "the number
+       of modules is 21, but the numbers are correllating to the chapter
+       number, there wont always be a chapter number. I am not sure if we
+       should show numbers. Now I am thinking we just show the lock icon.
+       maybe put that as a variant and we can compare."
+
+       ⚠ SHE IS RIGHT ABOUT THE ARITHMETIC. The list is twenty-one modules
+       and the numbers run 01–19, because they are the COURSE's chapter
+       numbers: the Course Introduction and the Florida laws row carry none
+       in the uploaded list, and from chapter thirteen the course numbers
+       each row twice ("Life & Health Chapter 13 | Health Chapter 4"). A
+       reader counting the chips finds nineteen in a list of twenty-one.
+
+       ⚠ SO THE ARM IS WHICH FACT THE MARK CARRIES: the course's own number,
+       the state, or what the module IS. `number` is what the cards were
+       built with and is the baseline.
+
+       ⚠ `kind` ARRIVED WITH THE CLOSING MODULES — 2026-11-13, the same hour
+       the Final Exam, the Survey and the Certificate became rows of this
+       list: "the icon on the left indicates what the type of module is,
+       course, vs, exam, vs certificate etc." With four kinds in one list a
+       state glyph on every row says the least useful of the three things a
+       mark could say.
+
+       ⚠ ON THAT ARM THE STATE'S GLYPH MOVES RIGHT, into the word tag —
+       "includes the locked icon with this tag over here". The left mark is
+       saying what the row is, so the state has nowhere else to be.
+
+       ⚠ THE WORD IS UNCHANGED ON ALL THREE. "Completed", "In Progress", "Up
+       Next" and "Locked" follow the state whichever mark is drawn. */
+    surface: 'design',
+    owner: 'anjani',
+    versions: ['hybrid-pacing', 'eric-atlas-e2e'],
+    /* ⚠ YOUR COURSE'S LIST — 2026-11-14, scoped off the Overview, which
+       draws no chapter list. */
+    surfaces: ['compass:refined:learn'],
+    group: 'Widgets',
+    label: 'Roadmap mark',
+    description:
+      'What the roadmap tag shows before its word. Number is the course’s own chapter number — which runs 01–19 across twenty-one modules, because the Course Introduction and the Florida laws row carry none, and is the mismatch this arm exists to test. State drops the digits for the state’s own glyph: a tick when complete, an open book for the one you are on, a padlock for the rest. Type marks what the module IS — a book, an exam, a survey, a certificate — which tells the course’s closing steps apart now that they are rows of this list; on that arm the state’s glyph moves into the word tag on the right. The word itself is the same on all three.',
+    variants: [
+      { value: 'number', label: 'Number', description: 'The course’s chapter number' },
+      { value: 'icon', label: 'State', description: 'The state’s glyph on every row' },
+      { value: 'kind', label: 'Type', description: 'What the module is' },
+    ],
+    /* ⚠ DEFAULT SET FROM THE PAGE — 2026-11-16: "look at the current
+       settings and mark those design tools as default." The arm below is
+       what the Course page had been built to all week and what every
+       screenshot since 2026-11-13 shows; it was still opening on the
+       baseline it was compared against. */
+    defaultVariant: 'icon',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'compass-refined-ground',
+    /* ⚠ THE PAGE'S GROUND — 2026-11-15: "add a toggle to change the
+       background to white."
+
+       ⚠ IT IS THE WHOLE SURFACE'S, NOT THE ROADMAP'S, which is why it sits
+       beside `compass-refined-readiness-hero` rather than with the
+       `compass-course-*` arms. The tint is painted once, on the flex box
+       that holds the rail and the page column together (`pageStyle` in
+       `CompassLearningPage`); every Refined page sits on it, so a toggle
+       that changed only the Roadmap would be a toggle that puts two
+       different grounds one rail-click apart.
+
+       ⚠ AND SO IT IS DECLARED ON BOTH REFINED SURFACES. Scoped to the
+       Roadmap alone it could be turned on there and not turned off from the
+       Overview, while still changing the Overview — a control that is
+       invisible exactly where its effect is unexplained.
+
+       ⚠ OFF IS THE BASELINE. `--color-surface-page` (#fbfbfb) is what every
+       Compass page has sat on; this answers whether the cards need any tint
+       behind them at all now that the completed ones carry beige and the
+       locked ones carry nothing. */
+    surface: 'design',
+    owner: 'anjani',
+    versions: ['hybrid-pacing', 'eric-atlas-e2e'],
+    surfaces: ['compass:refined:overview', 'compass:refined:learn'],
+    group: 'Widgets',
+    label: 'White background',
+    description:
+      'Paints the Refined surface — the rail and the page column together — plain white instead of the #fbfbfb the Compass pages have always sat on. Both Refined pages at once, because the ground is painted once behind them. Off is the baseline.',
+    /* ⚠ ON SINCE 2026-11-16 — "look at the current settings and mark those
+       design tools as default." It arrived off on 2026-11-15 because an
+       addition's baseline is the page without it; a day of looking at it
+       both ways settled it, the same way the course image did. */
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'compass-course-exam',
+    /* HOW THE CHAPTER EXAM SITS IN AN OPEN MODULE — 2026-11-16: "use option 5
+       as the default, but also build option 4 behind a toggle to compare."
+
+       ⚠ THE DIVIDER WAS NEVER THE QUESTION. "i like the divider line above
+       the exam, but i think we need a little more UI variation for the actual
+       exam" — both arms keep it. What they differ on is whether the exam is
+       the labelled LAST ROW of the lesson list, or an object of its own
+       below it.
+
+       ⚠ `seam` SHIPS BECAUSE IT SURVIVES THE LOCKED STATE. The exam row is
+       drawn three ways — done, open, and locked with no button at all — and
+       locked is what most of the list is. A treatment leaning on the action
+       to say "this one is a test" goes quiet exactly where it is needed. A
+       labelled rule does not, and it is the pattern the rail already uses for
+       its own group headings.
+
+       ⚠ `card` CARRIES TWO INVENTED FIGURES. Its second line — the question
+       count and the pass mark — is what earns the extra height, and the
+       course list has neither. That is the comparison: more separation, at
+       the price of saying something nothing can source. See
+       `REFINED_EXAM_FACTS`. */
+    surface: 'design',
+    owner: 'anjani',
+    versions: ['hybrid-pacing', 'eric-atlas-e2e'],
+    /* ⚠ THE ROADMAP'S ONLY. The rows layout draws its exam through `ExamRow`,
+       a different component with its own strip; this is the row inside an
+       expanded card. */
+    surfaces: ['compass:refined:learn'],
+    group: 'Widgets',
+    label: 'Chapter exam',
+    description:
+      'How a chapter exam sits inside an expanded module on the Course roadmap. Seam is a labelled rule — CHAPTER EXAM — across the list, then the exam as its last row: a word, no new surface, and it still reads when the exam is locked and draws no button. Card lifts the exam out of the list into its own bordered object with a second line stating the question count and pass mark — stronger separation, but both of those figures are invented (see REFINED_EXAM_FACTS) because the course list carries no exam facts.',
+    variants: [
+      { value: 'seam', label: 'Seam', description: 'A labelled rule, then the row' },
+      { value: 'card', label: 'Card', description: 'Its own object under the list' },
+    ],
+    defaultVariant: 'seam',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'compass-course-image',
+    /* ⚠ THE COURSE'S PICTURE, BESIDE ITS NAME — 2026-11-12: "add a toggle
+       that shows the course image to the left of the course details".
+
+       ⚠ IT WAS A TOGGLE AND NOT A DEFAULT, on the argument that it answers
+       a question about the card's weight rather than its content: the header
+       is the page's summary — a name, what kind of course it is, how far
+       through, and a ring — and an image makes it the first thing the eye
+       lands on. That was worth seeing both ways, and it has been; the answer
+       is on.
+
+       ⚠ THE ART IS NOT NEW. `/courses/fl-life-health.webp` is the file the
+       Atlas dashboard's course card already draws, so the two surfaces show
+       one picture of one course. Nothing was added to the repo for this. */
+    surface: 'design',
+    owner: 'anjani',
+    versions: ['hybrid-pacing', 'eric-atlas-e2e'],
+    /* ⚠ YOUR COURSE'S LIST — 2026-11-14, scoped off the Overview, which
+       draws no chapter list. */
+    surfaces: ['compass:refined:learn'],
+    group: 'Widgets',
+    label: 'Course image',
+    description:
+      'Draws the course’s own art to the left of its name in the Course page’s header — the same file the Atlas dashboard’s course card uses, so a learner sees one picture of one course across the two surfaces. On by default since 2026-11-14. Off shows the header without it: eyebrow, name, kind and count, with the ring on the right.',
+    /* ⚠ ON SINCE 2026-11-14 — "default course image on". It arrived off
+       because an addition's baseline is the page without it; two days of
+       looking at it both ways settled that. */
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'compass-course-fold',
+    /* WHETHER THE LOCKED RUN FOLDS — 2026-11-12: "2 both behind a toggle so i
+       can compare."
+
+       ⚠ THIS IS AUDIT FINDING 1, MADE COMPARABLE. Nineteen of twenty-one
+       chapters are locked and took 55% of the page; folding them behind a
+       count brought that to 7%. The fix shipped as the behaviour, and the
+       question the roadmap variant reopens is whether a card layout wants it
+       at all — a roadmap you browse may be exactly the thing you want whole.
+
+       ⚠ ON IS THE DEFAULT, because folded is what the audit settled on and
+       what both layouts do today. Off shows every chapter, which is what the
+       reference screenshot shows. */
+    surface: 'design',
+    owner: 'anjani',
+    versions: ['hybrid-pacing', 'eric-atlas-e2e'],
+    /* ⚠ YOUR COURSE'S LIST — 2026-11-14, scoped off the Overview, which
+       draws no chapter list. */
+    surfaces: ['compass:refined:learn'],
+    group: 'Widgets',
+    label: 'Fold the runs',
+    description:
+      'Collapses the runs a learner is not in, behind a count at each end: the locked chapters below (“Show all 21 chapters”) and, on the roadmap, the completed ones above (“Show 11 completed modules”). The locked half was audit finding 1 — nineteen of twenty-one chapters are locked and occupied 55% of the page; folded they occupy 7%. The completed half answers the same complaint from the other end, which only appears once a learner is some way in. Turn it off to show the whole course at once. The locked fold applies to both course layouts; the completed one is the roadmap’s.',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'compass-overview-focus-swap',
+    /* WHICH SIDE EACH HALF SITS ON — 2026-11-11: "make a variant of this
+       component, that can be toggled in the design tools, where the 2
+       sections are swapped."
+
+       ⚠ ITS OWN TOGGLE, NOT A FOURTH ARM of `compass-overview-focus`. Which
+       half leads and what separates the halves are different questions: as an
+       arm you could not see `panel` swapped, and the three arrangements would
+       become six names for two decisions. On/off against the arm gives all
+       six combinations and still reads as one question each.
+
+       ⚠ OFF IS PROGRESS-FIRST, because that is what the card was asked for on
+       the day it was built ("Course Progress on the left, and the Your Next
+       Step on the right"). The arm is the question; the baseline is not.
+
+       ⚠ IT IS A LAYOUT SWAP, NOT A CONTENT ONE. The same two halves draw
+       either way round — only the column they occupy changes, and the divider
+       goes with them. Nothing is re-styled for its new side, which is what
+       makes the comparison about position alone. */
+    surface: 'design',
+    owner: 'anjani',
+    versions: ['hybrid-pacing', 'eric-atlas-e2e'],
+    /* The Overview's card — see `compass-overview-focus`. */
+    surfaces: ['compass:refined:overview'],
+    group: 'Widgets',
+    label: 'Swap the halves',
+    description:
+      'Puts Your Next Step on the left and Course Progress on the right, which is the reverse of how the card was first asked for. A toggle rather than a fourth arrangement, so it combines with any of the three \u2014 the arrangement decides what SEPARATES the halves, this decides which one leads. The wider bay follows the progress half whichever side it is on.',
+    defaultEnabled: false,
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'compass-overview-pace-note',
+    /* HOW THE DAY-ONE NOTE OFFERS ITS ACTION — 2026-11-11: "add a variant of
+       this that shows Change here as a simple text style link on the right
+       under the content."
+
+       ⚠ ONE QUESTION: whether the action is IN the sentence or under it.
+       `inline` is the Atlas card's own shape, where "here" is the last word
+       you read. `link` closes the sentence and sets "Change here" beneath it
+       on the right, which is where a control usually sits — the reader
+       decides whether to act after reading, rather than discovering the
+       control mid-clause.
+
+       ⚠ `link` IS THE BASELINE SINCE 2026-11-11 — "set this as the default."
+       It was `inline` for the hour the arm existed, on the usual rule that
+       the baseline is what shipped. The rule bends here because nothing
+       shipped: this note is Refined's own, written the same day, and the
+       explanation it carried turned out to be the part that could go — a
+       learner on day one does not need telling that a default is a default.
+       `inline` stays as the arm holding Atlas's shape.
+
+       ⚠ IT ONLY EXISTS AT 0%, like the note it styles. Past the first state
+       there is nothing here to arrange. */
+    surface: 'design',
+    owner: 'anjani',
+    versions: ['hybrid-pacing', 'eric-atlas-e2e'],
+    /* The Overview's card — see `compass-overview-focus`. */
+    surfaces: ['compass:refined:overview'],
+    group: 'Widgets',
+    label: 'Pace note action',
+    description:
+      'Whether the day-one pace note explains itself or just offers the change. Link \u2014 the default since 2026-11-11 \u2014 drops the note entirely and puts "Adjust" on the Study Pace row, on the reasoning that a learner on day one does not need telling that a default is a default. Inline keeps Atlas\u2019s shape: the sentence about the pace being a starting point, ending "\u2026customize your pace here." Only visible at 0%, the one state the note appears in.',
+    variants: [
+      { value: 'inline', label: 'Inline', description: '"here" ends the sentence' },
+      { value: 'link', label: 'Link below', description: '"Adjust", on the row' },
+    ],
+    defaultVariant: 'link',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'compass-overview-next-mark',
+    /* THE NEXT SECTION'S MARK — 2026-11-11: "make a variant of this that has
+       the icon 40 px by 40 px in a graphical circle with the course details
+       beside it, trying to explore different variations to help with vertical
+       spacing of this widget."
+
+       ⚠ THE ASK NAMES ITS OWN PURPOSE: vertical spacing. `stacked` puts the
+       glyph on its own line above the title, which costs a row of height on a
+       card whose other half is three ruled rows; `tile` sets a 40px badge
+       beside the title and meta, so they occupy one block instead of two.
+       Which one wins is a question about how tall this widget should be, not
+       about the icon.
+
+       ⚠ THE ARM WAS `circle` FOR AN HOUR. "make the icon a square version
+       like used on the Your Course Page" — so it is the Learn page's rounded
+       square now, and the VALUE was renamed with it rather than leaving a
+       `circle` that draws a square. Any `?ff=compass-overview-next-mark:
+       circle` link from that hour falls back to the default; the flag is a
+       day old and the bar is how it has been used.
+
+       ⚠ STACKED IS THE BASELINE because it is what the mark became on
+       2026-11-11 when the tile was dropped; the arm is the question. */
+    surface: 'design',
+    owner: 'anjani',
+    versions: ['hybrid-pacing', 'eric-atlas-e2e'],
+    /* ⚠ BOTH PAGES, AND IT IS THE ONLY ONE. The next-step card is one
+       component drawn on the Overview and on Your Course since
+       2026-11-12, so a shape flag reaching only one of them would be the
+       first thing to break that. */
+    surfaces: ['compass:refined:overview', 'compass:refined:learn'],
+    group: 'Widgets',
+    label: 'Next step mark',
+    description:
+      'How the next section\u2019s icon is drawn. Stacked puts the glyph on its own line above the title. Tile sets it at 40px inside a rounded square \u2014 the badge the Your Course page uses \u2014 with the title and its figures stacked beside it, which takes a row of height out of the card. That is the point of the variant: the other half is three ruled rows, and the two halves have to end up a similar height.',
+    variants: [
+      { value: 'stacked', label: 'Stacked', description: 'Glyph above the title' },
+      { value: 'tile', label: 'Tile', description: '40px badge, details beside' },
+    ],
+    defaultVariant: 'stacked',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'compass-refined-readiness-hero',
+    /* THE READINESS TO PASS SECTION, on the Refined page — 2026-11-09,
+       Jillienne: "Add a feature flag concept that focuses on the Readiness to
+       Pass section and make a variant that still includes the 3 ringed
+       version that was tested as users seemed to like it."
+
+       The research cut both ways on the rings. Insight 2: many participants
+       named them the most helpful part of the page and called them
+       motivating — "I would love filling those rings up." Insight 3: the
+       rings confused the people who noticed the KEY had more items than the
+       graphic had rings. Recommendation 1 is explicit that either answer is
+       acceptable — "make the number of rings match the number of items in the
+       key, OR simplify the graphic". The Refined page shipped the second; this
+       flag puts the first beside it.
+
+       ⚠ THE `rings` ARM IS THREE RINGS AND A THREE-ITEM KEY, one to one. That
+       is the whole fix. The tested graphic had three rings and a five-item
+       breakdown (Readiness · Practice questions · Flashcards · Exam Simulator
+       · Book your exam), and "Book your exam" was the worst offender — a
+       one-time task cannot fill like a progress ring. Here every ring is a
+       thing that fills: Readiness (a score), Practice questions (a count),
+       Exam simulators (a count). Nothing in the key lacks a ring; no ring
+       lacks a line in the key.
+
+       ⚠ `rings` IS THE DEFAULT SINCE 2026-11-10 — Jillienne, looking at it:
+       "i want this to be built into the refined view for Readiness." It was
+       `single` for a day, because that is what the Refined page was first
+       built as.
+
+       The research supports the move rather than merely permitting it.
+       Insight 3's objection was never the rings themselves — it was that the
+       KEY listed five things and the graphic drew three, so two lines had no
+       ring. This arm fixes exactly that: three rings, three key lines, one
+       to one. With the mismatch gone, Insight 2 is what is left — learners
+       called the concentric graphic the most helpful part of the page and
+       said they would love filling it up.
+
+       `single` STAYS as the arm, not deleted. It is the simpler answer the
+       same recommendation allows, it is one click away on the bar, and the
+       decision between them is still open until someone watches a learner
+       use this one. Scoped to the Refined surface only — a decision about
+       one section of one page. */
+    surface: 'design',
+    owner: 'anjani',
+    versions: ['hybrid-pacing', 'eric-atlas-e2e'],
+    surfaces: ['compass:refined'],
+    group: 'Widgets',
+    label: 'Readiness to Pass',
+    description:
+      'How the Readiness to Pass section draws the score on the Refined page. Three rings is what it shows: the concentric graphic learners called motivating, with a key that matches it ring for ring — Readiness, Practice questions, Exam simulators — which is the fix for the one thing the research faulted (a five-item key over a three-ring graphic). Single ring is the simpler alternative the same recommendation allows: one arc with the level inside it, and questions answered as a labelled bar beneath.',
+    variants: [
+      { value: 'rings', label: 'Three rings', description: 'Readiness · Practice questions · Exam simulators' },
+      { value: 'single', label: 'Single ring', description: 'One arc, the level inside it' },
+    ],
+    defaultVariant: 'rings',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'compass-overview-version',
+    /* WHOSE OVERVIEW — 2026-11-05, from `Compass-Overview-Prototype-V2_2`.
+       Anjani's shipped Overview ("Your learning journey", the 62% ring and
+       the assignments table) against the V2 prototype, which rebuilds the
+       page around READINESS.
+
+       ⚠ `anjani` IS THE DEFAULT because it is what ships, the same rule every
+       other version control here follows: the arm is the question, the
+       baseline is not.
+
+       ⚠ THE V2 ARM IS TWO PAGES, not one, and the stage control below picks
+       between them — his prototype holds sixteen states across three series,
+       and whether Readiness is a phase after the course (the `p` series) or a
+       signal running beside it (the `u` series) is the decision the whole
+       prototype exists to support. Porting one and calling it the design
+       would settle that quietly. */
+    surface: 'design',
+    owner: 'anjani',
+    versions: ['hybrid-pacing', 'eric-atlas-e2e'],
+    surfaces: ['compass:overview'],
+    group: 'Widgets',
+    label: 'Overview version',
+    description:
+      'Which Compass Overview renders. Anjani’s is what ships — her learning journey, the 62% ring, the assignments table. V2 is the Readiness prototype (2026-10-30): the page rebuilt around a three-arc Readiness ring, a blueprint-weighted topic table and what the learner’s confidence says against their answers. Pick the stage with Readiness stage.',
+    variants: [
+      { value: 'anjani', label: 'Anjani’s overview (current)', description: 'What ships today' },
+      { value: 'v2', label: 'Readiness V2', description: 'The 2026-10-30 prototype' },
+    ],
+    defaultVariant: 'anjani',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'compass-readiness-stage',
+    /* WHICH OF HIS SIXTEEN STATES — his own stage picker, as a design control.
+       Three series: `q` walks the QE course (⚠ Readiness does not exist until
+       q8, which is the prototype's first argument), `p` is the exam-prep page
+       after the course, `u` is the unified one where lessons and practice run
+       side by side.
+
+       ⚠ THE STAGE PICKS THE PAGE. A `p` stage draws "Your exam prep"; a `q`
+       or `u` stage draws "Your learning journey". That is his structure, not
+       a convenience: the two pages ARE the two answers, and a stage belongs
+       to one of them.
+
+       ⚠ `p2` IS THE DEFAULT because it is the state the two standalone
+       exports show (Readiness 58%), and the one the design conversation has
+       been about. */
+    surface: 'design',
+    owner: 'anjani',
+    versions: ['hybrid-pacing', 'eric-atlas-e2e'],
+    /* ⚠ REFINED TOO, SINCE 2026-11-10. Its Overview renders the same
+       stage-aware page (forked as `CompassRefinedJourney` /
+       `CompassRefinedPrepPage`), so the control has to be reachable from
+       there or the sixteen states are only switchable from the version the
+       reviewer just left. */
+    /* ⚠ EVERY REFINED PAGE THAT READS A LEARNER. The stage drives the
+       Overview, Your Course (since 2026-11-12, audit finding 4) and Prep
+       Review, so it names all three ids — scoping it to one would leave the
+       others showing a learner nobody can change. */
+    surfaces: [
+      'compass:overview',
+      'compass:refined',
+      'compass:refined:overview',
+      'compass:refined:learn',
+    ],
+    group: 'Widgets',
+    label: 'Readiness stage',
+    description:
+      'Which of the prototype’s sixteen states the Overview shows. Q1–Q8 walk the QE course and Readiness only appears at Q8. P1–P3 are the exam-prep page: establishing, 58% Developing, 86% Ready. U1–U5 are the unified page where course progress and Readiness sit side by side. Only bites on the V2 arm of Overview version.',
+    /* ⚠ ONE LINE AND A SECTION — 2026-11-10, twice over.
+
+       The menu was unreadable first: a two-line row on this bar is `badge` ·
+       `description` · `detail`, and the badge is a FIXED 19px square meant
+       for a key like "Q1". This flag had been handing it the whole label,
+       "Q1 · First-time learner · 0%", crammed into nineteen pixels, so
+       sixteen rows drew their text on top of each other. The bug was in this
+       data, not in the bar — every other dropdown renders correctly from the
+       same code.
+
+       The first fix split each row into badge · state · series. Jillienne's
+       own answer is better and is what is here: ONE line carrying the whole
+       label, with the series as a GROUP HEADING over a divider. The series
+       repeated on sixteen rows ("The QE course" eight times) is noise; said
+       once over the four rows it covers, it is structure. `label` also stays
+       the long string because it is what the COLLAPSED control shows.
+
+       ⚠ THE SECTIONS SPLIT THE Q SERIES IN TWO. Q1–Q4 are lessons and Q5–Q8
+       are the wrap-up — the affidavit, the final exam, the survey, the
+       certificate — which the fixtures already treat as one series. The
+       heading is where that distinction is visible to a reviewer choosing a
+       state, and it is her grouping, not the fixtures'. */
+    variants: [
+      { value: 'q1', label: 'Q1 · First-time learner · 0%', section: 'Regulated FL · QE lessons' },
+      { value: 'q2', label: 'Q2 · QE 20% · Continue your course', section: 'Regulated FL · QE lessons' },
+      { value: 'q3', label: 'Q3 · QE 50% · Continue your course', section: 'Regulated FL · QE lessons' },
+      { value: 'q4', label: 'Q4 · QE 80% · You’re almost there', section: 'Regulated FL · QE lessons' },
+      { value: 'q5', label: 'Q5 · Lessons complete · affidavit next', section: 'Regulated FL · Wrap-up' },
+      { value: 'q6', label: 'Q6 · Final course exam open', section: 'Regulated FL · Wrap-up' },
+      { value: 'q7', label: 'Q7 · Survey and certificate next', section: 'Regulated FL · Wrap-up' },
+      { value: 'q8', label: 'Q8 · QE complete · Readiness appears', section: 'Regulated FL · Wrap-up' },
+      { value: 'p1', label: 'P1 · Establishing Readiness', section: 'Regulated FL · Exam Prep' },
+      { value: 'p2', label: 'P2 · Readiness 58% · exam preparation', section: 'Regulated FL · Exam Prep' },
+      { value: 'p3', label: 'P3 · Readiness 86% · Ready to pass', section: 'Regulated FL · Exam Prep' },
+      { value: 'u1', label: 'U1 · Starting · not enough data', section: 'Unregulated · move freely' },
+      { value: 'u2', label: 'U2 · Course 36% · building Readiness', section: 'Unregulated · move freely' },
+      { value: 'u3', label: 'U3 · Course 61% · Readiness 62%', section: 'Unregulated · move freely' },
+      { value: 'u4', label: 'U4 · Course complete · Readiness 80%', section: 'Unregulated · move freely' },
+      { value: 'u5', label: 'U5 · Simulator passed · Ready to pass', section: 'Unregulated · move freely' },    ],
+    defaultVariant: 'p2',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'compass-surface',
     /* WHOSE COMPASS — 2026-10-15, the direct ask: "I want what she did to be
        put into the Prototype - Compass Learning section only."
@@ -2401,8 +3318,14 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        ⚠ `?affidavit=1` STILL WORKS. Arriving from Confirmation & Password
        opens the pre-course one, as it has since 2026-10-15 — this control is
        a second way in, not a replacement, and closing the modal clears both
-       so it does not spring back. */
-    surface: 'design',
+       so it does not spring back.
+
+       ⚠ OFF THE DESIGN BAR SINCE 2026-11-04 (`feat/affidavits`, Afsana) —
+       `affidavit-v2-moment` replaced it there, with an Off arm and the
+       explorer's three moments. Still in the Feature Flag panel, and both
+       Homes still honour it when Moment is Off, so `?ff=atlas-affidavit:pre`
+       links keep working. Restoring it to the bar is putting
+       `surface: 'design'` back on this row. */
     owner: 'eric',
     versions: ['eric-atlas-e2e'],
     group: 'Widgets',
@@ -2415,6 +3338,215 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
       { value: 'post', label: 'Post-course', description: 'Study-manual Notice Affidavit' },
     ],
     defaultVariant: 'off',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'affidavit-modal-house-style',
+    /* HOW THE AFFIDAVIT LOOKS (2026-11-10) — Afsana's original skin, read off
+       her Affidavit Explorer's XCEL mock, or Jill's house style: the serif
+       title on white instead of the navy bar, the close aligned to the
+       button's glyph, an eyebrow naming who must act over the document's own
+       sentence, no rule above the footer, a #3d5a73 primary.
+
+       ⚠ A SKIN, NOT A SECOND MODAL. It is one class on `.aff2-modal` and a
+       block of scoped CSS; `AffidavitModalV2` renders the same markup either
+       way, for all sixteen states. The Ohio-only `AffidavitModalHouseStyle`
+       on `feat/affidavit-modal-v2` was the spec this came from and is not
+       carried forward.
+
+       ⚠ WHICH affidavit opens is `affidavit-v2-moment` and `-state`; whether
+       V2 opens at all is `atlas-affidavit-v2`, below. This is only how it
+       looks, and it reads nothing else.
+
+       ⚠ DEFAULT House style, the "flags default ON on your branch" rule, so
+       the branch build shows the work. Whether it stays is decided at
+       share-to-stage. */
+    surface: 'design',
+    /* ⚠ NO `owner`, like the affidavit flags around it. `afsana` is not in
+       `DesignerId` on this branch — that entry is on Jill's
+       `feat/affidavit-modal-house-style` and would have to arrive with it.
+       `versions` is what puts a control on the bar; `owner` is a label. */
+    versions: ['jill-atlas-main', 'eric-atlas-e2e'],
+    group: 'Widgets',
+    label: 'Affidavit modal',
+    description: 'How the affidavit looks: Afsana’s original skin, or Jill’s house style.',
+    variants: [
+      { value: 'current', label: 'Current', description: 'The navy header and the centred banner.' },
+      { value: 'house-style', label: 'House style', description: 'Serif title on white, an eyebrow naming who must act, a #3d5a73 primary.' },
+    ],
+    defaultVariant: 'house-style',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'atlas-affidavit-v2',
+    /* AFFIDAVIT V2 — 2026-11-03, Afsana (`feat/affidavits`). On: the
+       End-to-End Home opens `AffidavitModalV2`; off: V1, untouched. Its first
+       change is that the modal no longer covers the review bar, the demo
+       controls or the design controls — see the V2 file's header.
+
+       ⚠ DEFAULT ON, the "flags default ON on your branch" rule, so the branch
+       link shows V2. Whether it stays on is `decide-defaults`' question at
+       share-to-stage, not this branch's. Scoped to BOTH Homes that open the
+       modal: `jill-atlas-main` is `END_TO_END_VERSION`, the Home the invite
+       flow lands on with `?affidavit=1` and the one the Prototypes rows open;
+       `eric-atlas-e2e` is where the Affidavit control it modifies lives. No
+       `owner`, so the panel files it under Jill rather than adding a row to
+       Eric's pinned list. */
+    surface: 'design',
+    versions: ['jill-atlas-main', 'eric-atlas-e2e'],
+    group: 'Widgets',
+    label: 'Affidavit V2',
+    description:
+      'Which affidavit modal the End-to-End Demo’s Home opens. On: V2 — the forms from the Affidavit Explorer, every state and moment, in Pagination or Link out; the page dims below the review bar and the demo and design controls, which stay usable while the modal is open. Off: V1, which covers the whole window.',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  /* AFFIDAVIT V2'S FOUR CONTROLS — 2026-11-03, Afsana. The Affidavit
+     Explorer's own filters, moved onto the Design bar so the modal can stand
+     where it lives in the product. Read by `AffidavitModalV2` and nothing
+     else, so they only do anything while Affidavit V2 is on and the modal is
+     open (Eric's Affidavit control or `?affidavit=1` opens it). Variants and
+     names are the explorer's: `MOMENTS` and `STATES` in `affidavitForms.ts`.
+     Florida is the default state because it is the demo course's. */
+  {
+    key: 'affidavit-v2-moment',
+    surface: 'design',
+    versions: ['jill-atlas-main', 'eric-atlas-e2e'],
+    group: 'Widgets',
+    /* ⚠ IT REPLACED THE AFFIDAVIT CONTROL ON THE BAR (2026-11-04, Afsana:
+       "the affidavit control … is not there anymore, and is instead replaced
+       by affidavit moment"). Off is Home as it lands; any moment opens the
+       modal over it and adds the Study Journey's affidavit row, the two jobs
+       `atlas-affidavit` did. Both Homes read this first and fall back to
+       `atlas-affidavit`, which left the bar but is still in the Feature Flag
+       panel. With Affidavit V2 off, V1 opens: After course exam as its
+       post-course affidavit, the other two as its pre-course one. */
+    label: 'Affidavit moment',
+    description:
+      'Opens the affidavit modal over Home, and says which of the three affidavits it shows: the one signed before the course begins, before the course exam, or after it. Each state has its own form for each moment, or none. Off: Home as it lands. Replaced the Affidavit control on the Design bar.',
+    variants: [
+      { value: 'off', label: 'Off' },
+      { value: 'pre', label: 'Before course begins' },
+      { value: 'exam', label: 'Before course exam' },
+      { value: 'post', label: 'After course exam' },
+    ],
+    defaultVariant: 'off',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'affidavit-v2-state',
+    surface: 'design',
+    versions: ['jill-atlas-main', 'eric-atlas-e2e'],
+    group: 'Widgets',
+    label: 'Affidavit state',
+    description:
+      'Whose affidavit V2 shows. A state with no form at the chosen moment says so in the modal, as the explorer does. Non-state specific: XCEL\u2019s generic Terms and Conditions before the course begins, and its general attestation before the course exam.',
+    variants: [
+      { value: 'CA', label: 'California' },
+      { value: 'CO', label: 'Colorado' },
+      { value: 'CT', label: 'Connecticut' },
+      { value: 'FL', label: 'Florida' },
+      { value: 'IL', label: 'Illinois' },
+      { value: 'KY', label: 'Kentucky' },
+      { value: 'MN', label: 'Minnesota' },
+      { value: 'MS', label: 'Mississippi' },
+      { value: 'NV', label: 'Nevada' },
+      { value: 'NY', label: 'New York' },
+      { value: 'OH', label: 'Ohio' },
+      { value: 'OR', label: 'Oregon' },
+      // 2026-11-06: on the compliance team's affidavit sheet; see affidavitForms.ts for the PRD question.
+      { value: 'PA', label: 'Pennsylvania' },
+      { value: 'WV', label: 'West Virginia' },
+      { value: 'WI', label: 'Wisconsin' },
+      // Not a state (2026-11-04): XCEL's generic forms — `GEN` in affidavitForms.ts.
+      { value: 'GEN', label: 'Non-state specific' },
+    ],
+    /* N/A AT A MOMENT IS OFF THE LIST (2026-11-06, Afsana): each moment lists
+       the states with a form at it. Worked out from affidavitForms.ts, and
+       AffidavitModalV2.test.tsx fails if the forms and this list part. */
+    variantsHiddenWhen: {
+      flag: 'affidavit-v2-moment',
+      hide: {
+        pre: ['CO', 'CT', 'MS', 'NY', 'WI', 'WV', 'PA'],
+        exam: ['CA', 'IL', 'KY', 'NV', 'NY', 'OH', 'OR'],
+        post: ['FL', 'KY', 'MS', 'NV', 'OR', 'GEN', 'PA'],
+      },
+    },
+    defaultVariant: 'FL',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'affidavit-v2-pattern',
+    surface: 'design',
+    versions: ['jill-atlas-main', 'eric-atlas-e2e'],
+    group: 'Widgets',
+    label: 'Affidavit pattern',
+    description:
+      'How V2 presents the affidavit: Link out — the document as a link, an “I have read” checkbox and the fields. The only pattern since 2026-11-10 (Afsana): Pagination is no longer a choice, only part of the forms that need it — where the student and the exam monitor each have a page (after the course exam in CO, CT, MN, WV and WI), the form shows in full, a page at a time.',
+    variants: [{ value: 'link', label: 'Link out' }],
+    defaultVariant: 'link',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  /* `affidavit-v2-language` — "Affidavit language", English / Spanish — LEFT
+     THE DESIGN BAR on 2026-11-11 (Afsana, on Amrita's word): the legal
+     documents are kept as they are, and a document that carries both
+     languages is shown whole; the learner reads whichever they need,
+     whatever the course language. So the modal is always English and there
+     is nothing to choose. The Spanish forms (FL_LH_ES, FL_PC_ES, GEN_PRE_ES)
+     stay in affidavitForms.ts, unwired. To restore: put this entry back here
+     (surface 'design', versions ['jill-atlas-main', 'eric-atlas-e2e'],
+     variants English / Spanish, default English), add the key back to
+     REBRAND_FLAGS in FeatureFlagPanel.tsx, and in AffidavitModalV2.tsx read
+     it again: `const languageFlag = useFeatureFlag('affidavit-v2-language').variant`
+     and `language = languageProp ?? languageFlag ?? 'English'`. */
+  {
+    key: 'affidavit-v2-middle',
+    /* UNDECIDED (2026-11-06, Afsana): is Middle Name part of the legal name
+       a signature captures? On every form that has a signature, the name
+       sits above it as First / Middle / Last, pre-filled; Off drops Middle. */
+    surface: 'design',
+    versions: ['jill-atlas-main', 'eric-atlas-e2e'],
+    group: 'Widgets',
+    label: 'Affidavit middle name',
+    description:
+      'Whether the name above every affidavit signature includes Middle Name (pre-filled, optional) — undecided. First and Last Name are always there.',
+    variants: [
+      { value: 'show', label: 'Shown' },
+      { value: 'hide', label: 'Off' },
+    ],
+    defaultVariant: 'show',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'affidavit-v2-loa',
+    /* THE EXPLORER'S LINE OF AUTHORITY — 2026-11-04, Afsana: "you forgot to
+       pull in … line of authority". Some states sign a different form per
+       line: Florida before the course (Life & Health, Property & Casualty,
+       each in English and Spanish), California after the exam (Life &
+       Health) and Ohio after it (Property). The arms are every line those
+       forms name. A state that has no form for the chosen line shows its
+       first one, as the explorer's own picker falls back, and every state
+       that signs one form for all lines ignores this. */
+    surface: 'design',
+    versions: ['jill-atlas-main', 'eric-atlas-e2e'],
+    // XCEL's generic forms sign the same for every line (2026-11-04, Afsana).
+    hiddenWhen: { flag: 'affidavit-v2-state', variants: ['GEN'] },
+    group: 'Widgets',
+    label: 'Affidavit line of authority',
+    description:
+      'For the states with a form per line of authority — Florida before the course begins (Life & Health or Property & Casualty), California and Ohio after the course exam. A state without a form for the chosen line shows its own; every other state ignores this.',
+    variants: [
+      { value: 'Life & Health', label: 'Life & Health' },
+      { value: 'Property & Casualty', label: 'Property & Casualty' },
+      { value: 'Property', label: 'Property' },
+    ],
+    defaultVariant: 'Life & Health',
     defaultEnabled: true,
     page: 'dashboard-rebrand',
   },
@@ -2590,7 +3722,8 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        card that selects nothing. `InviteFlowVersions.test.ts` holds the two
        lists together.
 
-       DEFAULT `v2` ON THIS BRANCH, which is the branch rule — the flag default
+       DEFAULT `v3` ON feat/invite-flow-v3 (2026-10-29, Afsana's concept;
+       `v2` before it), which is the branch rule — the flag default
        is what makes a branch build show the work. On `main` it is `v1`: the
        End-to-End and Invite & Purchase rows both open this flow, so the default
        here IS what stakeholders see, and moving it is `promote-to-prototype`'s
@@ -2598,12 +3731,13 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     group: 'Navigation',
     label: 'Invite flow version',
     description:
-      'Which build of the Invite & Purchase flow renders at its four routes — the invitation email, Invited Product Detail, checkout, and Confirmation & Password. V1 is the released baseline; V2 is the checkout exploration.',
+      "Which build of the Invite & Purchase flow renders at its four routes — the invitation email, Invited Product Detail, checkout, and Confirmation & Password. V1 is the released baseline; V2 is the checkout exploration; V3 is Afsana's concept.",
     defaultEnabled: true,
-    defaultVariant: 'v2',
+    defaultVariant: 'v3',
     variants: [
       { value: 'v1', label: 'V1', description: 'The released baseline — the flow as the End-to-End row shows it.' },
       { value: 'v2', label: 'V2', description: 'The checkout exploration. A fork of V1; identical until it is changed.' },
+      { value: 'v3', label: 'V3', description: "Afsana's concept. A fork of V2; identical until it is changed." },
     ],
     page: 'dashboard-rebrand',
   },
@@ -2747,6 +3881,187 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'invite-v3-model',
+    /* INVITE FLOW V3'S MODEL TYPE — 2026-10-30, Afsana: "each flow is split by
+       model type (e.g., b2b, b2c). once model type is selected, then flow is
+       available." V3 only: it names the two V3 surfaces and nothing else, so
+       V1 and V2 never see it and keep `invite-flow-journey`.
+
+       The chosen model is what `InviteSurfaceSync` declares as the surface,
+       which is what shows that model's flow control below and hides the
+       other's. `inviteFlowsV3.ts` carries the long form. */
+    surface: 'design',
+    versions: ['eric-atlas-e2e'],
+    surfaces: ['invite:v3-b2b', 'invite:v3-b2b-direct-email', 'invite:v3-b2c', 'invite:v3-b2c-signed-in'],
+    group: 'Navigation',
+    label: 'Model type',
+    description: 'Invite Flow V3 only. Which business model the flow belongs to: B2B invite (a partner’s QR code) or B2C guest checkout (direct from the public site’s cart). Picking one shows that model’s flows.',
+    defaultEnabled: true,
+    defaultVariant: 'b2b',
+    /* B2B → Invite → Checkout was a third model until 2026-11-05 —
+       `archivedInviteFlowsV3.ts`, with the two automatic sign-in flows and
+       the Go to Cart alternative. */
+    variants: [
+      { value: 'b2b', label: 'B2B2C', description: 'A partner’s QR code. Partner pricing; the learner proves their email by code.' },
+      { value: 'b2c', label: 'B2C', description: 'Direct from the public site’s cart. No partner.' },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'invite-v3-flow-b2b',
+    /* V3's B2B flows: Direct Email (V2's "B2B2C with email", first and the
+       default since 2026-11-03), then QR Code — the QR flows from Afsana's
+       `xcel-b2b2c-email-flow.html`, one since 2026-11-17 with Email belongs
+       to choosing between them. Shown only
+       while Model type is B2B — see `invite-v3-model`. The variants must
+       match `INVITE_FLOWS_V3`'s B2B rows; `InviteFlowsV3.test.ts` holds them
+       together. */
+    surface: 'design',
+    versions: ['eric-atlas-e2e'],
+    surfaces: ['invite:v3-b2b', 'invite:v3-b2b-direct-email'],
+    group: 'Navigation',
+    label: 'Invite flow',
+    picker: 'sheet',
+    description: 'Invite Flow V3, B2B invite. Which invite flow the demo walks: Direct Email (the partner’s invitation, address supplied) or QR Code (a partner’s QR code). Email belongs to picks the walk for both.',
+    defaultEnabled: true,
+    defaultVariant: 'direct-email',
+    variants: [
+      { value: 'direct-email', label: 'Direct Email', description: 'Partner invited them, address supplied. Locked at checkout.' },
+      { value: 'qr', label: 'QR Code', description: 'Scanned a partner’s QR code. Email belongs to decides the rest.' },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'invite-v3-eric-pdp',
+    /* ERIC'S PRODUCT PAGE IN V3's FLOWS — 2026-11-17, Afsana. On: V3's
+       `/end-to-end-demo` is his multi-product page (`ProductDetailPageV3Multi`,
+       copied from `erics-atlas-primary`), its Products control on the Design
+       bar, every Purchase going on into V3's checkout. Off: V3's own product
+       page (`InvitedProductDetailPageV3`), untouched. Not a Design bar control
+       — Products is the only one this adds; flip it with
+       `?ff=invite-v3-eric-pdp:off` or the Feature Flag panel. */
+    group: 'Navigation',
+    label: 'Eric’s product page (V3)',
+    description:
+      'Invite Flow V3 opens Eric’s multi-product page — Products picks Multi-product, Premier, Standard, California or Multi-product (Old) — and Purchase goes on into V3’s checkout. Off: V3’s own product page.',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
+    /* COPIED FROM `erics-atlas-primary` @ c9ec0ca2 (2026-11-17, Afsana: "after
+       a user clicks the purchase CTA on any of the variations … have it
+       continue our remaining checkout/invite logic"). Eric's flag, verbatim but
+       for its surfaces: here it names V3's B2B surfaces, where his page is the
+       product page (`ProductDetailPageV3Multi.tsx`); on his branch it names
+       V1/V2's `invite`. When his branch lands, keep ONE definition. */
+    key: 'pdp-products',
+    /* THE PDP'S PRODUCTS — 2026-10-28, Eric: "Duplicate this page based on a
+       single product … add a design control to be able to flip between the
+       single product page and the multi-product page."
+
+       multi  — Standard and Premier side by side, the comparison grid under
+                them. The default on Eric's branch.
+       single — Premier alone: one card, the comparison's Standard column
+                gone, and the grid captioned "Premier package includes:". The
+                top tray carries the one card too.
+
+       One page, not two files: everything but the cards and the grid is the
+       same page, and it is still being tuned a pixel at a time — two copies
+       would drift with every tweak. */
+    surface: 'design',
+    versions: ['eric-atlas-e2e'],
+    // ONE DEFINITION (2026-11-19, the invite-flow-v3 merge into erics-atlas-primary): V1/V2's `invite` (Eric's) and V3's B2B
+    // surfaces (Afsana's) in one list, on Afsana's Standard default (Eric's call).
+    surfaces: ['invite', 'invite:v3-b2b', 'invite:v3-b2b-direct-email'],
+    group: 'Layout',
+    label: 'Products',
+    description:
+      'The two-package PDP as a multi-product page \u2014 Standard and Premier side by side \u2014 or a single-product page for one of them: Standard (the default in V3), Premier, or California, each alone with its own \u201cincludes\u201d list.',
+    defaultEnabled: true,
+    /* STANDARD BY DEFAULT IN V3 (2026-11-17, Afsana: "let us default it to
+       where PRODUCTS is set to Standard"). Eric's branch opens on `multi`. */
+    defaultVariant: 'standard',
+    variants: [
+      /* MULTI-PRODUCT 2 (2026-11-11, Eric: "duplicate this multi product page and add it to the products drop down as Multi-product
+         2") — the multi page as it stands today, a second copy to change without touching the first. The page reads it as `multi2`. */
+      { value: 'multi-2', label: 'Multi-product' /* the 2 dropped (2026-11-12, Eric) */, description: 'A second multi-product page \u2014 a copy of Multi-product to try changes on.' },
+      /* `single` is the Premier page — its value kept so links pinned to it still open it; labelled Premier since 2026-11-05. */
+      { value: 'single', label: 'Premier', description: 'Premier alone, the grid captioned \u201cPackage includes:\u201d as a list of what it includes.' },
+      /* STANDARD (2026-11-05, Eric: "Duplicate this page and make it a Standard Product page in the product dropdown"). */
+      { value: 'standard', label: 'Standard', description: 'Standard alone — its card, the rows it includes, no crown and no Pass Guarantee.' },
+      /* CALIFORNIA (2026-11-06, Eric) — the Premier page, written for California. */
+      { value: 'california', label: 'California', description: 'The Premier page for California \u2014 Premier alone, the state California.' },
+      /* The first multi-product page, last in the list and marked Old (2026-11-12, Eric) — Multi-product 2 is the one being worked on. */
+      { value: 'multi', label: 'Multi-product (Old)', description: 'Standard and Premier side by side, with the comparison grid.' },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'invite-v3-flow-b2c',
+    /* V3's B2C flows — the B2B control's twin, shown only while Model type is
+       B2C. */
+    surface: 'design',
+    versions: ['eric-atlas-e2e'],
+    surfaces: ['invite:v3-b2c', 'invite:v3-b2c-signed-in'],
+    group: 'Navigation',
+    /* "Guest checkout", not "Invite flow" — 2026-10-30, Afsana: the B2C flows
+       "are actually not invite flows, rather they pertain to guest checkout".
+       The key keeps its name so stored picks and shared links still work. */
+    label: 'Guest checkout',
+    picker: 'sheet',
+    description: 'Invite Flow V3, B2C guest checkout. Which guest checkout flow the demo walks: signed in to XCEL or not.',
+    defaultEnabled: true,
+    defaultVariant: 'xcel-signed-out',
+    variants: [
+      /* Both descriptions in Afsana's words (2026-11-03). */
+      { value: 'xcel-signed-in', label: 'Signed into XCEL (OCD)', description: 'Signed in to an existing XCEL account. Presence of a partner code dictates next steps. If they have a partner code, cart items affect next steps. If no partner code and all items are part of the 526 SKU list, or if they agree to drop unsupported items, they are signed out. The subsequent flow is affected by whether they have an Atlas account or not.' },
+      { value: 'xcel-signed-out', label: 'Not signed into XCEL (OCD)', description: 'Presence of a partner code dictates next steps. If they have a partner code, cart items affect next steps. The subsequent flow is affected by whether they have an Atlas account or not.' },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'invite-v3-cart',
+    /* THE OCD LEARNER'S CART — 2026-11-02, Afsana. Which of the three cases
+       the "Signed into XCEL (OCD)" flow walks — and, since 2026-11-03, "Not
+       signed into XCEL (OCD)"; shown only on those two
+       (`invite:v3-b2c-signed-in`). See `signedInFlowV3`, `ocdCartFlowV3`. */
+    surface: 'design',
+    versions: ['eric-atlas-e2e'],
+    surfaces: ['invite:v3-b2c-signed-in'],
+    group: 'Navigation',
+    label: 'Cart contents',
+    description: 'Invite Flow V3, signed in to XCEL or not. With any targeted SKU, Checkout asks the Partner Code question first; Yes does nothing. On No — targeted SKUs only: on to the new guest checkout (signed out first, if signed in). Mixed: a dialog says what will be dropped, then the same. No targeted SKUs: Checkout does nothing — the learner goes on to today’s OCD checkout, not mocked here.',
+    defaultEnabled: true,
+    defaultVariant: 'targeted',
+    variants: [
+      { value: 'targeted', label: 'Targeted only', description: 'Only targeted SKUs (Arizona Health Pre-licensing Premier). No partner code: the new guest checkout — signed out first, if signed in.' },
+      { value: 'mixed', label: 'Mixed', description: 'A targeted SKU and one that is not (New York Life and Health Flashcards). No partner code: told it will be dropped, then on — signed out first, if signed in.' },
+      { value: 'none', label: 'None targeted', description: 'No targeted SKUs (New York Life and Health Flashcards). Checkout does nothing, Atlas account or not: the learner goes on to today’s OCD checkout, which this prototype does not mock.' },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'invite-v3-email-account',
+    /* Which way "Verify your email" goes for the signed-out OCD learner — a
+       log-in when the email they give has Atlas, a code when it does not.
+       Direct Email too (2026-11-04): the supplied address, after Purchase.
+       QR Code too (2026-11-17): the address given at Verify your email —
+       `invite:v3-b2b` is the QR flow's surface. */
+    surface: 'design',
+    versions: ['eric-atlas-e2e'],
+    surfaces: ['invite:v3-b2b', 'invite:v3-b2b-direct-email', 'invite:v3-b2c-signed-in'],
+    group: 'Navigation',
+    label: 'Email belongs to',
+    description: 'Invite Flow V3 — B2B Direct Email (the supplied address, after Purchase), B2B QR Code, and signed in to XCEL or not (targeted or mixed cart). The email given at Verify your email: an Atlas account (log in, then Start course) or no Atlas account (a code, then Create password).',
+    defaultEnabled: true,
+    defaultVariant: 'no-atlas',
+    variants: [
+      { value: 'atlas', label: 'Atlas account', description: 'Log in, the checkout filled from the account, then Start course.' },
+      { value: 'no-atlas', label: 'No Atlas account', description: 'A code, enter the rest at checkout, then Create password.' },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'order-confirmation-style',
     /* WHICH THANK-YOU PAGE THE GUEST FLOW ENDS ON — 2026-10-22, Jillienne: "i
        want another version of this thank you page, use a feature flag dropdown
@@ -2771,6 +4086,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        and a popover hides two of the options while you look at the first. */
     surface: 'design',
     versions: ['eric-atlas-e2e'],
+    /* Not on V3: V3 has its own ending, which neither control changes. */
     surfaces: ['invite'],
     group: 'Navigation',
     label: 'Thank you page',
@@ -2811,6 +4127,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        not touch it. */
     surface: 'design',
     versions: ['eric-atlas-e2e'],
+    /* Not on V3: V3 has its own ending, which neither control changes. */
     surfaces: ['invite'],
     group: 'Navigation',
     label: 'Journey rail',
@@ -2838,45 +4155,6 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     ],
     defaultVariant: 'above', // Above the card by default (2026-11-12, Eric; Off from 2026-11-10, 'above' before that)
     defaultEnabled: true,
-    page: 'dashboard-rebrand',
-  },
-  {
-    key: 'pdp-products',
-    /* THE PDP'S PRODUCTS — 2026-10-28, Eric: "Duplicate this page based on a
-       single product … add a design control to be able to flip between the
-       single product page and the multi-product page."
-
-       multi  — Standard and Premier side by side, the comparison grid under
-                them. THE DEFAULT.
-       single — Premier alone: one card, the comparison's Standard column
-                gone, and the grid captioned "Premier package includes:". The
-                top tray carries the one card too.
-
-       One page, not two files: everything but the cards and the grid is the
-       same page, and it is still being tuned a pixel at a time — two copies
-       would drift with every tweak. */
-    surface: 'design',
-    versions: ['eric-atlas-e2e'],
-    surfaces: ['invite'],
-    group: 'Layout',
-    label: 'Products',
-    description:
-      'The two-package PDP as a multi-product page \u2014 the default, Standard and Premier side by side \u2014 or a single-product page for one of them: Premier, or Standard, each alone with its own \u201cincludes\u201d list.',
-    defaultEnabled: true,
-    defaultVariant: 'multi',
-    variants: [
-      /* MULTI-PRODUCT 2 (2026-11-11, Eric: "duplicate this multi product page and add it to the products drop down as Multi-product
-         2") — the multi page as it stands today, a second copy to change without touching the first. The page reads it as `multi2`. */
-      { value: 'multi-2', label: 'Multi-product' /* the 2 dropped (2026-11-12, Eric) */, description: 'A second multi-product page \u2014 a copy of Multi-product to try changes on.' },
-      /* `single` is the Premier page — its value kept so links pinned to it still open it; labelled Premier since 2026-11-05. */
-      { value: 'single', label: 'Premier', description: 'Premier alone, the grid captioned \u201cPackage includes:\u201d as a list of what it includes.' },
-      /* STANDARD (2026-11-05, Eric: "Duplicate this page and make it a Standard Product page in the product dropdown"). */
-      { value: 'standard', label: 'Standard', description: 'Standard alone — its card, the rows it includes, no crown and no Pass Guarantee.' },
-      /* CALIFORNIA (2026-11-06, Eric) — the Premier page, written for California. */
-      { value: 'california', label: 'California', description: 'The Premier page for California \u2014 Premier alone, the state California.' },
-      /* The first multi-product page, last in the list and marked Old (2026-11-12, Eric) — Multi-product 2 is the one being worked on. */
-      { value: 'multi', label: 'Multi-product (Old)', description: 'Standard and Premier side by side, with the comparison grid. The default.' },
-    ],
     page: 'dashboard-rebrand',
   },
   {
@@ -2999,6 +4277,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        decision rather than this line's. */
     surface: 'design',
     versions: ['eric-atlas-e2e'],
+    /* Not on V3: V3 always asks over the cart (Afsana's file, 2026-10-30). */
     surfaces: ['invite'],
     group: 'Navigation',
     label: 'Partner code ask',
@@ -3039,7 +4318,8 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        including why the answer lives in the address rather than in page state. */
     surface: 'design',
     versions: ['eric-atlas-e2e'],
-    surfaces: ['invite'],
+    /* Not on V3's B2C: guest checkout has no invitation to be missing anything. */
+    surfaces: ['invite', 'invite:v3-b2b', 'invite:v3-b2b-direct-email'],
     group: 'Navigation',
     label: 'Invitation missing details',
     description:
@@ -5738,6 +7018,15 @@ export function FeatureFlagProvider({ children }: { children: ReactNode }) {
       clearUrlOverrides,
     ],
   )
+
+  /* For `designControlsFor`'s `hiddenWhen` — see `liveFlagsForDesignBarRef`.
+     ⚠ A RENDER-TIME WRITE, ON PURPOSE. It has to be current when the bar
+     re-picks its controls in this same render; an effect would land one
+     change late. It is idempotent (the values this provider is handing out
+     anyway), and the rule-abiding fix is for the protected `DesignControlsBar`
+     to pass its `flags` to `designControlsFor` — Jillienne's file. */
+  // eslint-disable-next-line react-hooks/immutability -- see the note above
+  liveFlagsForDesignBarRef.current = readFlags
 
   return (
     <FeatureFlagContext.Provider value={value}>

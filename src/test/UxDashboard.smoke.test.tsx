@@ -43,11 +43,17 @@ function renderDashboard(initialPath = '/') {
 }
 
 /** The nav order is load-bearing — see `NAV_EYEBROWS` in UxDashboardPage.tsx.
- *  Twelve sections since 2026-10-15 (ten plus the two Team sections): Design is retired with the Designers group
- *  it headed, Explorations (was Exploration) moved up to sit under PRDs, and
- *  Archive and QA Notes sit under Dev Handoff, ungated. */
+ *  Thirteen sections since 2026-11-16: the twelve of 2026-10-15 (Design
+ *  retired with the Designers group it headed, Explorations moved up under
+ *  PRDs, Archive and QA Notes under Dev Handoff, ungated) plus DESIGN, back
+ *  as a different thing — derived from the branch list, between Prototypes
+ *  and Refinement. See `DesignPanel.tsx`. */
 const EXPECTED_SECTIONS = [
   'Prototypes',
+  'Design',
+  // Release (2026-11-16, same day): what is on stage and not on main —
+  // Jillienne's inbox, derived like Design. See `ReleasePanel.tsx`.
+  'Release',
   'Refinement',
   'Research',
   'Resources',
@@ -185,6 +191,27 @@ describe('section routing (sectionOf)', () => {
     // The Atlas vs. Compass typography and color audit (2026-10-27) — an
     // exploration with no document; its gateway page carries the findings.
     'xcel-design-system-audit': 'exploration',
+    /* The two Compass Readiness states (2026-11-06). ⚠ ONLY TWO ROWS for a
+       sixteen-state prototype: the rest live in a Design-canvas export that
+       cannot be served (its runtime re-fetches its own page and mis-slices
+       it), so the states are in the PRODUCT behind the Design bar instead,
+       and these two self-contained exports stand for the design here. */
+    'xcel-compass-readiness-58': 'exploration',
+    'xcel-compass-readiness-86': 'exploration',
+    'xcel-compass-mvp': 'exploration',
+    /* THE THREE VERSION ROWS (2026-11-10) — one per arm of
+       `compass-mvp-version`. ⚠ EXPLORATIONS, NOT PROTOTYPES: the block below
+       refuses a second row for the `compass` scope and refuses `?ff=` on any
+       Prototypes row, which is exactly what three pinned versions would be.
+       See the rows' own note in `prototypeFeatures.ts`. */
+    /* The first page audit of Refined (2026-11-12) — an exploration, not a
+       handoff: its eight findings are open design decisions. */
+    'xcel-compass-refined-course-audit': 'exploration',
+    'xcel-compass-v-anjani': 'exploration',
+    'xcel-compass-v-jeff': 'exploration',
+    'xcel-compass-v-refined': 'exploration',
+    // The compare page (2026-11-16) — V1 beside Refined, widget by widget.
+    'xcel-compass-compare-readiness': 'exploration',
     // `xcel-course-entry` (the repo's first authored dev handoff, 2026-09-24)
     // stood here until 2026-10-15 — archived, `course-entry-handoff`. Both
     // handoffs were removed as "not ready"; Development lists nothing now.
@@ -347,11 +374,32 @@ describe('the Designers group is gone (2026-10-15)', () => {
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Explorations')
   })
 
-  it('draws no Designers eyebrow, and Design has no nav row', () => {
+  it('draws no Designers eyebrow; Design is a nav row again, directly under Prototypes (2026-11-16)', () => {
+    // The 2026-10-15 Design — feature rows by status, behind the Designers
+    // group — stays gone. The row that is back is the derived branch list
+    // (`DesignPanel.tsx`), and it sits under Prototypes because it answers
+    // the question between "what is the product" and "what is under
+    // discussion": what is being worked on.
     renderDashboard()
     expect(screen.queryByText(/^Designers$/i)).toBeNull()
     const nav = screen.getByRole('navigation')
-    expect(within(nav).queryByRole('button', { name: /^Design\b/ })).toBeNull()
+    const labels = within(nav)
+      .getAllByRole('button')
+      .map((b) => b.textContent ?? '')
+    // The same normalisation `OneSite.test.tsx` uses: the count is appended
+    // to the label's text.
+    const name = (l: string) => l.replace(/\d+$/, '').trim()
+    const prototypes = labels.findIndex((l) => name(l) === 'Prototypes')
+    const design = labels.findIndex((l) => name(l) === 'Design')
+    expect(design).toBe(prototypes + 1)
+  })
+
+  it('a ?section=design deep link lands on the derived section, and says why it is empty here', async () => {
+    renderDashboard('/?section=design')
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Design')
+    // No `/api/branches` under test, so the panel says so rather than
+    // drawing an empty list that looks like "no branches".
+    expect(await screen.findByText(/only on the deployed Hub/)).toBeInTheDocument()
   })
 })
 
@@ -593,10 +641,27 @@ describe('the Prototypes row opens the committed configuration', () => {
     // the guard entirely.
     //
     // ⚠ TWO SINCE 2026-10-14, both Prototypes rows. The guided-row trap above
-    // is unchanged; a `to` is still only ever a Prototypes row's.
+    // is unchanged.
+    //
+    // ⚠ AND THREE EXPLORATION ROWS SINCE 2026-11-10 — the Compass version
+    // rows. A `to` was only ever a Prototypes row's until then, and the line
+    // that said so is retired rather than quietly dropped: the three versions
+    // live in the PRODUCT behind one flag, so a row per version is a route
+    // with an `?ff=` pin or it is a second copy of the surface to keep in
+    // step. They are `explore` rows, so the guided-row trap above does not
+    // reach them. What this assertion still catches is the thing it was
+    // written for: any OTHER row growing a `to` by accident.
+    //
+    // ⚠ AND THE COMPARE ROW SINCE 2026-11-16 — `/compare/compass-readiness`,
+    // a route of this build that draws two versions' widgets side by side.
+    // An exploration for the same reason as the three above it.
     expect(PROTOTYPE_FEATURES.filter((f) => f.to).map((f) => f.id).sort()).toEqual([
       'xcel-atlas-learning',
       'xcel-compass',
+      'xcel-compass-compare-readiness',
+      'xcel-compass-v-anjani',
+      'xcel-compass-v-jeff',
+      'xcel-compass-v-refined',
       'xcel-dashboard',
       'xcel-invite',
     ])
@@ -813,6 +878,27 @@ describe('Prototypes — one row per scope, every row the same build', () => {
   const openingRows = () => prototypeRows.filter((f) => !isPlaceholder(f) && f.to)
   const hrefOf = (id: string) => document.querySelector(`[data-row="${id}"] a`)!.getAttribute('href')
 
+  /* ⚠ THE LINKS ARE DEACTIVATED — 2026-11-17, Jillienne: "deactivate the links
+     to the main prototypes and stage prototypes so that the users get an error
+     screen". A row carrying `linkRetired` is drawn exactly as before and still
+     takes a click; the click lands on the retired-link screen, which is where
+     the message about new links lives (`PrototypeLinkRetiredPage.tsx`).
+
+     THE RULE THE CASES BELOW USED TO ASSERT HAS NOT BEEN DROPPED, only moved
+     off the rendered href: `to` is still the real route, and the shape case
+     above ("every Prototypes row with a route enters the product on main at
+     the committed baseline") still holds every row to same-origin, a product
+     door, `?demo=1` and nothing pinned. That is what makes reactivating a row
+     one deleted line. This helper is the one place that knows which of the two
+     a row renders, so when the new links arrive, deleting the `linkRetired`
+     branch here puts every case below back to what it was. */
+  const expectedHref = (f: (typeof prototypeRows)[number], build: 'main' | 'stage') =>
+    f.linkRetired
+      ? `/prototype-unavailable/${f.id}${build === 'stage' ? '?build=stage' : ''}`
+      : build === 'stage'
+        ? `${STAGE_ORIGIN}${f.to}`
+        : f.to
+
   it('the stage origin is the Netlify branch-deploy address of the `stage` branch on the Hub’s own site', () => {
     // `HUB_URL` in PrototypeBar.tsx and `HUB_HOST` here are the same host:
     // the stage address is derived from it, so a site rename moves both.
@@ -833,8 +919,9 @@ describe('Prototypes — one row per scope, every row the same build', () => {
     expect(radios[0]).toHaveAttribute('aria-checked', 'true')
     expect(document.querySelector('[data-build-note]')!.textContent).toMatch(/main branch/i)
     // Under Main every row that opens is exactly its authored `to` — the
-    // pre-switch behaviour, byte for byte.
-    for (const f of openingRows()) expect(hrefOf(f.id), f.id).toBe(f.to)
+    // pre-switch behaviour, byte for byte — unless its link is deactivated,
+    // in which case it is the retired screen. See `expectedHref`.
+    for (const f of openingRows()) expect(hrefOf(f.id), f.id).toBe(expectedHref(f, 'main'))
   })
 
   it('under Stage every row opens the SAME path on the stage origin, in a new tab, and the notes say so', async () => {
@@ -844,9 +931,13 @@ describe('Prototypes — one row per scope, every row the same build', () => {
     expect(screen.getByRole('radio', { name: 'Stage' })).toHaveAttribute('aria-checked', 'true')
     for (const f of openingRows()) {
       const a = document.querySelector(`[data-row="${f.id}"] a`)!
-      expect(a.getAttribute('href'), f.id).toBe(`${STAGE_ORIGIN}${f.to}`)
-      // Another origin opens in its own tab, like a document row does.
-      expect(a.getAttribute('target'), f.id).toBe('_blank')
+      expect(a.getAttribute('href'), f.id).toBe(expectedHref(f, 'stage'))
+      // Another origin opens in its own tab, like a document row does. A
+      // DEACTIVATED row does not: the retired screen is on this origin, and
+      // sending the reader to a new tab to be told the link is off — with the
+      // Back to the Hub link then going nowhere they came from — is worse than
+      // showing it in place.
+      expect(a.getAttribute('target'), f.id).toBe(f.linkRetired ? null : '_blank')
     }
     // The placeholder still opens nothing — a switch does not build the Admin tool.
     expect(document.querySelector('[data-placeholder="xcel-admin-coming-soon"] a')).toBeNull()
@@ -916,8 +1007,12 @@ describe('Prototypes — one row per scope, every row the same build', () => {
     // staged work — so it must not say "Staged". It points at the switch.
     await waitFor(() => expect(compass().textContent).toContain('Waiting on stage'))
     expect(compass().textContent).not.toContain('Staged Nov')
-    // And the row still opens main, exactly as before.
-    expect(hrefOf('xcel-compass')).toBe('/dashboard-rebrand?demo=1&section=compass')
+    // And the row's link is what the switch says it is — today the retired
+    // screen under both builds (2026-11-17); the TAG is unaffected either way,
+    // which is the thing this case is about.
+    expect(hrefOf('xcel-compass')).toBe(
+      expectedHref(prototypeRows.find((f) => f.id === 'xcel-compass')!, 'main'),
+    )
 
     // UNDER STAGE it is the staged thing, so it says when and by whom.
     await user.click(screen.getByRole('radio', { name: 'Stage' }))
@@ -956,7 +1051,7 @@ describe('Prototypes — one row per scope, every row the same build', () => {
     // Deep-linked to Stage, the switch opens on Stage.
     renderDashboard('/?build=stage')
     expect(screen.getByRole('radio', { name: 'Stage' })).toHaveAttribute('aria-checked', 'true')
-    for (const f of openingRows()) expect(hrefOf(f.id), f.id).toBe(`${STAGE_ORIGIN}${f.to}`)
+    for (const f of openingRows()) expect(hrefOf(f.id), f.id).toBe(expectedHref(f, 'stage'))
     // An unknown value is Main, not an empty board.
     document.body.innerHTML = ''
     renderDashboard('/?build=nonsense')

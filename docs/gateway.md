@@ -1729,3 +1729,84 @@ the GitHub repository and `main`; *the Hub* for this site; *branch link* and
 section; and no "promote" — `share-component`, `share-branch`,
 `share-to-stage`, `decide-defaults`, `freeze-for-testing`, `release`, with
 every old name an alias skill.
+
+## Design is back, derived from branches (2026-11-16)
+
+**The problem.** From 2026-10-15 the only way a branch reached the Hub was a
+prefilled link: `share-branch` built a URL, the designer clicked it through
+the site password, the page read the query params and wrote a Refinement
+row; then a second link for a To Do card; `share-to-stage` built a third for
+the On Stage card. Four silent failure points (the password wall eating the
+query string, the prefill dropped without a message when `/api/demos` was
+unreachable, `section=demo&add=1` having to be exactly right, `owner`
+landing Unassigned on a roster mismatch), a five-minute build poll that
+handed over a possibly-dead link anyway, and the same fact — *this branch
+exists, is about X, is at Y stage* — written by hand three times. Jillienne,
+2026-11-16: the links "are just adding more confusion and chaos."
+
+**The fix.** Stop authoring the fact; derive it. A new **Design** section
+sits between Prototypes and Refinement (`?section=design`, thirteen
+sections; `design` is a real id again and no longer an alias for
+Development). It is `src/components/prototype/DesignPanel.tsx` over
+`/api/branches`, and it lists every branch in Netlify's deploy window —
+**every state, not only `ready`**, so a push is a row saying *Building…*
+from the first second — grouped by the feature its NAME says it is for:
+
+```
+feat/<scope>-<feature words>[--<variant>]
+feat/compass-study-planner          Compass · "Study planner"
+feat/compass-study-planner--dense   same feature, a variant — same group
+```
+
+`src/data/branchName.ts` is the contract: the first word is a
+`PROTOTYPE_SCOPES` id (or an alias — `checkout` → invite, `home` → atlas),
+the rest is the feature, `--` starts a variant, and a branch that follows
+none of it still lists under "Other branches". Each row says where the work
+is — *Building… · Build failed · In design · On stage · Released* — with the
+build state from Netlify and the two git facts from GitHub:
+`netlify/lib/branchGit.ts` asks `compare/stage...branch` and
+`compare/main...branch` and reads `ahead_by === 0` as merged. That needs one
+env var on the Netlify project, **`GITHUB_TOKEN`** (Contents: read;
+`GITHUB_REPO` and `STAGE_BRANCH` optional). Without it the list still lists
+and the page says once, at the top, that the two tags are off.
+
+**What moved.** The branch strip under Refinement is gone — one place, not
+two. The Prototypes rows' *Staged* tag reads the same git fact first
+(`stagedScopesFromBranches` in `branchStore.ts`, scope from the branch
+name) and the On Stage cards second, for what was filed before today.
+`share-branch` v3 is checks · commit · push · "it's under Design → Feature",
+with one offer to rename a branch that has no scope word; `share-to-stage`
+v2 drops the card and the poll. Refinement is now the board of things git
+cannot see — an HTML exploration, a review deck, a note saying WHERE to look
+— and the Design row's kebab has **Discuss in Refinement**, which opens the
+Add form prefilled in this tab (the same `?section=demo&add=1` door, minus
+the password wall and the copy-paste).
+
+**Release, the same day.** Jillienne: "right now I cannot tell what branch
+is ready on stage to be pushed to main." The tags answered *is this branch
+staged*; nobody could read *what is waiting on me*. So a **Release** row
+sits under Design (`ReleasePanel.tsx`, facts in `src/data/releaseQueue.ts`),
+fourteen sections now: one number at the top — `compare/main...stage`'s
+`ahead_by`, the same number `/release` step 1 prints — then, by surface,
+every branch whose commits are all on `stage` and not all on `main`, with
+owner, pusher, staged date and a *Decided / Undecided* tag. The tag is the
+marker `share-to-stage` writes in its step 3: `.hub/decided/<scope>.json`,
+one file per scope (two owners never touch one file), holding the promotion
+commit it vouches for. `branchGit.ts` reads the directory off the branch
+(contents API, only for branches on stage and not released) and counts a
+marker only while its `commit` is among the branch's commits main does not
+have (`decidedOn`) — so a marker released to main vouches for nothing on the
+next branch cut from it, and nothing is cleaned up. The page's line is
+"Ready — say `/release`" or "Not yet — N undecided"; `/release` step 1 runs
+the same check in git. The nav count is the branches waiting. It is a rail
+row rather than a mode of Prototypes because the 2026-11-01 "stage is not a
+section" rule was about the product rows, and these are not product rows.
+The Design row's caption names the next step too: *next: /share-to-stage
+(owner)* on an in-design branch, *waiting on Release* on a staged one.
+
+**What did not move.** Nothing writes. The endpoint is still read-only, the
+section POSTs nowhere, and the testing build still refuses `/api/branches`
+outright (branch names are a roadmap stakeholders were never shown). The
+`design-section` row in `archivedItems.ts` carries a warning that the id is
+taken again by a different thing. `Branches.test.tsx` pins the section; the
+smoke and OneSite suites pin the nav.

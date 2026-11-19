@@ -97,13 +97,6 @@ import { RESEARCH_BOARD } from '@/data/researchStore'
 import { PRD_BOARD } from '@/data/prdStore'
 import { GeneratedThumb } from './GeneratedThumb'
 import { accentsByHost, hostKey, linkThumbKind } from './linkRowThumb'
-import {
-  isBranchOnBoard,
-  safeBranchHref,
-  titleFromBranch,
-  useBranches,
-  type BranchDeploy,
-} from '@/data/branchStore'
 import { formatUpdated } from './formatUpdated'
 
 /**
@@ -202,19 +195,6 @@ export type LinkBoardPresentation = {
   /** Called once the prefill has been consumed, so the owner can take the
    *  params off the address and a reload does not reopen the form. */
   onPrefillConsumed?: () => void
-  /**
-   * Render the automatic branch strip above the rows. Refinement on the FULL
-   * site only.
-   *
-   * It is a PRESENTATION flag rather than something the strip decides for
-   * itself, because the reason it is off is editorial in two different ways at
-   * once: Resources is not about branches at all, and the public build must
-   * never show branch names — `feat/drop-the-renewal-band` on a stakeholder's
-   * screen is a roadmap they were never shown. The endpoint refuses there too
-   * (see `netlify/functions/branches.ts`); this is the half of that a reader
-   * of this file can see.
-   */
-  showBranches?: boolean
 }
 
 /** What `promote-to-refinement` hands the page. `product` arrived 2026-10-14:
@@ -302,11 +282,6 @@ const primaryBtnStyle: CSSProperties = {
   color: 'var(--ux-on-accent)',
 }
 
-const iconBtnStyle: CSSProperties = {
-  ...btnStyle,
-  padding: '5px 8px',
-  color: 'var(--ux-text-3)',
-}
 
 const errorStyle: CSSProperties = {
   margin: '0 0 14px',
@@ -336,12 +311,6 @@ const modalHintStyle: CSSProperties = {
   margin: '2px 0 16px',
 }
 
-const metaStyle: CSSProperties = {
-  fontSize: 12,
-  color: 'var(--ux-text-3)',
-  margin: '3px 0 0',
-  overflowWrap: 'anywhere',
-}
 
 const filterRowStyle: CSSProperties = {
   display: 'flex',
@@ -521,195 +490,11 @@ const SEARCH_THRESHOLD = 6
  *  validate — the same shape `QaNotesPanel` uses for its editor. */
 type Editing = null | 'new' | StoredLink
 
-/* ── the automatic branch strip ───────────────────────────────────────────── */
-
-const stripStyle: CSSProperties = {
-  border: '1px solid var(--ux-border)',
-  borderRadius: 12,
-  background: 'var(--ux-card)',
-  padding: '12px 13px',
-  marginTop: 16,
-}
-
-const stripHeadStyle: CSSProperties = {
-  display: 'flex',
-  alignItems: 'baseline',
-  gap: 8,
-  flexWrap: 'wrap',
-  marginBottom: 2,
-}
-
-const stripTitleStyle: CSSProperties = {
-  margin: 0,
-  fontSize: 12,
-  fontWeight: 700,
-  letterSpacing: '0.06em',
-  textTransform: 'uppercase',
-  color: 'var(--ux-text-3)',
-}
-
-const stripNoteStyle: CSSProperties = {
-  margin: '0 0 10px',
-  fontSize: 12.5,
-  lineHeight: 1.55,
-  color: 'var(--ux-text-3)',
-}
-
-const branchRowStyle: CSSProperties = {
-  display: 'grid',
-  gridTemplateColumns: 'minmax(0,1fr) auto',
-  gap: 10,
-  alignItems: 'center',
-  padding: '8px 0',
-  borderTop: '1px solid var(--ux-border)',
-}
-
-const branchNameStyle: CSSProperties = {
-  fontSize: 13.5,
-  fontWeight: 600,
-  color: 'var(--ux-text)',
-  overflowWrap: 'anywhere',
-}
-
-/**
- * THE AUTOMATIC BRANCH LIST (2026-09-21).
- *
- * Every branch with a Netlify build that is not already on the board, with one
- * action: put it on the board. It is a DISCOVERY surface, and the distinction
- * it turns on is worth stating plainly, because the obvious simplification
- * destroys it.
- *
- * A branch having a build is a fact about Netlify. A row on the Refinement
- * board is somebody ASKING to be reviewed — it carries the note saying where
- * to look, whose it is, and the `isPublic` flag that decides whether
- * stakeholders see it. Those are different things, so the strip never writes:
- * its button opens the same Add form a designer would have filled in by hand,
- * with the address and a draft title already in it. **The click stays the
- * gate**, exactly as it is for the `promote-to-refinement` skill, and for the
- * same reason — the difference between "this exists" and "please look at this"
- * is the whole value of the board.
- *
- * Auto-creating rows instead was considered and is the trap: the store would
- * fill with branches nobody offered, `isPublic` would have nothing meaningful
- * to hang on, and deleting a row would just bring it back on the next build.
- *
- * It renders only where it can author — no strip on the public build, and none
- * while the board endpoint is down, where an Add button would fail on click.
- */
-function BranchStrip({
-  boardUrls,
-  onAdd,
-}: {
-  /** Every URL currently on the board, so a branch already listed drops out. */
-  boardUrls: readonly string[]
-  onAdd: (branch: BranchDeploy) => void
-}) {
-  const { index } = useBranches()
-
-  // Nothing at all until the first fetch settles: a strip that appears saying
-  // "no branches" and then fills in reads as a bug. `loading` is carried
-  // separately from `available` for exactly this tick.
-  if (index.loading) return null
-
-  if (!index.available) {
-    /**
-     * SILENT WHEN THERE IS NO ENDPOINT; LOUD WHEN THERE IS ONE AND IT IS
-     * MISCONFIGURED. That line is the whole rule here.
-     *
-     * This strip is a convenience over a board that works without it, so a
-     * grey box above a healthy list every time someone runs `npm run dev` is
-     * noise — and worse, it is noise that looks like a fault in the thing
-     * underneath. But a token that has expired IS a fault, nobody would
-     * otherwise notice it, and the list just quietly goes empty.
-     *
-     * `no-endpoint` is the client's way of saying our function did not answer
-     * at all (vite serves no /api, something else replied). Anything else came
-     * FROM the function and means it is deployed and unhappy.
-     */
-    if (index.reason === 'no-endpoint') return null
-    const why =
-      index.reason === 'no-credentials'
-        ? 'Set NETLIFY_API_TOKEN and NETLIFY_SITE_ID on this Netlify project to list branch builds here.'
-        : 'Could not reach Netlify for the branch list — the token may have expired.'
-    return (
-      <div style={stripStyle}>
-        <p style={stripTitleStyle}>Branch builds</p>
-        <p style={{ ...stripNoteStyle, margin: '6px 0 0' }}>{why}</p>
-      </div>
-    )
-  }
-
-  const unlisted = index.branches.filter((b) => !isBranchOnBoard(b.slug, boardUrls))
-  const listed = index.branches.length - unlisted.length
-
-  return (
-    <div style={stripStyle}>
-      <div style={stripHeadStyle}>
-        <p style={stripTitleStyle}>Branch builds</p>
-        <span style={{ fontSize: 12, color: 'var(--ux-text-3)' }}>
-          {index.branches.length === 0
-            ? 'none right now'
-            : /* The count says how many are ALREADY on the board rather than
-                 leaving them silently missing — a designer who put their branch
-                 up and cannot find it in this list should be able to see why
-                 without guessing. */
-              `${unlisted.length} not on the board${listed ? ` · ${listed} already added` : ''}`}
-        </span>
-      </div>
-      <p style={stripNoteStyle}>
-        Branches Netlify has built. Adding one opens the form — the note saying what to look at is
-        yours to write.
-      </p>
-
-      {unlisted.length === 0 ? (
-        <p style={{ ...stripNoteStyle, margin: 0, fontStyle: 'italic' }}>
-          {index.branches.length === 0
-            ? 'No branch has a build right now.'
-            : 'Every branch with a build is already on the board.'}
-        </p>
-      ) : (
-        <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
-          {unlisted.map((b) => {
-            const href = safeBranchHref(b.reviewUrl)
-            return (
-              <li key={b.branch} style={branchRowStyle}>
-                <div style={{ minWidth: 0 }}>
-                  <span style={branchNameStyle}>{b.branch}</span>
-                  {/* Assembled, not interpolated — absent parts drop out
-                      rather than leaving a trailing separator, which reads as
-                      a value that failed to load. The board's own row meta
-                      follows the same rule. */}
-                  <p style={{ ...metaStyle, margin: '2px 0 0' }}>
-                    {[b.updated && `built ${b.updated}`, b.author && `by ${b.author}`, b.commit]
-                      .filter(Boolean)
-                      .join(' · ')}
-                  </p>
-                </div>
-                <div style={{ display: 'flex', gap: 6, flex: 'none' }}>
-                  {href && (
-                    <a
-                      href={href}
-                      target="_blank"
-                      rel="noreferrer"
-                      style={{ ...iconBtnStyle, textDecoration: 'none' }}
-                    >
-                      <ArrowUpRightFromSquare size={11} aria-hidden />
-                      Open
-                    </a>
-                  )}
-                  <button type="button" onClick={() => onAdd(b)} style={iconBtnStyle}>
-                    <Plus size={11} aria-hidden />
-                    Add
-                  </button>
-                </div>
-              </li>
-            )
-          })}
-        </ul>
-      )}
-    </div>
-  )
-}
+/* THE AUTOMATIC BRANCH STRIP LIVED HERE from 2026-09-21 to 2026-11-16. It
+   is the Design section now (`DesignPanel.tsx`): the same branch list, grouped
+   by feature and saying where each branch is, as a section of its own rather
+   than a strip under a board it kept being confused with. Its "Add" is the
+   row's "Discuss in Refinement", which opens this panel's form prefilled. */
 
 /* ── a feature group ──────────────────────────────────────────────────────── */
 
@@ -1184,14 +969,6 @@ export function LinkBoardPanel({ p }: { p: LinkBoardPresentation }) {
     [index.links, p.showType],
   )
 
-  /** Every URL on the board — what the strip matches a branch against so a
-   *  branch already up for review is not offered again. Read from the UNFILTERED
-   *  index, not `rows`: a branch is already on the board whether or not the
-   *  current search or type filter happens to be showing it. ARCHIVED rows
-   *  count too (2026-10-15, Jillienne): an archived branch was hidden on
-   *  purpose, and a strip that offered it straight back would undo the click. */
-  const boardUrls = useMemo(() => index.links.map((l) => l.url), [index.links])
-
   /* Whether the designer has answered "Replaces" themselves. Until they have,
      typing a feature re-derives the default; once they have, nothing overwrites
      it — including typing the feature again. */
@@ -1245,31 +1022,6 @@ export function LinkBoardPanel({ p }: { p: LinkBoardPresentation }) {
     // Prefilled from this browser's last author, so a name is typed once rather
     // than once per link. Still fully editable, and still optional.
     setDraft({ ...EMPTY_DRAFT, addedBy: readLastAuthor() })
-    setErrors([])
-    setEditing('new')
-  }
-
-  /**
-   * Add-from-the-strip. The same form, seeded from what Netlify knows.
-   *
-   * The NOTE is deliberately left empty. It is the one field the strip could
-   * fill from the commit subject and the one field it must not: "where to
-   * look" is the thing only the person who did the work knows, and a plausible
-   * wrong note is worse than a blank one — it reads as reviewed when nobody
-   * wrote it. Same reasoning that keeps `quickSummary` something Jillienne is
-   * asked for rather than drafted.
-   *
-   * `isPublic` stays false, which is the default and the whole review gate. A
-   * branch appearing in the strip is a fact about Netlify; showing it to
-   * stakeholders is a decision, and it is not this button's to make.
-   */
-  const beginAddFromBranch = (b: BranchDeploy) => {
-    setDraft({
-      ...EMPTY_DRAFT,
-      addedBy: readLastAuthor(),
-      url: b.reviewUrl,
-      title: titleFromBranch(b.branch),
-    })
     setErrors([])
     setEditing('new')
   }
@@ -1789,17 +1541,6 @@ export function LinkBoardPanel({ p }: { p: LinkBoardPresentation }) {
         </ul>
       )}
 
-      {/* ── the automatic branch list ──
-          BELOW the rows since 2026-10-15 (Jillienne: "put these at the bottom
-          of the page"). It sat above them from 2026-10-02; nine branches at
-          the top pushed the board's own rows — the thing the section is for —
-          below the fold. Only where this panel can author: while the endpoint
-          is down an Add button would fail on click, the rule the composer
-          already follows. */}
-      {p.showBranches && canAuthor && (
-        <BranchStrip boardUrls={boardUrls} onAdd={beginAddFromBranch} />
-      )}
-
       <LinkFormModal
         p={p}
         editing={editing}
@@ -1929,11 +1670,6 @@ export function DemoPanel({
     // by hand, so `LinksPanel` passes nothing.
     prefill,
     onPrefillConsumed,
-    // The automatic branch list. Full site only — see `showBranches`. It is
-    // the in-page twin of what `promote-to-refinement` does from Claude Code:
-    // both derive the branch's address and open this form with it, and neither
-    // saves anything.
-    showBranches: true,
   }
   return <LinkBoardPanel p={p} />
 }

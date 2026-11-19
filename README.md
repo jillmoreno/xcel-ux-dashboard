@@ -107,12 +107,20 @@ time, so the ONLY per-site difference is what each project sets in
    including work that is not ready to show — so the team should know that
    before pushing.
 
-7. **Optional — the automatic branch list.** The Refinement section can list
-   every branch Netlify has built, so a designer does not have to find and
-   paste their own branch URL. It is off until credentials exist, and it works
-   with **no new configuration** if you did step 4: it falls back to
-   `BLOBS_SITE_ID` + `BLOBS_TOKEN`, which are already the right site and the
-   right token.
+7. **The Design section — the branch list (2026-11-16).** The Design
+   section lists every branch Netlify has built lately, grouped by the
+   feature its name says, so sharing work is "name the branch, push". It is
+   off until credentials exist, and it works with **no new configuration**
+   if you did step 4: it falls back to `BLOBS_SITE_ID` + `BLOBS_TOKEN`,
+   which are already the right site and the right token.
+
+   **One new variable makes the rows say where each branch is** — *On
+   stage* and *Released*, read from git:
+   - `GITHUB_TOKEN` — a fine-grained token with **Contents: read** on this
+     repository (store it as a **secret**). Without it the list still lists
+     and the section says once, at the top, that the two tags are off.
+   - `GITHUB_REPO` — optional, `owner/name`; defaults to this repo.
+   - `STAGE_BRANCH` — optional, defaults to `stage`.
 
    To point it somewhere else, set these on the FULL site instead:
    - `NETLIFY_API_TOKEN` — a personal access token (store it as a **secret**)
@@ -123,11 +131,12 @@ time, so the ONLY per-site difference is what each project sets in
      own branch alias. Defaults to `ux-design-xceldashboard.netlify.app`.
    - `PRODUCTION_BRANCH` — optional, defaults to `main`.
 
-   It lists only branches whose latest build **succeeded**, so every address in
-   it opens. It never appears on the public site — branch names are internal,
-   and both the endpoint and the panel refuse there independently. Nothing in
-   it publishes anything: its **Add** button opens the ordinary Add form with
-   the address filled in, and the review gate is unchanged.
+   It lists a branch from the moment it is pushed — *Building…* until the
+   build succeeds, *Build failed* if it did not — and only a succeeded build
+   gets a link. It never appears on the testing build — branch names are
+   internal, and the endpoint refuses there. Nothing in it publishes
+   anything: its **Discuss in Refinement** opens the ordinary Add form with
+   the address filled in.
 
 After that, `git push` is the whole workflow.
 

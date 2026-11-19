@@ -45,7 +45,9 @@ function renderAt(path: string, flow: InviteFlowId, element: React.ReactElement)
   /* ⚠ `?ff=` IS READ FROM `window.location.search`, not from the MemoryRouter
      entry — so both are set, or the render falls back to catalog defaults and
      the test passes for the wrong reason. */
-  const ff = `${INVITE_FLOW_FLAG}:${flow}`
+  /* Pinned to V2: these flows are V1/V2's control. V3 picks its flow from its
+     own model-type controls (`inviteFlowsV3.ts`) and ignores this one. */
+  const ff = `${INVITE_FLOW_FLAG}:${flow},invite-flow-version:v2`
   window.history.replaceState({}, '', `${path}?ff=${ff}`)
   return render(
     <MemoryRouter initialEntries={[`${path}?ff=${ff}`]}>
@@ -117,7 +119,10 @@ describe('the checkout audience flag', () => {
       const onAtlas = onDesignBar(null)
       // Long title left the bar on 2026-11-10 (Eric); Course tabs, added that day, stands in as the Atlas-only control.
       expect(onAtlas).toContain('atlas-course-tabs-place')
-      expect(onAtlas).toContain('atlas-affidavit')
+      /* Affidavit moment replaced the Affidavit control on Atlas's bar
+         (2026-11-04, `feat/affidavits`); the old one is panel-only now. */
+      expect(onAtlas).toContain('affidavit-v2-moment')
+      expect(onAtlas).not.toContain('atlas-affidavit')
       expect(onAtlas).toContain('atlas-brand-skin-v3')
       expect(onAtlas).toContain('atlas-readiness-section')
     })

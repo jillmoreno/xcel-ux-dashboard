@@ -6,6 +6,7 @@ import { useDeclareDesignSurface, type DesignSurfaceId } from '@/context/designS
 import { CompassRail } from './CompassRail'
 import { CompassLearningOverview, OverviewHeader } from './CompassLearningOverview'
 import { CompassCourseLanding } from './CompassCourseLanding'
+import { CompassReadinessOverview } from './CompassReadinessOverview'
 import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { CompassWorkspace } from './CompassWorkspace'
 import type {
@@ -19,6 +20,23 @@ import type {
 import { useNavPlacement } from '@/components/layout/navPlacement'
 import { CompassStudyPlanner } from './CompassStudyPlanner'
 import { CompassPlanProvider } from './CompassPlanContext'
+import { CompassJeffMvpShell } from './CompassJeffMvpShell'
+import { CompassRefinedShell } from './CompassRefinedShell'
+import { JEFF_MVP_PAGES, JEFF_MVP_SUBPAGES, type JeffMvpPage } from '@/data/compassJeffMvpFixtures'
+import type { RefinedHeroStyle } from './CompassReadinessRefined'
+import type {
+  FocusLayout,
+  FocusOptions,
+  NextMarkStyle,
+  PaceNoteStyle,
+} from './compassRefinedFocusModel'
+import type {
+  ChapterMarkStyle,
+  CourseOptions,
+  CourseStatusStyle,
+  ExamRowStyle,
+  CourseRowStyle,
+} from './compassRefinedCourseModel'
 
 /**
  * COMPASS LEARNING — the top nav's second destination (Figma 765:3471).
@@ -91,7 +109,98 @@ export function CompassLearningPage({
      controls for THIS page rather than all seven on every one of them. The
      page lives in state here and (apart from the seed above) never reaches the
      URL, so publishing it is the only way the bar can know. */
-  useDeclareDesignSurface(`compass:${page}` as DesignSurfaceId)
+  /* JEFF'S COMPASS MVP — 2026-11-09. Read before the surface is declared
+     because it CHANGES the surface: his MVP is one surface for all thirteen of
+     his pages, so the Compass version dropdown stays on the Design bar
+     wherever in his rail a reviewer has got to. Declaring `compass:readiness`
+     from his Readiness page would take the control off the bar and strand
+     them there. */
+  const mvpVersion = useFeatureFlag('compass-mvp-version').variant
+  /* THE THIRD VERSION — 2026-11-09. `refined` is Jeff's shell with the
+     Readiness page rebuilt against the research; it shares his rail and his
+     other pages, so it goes through the same branch with one prop set. */
+  const refined = mvpVersion === 'refined'
+  const jeffMvp = mvpVersion === 'jeff' || refined
+  /* ⚠ OVERVIEW, AS HIS EXPORT OPENS — changed 2026-11-09 when the Overview
+     was ported. It was 'readiness' for one page's worth of work, because
+     landing a reviewer on a "not ported yet" panel is worse than landing them
+     on the wrong page. Now that his first rail row exists, the default is his
+     again.
+
+     ⚠ EXCEPT ON THE REFINED ARM, which opens on READINESS: it is the one page
+     of that version that differs, and a reviewer who picked "Refined" and
+     landed on Jeff's Overview would have no way to tell the switch had
+     happened. Seeded once, like the page above — picking a rail row after
+     that is the reviewer's, not the flag's. */
+  /* ⚠ AND IT IS SEEDABLE FROM THE URL, like Anjani's page above — 2026-11-11.
+     `compassPage` named only HER page, so there was no way to open his MVP or
+     Refined anywhere but their landing page. That is fine for a reviewer who
+     will click the rail; it is not fine for a /review link, which iframes the
+     same route three times to compare ONE card and got three copies of the
+     Readiness page instead. A deep link that cannot reach the page being
+     reviewed makes the review page useless for this whole version.
+     ⚠ ONE PARAM FOR BOTH ARMS, and the value decides which list it belongs
+     to — an id his rail does not know falls through to the seed below rather
+     than rendering the not-ported panel. */
+  const [jeffPage, setJeffPage] = useState<JeffMvpPage>(() => {
+    const asked = seedParams.get('compassPage')
+    const known =
+      JEFF_MVP_PAGES.some((p) => p.page === asked) || JEFF_MVP_SUBPAGES.some((p) => p.page === asked)
+    if (asked && known) return asked as JeffMvpPage
+    return refined ? 'readiness' : 'overview'
+  })
+  /* The Refined page's Readiness to Pass section — single ring (default) or
+     the tested three rings with a matching key. Read here with the other
+     Compass controls; the page is a plain function of its props. */
+  const refinedHero = useFeatureFlag('compass-refined-readiness-hero').variant as RefinedHeroStyle
+  /* ⚠ THE OVERVIEW'S MERGED PROGRESS + NEXT CARD — 2026-11-11, three
+     arrangements while the shape is being decided. Read here with the other
+     Compass controls so every component below stays a plain function of its
+     props. */
+  /* ⚠ ONE OBJECT, FOUR DECISIONS — 2026-11-11. They were separate props and
+     a fifth was arriving; each had to be declared, destructured and forwarded
+     through four components, which is the friction that stops a variant being
+     tried. Read here, as every other Compass flag is, so the components below
+     stay plain functions of their props. */
+  const overviewFocus: FocusOptions = {
+    layout: useFeatureFlag('compass-overview-focus').variant as FocusLayout,
+    swap: useFeatureFlag('compass-overview-focus-swap').enabled,
+    paceNote: useFeatureFlag('compass-overview-pace-note').variant as PaceNoteStyle,
+    nextMark: useFeatureFlag('compass-overview-next-mark').variant as NextMarkStyle,
+  }
+  /* ⚠ YOUR COURSE'S OWN THREE — 2026-11-12. Same shape and the same reason:
+     read with the other Compass controls so the pages stay plain functions
+     of their props. See `CourseOptions`. */
+  const courseOptions: CourseOptions = {
+    rows: useFeatureFlag('compass-course-rows').variant as CourseRowStyle,
+    blurb: useFeatureFlag('compass-course-blurb').enabled,
+    fold: useFeatureFlag('compass-course-fold').enabled,
+    image: useFeatureFlag('compass-course-image').enabled,
+    chapterMark: useFeatureFlag('compass-course-mark').variant as ChapterMarkStyle,
+    status: useFeatureFlag('compass-course-status').variant as CourseStatusStyle,
+    examRow: useFeatureFlag('compass-course-exam').variant as ExamRowStyle,
+    /* ⚠ THE OVERVIEW'S FLAG, READ FOR BOTH — the next-step card is one
+       component on two pages; see `CourseOptions.nextMark`. */
+    nextMark: useFeatureFlag('compass-overview-next-mark').variant as NextMarkStyle,
+  }
+  /* ⚠ REFINED'S TWO CONTROL-CARRYING PAGES NAME THEMSELVES — 2026-11-14:
+     "can we only show the design tools for the actual page they should be
+     on". The Overview's card arrangements and Your Course's list controls
+     were all on one surface, so each page carried the other's. See
+     `DesignSurfaceId`. */
+  useDeclareDesignSurface(
+    refined
+      ? /* ⚠ `jeffPage`, NOT `page`. Refined runs inside his shell, whose own
+           page state is `jeffPage`; `page` is Anjani's rail and stays
+           whatever it was when the reviewer switched versions. Reading the
+           wrong one would scope the bar to a page nobody is looking at. */
+        jeffPage === 'overview' || jeffPage === 'learn'
+        ? (`compass:refined:${jeffPage}` as DesignSurfaceId)
+        : 'compass:refined'
+      : jeffMvp
+        ? 'compass:jeff-mvp'
+        : (`compass:${page}` as DesignSurfaceId),
+  )
   /* ⚠ ANJANI'S COMPASS IS A FLAG, NOT A VERSION — 2026-10-15. From 2026-10-08
      her rail and course landing were gated on `isHybridVersion`, which was
      right while Hybrid was the default: the Compass Prototypes row opens the
@@ -111,6 +220,15 @@ export function CompassLearningPage({
      rather than inside the component so the component stays a plain function
      of its props: a test can render all six layouts without a flag provider,
      and the Variants deck can put two of them side by side. */
+  /* HIS READINESS PROTOTYPE — 2026-11-05. Read here with the other Compass
+     controls so the body stays a plain function of its props. */
+  /* ⚠ THE GROUND IS THE SHELL'S, NOT A PAGE'S — 2026-11-15, "add a toggle to
+     change the background to white." The tint is painted once on the flex
+     box below, which holds the rail and the page column; read here with the
+     other Compass controls for the same reason they are. */
+  const refinedWhite = useFeatureFlag('compass-refined-ground').enabled
+  const overviewV2 = useFeatureFlag('compass-overview-version').variant === 'v2'
+  const readinessStage = useFeatureFlag('compass-readiness-stage').variant ?? 'p2'
   const workspaceOn = useFeatureFlag('compass-workspace').enabled
   const workspaceLayout = useFeatureFlag('compass-workspace-layout').variant as WorkspaceLayout
   const workspaceHome = useFeatureFlag('compass-workspace-home').variant as WorkspaceHome
@@ -142,6 +260,48 @@ export function CompassLearningPage({
        Tonight card and the Study planner read one plan, and switching rows
        must not reset it. See `CompassPlanContext`. */
     <CompassPlanProvider>
+    {/* ⚠ HIS MVP REPLACES THE RAIL AS WELL AS THE BODY, and that is the whole
+        reason it is a surface rather than a page arm. His rail is three
+        learning rows, an EXAM PREP rule and five exam-prep rows below it —
+        Anjani's locks those five behind a gate dialog. Rendering his pages
+        inside her rail would show his design making her argument. */}
+    {/* ⚠ TWO SHELLS SINCE 2026-11-10, not one with a prop. Refined was
+        `CompassJeffMvpShell` with `readiness='refined'` — his rail, his
+        twelve other pages, one swap — so there was no file a Refined page
+        could be edited in without editing HIS. `CompassRefinedShell` is that
+        seam; every slot in it still points at his component, so nothing moved
+        on screen the day it landed. See `compassRefinedPages.ts`. */}
+    {jeffMvp ? (
+      /* ⚠ THE OVERRIDE IS SPREAD, NOT A SECOND STYLE OBJECT — `pageStyle` is
+         the shape both branches share (flex, stretch, `minHeight: 0`) and it
+         is a shared module constant, so the ground is the only key this
+         changes and only while the flag is on. */
+      <div
+        style={
+          refined && refinedWhite
+            ? /* ⚠ THE CARD TOKEN, NOT A HEX. `--color-surface-card` is the
+                 white the cards on this page already sit on, so "white
+                 background" means the ground stops being a shade behind
+                 them and becomes the same surface — and the dark theme
+                 re-pins it with everything else. */
+              { ...pageStyle, background: 'var(--color-surface-card)' }
+            : pageStyle
+        }
+      >
+        {refined ? (
+          <CompassRefinedShell
+            page={jeffPage}
+            onSelectPage={setJeffPage}
+            readinessHero={refinedHero}
+            stage={readinessStage}
+            course={courseOptions}
+            focus={overviewFocus}
+          />
+        ) : (
+          <CompassJeffMvpShell page={jeffPage} onSelectPage={setJeffPage} />
+        )}
+      </div>
+    ) : (
     <div style={pageStyle}>
       {/* ⚠ HER RAIL IS A DIFFERENT OBJECT, not the shared one relabelled — see
           `CompassRail`. The first pass swapped only the row list inside
@@ -200,7 +360,12 @@ export function CompassLearningPage({
                 journey" — on her surface (2026-10-15, "the overview page does
                 not match anjanis link"); the Figma frame's "Let's get started /
                 Compass Learning" with the exam strip stays on the atlas arm. */}
-            {hybrid ? (
+            {/* ⚠ THE V2 OVERVIEW BRINGS ITS OWN HEADER — "Your exam prep",
+                with the licence, the exam date and the Readiness phase on one
+                line. Leaving hers above it stacked two headers and two
+                different claims about what the page is, which is the
+                two-logos mistake in another costume. */}
+            {overviewV2 ? null : hybrid ? (
               <OverviewHeader />
             ) : (
               <header style={headerStyle}>
@@ -211,10 +376,19 @@ export function CompassLearningPage({
                 <ExamDateStrip />
               </header>
             )}
-            <CompassLearningOverview
-              onStartSession={onStartSession ? () => onStartSession('overview') : undefined}
-              onViewPlan={() => setPage('study-planner')}
-            />
+            {/* ⚠ THE READINESS PROTOTYPE IS AN ARM OF THE OVERVIEW, not a
+                new page — 2026-11-05. His V2 rebuilds this same screen around
+                Readiness, so it replaces the body rather than sitting beside
+                it, and `compass-overview-version` is what chooses. Anjani's
+                is the default because it is what ships. */}
+            {overviewV2 ? (
+              <CompassReadinessOverview stage={readinessStage} />
+            ) : (
+              <CompassLearningOverview
+                onStartSession={onStartSession ? () => onStartSession('overview') : undefined}
+                onViewPlan={() => setPage('study-planner')}
+              />
+            )}
           </>
         ) : hybrid && page === 'course' ? (
           /* Resume lesson opens the session at its first beat, the video
@@ -231,6 +405,7 @@ export function CompassLearningPage({
       </div>
       )}
     </div>
+    )}
     </CompassPlanProvider>
   )
 }

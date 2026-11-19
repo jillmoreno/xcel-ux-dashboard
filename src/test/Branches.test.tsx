@@ -1,27 +1,34 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { readFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { DemoPanel, LinksPanel } from '@/components/prototype/LinksPanel'
-import { isBranchOnBoard, titleFromBranch } from '@/data/branchStore'
+import { DemoPanel } from '@/components/prototype/LinksPanel'
+import { DesignPanel } from '@/components/prototype/DesignPanel'
+import { ReleasePanel } from '@/components/prototype/ReleasePanel'
+import { groupByFeature, stageOf } from '@/data/designBranches'
+import { groupForRelease, waitingCount } from '@/data/releaseQueue'
+import { isBranchOnBoard, titleFromBranch, type BranchDeploy } from '@/data/branchStore'
+import { parseBranch } from '@/data/branchName'
 import { selectBranchDeploys, slugifyBranch, REVIEW_PATH } from '../../netlify/lib/branchDeploys'
+import { decidedOn, isMergedInto, parseCompare, parseMarker } from '../../netlify/lib/branchGit'
 import type { StoredLink } from '@/data/linkStore'
 
 /**
- * The automatic branch list (2026-09-21).
+ * The automatic branch list (2026-09-21) — the DESIGN SECTION since
+ * 2026-11-16.
  *
- * What is pinned here is the distinction the feature turns on, because the
- * obvious simplification destroys it: a branch having a build is a FACT, and a
- * Refinement row is somebody ASKING to be reviewed. So the strip never writes,
- * its button opens the same Add form with `isPublic` false, and the review
- * gate is untouched.
+ * What is pinned here is that the section is DERIVED and writes nothing: a
+ * branch is a row because Netlify built it, its feature and scope come from
+ * its name, and "on stage" / "released" come from git. Nobody authors a row,
+ * so nothing here can be stale or missing by someone forgetting a step —
+ * which is what the prefilled-link flow it replaced kept doing.
  *
- * The rest is the two things that would silently go wrong: which deploys count
- * (a preview, a failed build or `main` in the list is a link that misleads or
- * 404s), and where the strip is allowed to appear (branch names on the public
- * build are a roadmap stakeholders were never shown).
+ * The rest is the two things that would silently go wrong: which deploys
+ * count (a preview or `main` in the list misleads; a building one must say
+ * so rather than hand over a link), and that branch names never reach the
+ * testing build.
  */
 
 const here = dirname(fileURLToPath(import.meta.url))
@@ -86,13 +93,6 @@ function mockEndpoints({
   return { writes }
 }
 
-async function loadPublicDemoPanel() {
-  vi.resetModules()
-  vi.stubEnv('VITE_GATEWAY_MODE', 'testing')
-  const mod = await import('@/components/prototype/LinksPanel')
-  return mod.DemoPanel
-}
-
 beforeEach(() => localStorage.clear())
 afterEach(() => {
   vi.unstubAllGlobals()
@@ -112,12 +112,23 @@ describe('selectBranchDeploys', () => {
     expect(out[0].url).toBe('https://feat-streak--ux-demo-xceldashboard.netlify.app')
   })
 
-  /* A reviewer needs a URL that OPENS. A building or failed deploy has none,
-     which is the entire reason the deploy feed is the source rather than the
-     branch list. */
-  it('drops a deploy that is not ready', () => {
-    expect(selectBranchDeploys([deploy({ state: 'building' })], opts)).toHaveLength(0)
-    expect(selectBranchDeploys([deploy({ state: 'error' })], opts)).toHaveLength(0)
+  /* Since 2026-11-16 a branch lists from the moment it is PUSHED, so the
+     designer sees "Building…" rather than nothing — but the row has to SAY
+     so, because the alias quietly keeps serving the previous build. */
+  it('keeps a deploy that is not ready, and says which kind', () => {
+    expect(selectBranchDeploys([deploy({ state: 'building' })], opts)[0].build).toBe('building')
+    expect(selectBranchDeploys([deploy({ state: 'enqueued' })], opts)[0].build).toBe('building')
+    expect(selectBranchDeploys([deploy({ state: 'error' })], opts)[0].build).toBe('failed')
+    expect(selectBranchDeploys([deploy()], opts)[0].build).toBe('ready')
+  })
+
+  it('drops the stage branch — it is the other build of the product, not a designer\'s', () => {
+    expect(selectBranchDeploys([deploy({ branch: 'stage' })], opts)).toHaveLength(0)
+    expect(selectBranchDeploys([deploy({ branch: 'rc' })], { ...opts, stageBranch: 'rc' })).toHaveLength(0)
+  })
+
+  it('carries the commit the deploy was built from', () => {
+    expect(selectBranchDeploys([deploy({ commit_ref: 'abc123' })], opts)[0].sha).toBe('abc123')
   })
 
   /* A deploy preview is a pull request's own build at a `deploy-preview-N--`
@@ -198,98 +209,117 @@ describe('selectBranchDeploys', () => {
   })
 })
 
-/* ── the strip in the panel ───────────────────────────────────────────────── */
+/* ── the Design section ───────────────────────────────────────────────────── */
 
-describe('the Refinement branch strip', () => {
+const served = (over: Partial<BranchDeploy> & { branch: string }): BranchDeploy => ({
+  slug: slugifyBranch(over.branch),
+  url: `https://${slugifyBranch(over.branch)}--ux-design-xceldashboard.netlify.app`,
+  reviewUrl: `https://${slugifyBranch(over.branch)}--ux-design-xceldashboard.netlify.app/dashboard-rebrand?demo=1`,
+  updated: '2026-11-15',
+  commit: 'Add the streak card',
+  author: 'Sam',
+  build: 'ready' as const,
+  onStage: false,
+  released: false,
+  decided: [],
+  ...over,
+})
+
+describe('the Design section', () => {
   const ok = {
     configured: true,
-    branches: [
-      {
-        branch: 'feat/streak',
-        slug: 'feat-streak',
-        url: 'https://feat-streak--ux-demo-xceldashboard.netlify.app',
-        reviewUrl: 'https://feat-streak--ux-demo-xceldashboard.netlify.app/dashboard-rebrand?demo=1',
-        updated: '2026-09-20',
-        commit: 'Add the streak card',
-        author: 'Sam',
-      },
-    ],
+    git: { configured: true, reason: '' },
+    branches: [served({ branch: 'feat/compass-streak' })],
   }
 
-  it('lists a branch with a build', async () => {
+  it('lists a built branch under its feature, open in a new tab, tagged with its scope', async () => {
     mockEndpoints({ branches: ok })
-    render(<DemoPanel />)
-    expect(await screen.findByText('feat/streak')).toBeInTheDocument()
-    expect(screen.getByText(/built 2026-09-20 · by Sam · Add the streak card/)).toBeInTheDocument()
+    render(<DesignPanel />)
+    expect(await screen.findByRole('heading', { name: 'Streak' })).toBeInTheDocument()
+    const link = screen.getByRole('link', { name: /Streak/ })
+    expect(link).toHaveAttribute(
+      'href',
+      'https://feat-compass-streak--ux-design-xceldashboard.netlify.app/dashboard-rebrand?demo=1',
+    )
+    expect(link).toHaveAttribute('target', '_blank')
+    expect(screen.getByText('Compass')).toBeInTheDocument()
+    expect(screen.getByText('In design')).toBeInTheDocument()
+    expect(screen.getByText(/feat\/compass-streak · built 2026-11-15/)).toBeInTheDocument()
   })
 
-  /* The whole feature in one assertion: Add does not save, it OPENS THE FORM
-     with the address and a draft title. The click is the gate — the same
-     contract `promote-to-refinement` has, and for the same reason. */
-  it('Add opens the form prefilled and writes nothing', async () => {
-    const user = userEvent.setup()
+  /* The whole point: nothing is written. The section reads two endpoints and
+     POSTs to neither, however it is clicked. */
+  it('writes nothing', async () => {
     const { writes } = mockEndpoints({ branches: ok })
-    render(<DemoPanel />)
-    await user.click(await screen.findByRole('button', { name: /^Add$/ }))
-    expect(await screen.findByLabelText('Address')).toHaveValue(
-      'https://feat-streak--ux-demo-xceldashboard.netlify.app/dashboard-rebrand?demo=1',
-    )
-    expect(screen.getByLabelText('Title')).toHaveValue('Streak')
+    render(<DesignPanel />)
+    await screen.findByRole('heading', { name: 'Streak' })
     expect(writes).toHaveLength(0)
   })
 
-  /* The note is the one field the strip COULD fill from the commit subject and
-     the one it must not: "where to look" is what only the person who did the
-     work knows, and a plausible wrong note reads as reviewed when nobody
-     wrote it. */
-  it('sits BELOW the rows, not above them (2026-10-15)', async () => {
-    // Jillienne: "put these at the bottom of the page". Nine branches at the
-    // top pushed the board's own rows below the fold.
-    mockEndpoints({ rows: [row({ title: 'A row on the board' })], branches: ok })
-    render(<DemoPanel />)
-    const strip = await screen.findByText('Branch builds')
-    const rowEl = await screen.findByText('A row on the board')
-    expect(rowEl.compareDocumentPosition(strip) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
-  })
-
-  it('leaves the note empty', async () => {
-    const user = userEvent.setup()
-    mockEndpoints({ branches: ok })
-    render(<DemoPanel />)
-    await user.click(await screen.findByRole('button', { name: /^Add$/ }))
-    expect(await screen.findByLabelText(/Note/)).toHaveValue('')
-    // A role="switch" on main's form since the 2026-10-02 merge, not a checkbox.
-  })
-
-  /* A branch already up for review must not be offered again — and the strip
-     says how many it dropped, so a designer who cannot find their branch can
-     see why rather than guess. */
-  it('drops a branch that is already on the board, and says so', async () => {
+  it('says Building… with no link while Netlify is still going, and Build failed when it broke', async () => {
     mockEndpoints({
-      rows: [row({ url: 'https://feat-streak--ux-demo-xceldashboard.netlify.app/anything' })],
-      branches: ok,
+      branches: {
+        ...ok,
+        branches: [
+          served({ branch: 'feat/compass-streak', build: 'building' }),
+          served({ branch: 'feat/atlas-home', build: 'failed' }),
+        ],
+      },
     })
-    render(<DemoPanel />)
-    await waitFor(() => expect(screen.getByText(/already added/)).toBeInTheDocument())
-    expect(screen.getByText('Every branch with a build is already on the board.')).toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: /^Add$/ })).not.toBeInTheDocument()
+    render(<DesignPanel />)
+    expect(await screen.findByText('Building…')).toBeInTheDocument()
+    expect(screen.getByText('Build failed')).toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: /Streak/ })).not.toBeInTheDocument()
   })
 
-  /* Silent when there is no endpoint, loud when there is one and it is
-     misconfigured. A grey box above a healthy board every time someone runs
-     `npm run dev` is noise that looks like a fault in the board. */
-  it('says nothing at all when the endpoint is not there', async () => {
-    mockEndpoints({ branches: { links: [] } }) // something else answered
-    render(<DemoPanel />)
-    // Wait for the board itself to settle, so the assertion is about the strip
-    // being absent rather than about the panel not having rendered yet.
-    await screen.findByRole('button', { name: /Add the first link/ })
-    expect(screen.queryByText('Branch builds')).not.toBeInTheDocument()
+  it('reads On stage and Released from git, and hides released rows until asked', async () => {
+    const user = userEvent.setup()
+    mockEndpoints({
+      branches: {
+        ...ok,
+        branches: [
+          served({ branch: 'feat/compass-streak', onStage: true }),
+          served({ branch: 'feat/atlas-home', onStage: true, released: true }),
+        ],
+      },
+    })
+    const { container } = render(<DesignPanel />)
+    // `data-stage` on the card is the row's one word; the filter pills say
+    // the same words, so the assertion is on the rows, not the text.
+    await screen.findByRole('heading', { name: 'Streak' })
+    expect(container.querySelectorAll('[data-row][data-stage="on-stage"]')).toHaveLength(1)
+    expect(container.querySelectorAll('[data-row][data-stage="released"]')).toHaveLength(0)
+    await user.click(screen.getByRole('button', { name: 'Released' }))
+    await screen.findByRole('heading', { name: 'Home' })
+    expect(container.querySelectorAll('[data-row][data-stage="released"]')).toHaveLength(1)
+    expect(container.querySelectorAll('[data-row][data-stage="on-stage"]')).toHaveLength(0)
+  })
+
+  it('groups a variant with its feature', async () => {
+    mockEndpoints({
+      branches: {
+        ...ok,
+        branches: [
+          served({ branch: 'feat/compass-study-planner' }),
+          served({ branch: 'feat/compass-study-planner--dense' }),
+        ],
+      },
+    })
+    render(<DesignPanel />)
+    expect(await screen.findAllByRole('heading', { name: 'Study planner' })).toHaveLength(1)
+    expect(screen.getByText('Study planner — Dense')).toBeInTheDocument()
+  })
+
+  it('says once, at the top, when the git facts are off — not per row', async () => {
+    mockEndpoints({ branches: { ...ok, git: { configured: false, reason: 'no-credentials' } } })
+    render(<DesignPanel />)
+    expect(await screen.findByText(/set GITHUB_TOKEN/)).toBeInTheDocument()
+    expect(screen.getAllByText(/GITHUB_TOKEN/)).toHaveLength(1)
   })
 
   it('names the env vars when it is deployed but not configured', async () => {
     mockEndpoints({ branches: { configured: false, branches: [], reason: 'no-credentials' } })
-    render(<DemoPanel />)
+    render(<DesignPanel />)
     expect(await screen.findByText(/NETLIFY_API_TOKEN and NETLIFY_SITE_ID/)).toBeInTheDocument()
   })
 
@@ -298,25 +328,189 @@ describe('the Refinement branch strip', () => {
       branches: { configured: true, branches: [], reason: 'netlify-401' },
       branchStatus: 502,
     })
-    render(<DemoPanel />)
+    render(<DesignPanel />)
     expect(await screen.findByText(/token may have expired/)).toBeInTheDocument()
   })
 
-  /* Branch names are internal. Two independent controls stop them reaching
-     stakeholders; this is the one a reader of the client can see. */
-  it('never renders on the testing build — the one trimmed build left (2026-10-15)', async () => {
+  /* The strip that used to sit under Refinement is gone — one place, not two. */
+  it('Refinement no longer carries the branch strip', async () => {
     mockEndpoints({ branches: ok })
-    const PublicDemo = await loadPublicDemoPanel()
-    render(<PublicDemo />)
-    await waitFor(() => expect(screen.queryByText('Branch builds')).not.toBeInTheDocument())
-    expect(screen.queryByText('feat/streak')).not.toBeInTheDocument()
+    render(<DemoPanel />)
+    await screen.findByRole('button', { name: /Add the first link/ })
+    expect(screen.queryByText('Branch builds')).not.toBeInTheDocument()
+    expect(screen.queryByText('feat/compass-streak')).not.toBeInTheDocument()
+  })
+})
+
+/* ── the branch name ──────────────────────────────────────────────────────── */
+
+describe('parseBranch — the only thing a designer authors', () => {
+  it('reads scope and feature off the name', () => {
+    expect(parseBranch('feat/compass-study-planner')).toMatchObject({
+      scope: 'compass',
+      feature: 'Study planner',
+      featureKey: 'compass:study-planner',
+      variant: '',
+    })
+  })
+  it('reads a variant after --', () => {
+    expect(parseBranch('feat/compass-study-planner--dense')).toMatchObject({
+      featureKey: 'compass:study-planner',
+      variant: 'Dense',
+    })
+  })
+  it('accepts the words people actually use for a scope', () => {
+    expect(parseBranch('feat/checkout-summary').scope).toBe('invite')
+    expect(parseBranch('eric/atlas-home').scope).toBe('atlas')
+    expect(parseBranch('feat/admin-learners').scope).toBe('admin')
+  })
+  it('still lists a branch that follows no shape at all', () => {
+    expect(parseBranch('docs/hub-resources')).toMatchObject({ scope: null, feature: 'Hub resources' })
+    expect(parseBranch('streak')).toMatchObject({ scope: null, feature: 'Streak' })
+  })
+  it('furthest-along wins the row\'s one word', () => {
+    const b = served({ branch: 'feat/x', onStage: true, released: true })
+    expect(stageOf(b)).toBe('released')
+    expect(stageOf({ ...b, released: false })).toBe('on-stage')
+    expect(stageOf({ ...b, build: 'building' })).toBe('building')
+  })
+  it('groups newest activity first', () => {
+    const g = groupByFeature([
+      served({ branch: 'feat/compass-a', updated: '2026-11-01' }),
+      served({ branch: 'feat/compass-b', updated: '2026-11-10' }),
+    ])
+    expect(g.map((x) => x.feature)).toEqual(['B', 'A'])
+  })
+})
+
+/* ── the Release section ──────────────────────────────────────────────────── */
+
+describe('the Release section — what is on stage and not on main', () => {
+  const decidedMarker = { scope: 'compass', decidedAt: '2026-11-15', by: 'Anjani', commit: 'abc123' }
+  const ok = (branches: BranchDeploy[], aheadOfMain = 3) => ({
+    configured: true,
+    git: { configured: true, reason: '' },
+    stage: { aheadOfMain, behindMain: 0 },
+    branches,
   })
 
-  /* Resources is not about branches. */
-  it('does not render on Resources', async () => {
-    mockEndpoints({ branches: ok })
-    render(<LinksPanel />)
-    await waitFor(() => expect(screen.queryByText('Branch builds')).not.toBeInTheDocument())
+  it('lists a staged, unreleased branch under its surface, tagged Decided from its marker', async () => {
+    mockEndpoints({
+      branches: ok([served({ branch: 'feat/compass-streak', onStage: true, decided: [decidedMarker] })]),
+    })
+    const { container } = render(<ReleasePanel />)
+    expect(await screen.findByRole('heading', { name: 'Compass' })).toBeInTheDocument()
+    expect(screen.getByText('owner Anjani · decided')).toBeInTheDocument()
+    expect(container.querySelectorAll('[data-row][data-decided="yes"]')).toHaveLength(1)
+    expect(screen.getByText(/^Ready\./)).toBeInTheDocument()
+    expect(screen.getByRole('status')).toHaveTextContent(/3\s*commits on stage not on main · 1 branch from 1 surface/)
+  })
+
+  it('says Not yet when a staged branch has no marker, and counts the undecided', async () => {
+    mockEndpoints({
+      branches: ok([
+        served({ branch: 'feat/compass-streak', onStage: true, decided: [decidedMarker] }),
+        served({ branch: 'feat/atlas-home', onStage: true }),
+      ]),
+    })
+    const { container } = render(<ReleasePanel />)
+    await screen.findByRole('heading', { name: 'Atlas Learning' })
+    expect(container.querySelectorAll('[data-row][data-decided="no"]')).toHaveLength(1)
+    expect(screen.getByText(/^Not yet\./)).toBeInTheDocument()
+    expect(screen.getByRole('status')).toHaveTextContent(/1 undecided/)
+  })
+
+  it('leaves out what is in design and what is released — only the gap between stage and main', async () => {
+    mockEndpoints({
+      branches: ok(
+        [
+          served({ branch: 'feat/compass-a' }),
+          served({ branch: 'feat/compass-b', onStage: true, released: true }),
+        ],
+        0,
+      ),
+    })
+    render(<ReleasePanel />)
+    expect(await screen.findByText(/Nothing waiting/)).toBeInTheDocument()
+    expect(screen.getByRole('status')).toHaveTextContent(/Stage is level with main/)
+  })
+
+  it('a marker for another scope does not vouch for this branch', () => {
+    const g = groupForRelease([
+      served({ branch: 'feat/atlas-home', onStage: true, decided: [decidedMarker] }),
+    ])
+    expect(g).toHaveLength(1)
+    expect(g[0].rows[0].decided).toBe(false)
+    expect(g[0].ready).toBe(false)
+  })
+
+  it('counts the waiting branches for the rail', () => {
+    const index = {
+      available: true,
+      loading: false,
+      reason: '',
+      git: 'on' as const,
+      stageAheadOfMain: 2,
+      branches: [
+        served({ branch: 'feat/compass-a', onStage: true }),
+        served({ branch: 'feat/compass-b', onStage: true, released: true }),
+        served({ branch: 'feat/compass-c' }),
+      ],
+    }
+    expect(waitingCount(index)).toBe(1)
+  })
+
+  it('says the git facts are needed, once, when they are off', async () => {
+    mockEndpoints({ branches: { ...ok([]), git: { configured: false, reason: 'no-credentials' } } })
+    render(<ReleasePanel />)
+    expect(await screen.findByText(/Set GITHUB_TOKEN/)).toBeInTheDocument()
+  })
+})
+
+/* ── the git facts ────────────────────────────────────────────────────────── */
+
+describe('the decided marker — honest by construction', () => {
+  it('parses a marker and requires the commit it vouches for', () => {
+    expect(parseMarker({ scope: 'compass', decidedAt: '2026-11-15', by: 'Anjani', commit: 'abc' }, 'x')).toEqual({
+      scope: 'compass',
+      decidedAt: '2026-11-15',
+      by: 'Anjani',
+      commit: 'abc',
+    })
+    // The file name is the scope when the body does not say.
+    expect(parseMarker({ commit: 'abc' }, 'atlas')?.scope).toBe('atlas')
+    expect(parseMarker({ scope: 'compass' }, 'compass')).toBeNull()
+    expect(parseMarker('nope', 'compass')).toBeNull()
+  })
+
+  /* The rule that lets markers stay in the tree: a marker counts only while
+     its commit is among the branch's commits main does not have. One left on
+     main by the last release vouches for a commit main has, and is ignored on
+     every branch cut after it. */
+  it('counts a marker only while its commit is ahead of main', () => {
+    const m = { scope: 'compass', decidedAt: '', by: '', commit: 'abc123def' }
+    expect(decidedOn([m], ['abc123def4567890', 'zzz'])).toEqual([m])
+    expect(decidedOn([m], ['zzz'])).toEqual([])
+    expect(decidedOn([{ ...m, commit: '' }], ['abc123def'])).toEqual([])
+  })
+
+  it('reads ahead/behind and the commit shas off a compare', () => {
+    expect(parseCompare({ ahead_by: 2, behind_by: 0, commits: [{ sha: 'a' }, { sha: 'b' }] })).toEqual({
+      aheadBy: 2,
+      behindBy: 0,
+      shas: ['a', 'b'],
+    })
+    expect(parseCompare({ ahead_by: 'x' })).toBeNull()
+  })
+})
+
+describe('isMergedInto', () => {
+  it('is ahead_by === 0 and nothing else', () => {
+    expect(isMergedInto({ ahead_by: 0, behind_by: 12, status: 'behind' })).toBe(true)
+    expect(isMergedInto({ ahead_by: 0, behind_by: 0, status: 'identical' })).toBe(true)
+    expect(isMergedInto({ ahead_by: 3 })).toBe(false)
+    expect(isMergedInto({})).toBe(false)
+    expect(isMergedInto(null)).toBe(false)
   })
 })
 

@@ -14,6 +14,7 @@ import {
 } from '@/data/xcelCourseFinder'
 import { INVITE_LOA_PARAM, INVITE_STATE_PARAM } from '@/data/inviteMissingDetails'
 import { clearPartnerCodeAnswer } from '@/data/inviteFlows'
+import { useV3DialogLayer } from '@/components/e2e/useV3DialogLayer'
 import { useEndToEndDemoParams, useEndToEndPageChrome } from './endToEndDemo'
 import './inviteFlow.css'
 
@@ -42,6 +43,9 @@ export function XcelPackagesPage() {
   const [params, setParams] = useSearchParams()
   const lineOfAuthority = params.get(INVITE_LOA_PARAM) ?? ''
   const state = params.get(INVITE_STATE_PARAM) ?? ''
+  /* V3's Go to Cart alternative opened here with "Added to your cart" showing
+     and asked the Partner Code question at Go to Cart — archived 2026-11-05,
+     `archivedInviteFlowsV3.ts`. */
   const [added, setAdded] = useState<CoursePackage | null>(null)
 
   useEndToEndPageChrome(
@@ -219,13 +223,20 @@ function PackageCard({ pkg, onAdd }: { pkg: CoursePackage; onAdd: () => void }) 
  */
 function AddedToCart({
   pkg,
+  v3 = false,
   onClose,
   onGoToCart,
 }: {
   pkg: CoursePackage
+  /** V3's alternative (2026-11-03, Afsana): drawn like V3's other dialogs —
+   *  the scrim on the simulated window only, the Demo and Design bars left
+   *  usable, centred in what the learner sees, the page held still
+   *  (`useV3DialogLayer`). Off, it is V2's, unchanged. */
+  v3?: boolean
   onClose: () => void
   onGoToCart: () => void
 }) {
+  const layer = useV3DialogLayer(v3)
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose()
@@ -235,8 +246,8 @@ function AddedToCart({
   }, [onClose])
 
   return createPortal(
-    <div style={SCRIM}>
-      <div role="dialog" aria-modal="true" aria-labelledby="added-title" style={CART_MODAL}>
+    <div style={{ ...SCRIM, ...layer.scrim }}>
+      <div role="dialog" aria-modal="true" aria-labelledby="added-title" style={{ ...CART_MODAL, ...layer.card }}>
         <div style={CART_HEAD}>
           <h2 id="added-title" style={CART_TITLE}>
             Added to your cart

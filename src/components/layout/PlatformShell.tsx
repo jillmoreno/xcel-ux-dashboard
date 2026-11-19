@@ -121,7 +121,11 @@ import {
   useSectionBreadcrumb,
 } from './navPlacement'
 import { CompassLearningPage } from '@/components/learning/CompassLearningPage'
-import { CompassSessionPage } from '@/components/learning/CompassSessionPage'
+/* ⚠ THE DISPATCHER, NOT THE SESSION ITSELF — 2026-11-05. The Design bar's
+   Course content version control picks between Anjani's session, Jeff's
+   version and the refined one; `CompassLessonVersion` is where that choice is
+   made, and this is the only place the lesson mounts. */
+import { CompassLessonVersion } from '@/components/learning/CompassLessonVersion'
 import { HomePageHeader } from './HomePageHeader'
 import { AtlasInfoSheets } from '@/components/compass/AtlasInfoSheets'
 import { AtlasSectionPageHeader } from './AtlasSectionPageHeader'
@@ -1020,7 +1024,7 @@ function PlatformShellBody() {
      */
     if (params.get('session') === '1') {
       return (
-        <CompassSessionPage
+        <CompassLessonVersion
           onExit={() =>
             setParams(
               (prev) => {

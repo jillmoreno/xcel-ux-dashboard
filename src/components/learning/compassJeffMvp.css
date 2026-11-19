@@ -1,0 +1,3666 @@
+/* JEFF'S COMPASS MVP (2026-11-09) — from
+   `public/prototypes/xcel-compass-mvp.html`, thirteen pages ported one at a
+   time. Readiness is the first.
+
+   ⚠ HIS PALETTE IS THE COMPASS SYSTEM THIS REPO ALREADY MAPS, twice:
+   `compassWorkspace.css` (2026-11-04) and `compassReadiness.css`
+   (2026-11-05). The mapping is repeated here rather than re-decided, and the
+   four Readiness BANDS are the part that is new — his levels carry an ink, a
+   wash and an edge each, and the track behind them is a lighter set again:
+
+     ink          #1F1D18  → --color-compass-page-heading
+     body         #42464F  → --color-compass-page-body
+     muted        #615C55  → --color-compass-page-muted
+     hairline     #E6E2D8  → --color-compass-page-rule
+     edge         #C3BBA5  (her stronger rule)
+     steel        #3D5A73  → --color-primary-500
+     steel-deep   #2F4A63  → --color-primary-600
+     green        #2F7A5A  → --color-success-700
+     rubi         #B4552F  → --color-compass-page-rubi
+     amber        #C08A2E  (Readiness itself)
+
+   ⚠ IT DOES NOT IMPORT `compassAnjani.css` OR `compassReadiness.css`, and
+   that is deliberate rather than lazy. His rail is the same SHAPE as hers —
+   three rows, an EXAM PREP rule, more rows — but hers locks the five below
+   the rule and his navigates to them, and the two will be edited by different
+   people for different reasons. Sharing the class names would mean her
+   next rail change silently moves his page.
+
+   ⚠ EVERY RULE IS SCOPED UNDER `.cjm`. */
+
+.cjm {
+  --cjm-ink: var(--color-compass-page-heading);
+  --cjm-body: var(--color-compass-page-body);
+  --cjm-muted: var(--color-compass-page-muted);
+  --cjm-faint: var(--color-text-tertiary);
+  --cjm-hairline: var(--color-compass-page-rule);
+  --cjm-edge: #c3bba5;
+  --cjm-white: var(--color-surface-card);
+  --cjm-paper: #faf9f6;
+  --cjm-steel: var(--color-primary-500);
+  --cjm-steel-deep: var(--color-primary-600);
+  --cjm-steel-light: #8fb0c9;
+  --cjm-steel-edge: #c7d5e2;
+  --cjm-steel-wash: #f4f7fa;
+  /* ⚠ TWO STEEL WASHES, ONE DIGIT APART, AND BOTH ARE HIS. #F4F7FA is the
+     card ground (Learn's resume card, the workspace's Rubi tab); #F5F8FB is
+     the FEATURED panel — Readiness's "Do this next", the Overview's next-step
+     panel and its selected tab. The first pass used one for both, which is
+     invisible on screen and wrong in the one place it matters: a reviewer
+     comparing his export and the port side by side on the same monitor. */
+  --cjm-steel-panel: #f5f8fb;
+  --cjm-ring-cool: #e6e8eb;
+  --cjm-violet: #6b4fa0;
+  --cjm-rule-sand: #efebe2;
+  --cjm-bar-track: #d8dee4;
+  --cjm-steel-pressed: #e9ecef;
+  --cjm-control-edge: #c9d1d7;
+  --cjm-rule-warm: #e0dbcd;
+  --cjm-rule-cool: #e1e5e8;
+  --cjm-amber: #c08a2e;
+  --cjm-green: var(--color-success-700);
+  --cjm-rubi: var(--color-compass-page-rubi);
+  --cjm-transparent: transparent;
+  /* The chart and ring furniture, which is cooler than the page's warm rules:
+     the ring's unfilled track, the trend gridlines, and the area under the
+     line. */
+  --cjm-ring-track: #e2e7ec;
+  --cjm-grid: #dcdee1;
+  --cjm-area: #eef3f8;
+
+  /* The four Readiness levels. Ink is the pill's text, wash its ground, edge
+     its border; the `track-` set is the band meter behind the marker, which is
+     deliberately paler so the marker reads as the only hard edge on it. */
+  --cjm-beginner-ink: #514b55;
+  --cjm-beginner-wash: #f1efea;
+  --cjm-developing-ink: #694912;
+  --cjm-developing-wash: #fbf1e4;
+  --cjm-developing-edge: #eccfa5;
+  --cjm-proficient-ink: #375167;
+  --cjm-proficient-wash: #eaf1f7;
+  --cjm-ready-ink: #225740;
+  --cjm-ready-wash: #e7f1ec;
+  --cjm-ready-edge: #bfe0cd;
+  --cjm-track-empty: #e9e5dc;
+  --cjm-track-developing: #f4e1c2;
+  --cjm-track-proficient: #d6e3ee;
+  --cjm-track-ready: #cde5d7;
+
+  font-family: var(--font-body);
+  color: var(--cjm-ink);
+}
+.cjm .cjm-serif {
+  font-family: var(--font-heading-serif), Georgia, serif;
+}
+
+/* ---------- the shell ---------- */
+
+.cjm-shell {
+  display: flex;
+  align-items: flex-start;
+  min-height: 0;
+  flex: 1;
+}
+
+/* ---------- his rail ---------- */
+
+.cjm-rail {
+  flex: 0 0 222px;
+  width: 222px;
+  align-self: stretch;
+  box-sizing: border-box;
+  padding: 24px 18px 36px 20px;
+  border-right: 1px solid var(--cjm-hairline);
+  background: var(--cjm-white);
+}
+.cjm-rail__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.cjm-rail__row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 36px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--cjm-body);
+  font: inherit;
+  font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+}
+.cjm-rail__row:hover {
+  background: var(--color-neutral-100);
+}
+.cjm-rail__row[aria-current='page'] {
+  background: var(--cjm-steel-pressed);
+  color: var(--cjm-steel-deep);
+  font-weight: 600;
+}
+.cjm-rail__row svg {
+  flex: 0 0 auto;
+}
+/* The EXAM PREP rule. His heading sits ON the rule rather than above it, with
+   a short lead-in line to its left and the rest of the rule to its right. */
+.cjm-rail__group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 18px 0 6px;
+  padding: 0 12px;
+  color: var(--cjm-muted);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.cjm-rail__group::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--cjm-hairline);
+}
+
+/* ---------- the page ---------- */
+
+/* ⚠ HIS FRAME, MEASURED, AND IT IS THE SAME ON EVERY PAGE — `padding: 38px
+   44px 72px` on a `max-width: 1100px` column centred with `margin: 0 auto`.
+   Checked against Overview, Learn, Practice and Readiness: identical. The
+   first pass guessed 28/40/64 on 1180 and left-aligned, which was close
+   enough to look deliberate and wrong on all four counts. */
+.cjm-page {
+  position: relative;
+  flex: 999 1 560px;
+  min-width: 0;
+  box-sizing: border-box;
+  padding: 38px 44px 72px;
+}
+.cjm-page__col {
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+.cjm-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 32px;
+}
+/* ⚠ THE INK RULE IS READINESS'S, NOT THE SHELL'S. Measured on both pages:
+   his Readiness header carries a 1px #1F1D18 bottom border (it comes from a
+   class, not an inline style, which is why grepping the markup for it finds
+   nothing — probe the computed style). Learn has no rule at all. Putting it
+   in `.cjm-head` would draw a line across the top of eleven pages that do not
+   have one. */
+.cjm-head--ruled {
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--cjm-ink);
+}
+/* His: Playfair 34px/1.15, weight 500, -0.02em. */
+.cjm-h1 {
+  margin: 0;
+  font-size: 34px;
+  line-height: 1.15;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  color: var(--cjm-ink);
+}
+/* ⚠ THE LEAD IS PER-PAGE, and the differences are small enough to look like
+   noise and are his: Learn is 15px/1.5 capped at 600px with an 8px gap;
+   Readiness is 15px/1.55 capped at 680px with a 6px gap. One shared value
+   would be wrong on whichever page did not get picked. */
+.cjm-lead {
+  margin: 8px 0 0;
+  max-width: 600px;
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--cjm-body);
+}
+.cjm-lead--readiness {
+  margin: 6px 0 0;
+  max-width: 680px;
+  line-height: 1.55;
+}
+.cjm-live {
+  margin-top: 44px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  flex: 0 0 auto;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: var(--color-neutral-100);
+  color: var(--cjm-muted);
+  font-size: 12px;
+  white-space: nowrap;
+}
+.cjm-live__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--cjm-green);
+}
+
+/* ---------- do this next ---------- */
+
+.cjm-next {
+  margin-top: 26px;
+  border: 1px solid var(--cjm-steel-edge);
+  border-radius: 16px;
+  background: var(--cjm-steel-panel);
+  overflow: hidden;
+}
+.cjm-next__body {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 28px;
+  align-items: center;
+  padding: 22px 26px;
+}
+.cjm-next__mid {
+  min-width: 0;
+  padding-left: 28px;
+  border-left: 1px solid var(--cjm-steel-edge);
+}
+.cjm-next__eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0 0 6px;
+  color: var(--cjm-rubi);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.cjm-next__title {
+  margin: 0 0 8px;
+  font-size: 26px;
+  line-height: 1.15;
+  font-weight: 400;
+  color: var(--cjm-ink);
+}
+.cjm-next__text {
+  margin: 0;
+  max-width: 54ch;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--cjm-body);
+}
+.cjm-next__set {
+  flex: 0 0 auto;
+  min-width: 212px;
+  padding-left: 28px;
+  border-left: 1px solid var(--cjm-steel-edge);
+}
+.cjm-eyebrow {
+  margin: 0 0 5px;
+  color: var(--cjm-muted);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.cjm-set__title {
+  margin: 0 0 3px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--cjm-ink);
+}
+.cjm-set__meta {
+  margin: 0 0 14px;
+  font-size: 12.5px;
+  color: var(--cjm-muted);
+}
+.cjm-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--cjm-steel-deep);
+  color: #fff;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.cjm-link {
+  display: inline-block;
+  margin-left: 14px;
+  border: 0;
+  background: none;
+  padding: 0;
+  color: var(--cjm-steel-deep);
+  font: inherit;
+  font-size: 13px;
+  text-decoration: underline;
+  cursor: pointer;
+}
+.cjm-next__also {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 26px;
+  border-top: 1px solid var(--cjm-steel-edge);
+  background: var(--cjm-white);
+  font-size: 13px;
+  color: var(--cjm-body);
+}
+.cjm-next__also p {
+  margin: 0;
+  flex: 1;
+  min-width: 0;
+}
+.cjm-next__also strong {
+  font-weight: 600;
+  color: var(--cjm-ink);
+}
+
+/* ---------- the ring ---------- */
+
+.cjm-ring {
+  flex: 0 0 auto;
+  text-align: center;
+}
+.cjm-ring__svg {
+  display: block;
+}
+.cjm-ring__pct {
+  font-family: var(--font-heading-serif), Georgia, serif;
+  font-size: 26px;
+  fill: var(--cjm-ink);
+}
+.cjm-ring__word {
+  font-size: 8.5px;
+  letter-spacing: 0.12em;
+  fill: var(--cjm-muted);
+}
+.cjm-ring__legend {
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 12.5px;
+  color: var(--cjm-body);
+}
+.cjm-ring__legend li {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 4px;
+}
+.cjm-ring__legend b {
+  margin-left: auto;
+  font-weight: 600;
+  color: var(--cjm-ink);
+}
+.cjm-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex: 0 0 auto;
+}
+
+/* ---------- the trend card ---------- */
+
+.cjm-card {
+  margin-top: 22px;
+  padding: 22px 26px;
+  border: 1px solid var(--cjm-hairline);
+  border-radius: 10px;
+  background: var(--cjm-white);
+}
+.cjm-card__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 32px;
+}
+.cjm-card__text {
+  margin: 0;
+  max-width: 56ch;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--cjm-body);
+}
+.cjm-card__text strong {
+  font-weight: 600;
+  color: var(--cjm-ink);
+}
+.cjm-stats {
+  display: flex;
+  flex: 0 0 auto;
+  margin: 0;
+  padding: 0;
+}
+.cjm-stats div {
+  padding: 0 20px;
+}
+.cjm-stats div:last-child {
+  padding-right: 0;
+}
+.cjm-stats dt {
+  margin: 0 0 2px;
+  color: var(--cjm-muted);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.cjm-stats dd {
+  margin: 0;
+  font-family: var(--font-heading-serif), Georgia, serif;
+  font-size: 24px;
+  line-height: 1;
+}
+.cjm-chart {
+  position: relative;
+  margin-top: 22px;
+}
+.cjm-chart svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+.cjm-chart__axis {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--cjm-muted);
+}
+.cjm-chart__axis span:last-child {
+  font-weight: 600;
+  color: var(--cjm-ink);
+}
+.cjm-caption {
+  margin: 14px 0 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--cjm-hairline);
+  font-size: 12.5px;
+  color: var(--cjm-muted);
+}
+
+/* ---------- readiness by topic ---------- */
+
+.cjm-topics {
+  margin-top: 34px;
+}
+.cjm-topics__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+}
+.cjm-h2 {
+  margin: 0 0 6px;
+  font-size: 24px;
+  line-height: 1.2;
+  font-weight: 400;
+  color: var(--cjm-ink);
+}
+.cjm-topics__sub {
+  margin: 0 0 12px;
+  font-size: 13px;
+  color: var(--cjm-muted);
+}
+.cjm-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex: 0 0 auto;
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 12.5px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.cjm-topics__legend {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-top: 14px;
+  font-size: 13px;
+  color: var(--cjm-body);
+}
+.cjm-topics__legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.cjm-marker-key {
+  width: 11px;
+  height: 11px;
+  border: 2px solid var(--cjm-ink);
+  border-radius: 50%;
+  background: var(--cjm-white);
+}
+.cjm-help {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 0;
+  background: none;
+  padding: 0;
+  color: var(--cjm-steel-deep);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+.cjm-help__panel {
+  margin: 14px 0 0;
+  padding: 0;
+  border: 1px solid var(--cjm-hairline);
+  border-radius: 10px;
+  list-style: none;
+  overflow: hidden;
+}
+.cjm-help__panel li {
+  display: grid;
+  grid-template-columns: 112px 72px 1fr;
+  gap: 14px;
+  align-items: baseline;
+  padding: 11px 16px;
+  font-size: 13px;
+  color: var(--cjm-body);
+}
+.cjm-help__panel li + li {
+  border-top: 1px solid var(--cjm-hairline);
+}
+.cjm-help__name {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  color: var(--cjm-ink);
+}
+.cjm-help__range {
+  color: var(--cjm-muted);
+}
+
+/* ---------- a topic row ---------- */
+
+.cjm-row {
+  padding: 20px 0 16px;
+  border-top: 1px solid var(--cjm-hairline);
+}
+.cjm-row:first-of-type {
+  margin-top: 18px;
+}
+.cjm-row__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+}
+.cjm-row__name {
+  margin: 0 0 3px;
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--cjm-ink);
+}
+.cjm-row__meta {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--cjm-muted);
+}
+.cjm-row__right {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex: 0 0 auto;
+}
+.cjm-delta {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--cjm-green);
+  font-size: 13px;
+  font-weight: 600;
+}
+/* The band meter. Four segments sized by his `flex`, with the marker absolutely
+   placed at the score — `left` is a percentage of the whole track, which is
+   what makes 52/100 land inside the Developing segment rather than at the
+   segment's own midpoint. */
+.cjm-track {
+  position: relative;
+  display: flex;
+  margin: 14px 0 0;
+  border-radius: 5px;
+}
+.cjm-track__seg {
+  display: block;
+}
+.cjm-track__marker {
+  position: absolute;
+  top: 50%;
+  width: 13px;
+  height: 13px;
+  border: 2.5px solid var(--cjm-ink);
+  border-radius: 50%;
+  background: var(--cjm-white);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+.cjm-track__labels {
+  display: flex;
+  margin-top: 6px;
+  font-size: 12px;
+}
+.cjm-track__labels span {
+  display: block;
+}
+.cjm-row__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  margin-top: 12px;
+}
+.cjm-gap {
+  font-size: 12.5px;
+  color: var(--cjm-muted);
+}
+.cjm-foot-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.cjm-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 34px;
+  padding: 0 16px;
+  border: 1px solid var(--cjm-control-edge);
+  border-radius: 7px;
+  background: var(--cjm-white);
+  color: var(--cjm-ink);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.cjm-btn--primary {
+  border-color: var(--cjm-steel-deep);
+  background: var(--cjm-steel-deep);
+  color: #fff;
+}
+.cjm-chev {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border: 0;
+  border-radius: 7px;
+  background: none;
+  color: var(--cjm-muted);
+  cursor: pointer;
+}
+.cjm-chev:hover {
+  background: var(--color-neutral-100);
+}
+
+/* ---------- sub-topics ---------- */
+
+.cjm-subs {
+  margin: 14px 0 0 0;
+  padding: 0 0 0 18px;
+  border-left: 2px solid var(--cjm-hairline);
+  list-style: none;
+}
+.cjm-subs__eyebrow {
+  margin: 0 0 8px;
+  color: var(--cjm-muted);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+/* ⚠ SIX COLUMNS FOR SIX CHILDREN — name, note, bar, band, when, button. It
+   was five for one pass and the Practice button wrapped onto a full-width row
+   of its own under every sub-topic, which looked deliberate and was not. */
+.cjm-sub {
+  display: grid;
+  grid-template-columns: 1fr auto 46px auto auto auto;
+  gap: 16px;
+  align-items: center;
+  padding: 11px 0;
+}
+.cjm-sub + .cjm-sub {
+  border-top: 1px solid var(--cjm-hairline);
+}
+.cjm-sub__name {
+  min-width: 0;
+  font-size: 14px;
+  color: var(--cjm-ink);
+}
+.cjm-sub__note {
+  font-size: 12.5px;
+  font-weight: 600;
+}
+.cjm-sub__bar {
+  display: flex;
+  width: 46px;
+  flex: 0 0 auto;
+}
+.cjm-sub__band {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--cjm-muted);
+}
+.cjm-sub__band b {
+  font-weight: 600;
+  color: var(--cjm-ink);
+}
+.cjm-sub__when {
+  text-align: right;
+  font-size: 12px;
+  line-height: 1.35;
+  color: var(--cjm-rubi);
+}
+.cjm-sub__when span {
+  display: block;
+  color: var(--cjm-muted);
+}
+
+/* ---------- the footnote and Ask Rubi ---------- */
+
+.cjm-footnote {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 30px 0 0;
+  padding-top: 16px;
+  border-top: 1px solid var(--cjm-hairline);
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--cjm-muted);
+}
+/* ⚠ IT SITS ABOVE THE LIVE CHIP, NOT BESIDE IT. His button is pinned to the
+   top right of the content area and the "Live · Updated just now" chip sits
+   lower, inside the header block. A first pass floated the button and the two
+   shared a line, which read as one toolbar and is not his layout. */
+.cjm-ask {
+  position: absolute;
+  right: 40px;
+  top: 24px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 44px;
+  padding: 0 20px;
+  border: 1px solid var(--cjm-hairline);
+  border-radius: 999px;
+  background: var(--cjm-white);
+  box-shadow: 0 6px 20px rgb(0 0 0 / 10%);
+  color: var(--cjm-ink);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* ---------- a page his rail reaches that is not ported yet ---------- */
+
+.cjm-pending {
+  margin: 48px auto 0;
+  max-width: 560px;
+  padding: 28px 32px 24px;
+  border: 1px solid var(--cjm-hairline);
+  border-radius: 10px;
+  background: var(--cjm-white);
+}
+.cjm-pending h1 {
+  margin: 0 0 12px;
+  font-family: var(--font-heading-serif), Georgia, serif;
+  font-size: 24px;
+  line-height: 1.2;
+  color: var(--cjm-ink);
+}
+.cjm-pending p {
+  margin: 0 0 10px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--cjm-body);
+}
+.cjm-pending p:last-child {
+  margin-bottom: 0;
+  color: var(--cjm-muted);
+}
+
+/* His own `clip: rect(0 0 0 0)` span, as a class. Used for the delta's
+   " points in 3 weeks", which is in his DOM and not on his screen. */
+.cjm-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* ============ the Learn page ============ */
+
+/* The ring behind the course gauge is paler than the Readiness one. */
+.cjm {
+  --cjm-ring-pale: #eceef0;
+  --cjm-card-edge: #dcdee1;
+  --cjm-ch-rule: #e6e6e6;
+  --cjm-locked-tile: #f3f3f3;
+  --cjm-locked-ink: #5b5560;
+}
+
+/* ---------- where you left off ---------- */
+
+.cjm-resume {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+  margin-top: 30px;
+  padding: 20px;
+  border: 1px solid var(--cjm-card-edge);
+  border-radius: 14px;
+  background: var(--cjm-steel-wash);
+}
+.cjm-resume__thumb {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 96px;
+  width: 96px;
+  height: 60px;
+  border-radius: 8px;
+  background: var(--cjm-white);
+}
+.cjm-resume__play {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 14px;
+  background: var(--cjm-steel-pressed);
+  color: var(--cjm-body);
+}
+.cjm-resume__text {
+  flex: 1 1 320px;
+  min-width: 0;
+}
+.cjm-resume__title {
+  margin: 2px 0 0;
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--cjm-ink);
+}
+.cjm-resume__lesson {
+  margin: 2px 0 8px;
+  font-size: 13px;
+  color: var(--cjm-muted);
+}
+
+/* The thin progress rule — his 222px × 3px, used in the resume card and under
+   the current chapter's title. */
+.cjm-bar {
+  display: block;
+  width: 222px;
+  max-width: 100%;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--cjm-bar-track);
+  overflow: hidden;
+}
+.cjm-bar--ch {
+  margin-top: 3px;
+}
+.cjm-bar__fill {
+  display: block;
+  height: 3px;
+  background: var(--cjm-steel-deep);
+}
+
+/* ---------- the course card ---------- */
+
+.cjm-course {
+  margin-top: 32px;
+  border: 1px solid var(--cjm-card-edge);
+  border-radius: 14px;
+  background: var(--cjm-white);
+  overflow: hidden;
+}
+.cjm-course__head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 22px 20px;
+  border-bottom: 1px solid var(--cjm-card-edge);
+}
+.cjm-tile {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 36px;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: var(--cjm-steel-pressed);
+  color: var(--cjm-body);
+}
+.cjm-course__name {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.cjm-course__name .cjm-h2 {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 500;
+}
+.cjm-course__sub {
+  margin: 2px 0 0;
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.25;
+  color: var(--cjm-steel-deep);
+}
+.cjm-course__stat {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  flex: 0 0 auto;
+  text-align: right;
+}
+.cjm-course__done {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--cjm-green);
+}
+.cjm-course__of {
+  font-size: 13px;
+  color: var(--cjm-muted);
+  white-space: nowrap;
+}
+.cjm-course__ring {
+  display: flex;
+  justify-content: center;
+  flex: 0 0 120px;
+  width: 120px;
+}
+.cjm-course__pct {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 19px;
+  font-weight: 500;
+  line-height: 1;
+  color: var(--cjm-ink);
+}
+
+/* ---------- a chapter ---------- */
+
+.cjm-ch + .cjm-ch,
+.cjm-ch:first-of-type {
+  border-top: 1px solid var(--cjm-ch-rule);
+}
+.cjm-ch--current {
+  background: var(--cjm-steel-wash);
+}
+.cjm-ch__row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 20px;
+}
+.cjm-tile--mark {
+  flex: 0 0 28px;
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+}
+.cjm-ch--done .cjm-tile--mark {
+  background: var(--cjm-steel-pressed);
+  color: var(--cjm-ink);
+}
+.cjm-ch--current .cjm-tile--mark {
+  background: var(--cjm-white);
+  color: var(--cjm-ink);
+}
+.cjm-ch--locked .cjm-tile--mark {
+  background: var(--cjm-locked-tile);
+  color: var(--cjm-locked-ink);
+}
+.cjm-ch__name {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.cjm-ch__eyebrow {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--cjm-muted);
+}
+.cjm-ch--current .cjm-ch__eyebrow {
+  color: var(--cjm-steel-deep);
+}
+.cjm-ch__title {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--cjm-ink);
+}
+.cjm-ch--locked .cjm-ch__title {
+  font-weight: 400;
+  color: var(--cjm-locked-ink);
+}
+.cjm-ch__status {
+  flex: 0 0 auto;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--cjm-muted);
+  white-space: nowrap;
+}
+/* A locked chapter has no action button; the space is held so the chevrons of
+   all nineteen rows line up. */
+.cjm-ch__noaction {
+  flex: 0 0 96px;
+}
+
+.cjm-ch__body {
+  padding: 0 20px 18px 62px;
+}
+.cjm-ch__lock {
+  margin: 0 0 12px;
+  font-size: 13px;
+  color: var(--cjm-muted);
+}
+
+/* ---------- lessons ---------- */
+
+.cjm-lessons {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.cjm-lesson {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+  font-size: 14px;
+  color: var(--cjm-body);
+}
+.cjm-lesson__mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 16px;
+  width: 16px;
+  color: var(--cjm-muted);
+}
+.cjm-lesson--done .cjm-lesson__mark {
+  color: var(--cjm-green);
+}
+.cjm-lesson--current .cjm-lesson__mark {
+  color: var(--cjm-steel-deep);
+}
+.cjm-lesson__label {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.cjm-lesson--current .cjm-lesson__label {
+  font-weight: 600;
+  color: var(--cjm-ink);
+}
+.cjm-lesson--locked .cjm-lesson__label {
+  color: var(--cjm-muted);
+}
+.cjm-lesson__act {
+  flex: 0 0 auto;
+  border: 0;
+  background: none;
+  padding: 0;
+  color: var(--cjm-steel-deep);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* ---------- an exam strip ---------- */
+
+.cjm-exam {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 10px;
+  padding: 14px 16px;
+  border: 1px solid var(--cjm-card-edge);
+  border-radius: 10px;
+  background: var(--cjm-white);
+}
+.cjm-course > .cjm-exam {
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+}
+.cjm-tile--exam {
+  flex: 0 0 30px;
+  width: 30px;
+  height: 30px;
+  border-radius: 7px;
+  background: var(--cjm-locked-tile);
+  color: var(--cjm-locked-ink);
+}
+.cjm-exam--done .cjm-tile--exam {
+  background: var(--cjm-steel-pressed);
+  color: var(--cjm-green);
+}
+.cjm-exam__name {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.cjm-exam__eyebrow {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--cjm-muted);
+}
+.cjm-exam__title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--cjm-body);
+}
+.cjm-exam--done .cjm-exam__title {
+  color: var(--cjm-ink);
+}
+.cjm-exam__note {
+  flex: 0 0 auto;
+  font-size: 13px;
+  color: var(--cjm-muted);
+  white-space: nowrap;
+}
+/* ⚠ VISIBLE AND INERT, not hidden. His markup is `disabled aria-disabled` with
+   a padlock: the learner should see the exam exists and that it is shut. */
+.cjm-btn--locked {
+  background: var(--cjm-steel-pressed);
+  border-color: var(--cjm-steel-pressed);
+  color: var(--cjm-locked-ink);
+  cursor: not-allowed;
+}
+
+/* ============ the Overview ============ */
+
+.cjm-ov__course {
+  margin: 4px 0 0;
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.25;
+  color: var(--cjm-steel-deep);
+}
+.cjm-ov__meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 12px 0 0;
+  font-size: 13px;
+  color: var(--cjm-muted);
+}
+.cjm-pill--phase {
+  background: var(--cjm-steel-panel);
+  border: 1px solid var(--cjm-steel-edge);
+  color: var(--cjm-steel-deep);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.cjm-pill--quiet {
+  background: var(--color-neutral-100);
+  color: var(--cjm-muted);
+  font-weight: 400;
+}
+.cjm-pill--band {
+  background: var(--cjm-developing-wash);
+  border: 1px solid var(--cjm-developing-edge);
+  color: var(--cjm-developing-ink);
+  font-size: 11px;
+}
+
+/* The Overview's next-step panel is two columns, not three — no ring. */
+.cjm-next__body--ov {
+  grid-template-columns: 1fr auto;
+}
+.cjm-eyebrow--steel {
+  color: var(--cjm-steel-deep);
+}
+.cjm-eyebrow--rubi {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--cjm-rubi);
+  font-weight: 700;
+}
+
+/* ---------- two-up rows ---------- */
+
+/* ⚠ HIS FLEX RATIOS ARE NOT 1:1 AND THAT IS WHY THINGS FIT. Measured off his
+   markup: Rubi 1/340, Continue 2/480; Readiness-to-pass 1.3/440, Course
+   progress 1/380. Giving all four `1 1 380px` — which is what the first pass
+   did — makes the Readiness card too narrow, and its legend's label/value
+   pairs wrap onto two lines each. The ratios are load-bearing layout, not
+   taste. */
+.cjm-twoup {
+  display: flex;
+  flex-wrap: wrap;
+  margin-top: 32px;
+  border: 1px solid var(--cjm-hairline);
+  border-radius: 16px;
+  background: var(--cjm-white);
+  overflow: hidden;
+}
+.cjm-rubi {
+  flex: 1 1 340px;
+  min-width: 0;
+  padding: 28px 30px;
+  /* His cream — the one warm panel on the page, and it is Rubi's. */
+  background: #fffcf8;
+}
+.cjm-rubi__title {
+  margin: 4px 0 8px;
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--cjm-ink);
+}
+.cjm-rubi .cjm-cta {
+  margin-top: 16px;
+}
+.cjm-continue {
+  flex: 2 1 480px;
+  min-width: 0;
+  padding: 28px 30px;
+  border-left: 1px solid var(--cjm-hairline);
+}
+.cjm-continue__cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-top: 12px;
+}
+.cjm-mini {
+  padding: 14px;
+  border: 1px solid var(--cjm-hairline);
+  border-radius: 10px;
+}
+.cjm-mini__icon {
+  display: inline-flex;
+  color: var(--cjm-steel-deep);
+}
+.cjm-mini__title {
+  margin: 10px 0 5px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--cjm-ink);
+}
+.cjm-mini__body {
+  margin: 0 0 12px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--cjm-body);
+}
+.cjm-link--flush {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-left: 0;
+  text-decoration: none;
+}
+
+/* ---------- the two measures ---------- */
+
+.cjm-stat {
+  flex: 1.3 1 440px;
+  min-width: 0;
+  padding: 26px 30px 28px;
+}
+.cjm-stat + .cjm-stat {
+  flex: 1 1 380px;
+  border-left: 1px solid var(--cjm-hairline);
+}
+.cjm-stat__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 0 0 16px;
+}
+.cjm-stat__source {
+  font-size: 13px;
+  color: var(--cjm-muted);
+}
+.cjm-stat__body {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+.cjm-rings,
+.cjm-lessonring {
+  flex: 0 0 auto;
+}
+.cjm-rings__band {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.cjm-lessonring__mid {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+.cjm-lessonring__mid b {
+  font-size: 24px;
+  font-weight: 500;
+  color: var(--cjm-ink);
+}
+.cjm-lessonring__mid span {
+  margin-top: 3px;
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--cjm-muted);
+}
+.cjm-legend {
+  flex: 1 1 220px;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.cjm-legend li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--cjm-rule-sand);
+}
+.cjm-legend__pair {
+  flex: 1 1 0;
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-size: 13px;
+  color: var(--cjm-body);
+}
+.cjm-legend__pair b {
+  font-weight: 600;
+  color: var(--cjm-ink);
+}
+/* The fifth row stacks, and both lines are muted — it is not a measure. */
+.cjm-legend__stack {
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  font-size: 13px;
+  color: var(--cjm-muted);
+}
+.cjm-legend__stack b {
+  font-weight: 600;
+  color: var(--cjm-muted);
+}
+.cjm-dot--lg {
+  width: 12px;
+  height: 12px;
+  flex: 0 0 12px;
+}
+.cjm-dot--hollow {
+  width: 10px;
+  height: 10px;
+  flex: 0 0 12px;
+  border: 1.5px solid var(--cjm-faint);
+  border-radius: 6px;
+  box-sizing: border-box;
+}
+.cjm-stat__text {
+  flex: 1 1 200px;
+  min-width: 0;
+}
+.cjm-stat__pair {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 0 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--cjm-rule-sand);
+  font-size: 14px;
+  color: var(--cjm-body);
+}
+.cjm-stat__pair b {
+  font-weight: 600;
+  color: var(--cjm-ink);
+}
+.cjm-stat__note,
+.cjm-stat__caption {
+  margin: 0;
+  font-size: 13px;
+  color: var(--cjm-muted);
+}
+.cjm-stat__caption {
+  margin-top: 16px;
+}
+
+/* ---------- the tab strip ---------- */
+
+.cjm-tabs {
+  display: flex;
+  gap: 0;
+  margin-top: 28px;
+  border-bottom: 1px solid var(--cjm-hairline);
+}
+.cjm-tab {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 12px 20px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: var(--cjm-body);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.cjm-tab.is-on {
+  border-bottom-color: var(--cjm-steel-deep);
+  background: var(--cjm-steel-panel);
+  color: var(--cjm-ink);
+}
+.cjm-tab__label {
+  font-size: 15px;
+  font-weight: 600;
+}
+.cjm-tab.is-on .cjm-tab__label {
+  font-weight: 600;
+}
+.cjm-tab__sub {
+  font-size: 12.5px;
+  color: var(--cjm-muted);
+}
+
+/* ---------- the table ---------- */
+
+.cjm-tablehead {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  margin-top: 26px;
+}
+.cjm-tablehead__note {
+  margin: 0;
+  flex: 0 0 auto;
+  font-size: 12.5px;
+  color: var(--cjm-muted);
+}
+.cjm-table {
+  margin-top: 14px;
+  border: 1px solid var(--cjm-hairline);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.cjm-table__row {
+  display: grid;
+  gap: 18px;
+  align-items: center;
+  padding: 14px 18px;
+}
+.cjm-table__row--r {
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1.2fr) minmax(0, 1fr) minmax(0, 0.8fr) auto;
+}
+.cjm-table__row--p {
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1.5fr) auto;
+}
+.cjm-table__head {
+  background: var(--color-neutral-50, #faf9f6);
+  border-bottom: 1px solid var(--cjm-hairline);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--cjm-muted);
+}
+.cjm-trow + .cjm-trow {
+  border-top: 1px solid var(--cjm-hairline);
+}
+.cjm-trow.is-open {
+  background: var(--cjm-steel-panel);
+}
+.cjm-trow__name {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  font-size: 15px;
+}
+.cjm-trow__name b {
+  display: block;
+  font-weight: 600;
+  color: var(--cjm-ink);
+}
+.cjm-trow__weight {
+  display: block;
+  font-size: 12.5px;
+  color: var(--cjm-muted);
+}
+/* The share-of-exam wedge: a short upright track whose fill is the topic's
+   weight. The simulator row keeps the space and draws nothing. */
+.cjm-wedge {
+  display: flex;
+  flex-direction: column-reverse;
+  flex: 0 0 6px;
+  width: 6px;
+  height: 30px;
+  border-radius: 3px;
+  background: var(--cjm-track-empty);
+  overflow: hidden;
+}
+.cjm-wedge--none {
+  background: transparent;
+}
+.cjm-wedge__fill {
+  display: block;
+  width: 6px;
+  background: var(--cjm-steel-deep);
+}
+.cjm-trow__practice {
+  min-width: 0;
+  font-size: 13px;
+  color: var(--cjm-body);
+}
+.cjm-bar--cov {
+  width: 100%;
+  max-width: 160px;
+  margin-top: 6px;
+}
+.cjm-trow__band {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.cjm-trow__num {
+  font-size: 13px;
+  color: var(--cjm-body);
+}
+.cjm-trow__nonote,
+.cjm-trow__last {
+  font-size: 13px;
+  color: var(--cjm-muted);
+}
+.cjm-trow__next {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: flex-end;
+}
+.cjm-trow__plain {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--cjm-steel-deep);
+}
+.cjm-chev--none {
+  visibility: hidden;
+}
+.cjm-trow .cjm-subs {
+  margin: 0 18px 16px 48px;
+}
+
+/* the course-progress lesson list */
+.cjm-llist {
+  margin: 0 18px 14px 48px;
+  padding: 0;
+  list-style: none;
+  border-left: 2px solid var(--cjm-hairline);
+}
+.cjm-llist li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 0 7px 16px;
+  font-size: 13.5px;
+  color: var(--cjm-body);
+}
+.cjm-llist__label {
+  flex: 1 1 auto;
+}
+.cjm-llist__status {
+  font-weight: 600;
+  font-size: 12.5px;
+}
+
+/* The course-progress row's meter: his fixed 140px track, then the figure. */
+.cjm-lbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 5px;
+}
+.cjm-lbar__track {
+  flex: 0 0 140px;
+  height: 5px;
+  border-radius: 3px;
+  background: var(--cjm-ring-pale);
+  overflow: hidden;
+}
+.cjm-lbar__fill {
+  display: block;
+  height: 5px;
+  border-radius: 3px;
+}
+.cjm-lbar b {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* ============ the Practice page ============ */
+
+.cjm {
+  --cjm-conf-low-bg: #f7d9d9;
+  --cjm-conf-low-edge: #efb2b2;
+  --cjm-conf-low-ink: #a20000;
+  --cjm-conf-med-bg: #fef3df;
+  --cjm-conf-med-edge: #fbca68;
+  --cjm-conf-med-ink: #694c11;
+  --cjm-conf-high-bg: #d9ede1;
+  --cjm-conf-high-edge: #b3dcc3;
+  --cjm-conf-high-ink: #015623;
+  --cjm-beginner-bar: #a39a86;
+  --cjm-row-rule: #e6e6e6;
+  /* The weakest-set ring's two tracks: warm behind Readiness, cool behind
+     coverage. His, and not interchangeable. */
+  --cjm-ring-warm: #e7e2d9;
+  --cjm-ring-steel-track: #e1e6ed;
+}
+
+.cjm-pr__lead {
+  position: relative;
+  margin: 12px 0 0;
+  padding-right: 32px;
+  max-width: 760px;
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--cjm-body);
+}
+.cjm-pr__dismiss {
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  color: var(--cjm-muted);
+  cursor: pointer;
+}
+.cjm-pr__dismiss:hover {
+  background: var(--color-neutral-100);
+}
+
+/* ---------- the two recommendations ---------- */
+
+.cjm-pr__rec {
+  margin-top: 28px;
+  border: 1px solid var(--cjm-steel-edge);
+  border-radius: 16px;
+  background: var(--cjm-steel-panel);
+  overflow: hidden;
+}
+.cjm-pr__receyebrow {
+  margin: 0;
+  padding: 24px 28px 0;
+}
+.cjm-pr__weakest {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  flex-wrap: wrap;
+  padding: 12px 28px 24px;
+}
+.cjm-pr__ring {
+  flex: 0 0 auto;
+}
+.cjm-pr__ringmid {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.cjm-pr__recbody {
+  flex: 1 1 320px;
+  min-width: 0;
+}
+.cjm-pr__rectopic {
+  margin: 6px 0 2px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--cjm-muted);
+}
+.cjm-pr__rectitle {
+  margin: 0 0 8px;
+  font-size: 24px;
+  font-weight: 400;
+  line-height: 1.2;
+  color: var(--cjm-ink);
+}
+.cjm-pr__recstats {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 18px;
+  margin: 14px 0 0;
+  font-size: 13px;
+  color: var(--cjm-body);
+}
+.cjm-pr__recstats span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+.cjm-pr__recstats b {
+  font-weight: 600;
+  color: var(--cjm-ink);
+}
+.cjm-pr__spaced {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding: 14px 28px;
+  border-top: 1px solid var(--cjm-steel-edge);
+  background: var(--cjm-white);
+}
+.cjm-pr__spaced .cjm-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0;
+  flex: 0 0 auto;
+}
+.cjm-pr__spacedtitle {
+  margin: 0;
+  flex: 1 1 240px;
+  min-width: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--cjm-ink);
+}
+.cjm-pr__due {
+  flex: 0 0 auto;
+  font-size: 13px;
+  color: var(--cjm-muted);
+}
+.cjm-pr__due b {
+  font-weight: 600;
+  color: var(--cjm-rubi);
+}
+
+/* ---------- tabs, views, filters ---------- */
+
+.cjm-pr__bar {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+  margin-top: 28px;
+  border-bottom: 1px solid var(--cjm-hairline);
+}
+.cjm-tabs--flush {
+  margin-top: 0;
+  border-bottom: 0;
+}
+.cjm-pr__views {
+  display: inline-flex;
+  gap: 4px;
+  margin-bottom: 10px;
+  padding: 3px;
+  border: 1px solid var(--cjm-hairline);
+  border-radius: 8px;
+}
+.cjm-pr__view {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 12px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--cjm-body);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+.cjm-pr__view.is-on {
+  background: var(--cjm-steel-pressed);
+  color: var(--cjm-steel-deep);
+  font-weight: 600;
+}
+
+.cjm-pr__filters {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px 18px;
+  margin-top: 18px;
+}
+.cjm-pr__filterby {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--cjm-muted);
+}
+.cjm-pr__filtergroup {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.cjm-pr__filterlabel {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--cjm-faint);
+}
+.cjm-fpill {
+  padding: 5px 14px;
+  border: 1px solid;
+  border-radius: 999px;
+  background: var(--cjm-white);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.cjm-fpill.is-on {
+  box-shadow: 0 0 0 2px var(--cjm-steel-wash);
+}
+
+/* ---------- groups and the table ---------- */
+
+.cjm-pr__group {
+  margin-top: 26px;
+}
+.cjm-pr__grouphead {
+  margin-bottom: 10px;
+}
+.cjm-pr__grouptitle {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--cjm-ink);
+}
+.cjm-pr__groupmeta {
+  margin: 2px 0 0;
+  font-size: 12.5px;
+  color: var(--cjm-muted);
+}
+.cjm-pr__table {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid var(--cjm-hairline);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.cjm-pr__table th {
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--cjm-hairline);
+  background: var(--cjm-paper);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-align: left;
+  color: var(--cjm-muted);
+}
+.cjm-pr__table td {
+  padding: 13px 16px;
+  border-top: 1px solid var(--cjm-row-rule);
+  vertical-align: middle;
+  font-size: 14px;
+  color: var(--cjm-body);
+}
+.cjm-pr__table tbody tr:first-child td {
+  border-top: 0;
+}
+.cjm-pr__seteyebrow {
+  display: block;
+  margin-bottom: 3px;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--cjm-muted);
+}
+.cjm-pr__settitle {
+  display: block;
+  font-weight: 600;
+  color: var(--cjm-ink);
+}
+.cjm-pr__bmk {
+  display: block;
+  margin-top: 3px;
+  font-size: 12px;
+  color: var(--cjm-muted);
+}
+.cjm-pill--conf {
+  flex-direction: column;
+  gap: 0;
+  line-height: 1.25;
+}
+.cjm-pr__confword {
+  font-size: 10px;
+  font-weight: 400;
+  opacity: 0.85;
+}
+.cjm-pill--beginner {
+  background: var(--cjm-beginner-wash);
+  border: 1px solid var(--cjm-edge);
+  color: var(--cjm-beginner-ink);
+  flex-direction: column;
+  gap: 0;
+  line-height: 1.25;
+}
+.cjm-pr__dash {
+  color: var(--cjm-faint);
+}
+.cjm-pr__status {
+  display: block;
+  font-size: 13px;
+  color: var(--cjm-body);
+}
+.cjm-bar--set {
+  width: 150px;
+  max-width: 100%;
+  margin-top: 6px;
+}
+.cjm-pr__action {
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* ---------- the cards view ---------- */
+
+.cjm-pr__cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 12px;
+}
+.cjm-pr__card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 16px;
+  border: 1px solid var(--cjm-hairline);
+  border-radius: 10px;
+  background: var(--cjm-white);
+}
+.cjm-pr__cardpills {
+  display: flex;
+  gap: 8px;
+  margin: 0;
+}
+.cjm-pr__card .cjm-btn {
+  margin-top: auto;
+}
+
+/* ---------- the empty state ---------- */
+
+.cjm-pr__empty {
+  margin-top: 26px;
+  padding: 40px 28px;
+  border: 1px solid var(--cjm-hairline);
+  border-radius: 12px;
+  background: var(--cjm-paper);
+  text-align: center;
+}
+.cjm-pr__emptytitle {
+  margin: 0 0 6px;
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--cjm-ink);
+}
+.cjm-pr__emptybody {
+  margin: 0 auto 16px;
+  max-width: 48ch;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--cjm-muted);
+}
+
+/* ============ Prep Review ============ */
+
+.cjm-prep__course {
+  margin-top: 4px;
+}
+.cjm-prep__titlerow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+/* His outline pill — transparent ground, steel rule. The one word that says
+   this page gates nothing. */
+.cjm-pill--optional {
+  background: transparent;
+  border: 1px solid var(--cjm-steel-edge);
+  color: var(--cjm-steel-deep);
+  padding: 2px 10px;
+  font-size: 13px;
+}
+.cjm-prep__band {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--cjm-developing-ink);
+}
+/* An exam row that is a sibling of the chapters rather than nested inside
+   one: full-bleed, ruled like a chapter, no inner card. */
+.cjm-exam--flat {
+  margin: 0;
+  border: 0;
+  border-top: 1px solid var(--cjm-ch-rule);
+  border-radius: 0;
+  padding: 14px 20px;
+}
+
+/* ============ the Study planner ============ */
+
+.cjm {
+  --cjm-card-edge2: #dcdee1;
+  --cjm-late-wash: #fdf4f4;
+  --cjm-cell-off: #eef0f2;
+  --cjm-today-edge: #1f2a33;
+}
+
+.cjm-pl__stats {
+  display: flex;
+  align-items: flex-end;
+  gap: 0;
+  flex-wrap: wrap;
+  margin-top: 28px;
+  border: 1px solid var(--cjm-hairline);
+  border-radius: 14px;
+  background: var(--cjm-white);
+  overflow: hidden;
+}
+.cjm-pl__stat {
+  flex: 1 1 220px;
+  min-width: 0;
+  padding: 20px 24px;
+}
+.cjm-pl__stat + .cjm-pl__stat {
+  border-left: 1px solid var(--cjm-hairline);
+}
+.cjm-pl__statbig {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: 6px 0 0;
+  font-size: 19px;
+  font-weight: 600;
+  color: var(--cjm-ink);
+}
+.cjm-pl__statsub {
+  margin: 3px 0 0;
+  font-size: 13px;
+  color: var(--cjm-muted);
+}
+.cjm-pl__change {
+  margin: 20px 24px;
+  flex: 0 0 auto;
+}
+
+/* ---------- the pace editor ---------- */
+
+.cjm-pl__editor {
+  margin-top: 16px;
+  padding: 22px 24px;
+  border: 1px solid var(--cjm-hairline);
+  border-radius: 14px;
+  background: var(--cjm-paper);
+}
+.cjm-pl__paces {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 12px;
+  margin-top: 12px;
+}
+.cjm-pl__pace {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 14px 16px;
+  border: 1px solid var(--cjm-card-edge2);
+  border-radius: 10px;
+  background: var(--cjm-white);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.cjm-pl__pace.is-on {
+  border-color: var(--cjm-steel-deep);
+  box-shadow: inset 0 0 0 1px var(--cjm-steel-deep);
+}
+.cjm-pl__pacename {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--cjm-ink);
+}
+.cjm-pl__pacetotal {
+  font-size: 13px;
+  color: var(--cjm-body);
+}
+.cjm-pl__paceper,
+.cjm-pl__pacefinish {
+  font-size: 12.5px;
+  color: var(--cjm-muted);
+}
+.cjm-pl__pacefinish {
+  margin-top: 4px;
+  font-weight: 600;
+}
+.cjm-pl__spread,
+.cjm-pl__weektotal {
+  margin: 18px 0 0;
+  font-size: 13px;
+  color: var(--cjm-muted);
+}
+.cjm-pl__weektotal {
+  margin-top: 4px;
+  font-weight: 600;
+  color: var(--cjm-ink);
+}
+.cjm-pl__sliders {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px 20px;
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.cjm-pl__sliders li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+}
+.cjm-pl__sliderday {
+  flex: 0 0 32px;
+  color: var(--cjm-muted);
+}
+.cjm-pl__slidertrack {
+  flex: 1 1 auto;
+  height: 5px;
+  border-radius: 3px;
+  background: var(--cjm-ring-pale);
+  overflow: hidden;
+}
+.cjm-pl__sliderfill {
+  display: block;
+  height: 5px;
+  background: var(--cjm-steel-deep);
+}
+.cjm-pl__slidertext {
+  flex: 0 0 52px;
+  text-align: right;
+  font-weight: 600;
+  color: var(--cjm-ink);
+}
+
+/* ---------- the calendar ---------- */
+
+.cjm-pl__cal {
+  margin-top: 28px;
+}
+.cjm-pl__calhead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+.cjm-pl__caltitle {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--cjm-ink);
+}
+.cjm-pl__views {
+  display: inline-flex;
+  gap: 4px;
+  padding: 3px;
+  border: 1px solid var(--cjm-hairline);
+  border-radius: 8px;
+}
+.cjm-pl__view {
+  padding: 6px 14px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--cjm-body);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+.cjm-pl__view.is-on {
+  background: var(--cjm-steel-deep);
+  color: #fff;
+  font-weight: 600;
+}
+.cjm-pl__hint {
+  margin: 14px 0 12px;
+  font-size: 13px;
+  color: var(--cjm-muted);
+}
+.cjm-pl__grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+}
+.cjm-pl__dow {
+  padding-bottom: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--cjm-muted);
+}
+.cjm-pl__cell {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-height: 150px;
+  padding: 10px;
+  border: 1px solid var(--cjm-rule-warm);
+  border-radius: 10px;
+  background: var(--cjm-white);
+}
+/* The full plan is nine weeks of the same cells at a shorter height. */
+.cjm-pl__grid--full .cjm-pl__cell {
+  min-height: 96px;
+}
+.cjm-pl__cell.is-today {
+  border: 2px solid var(--cjm-today-edge);
+}
+.cjm-pl__cell.is-off {
+  background: var(--cjm-cell-off);
+}
+.cjm-pl__cell.is-exam {
+  border-color: var(--cjm-ink);
+}
+.cjm-pl__celltop {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  border: 0;
+  background: none;
+  padding: 0;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.cjm-pl__date {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--cjm-ink);
+}
+.cjm-pl__date.is-struck {
+  text-decoration: line-through;
+  font-weight: 400;
+  color: var(--cjm-muted);
+}
+.cjm-pl__today {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--cjm-steel-deep);
+}
+.cjm-pl__session {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding-left: 8px;
+  border-left: 2px solid var(--cjm-steel-deep);
+  font-size: 12.5px;
+}
+.cjm-pl__session.is-review {
+  border-left-color: var(--cjm-amber);
+}
+.cjm-pl__topic {
+  color: var(--cjm-ink);
+}
+.cjm-pl__dur {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--cjm-muted);
+}
+.cjm-pl__offword {
+  font-size: 12.5px;
+  color: var(--cjm-muted);
+}
+.cjm-pl__skip {
+  margin-top: auto;
+  align-self: flex-start;
+  border: 0;
+  background: none;
+  padding: 0;
+  color: var(--cjm-steel-deep);
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.cjm-pl__pop {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  z-index: 5;
+  width: 230px;
+  padding: 12px 14px;
+  border: 1px solid var(--cjm-hairline);
+  border-radius: 10px;
+  background: var(--cjm-white);
+  box-shadow: 0 10px 28px rgb(0 0 0 / 14%);
+}
+.cjm-pl__pop--left {
+  left: 0;
+}
+.cjm-pl__pop--right {
+  right: 0;
+}
+.cjm-pl__popsub {
+  margin: 0 0 4px;
+  font-size: 12px;
+  color: var(--cjm-muted);
+}
+.cjm-pl__poptitle {
+  margin: 0 0 4px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--cjm-ink);
+}
+.cjm-pl__popnote {
+  margin: 0 0 10px;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--cjm-body);
+}
+.cjm-pl__legend {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+  padding-top: 14px;
+  border-top: 1px solid var(--cjm-hairline);
+  font-size: 13px;
+  color: var(--cjm-body);
+}
+.cjm-pl__legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.cjm-pl__swbar {
+  width: 2px;
+  height: 14px;
+}
+.cjm-pl__swsq {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+}
+.cjm-pl__swstruck {
+  text-decoration: line-through;
+  color: var(--cjm-muted);
+}
+
+/* The spaced-review line: a second entry in the cell, amber-ruled. */
+.cjm-pl__review {
+  padding-left: 8px;
+  border-left: 2px solid var(--cjm-amber);
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--cjm-amber-deep, #835b16);
+}
+
+/* Exam day is a dark cell with its own label in white. */
+.cjm-pl__cell.is-exam {
+  background: var(--cjm-ink);
+  border-color: var(--cjm-ink);
+}
+.cjm-pl__cell.is-exam .cjm-pl__date {
+  color: #fff;
+}
+.cjm-pl__examday {
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+}
+.cjm-pl__today {
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--cjm-today-edge);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+/* ============ Flashcards ============ */
+
+.cjm-fc__resultshead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-top: 26px;
+}
+.cjm-fc__note {
+  margin: 0;
+  font-size: 13px;
+  color: var(--cjm-muted);
+}
+.cjm-fc__cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px;
+  margin-top: 14px;
+}
+.cjm-fc__card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 16px;
+  border: 1px solid var(--cjm-hairline);
+  border-radius: 10px;
+  background: var(--cjm-white);
+}
+.cjm-fc__cardpills {
+  display: flex;
+  gap: 8px;
+  margin: 0;
+}
+.cjm-fc__cardtitle {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--cjm-ink);
+}
+.cjm-fc__cardmeta {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--cjm-muted);
+}
+.cjm-fc__bm {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--cjm-muted);
+}
+.cjm-fc__bm b {
+  font-weight: 600;
+  color: var(--cjm-ink);
+}
+.cjm-fc__card .cjm-btn {
+  margin-top: auto;
+}
+.cjm-fc__table {
+  margin-top: 14px;
+}
+
+/* ============ the Exam Simulator ============ */
+
+.cjm-sim__heading {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--cjm-ink);
+}
+.cjm-sim__row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 20px;
+  border-top: 1px solid var(--cjm-ch-rule);
+}
+.cjm-sim__name {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.cjm-sim__title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--cjm-ink);
+}
+.cjm-pill--timed {
+  background: var(--cjm-developing-wash);
+  border: 1px solid var(--cjm-developing-edge);
+  color: var(--cjm-developing-ink);
+  font-size: 11px;
+}
+.cjm-sim__meta {
+  margin: 2px 0 0;
+  font-size: 12.5px;
+  color: var(--cjm-muted);
+}
+
+/* ---------- the provider modal ---------- */
+
+.cjm-sim__scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgb(31 29 24 / 42%);
+}
+.cjm-sim__modal {
+  width: 100%;
+  max-width: 540px;
+  max-height: 90vh;
+  overflow: auto;
+  padding: 26px 28px;
+  border-radius: 14px;
+  background: var(--cjm-white);
+  box-shadow: 0 24px 60px rgb(0 0 0 / 28%);
+}
+.cjm-sim__modaltitle {
+  margin: 4px 0 10px;
+  font-size: 24px;
+  font-weight: 400;
+  color: var(--cjm-ink);
+}
+.cjm-sim__providers {
+  margin: 18px 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.cjm-sim__prov {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  width: 100%;
+  padding: 13px 15px;
+  border: 1px solid var(--cjm-card-edge2);
+  border-radius: 10px;
+  background: var(--cjm-white);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.cjm-sim__prov.is-on {
+  border: 2px solid var(--cjm-steel-deep);
+  background: var(--cjm-steel-panel);
+}
+.cjm-sim__provdot {
+  flex: 0 0 16px;
+  width: 16px;
+  height: 16px;
+  margin-top: 2px;
+  border: 1.5px solid #9fa6b0;
+  border-radius: 50%;
+}
+.cjm-sim__prov.is-on .cjm-sim__provdot {
+  border-color: var(--cjm-steel-deep);
+  background: radial-gradient(var(--cjm-steel-deep) 0 45%, transparent 46%);
+}
+.cjm-sim__prov b {
+  display: block;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--cjm-ink);
+}
+.cjm-sim__provnote {
+  display: block;
+  margin-top: 2px;
+  font-size: 13px;
+  color: var(--cjm-muted);
+}
+.cjm-sim__help {
+  margin: 16px 0 0;
+  font-size: 13px;
+  color: var(--cjm-muted);
+}
+.cjm-sim__modalfoot {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+}
+.cjm-sim__modalfoot .cjm-cta[disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ============ a Flashcards topic ============ */
+
+/* ⚠ A BREADCRUMB BECAUSE THE PAGE HAS NO RAIL ROW. The rail cannot show where
+   you are on a page it does not list. */
+.cjm-crumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+  font-size: 13px;
+  color: var(--cjm-muted);
+}
+.cjm-crumb__link {
+  border: 0;
+  background: none;
+  padding: 0;
+  color: var(--cjm-steel-deep);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.cjm-crumb__here {
+  color: var(--cjm-ink);
+}
+.cjm-ftopic__head {
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--cjm-hairline);
+}
+.cjm-ftopic__modes {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+}
+.cjm-ftopic__list {
+  margin-top: 26px;
+}
+.cjm-ftopic__listhead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 8px;
+}
+.cjm-ftopic__row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.8fr) auto auto auto;
+  gap: 20px;
+  align-items: center;
+  padding: 16px 0;
+  border-top: 1px solid var(--cjm-row-rule);
+}
+.cjm-ftopic__name {
+  min-width: 0;
+}
+.cjm-ftopic__band {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 13px;
+  color: var(--cjm-body);
+}
+.cjm-ftopic__band b {
+  font-weight: 600;
+}
+.cjm-ftopic__cards {
+  font-size: 13px;
+  color: var(--cjm-muted);
+  white-space: nowrap;
+}
+
+/* ============ the simulated exam (vendor chrome) ============ */
+
+/* ⚠ IT DELIBERATELY DOES NOT LOOK LIKE COMPASS. A simulator whose chrome
+   matched the app you revised in would not be simulating anything — so this
+   block borrows the test-centre look: a dark bar, a green question list, a
+   timer, and no Compass rail at all. */
+.cjm-vx {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  background: #f3f4f5;
+  font-family: var(--font-body);
+  color: var(--cjm-vx-ink, #262626);
+}
+.cjm-vx__bar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 10px 18px;
+  background: #1f2a33;
+  color: #fff;
+  font-size: 13px;
+}
+.cjm-vx__exit {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid rgb(255 255 255 / 35%);
+  border-radius: 6px;
+  background: transparent;
+  padding: 5px 11px;
+  color: #fff;
+  font: inherit;
+  font-size: 12.5px;
+  cursor: pointer;
+}
+.cjm-vx__title {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-weight: 600;
+}
+.cjm-vx__provider {
+  opacity: 0.85;
+}
+.cjm-vx__page {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 32px 36px 56px;
+}
+
+/* ---------- intro ---------- */
+
+.cjm-vx__intro {
+  display: flex;
+  gap: 32px;
+  flex-wrap: wrap;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+.cjm-vx__intromain {
+  flex: 1.6 1 460px;
+  min-width: 0;
+}
+.cjm-vx__h1 {
+  margin: 0 0 10px;
+  font-size: 26px;
+  font-weight: 600;
+  color: #1f1d18;
+}
+.cjm-vx__h2 {
+  margin: 26px 0 10px;
+  font-size: 17px;
+  font-weight: 600;
+  color: #1f1d18;
+}
+.cjm-vx__note,
+.cjm-vx__para {
+  margin: 0 0 10px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #42464f;
+}
+.cjm-vx__bullets {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.cjm-vx__bullets li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 7px 0;
+  font-size: 14px;
+  line-height: 1.55;
+  color: #42464f;
+}
+.cjm-vx__bullets svg {
+  flex: 0 0 auto;
+  margin-top: 3px;
+  color: var(--cjm-green);
+}
+.cjm-vx__blueprint {
+  margin: 0 0 16px;
+  padding: 0;
+  list-style: none;
+}
+.cjm-vx__blueprint li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 5px 0;
+  font-size: 13.5px;
+}
+.cjm-vx__bpname {
+  flex: 0 0 240px;
+}
+.cjm-vx__bptrack {
+  flex: 1 1 auto;
+  height: 8px;
+  border-radius: 4px;
+  background: #e3e5e8;
+  overflow: hidden;
+}
+.cjm-vx__bpfill {
+  display: block;
+  height: 8px;
+  background: var(--cjm-steel-deep);
+}
+.cjm-vx__bppct {
+  flex: 0 0 42px;
+  text-align: right;
+  font-weight: 600;
+}
+.cjm-vx__glance {
+  flex: 1 1 280px;
+  min-width: 0;
+  align-self: flex-start;
+  padding: 22px 24px;
+  border: 1px solid #dcdee1;
+  border-radius: 12px;
+  background: #fff;
+}
+.cjm-vx__glance dl {
+  margin: 12px 0 18px;
+}
+.cjm-vx__glance div {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 9px 0;
+  border-bottom: 1px solid #ecedef;
+  font-size: 13.5px;
+}
+.cjm-vx__glance dt {
+  color: #615c55;
+}
+.cjm-vx__glance dd {
+  margin: 0;
+  font-weight: 600;
+  color: #1f1d18;
+}
+.cjm-vx__glance .cjm-cta {
+  width: 100%;
+}
+.cjm-vx__proto {
+  margin: 14px 0 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #8e939b;
+}
+
+/* ---------- terms and other dialogs ---------- */
+
+.cjm-vx__dialog {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 26px 28px;
+  border: 1px solid #dcdee1;
+  border-radius: 12px;
+  background: #fff;
+}
+.cjm-vx__nda {
+  max-height: 260px;
+  overflow: auto;
+  margin: 14px 0 18px;
+  padding: 16px 18px;
+  border: 1px solid #e3e5e8;
+  border-radius: 8px;
+  background: #fbfbfc;
+}
+.cjm-vx__nda p {
+  margin: 0 0 10px;
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: #42464f;
+}
+.cjm-vx__agree {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  width: 100%;
+  border: 0;
+  background: none;
+  padding: 0;
+  font: inherit;
+  font-size: 13.5px;
+  text-align: left;
+  color: #42464f;
+  cursor: pointer;
+}
+.cjm-vx__box {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 18px;
+  width: 18px;
+  height: 18px;
+  border: 1px solid #555;
+  border-radius: 3px;
+  background: #fff;
+  color: #fff;
+}
+.cjm-vx__box.is-on {
+  border-color: #3e7b27;
+  background: #3e7b27;
+}
+.cjm-vx__dialogfoot {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 20px;
+}
+.cjm-vx__dialogfoot .cjm-cta[disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ---------- the vendor test shell ---------- */
+
+.cjm-vx__shell {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  background: #fff;
+}
+.cjm-vx__shellbar {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 9px 16px;
+  border-bottom: 1px solid #c9cdd2;
+  background: #eceef0;
+  font-size: 12.5px;
+}
+.cjm-vx__shelltop {
+  font-weight: 700;
+}
+.cjm-vx__shellsub {
+  flex: 1 1 auto;
+  color: #42464f;
+}
+.cjm-vx__timer {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.cjm-vx__timer b {
+  font-variant-numeric: tabular-nums;
+}
+.cjm-vx__finish {
+  border: 1px solid #8a8a8a;
+  border-radius: 4px;
+  background: #fff;
+  padding: 5px 12px;
+  font: inherit;
+  font-size: 12.5px;
+  cursor: pointer;
+}
+.cjm-vx__body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+.cjm-vx__nav {
+  flex: 0 0 230px;
+  padding: 14px;
+  border-right: 1px solid #c9cdd2;
+  background: #f7f8f9;
+  font-size: 12.5px;
+  overflow: auto;
+}
+.cjm-vx__navtest,
+.cjm-vx__navcand {
+  margin: 0 0 4px;
+  color: #42464f;
+}
+.cjm-vx__pages,
+.cjm-vx__qlist {
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.cjm-vx__pages li,
+.cjm-vx__qlist li {
+  padding: 6px 9px;
+  border-radius: 3px;
+}
+/* ⚠ HIS GREEN, not a Compass token — the vendor's selected row. */
+.cjm-vx__pages li.is-on,
+.cjm-vx__qlist li.is-on {
+  background: #24511a;
+  color: #fff;
+  font-weight: 700;
+}
+.cjm-vx__main {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 24px 28px;
+  overflow: auto;
+}
+.cjm-vx__qnum {
+  margin: 0 0 8px;
+  font-size: 15px;
+  font-weight: 700;
+}
+.cjm-vx__flag {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 14px;
+  border: 1px solid #8a8a8a;
+  border-radius: 4px;
+  background: #fff;
+  padding: 5px 11px;
+  font: inherit;
+  font-size: 12.5px;
+  cursor: pointer;
+}
+.cjm-vx__flag.is-on {
+  border-color: #b54708;
+  color: #b54708;
+}
+.cjm-vx__stem {
+  margin: 0 0 16px;
+  font-size: 15px;
+  line-height: 1.6;
+  color: #1f1d18;
+}
+.cjm-vx__opts {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.cjm-vx__opt {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  width: 100%;
+  border: 1px solid #c9cdd2;
+  border-radius: 6px;
+  background: #fff;
+  padding: 11px 14px;
+  font: inherit;
+  font-size: 14px;
+  text-align: left;
+  color: #262626;
+  cursor: pointer;
+}
+.cjm-vx__opt.is-on {
+  border-color: #24511a;
+  box-shadow: inset 0 0 0 1px #24511a;
+}
+.cjm-vx__opt.is-correct {
+  border-color: var(--cjm-ready-edge);
+  background: var(--cjm-right-wash);
+}
+.cjm-vx__opt.is-yours {
+  border-color: var(--cjm-ready-edge);
+}
+.cjm-vx__letter {
+  flex: 0 0 22px;
+  font-weight: 700;
+}
+.cjm-vx__tag {
+  margin-left: auto;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--cjm-ready-ink);
+  white-space: nowrap;
+}
+.cjm-vx__foot {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 16px;
+  border-top: 1px solid #c9cdd2;
+  background: #eceef0;
+}
+.cjm-vx__counts {
+  flex: 1 1 auto;
+  font-size: 12.5px;
+  color: #42464f;
+}
+.cjm-vx__navbtn {
+  border: 1px solid #8a8a8a;
+  border-radius: 4px;
+  background: #fff;
+  padding: 6px 16px;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+.cjm-vx__navbtn[disabled] {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.cjm-vx__skip {
+  border: 0;
+  background: none;
+  padding: 0;
+  color: var(--cjm-steel-deep);
+  font: inherit;
+  font-size: 12.5px;
+  text-decoration: underline;
+  cursor: pointer;
+}
+.cjm-vx__flagdemo {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 14px 0 0;
+  font-size: 13px;
+  color: #b54708;
+}
+.cjm-vx__flagdemo span {
+  color: #42464f;
+}
+
+/* ---------- results and review ---------- */
+
+.cjm-vx__results {
+  display: flex;
+  gap: 32px;
+  flex-wrap: wrap;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 26px 28px;
+  border: 1px solid #dcdee1;
+  border-radius: 12px;
+  background: #fff;
+}
+.cjm-vx__score,
+.cjm-vx__reviewside {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+.cjm-vx__reviewside {
+  flex: 1 1 280px;
+  align-items: stretch;
+}
+.cjm-vx__scoremid {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  line-height: 1.1;
+}
+.cjm-vx__scoremid b {
+  font-size: 30px;
+  color: #1f1d18;
+}
+.cjm-vx__scoremid span {
+  font-size: 13px;
+  color: #615c55;
+}
+.cjm-vx__resultsbody {
+  flex: 1 1 420px;
+  min-width: 0;
+}
+.cjm-vx__topics {
+  margin: 8px 0 18px;
+  padding: 0;
+  list-style: none;
+}
+.cjm-vx__topics li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 0;
+  font-size: 13.5px;
+}
+.cjm-vx__topicname {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.cjm-vx__topictrack {
+  flex: 0 0 110px;
+  height: 7px;
+  border-radius: 4px;
+  background: #e3e5e8;
+  overflow: hidden;
+}
+.cjm-vx__topicfill {
+  display: block;
+  height: 7px;
+}
+.cjm-vx__topicnum {
+  flex: 0 0 auto;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.cjm-vx__rubi {
+  margin: 18px 0;
+  padding: 16px 18px;
+  border: 1px solid var(--cjm-hairline);
+  border-radius: 10px;
+  background: #fffcf8;
+}
+.cjm-vx__fb {
+  display: flex;
+  gap: 10px;
+  margin: 10px 0 0;
+}
+.cjm-vx__resultsfoot {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 22px;
+}
+.cjm-vx__pos {
+  margin: 10px 0;
+  font-size: 22px;
+  font-weight: 600;
+}
+.cjm-vx__rvfilters {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+.cjm-vx__badge {
+  display: inline-block;
+  margin: 4px 0 12px;
+  padding: 3px 10px;
+  border: 1px solid var(--cjm-badge-edge);
+  border-radius: 999px;
+  font-size: 12.5px;
+  color: var(--cjm-body);
+}
+
+/* A tutorial page's demo of the control it describes. */
+.cjm-vx__demo {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin: 16px 0 0;
+}
+.cjm-vx__demo .cjm-vx__navbtn {
+  display: inline-block;
+}
+.cjm-vx__demo--timer {
+  gap: 8px;
+  font-size: 12.5px;
+  color: #42464f;
+}
+.cjm-vx__demo--timer b {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ============ a question set ============ */
+
+.cjm-qs__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--cjm-hairline);
+}
+.cjm-qs__meta {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: var(--cjm-muted);
+}
+.cjm-qs__headright {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex: 0 0 auto;
+}
+.cjm-qs__pos {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--cjm-ink);
+}
+.cjm-qs__qline {
+  margin: 22px 0 10px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--cjm-muted);
+}
+.cjm-qs__stem {
+  margin: 0 0 20px;
+  max-width: 70ch;
+  font-size: 17px;
+  line-height: 1.55;
+  color: var(--cjm-ink);
+}
+.cjm-qs__opts {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 640px;
+}
+.cjm-qs__opt {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 13px 16px;
+  border: 1px solid var(--cjm-control-edge);
+  border-radius: 9px;
+  background: var(--cjm-white);
+  font: inherit;
+  font-size: 15px;
+  text-align: left;
+  color: var(--cjm-ink);
+  cursor: pointer;
+}
+.cjm-qs__opt.is-on {
+  border-color: var(--cjm-steel-deep);
+  box-shadow: inset 0 0 0 1px var(--cjm-steel-deep);
+}
+.cjm-qs__opt.is-right {
+  border-color: var(--cjm-ready-edge);
+  background: var(--cjm-right-wash);
+}
+.cjm-qs__key {
+  flex: 0 0 auto;
+  font-weight: 700;
+  color: var(--cjm-steel-deep);
+}
+.cjm-qs__sure {
+  margin-top: 22px;
+}
+.cjm-qs__sureq {
+  margin: 0 0 10px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--cjm-ink);
+}
+.cjm-qs__sureopts {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.cjm-qs__submit {
+  margin-top: 22px;
+}
+.cjm-qs__submit[disabled] {
+  background: var(--cjm-control-edge);
+  color: var(--cjm-body);
+  cursor: not-allowed;
+}
+.cjm-qs__after {
+  margin-top: 22px;
+}
+.cjm-qs__fb {
+  margin: 0 0 4px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--cjm-ready-ink);
+}
+.cjm-qs__felt {
+  margin: 0;
+  font-size: 13px;
+  color: var(--cjm-muted);
+}
+.cjm-qs__felt b {
+  color: var(--cjm-ink);
+}
+.cjm-qs__explain {
+  margin: 18px 0 0;
+  padding: 18px 20px;
+  border: 1px solid var(--cjm-hairline);
+  border-radius: 10px;
+  background: var(--cjm-paper);
+}
+.cjm-qs__explain .cjm-btn {
+  margin-top: 12px;
+}
+.cjm-qs__actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 20px;
+}
+
+/* The closed workspace rail his session pages carry down the right edge. */
+.cjm-wsrail {
+  position: sticky;
+  top: 24px;
+  align-self: flex-start;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 0 0 56px;
+  padding: 8px 6px;
+  border-left: 1px solid var(--cjm-hairline);
+}
+.cjm-wsrail__tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 9px 6px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: var(--cjm-body);
+  font: inherit;
+  cursor: pointer;
+}
+.cjm-wsrail__tab:hover {
+  background: var(--color-neutral-100);
+}
+.cjm-wsrail__count {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--cjm-muted);
+}
+
+/* His question-set header: a 44px tile, a 28px serif title, the meta line. */
+.cjm-qs__tile {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 44px;
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: var(--cjm-steel-pressed);
+  color: var(--cjm-body);
+}
+.cjm-qs__title {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 500;
+  line-height: 1.2;
+  color: var(--cjm-ink);
+}
+.cjm-qs__head {
+  align-items: center;
+  gap: 14px;
+  margin-top: 16px;
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+/* ============ a card study session ============ */
+
+/* ⚠ ONE CARD, TWO FACES, BOTH IN THE DOM — a CSS flip, not a content swap. */
+.cjm-cs__card {
+  display: block;
+  position: relative;
+  width: 100%;
+  max-width: 640px;
+  min-height: 260px;
+  margin: 26px 0 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  perspective: 1200px;
+}
+.cjm-cs__face {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 28px 30px;
+  border: 1px solid var(--cjm-hairline);
+  border-radius: 14px;
+  background: var(--cjm-white);
+  backface-visibility: hidden;
+  transition: transform 0.4s;
+}
+.cjm-cs__front {
+  transform: rotateY(0deg);
+}
+.cjm-cs__back {
+  position: absolute;
+  inset: 0;
+  transform: rotateY(180deg);
+}
+.cjm-cs__card.is-back .cjm-cs__front {
+  transform: rotateY(-180deg);
+}
+.cjm-cs__card.is-back .cjm-cs__back {
+  transform: rotateY(0deg);
+}
+.cjm-cs__term {
+  font-family: var(--font-heading-serif), Georgia, serif;
+  font-size: 26px;
+  color: var(--cjm-ink);
+}
+.cjm-cs__hint {
+  margin-top: auto;
+  font-size: 12.5px;
+  color: var(--cjm-faint);
+}
+.cjm-cs__termsm {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--cjm-muted);
+}
+.cjm-cs__def {
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--cjm-body);
+}
+.cjm-cs__rate {
+  margin-top: 22px;
+}
+.cjm-cs__ratq {
+  margin: 0 0 10px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--cjm-ink);
+}
+.cjm-cs__rates {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.cjm-cs__rateopt {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 16px;
+  border: 1px solid;
+  border-radius: 8px;
+  background: var(--cjm-white);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.cjm-cs__rateopt b {
+  font-variant-numeric: tabular-nums;
+}
+.cjm-cs__nav,
+.cjm-cs__tools {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 22px;
+}
+.cjm-cs__nav kbd {
+  padding: 1px 6px;
+  border: 1px solid var(--cjm-control-edge);
+  border-radius: 4px;
+  font: inherit;
+  font-size: 11px;
+}
+
+/* His 40×40 icon buttons under the card. */
+.cjm-cs__tbtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--cjm-control-edge);
+  border-radius: 8px;
+  background: var(--cjm-white);
+  color: var(--cjm-body);
+  cursor: pointer;
+}
+.cjm-cs__tbtn[aria-pressed='true'] {
+  border-color: var(--cjm-steel-deep);
+  color: var(--cjm-steel-deep);
+}
