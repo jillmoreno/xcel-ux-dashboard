@@ -130,6 +130,10 @@ class Walk {
    *  full page). Skipped when identical to an earlier shot in this walk. */
   async shot(title, state, { fullPage = false, settle = 350 } = {}) {
     await this.page.waitForTimeout(settle)
+    /* Demo-only aids (Check your email's "open the reset link" line) are
+       for walking the prototype, not part of the design developers read
+       here (2026-11-19, Afsana). */
+    await this.page.addStyleTag({ content: '[data-demo-only]{display:none !important}' })
     const shotOpts = { animations: 'disabled', caret: 'hide' }
     let kind = 'page'
     let buf = null

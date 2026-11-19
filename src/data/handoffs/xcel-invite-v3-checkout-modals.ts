@@ -24,7 +24,7 @@ const feature: PrototypeFeature = {
   devStatus: 'not-ready',
   surface: 'invite',
   owner: 'Afsana',
-  lastUpdated: '2026-11-19T22:46:52Z',
+  lastUpdated: '2026-11-19T23:07:43Z',
   accent: 'gold',
   icon: 'flag',
   brands: ['xcel'],
@@ -357,7 +357,7 @@ const feature: PrototypeFeature = {
           responsive: [
             'Header: 8px × 32px padding, the logo 115 × 48 on the left.',
             'The card is the checkout modals’ card — 460px wide, 36px padding, 8px radius — centred both ways on the grey ground below the header, with at least 48px × 24px around it.',
-            'Password reset: centred; a 56px ring with a 2px border and a 24px check, 20px to the line (22px / 30px, bold).',
+            'Password reset: centred; a 56px ring with a 2px border and a 24px check, 20px to the line (16px / 24px, regular — not bold).',
             'No XCEL logo in the card, in either state — the header’s logo top-left is the page’s one (Afsana, 2026-11-19).',
           ],
           sources: [
