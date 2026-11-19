@@ -1,5 +1,5 @@
 import { useMemo, useState, type CSSProperties } from 'react'
-import { ChevronDown, Download, FileText } from '@/icons'
+import { ChevronDown, Download, FileCertificateRegular, FileText, SquareListRegular } from '@/icons'
 import { ExportTranscriptSheet } from './ExportTranscriptSheet'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { PillTabs, type PillTabItem } from '@/components/ui/PillTabs'
@@ -10,6 +10,7 @@ import { useAtlasAccountPages } from './useAtlasAccountPages'
 import { AtlasFilterPills } from './AtlasFilterPills'
 import { ATLAS_FIRST_CELL, ATLAS_NAME_CELL, ATLAS_TABLE_CARD, ATLAS_TD, ATLAS_TH, ATLAS_THEAD } from './atlasAccountTableStyles'
 import {
+
   filterTranscripts,
   formatTranscriptDate,
   searchTranscripts,
@@ -20,6 +21,37 @@ import {
   type TranscriptFilter,
   type TranscriptRecord,
 } from '@/data/transcriptFixtures'
+
+/** Download and View above the table — off since 2026-11-19 (Eric). */
+const SHOW_TABLE_ACTIONS: boolean = false
+/** The Hours value under the middle of its label — see the Hours cell. */
+const HOURS_UNDER_LABEL: CSSProperties = { display: 'inline-block', width: 33, marginRight: 12 + 6, textAlign: 'center' }
+/** …and Score's under its own — the word measures 30. */
+const SCORE_UNDER_LABEL: CSSProperties = { ...HOURS_UNDER_LABEL, width: 30 }
+/* 40 BETWEEN COLUMNS (2026-11-19, Eric: "reduce the space between the columns to 40 pixels between columns' widest content,
+   and the next column"). Every column sizes to its widest content and keeps 40 after it, none before it — so 40 is the whole
+   gap. Course Name is the one that wraps, at COURSE_NAME_W, so a long title cannot push the table past its card. The table
+   and its card are as wide as the columns (the spacer cell that filled the card went the same day). The design's percentage widths (COLUMNS[].width) are kept for the
+   record but no longer applied. */
+const COLUMN_GAP = 40
+const COURSE_NAME_W = 260
+function fit(i: number): CSSProperties {
+  if (i === 0) return { width: COURSE_NAME_W, paddingRight: COLUMN_GAP }
+  /* The last column (Records) ends the table: the 20 the first cell starts with, not a 40 gap to nothing. */
+  const last = i === COLUMNS.length
+  return { width: '1px', whiteSpace: 'nowrap', paddingLeft: 0, paddingRight: last ? LAST_CELL_PAD : COLUMN_GAP }
+}
+const LAST_CELL_PAD = 20
+/* The Records column's two icons: 16 FA Regular, 12 apart, in the page-button blue so they read as things to press. */
+const RECORD_ICONS: CSSProperties = { display: 'inline-flex', alignItems: 'center', gap: 12, verticalAlign: 'middle' }
+const RECORD_BUTTON: CSSProperties = {
+  display: 'inline-flex',
+  padding: 0,
+  border: 'none',
+  background: 'none',
+  cursor: 'pointer',
+  color: 'var(--color-primary-500)',
+}
 
 /**
  * TRANSCRIPTS — the account section's course history, 2026-11-02.
@@ -112,6 +144,7 @@ export function TranscriptsPanel() {
     return [...scoped].sort((a, b) => {
       const key = sort.key as SortKey
       if (key === 'hours') return (a.hours - b.hours) * dir
+      if (key === 'score') return (transcriptScore(a) - transcriptScore(b)) * dir
       return String(a[key]).localeCompare(String(b[key])) * dir
     })
   }, [all, filter, query, sort])
@@ -167,17 +200,21 @@ export function TranscriptsPanel() {
           at this width and these labels nothing wraps. Lengthening either
           label is what would bring the wrap back. */}
       <div style={controlRowStyle}>
+        {/* The count FIRST, left of All (2026-11-19, Eric) — it was after the pills. */}
+        <span style={countStyle}>{showingLabel(rows.length)}</span>
         {/* The admin table header's pills under the account pages' Quick Links layout (2026-11-03). */}
         {atlasFrame ? (
           <AtlasFilterPills label="Filter transcripts" items={tabs} active={filter} onChange={setFilter} />
         ) : (
           <PillTabs label="Filter transcripts" items={tabs} active={filter} onChange={setFilter} />
         )}
-        <span style={countStyle}>{showingLabel(rows.length)}</span>
         {/* "Download" and "View", not "Download All" / "View All" (2026-11-02,
             the direct ask). Shortening them is also what lets this row hold
             everything at 892px — the wrap noted above only happened at the
             longer labels. */}
+        {/* OFF since 2026-11-19 (Eric: "above the certificates and transcripts table, remove the download and view links") —
+            set SHOW_TABLE_ACTIONS true to bring both back. The chooser and the print page are untouched. */}
+        {SHOW_TABLE_ACTIONS ? (
         <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 20 }}>
           {/* A BUTTON, because it may open a chooser rather than navigate.
               Making it a link would promise a destination it does not always
@@ -193,6 +230,7 @@ export function TranscriptsPanel() {
             View
           </a>
         </div>
+        ) : null}
       </div>
 
       {rows.length === 0 ? (
@@ -222,8 +260,9 @@ export function TranscriptsPanel() {
                 ['License Type/Profession', rows[0].profession],
                 ['State', rows[0].state],
                 ['Hours', String(rows[0].hours)],
-                ['Date Enrolled', formatTranscriptDate(rows[0].enrolledDate)],
-                ['Date Completed', formatTranscriptDate(rows[0].completedDate)],
+                ['Enrolled', formatTranscriptDate(rows[0].enrolledDate)],
+                ['Completed', formatTranscriptDate(rows[0].completedDate)],
+                ['Score', `${transcriptScore(rows[0])}%`],
               ].map(([term, value]) => (
                 <div key={term} className="cre-transcript-card-line" style={ROW_CARD_ITEM}>
                   <dt style={ROW_CARD_TERM}>{term}:</dt>{' '}
@@ -234,8 +273,10 @@ export function TranscriptsPanel() {
             </dl>
           </section>
         ) : null}
-        <div style={atlasFrame ? ATLAS_TABLE_CARD : tableWrapStyle}>
-          <table className={atlasFrame ? 'cre-atlas-table' : undefined} style={{ width: '100%', borderCollapse: 'collapse', fontFamily: 'var(--font-body)' }}>
+        {/* AS WIDE AS ITS COLUMNS (2026-11-19, Eric: "collapse the … table to fit its content horizontally") — the card hugs
+            the table, the table hugs its columns; never wider than the page. */}
+        <div style={{ ...(atlasFrame ? ATLAS_TABLE_CARD : tableWrapStyle), width: 'fit-content', maxWidth: '100%' }}>
+          <table className={atlasFrame ? 'cre-atlas-table' : undefined} style={{ width: 'auto', borderCollapse: 'collapse', fontFamily: 'var(--font-body)' }}>
             <caption className="cre-visually-hidden">
               {`Completed courses — ${
                 filter === 'all'
@@ -245,11 +286,7 @@ export function TranscriptsPanel() {
                     : `completed before ${year}`
               }`}
             </caption>
-            <colgroup>
-              {COLUMNS.map((col) => (
-                <col key={col.key} style={{ width: col.width }} />
-              ))}
-            </colgroup>
+            {/* No colgroup widths since 2026-11-19 — the columns size to their content; see FIT. */}
             <thead style={atlasFrame ? ATLAS_THEAD : undefined}>
               <tr>
                 {COLUMNS.map((col, i) => {
@@ -262,8 +299,8 @@ export function TranscriptsPanel() {
                       /* The admin table's header under the Quick Links layout (2026-11-03) — its own padding, type and fill. */
                       style={
                         atlasFrame
-                          ? { ...ATLAS_TH, verticalAlign: 'bottom', ...(i === 0 && ATLAS_FIRST_CELL), ...col.cellStyle }
-                          : { ...HEADER_CELL, ...(i === 0 && { paddingLeft: 24 }), ...col.cellStyle }
+                          ? { ...ATLAS_TH, verticalAlign: 'bottom', ...(i === 0 && ATLAS_FIRST_CELL), ...col.cellStyle, ...fit(i) }
+                          : { ...HEADER_CELL, ...(i === 0 && { paddingLeft: 24 }), ...col.cellStyle, ...fit(i) }
                       }
                     >
                       <button
@@ -286,6 +323,18 @@ export function TranscriptsPanel() {
                     </th>
                   )
                 })}
+                {/* RECORDS (2026-11-19, Eric) — the course's certificate and transcript, as icons. Not sortable: a column of
+                    icons has no order. */}
+                <th
+                  scope="col"
+                  style={
+                    atlasFrame
+                      ? { ...ATLAS_TH, verticalAlign: 'bottom', ...fit(COLUMNS.length) }
+                      : { ...HEADER_CELL, ...fit(COLUMNS.length) }
+                  }
+                >
+                  Records
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -293,18 +342,37 @@ export function TranscriptsPanel() {
                 <tr key={row.id}>
                   {/* The course name is the only SemiBold cell (12/18), as in
                       the design — it is what the row is about. */}
-                  <th scope="row" style={atlasFrame ? { ...ATLAS_TD, ...ATLAS_FIRST_CELL, ...ATLAS_NAME_CELL } : { ...BODY_CELL, ...TITLE_CELL }}>
+                  <th scope="row" style={atlasFrame ? { ...ATLAS_TD, ...ATLAS_FIRST_CELL, ...ATLAS_NAME_CELL, ...fit(0) } : { ...BODY_CELL, ...TITLE_CELL, ...fit(0) }}>
                     {row.title}
                   </th>
-                  <td style={cell}>{row.profession}</td>
-                  <td style={cell}>{row.state}</td>
+                  <td style={{ ...cell, ...fit(1) }}>{row.profession}</td>
+                  <td style={{ ...cell, ...fit(2) }}>{row.state}</td>
                   {/* Hours right-aligned: it is the one numeric column, and a
                       ragged-left number column is harder to compare. ZERO IS
                       PRINTED, not blanked — a non-credit completion earning no
                       hours is a fact, and an empty cell reads as missing data. */}
-                  <td style={{ ...cell, ...NUMERIC_CELL }}>{row.hours}</td>
-                  <td style={cell}>{formatTranscriptDate(row.enrolledDate)}</td>
-                  <td style={cell}>{formatTranscriptDate(row.completedDate)}</td>
+                  {/* Centred under the word "Hours" (2026-11-19, Eric): the label is flush right with its sort arrow after it
+                      (12 + the 6 gap), so the value sits in a box the word's width (33) that far in from the right. */}
+                  <td style={{ ...cell, ...NUMERIC_CELL, ...fit(3) }}>
+                    <span style={HOURS_UNDER_LABEL}>{row.hours}</span>
+                  </td>
+                  <td style={{ ...cell, ...fit(4) }}>{formatTranscriptDate(row.enrolledDate)}</td>
+                  <td style={{ ...cell, ...fit(5) }}>{formatTranscriptDate(row.completedDate)}</td>
+                  <td style={{ ...cell, ...NUMERIC_CELL, ...fit(6) }}>
+                    <span style={SCORE_UNDER_LABEL}>{transcriptScore(row)}%</span>
+                  </td>
+                  <td style={{ ...cell, ...fit(COLUMNS.length) }}>
+                    {/* ⚠ NOT WIRED YET — two labelled buttons that open nothing, so the column reads as actions and has the
+                        names a screen reader needs; give each an onClick when the certificate and transcript views land. */}
+                    <span style={RECORD_ICONS}>
+                      <button type="button" aria-label={`Certificate — ${row.title}`} title="Certificate" style={RECORD_BUTTON}>
+                        <FileCertificateRegular size={16} aria-hidden />
+                      </button>
+                      <button type="button" aria-label={`Transcript — ${row.title}`} title="Transcript" style={RECORD_BUTTON}>
+                        <SquareListRegular size={16} aria-hidden />
+                      </button>
+                    </span>
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -326,10 +394,18 @@ export function TranscriptsPanel() {
   )
 }
 
-type SortKey = keyof Pick<
-  TranscriptRecord,
-  'title' | 'profession' | 'state' | 'hours' | 'enrolledDate' | 'completedDate'
->
+type SortKey =
+  | keyof Pick<TranscriptRecord, 'title' | 'profession' | 'state' | 'hours' | 'enrolledDate' | 'completedDate'>
+  | 'score'
+
+/* SCORE (2026-11-19, Eric: "a column for score with random percentages between 80 and 100%"). Demo data: random-looking but
+   FIXED per course — hashed from the row's id — so a learner sees the same score every visit and a re-sort does not reshuffle
+   it. Whole percents, 80 to 100 inclusive. The fixtures carry no score; when they do, read it here instead. */
+function transcriptScore(row: TranscriptRecord): number {
+  let h = 2166136261
+  for (const ch of row.id) h = Math.imul(h ^ ch.charCodeAt(0), 16777619)
+  return 80 + ((h >>> 0) % 21)
+}
 
 type SortState = { key: SortKey | null; dir: 'asc' | 'desc' }
 
@@ -337,12 +413,16 @@ type SortState = { key: SortKey | null; dir: 'asc' | 'desc' }
    percentages of its 1101px table so they hold at any content width:
    312 / 282 / 151 / 99 / 128 / 129. */
 const COLUMNS: { key: SortKey; label: string; width: string; cellStyle?: CSSProperties }[] = [
-  { key: 'title', label: 'Course Name', width: '28.3%' },
-  { key: 'profession', label: 'License Type/Profession', width: '25.6%' },
+  // 4.3 and 4.7 narrower than the design's, for Score (2026-11-19).
+  { key: 'title', label: 'Course Name', width: '24%' },
+  { key: 'profession', label: 'License Type/Profession', width: '20.9%' },
   { key: 'state', label: 'State', width: '13.7%' },
   { key: 'hours', label: 'Hours', width: '9%', cellStyle: { textAlign: 'right' } },
-  { key: 'enrolledDate', label: 'Date Enrolled', width: '11.6%' },
-  { key: 'completedDate', label: 'Date Completed', width: '11.7%' },
+  // "Enrolled" and "Completed", without "Date" (2026-11-19, Eric).
+  { key: 'enrolledDate', label: 'Enrolled', width: '11.6%' },
+  { key: 'completedDate', label: 'Completed', width: '11.7%' },
+  // After Completed (2026-11-19, Eric); right-aligned like Hours, its value centred under the label the same way.
+  { key: 'score', label: 'Score', width: '9%', cellStyle: { textAlign: 'right' } },
 ]
 
 const disclaimerStyle: CSSProperties = {
@@ -356,7 +436,9 @@ const disclaimerStyle: CSSProperties = {
 
 const controlRowStyle: CSSProperties = {
   display: 'flex',
-  alignItems: 'center',
+  /* Baseline, not centre (2026-11-19, Eric): the count (14/22) and the pills' labels (13/19.5) differ in size, so centring
+     left the count 0.75 low. Each item's first text baseline now lines up. */
+  alignItems: 'baseline',
   gap: 20,
   flexWrap: 'wrap',
 }

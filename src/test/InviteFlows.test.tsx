@@ -117,16 +117,11 @@ describe('the checkout audience flag', () => {
 
     it('…and leaves them exactly where they were on Atlas', () => {
       const onAtlas = onDesignBar(null)
-      // Long title left the bar on 2026-11-10 (Eric). Course tabs, Brand and Readiness section left it on 2026-11-19 (Eric);
-      // the Affidavit moment and the pace card's Figma control stand in as the Atlas-only controls.
-      /* Affidavit moment replaced the Affidavit control on Atlas's bar
-         (2026-11-04, `feat/affidavits`); the old one is panel-only now. */
-      expect(onAtlas).toContain('affidavit-v2-moment')
-      expect(onAtlas).not.toContain('atlas-affidavit')
-      expect(onAtlas).toContain('atlas-pace-card-figma')
-      for (const gone of ['atlas-course-tabs-place', 'atlas-brand-skin-v3', 'atlas-readiness-section']) {
-        expect(onAtlas, gone).not.toContain(gone)
-      }
+      /* The learner bar is Breakpoint alone since 2026-11-19 (Eric: "on the learner side hide all design controls, except
+         for breakpoint") — Long title, Course tabs, Brand, Readiness, the Affidavit set, Exam date step and Pace card: Figma
+         are all panel-only now. */
+      // …and Breakpoint left it too, "for now" (same day): the learner bar is empty.
+      expect(onAtlas).toEqual([])
     })
 
     it('brings the whole flow\u2019s bar with it, not just this control', () => {

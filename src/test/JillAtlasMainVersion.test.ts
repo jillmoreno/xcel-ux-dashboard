@@ -73,8 +73,12 @@ describe('Jill/Atlas-Main, the End-to-End Demo’s duplicate', () => {
      almost nothing and the design bar opened blank — the flags still at their
      defaults, so the PAGE looked right and simply could not be adjusted. */
   it('carries the demo’s design controls, every one of them', () => {
-    const demo = designControlsFor('eric-atlas-e2e', 'eric').map((f) => f.key)
-    const copy = designControlsFor(ID, 'jill').map((f) => f.key)
+    /* Home's bar AND the invite flow's (2026-11-19): Home's is empty on purpose since Eric took every learner control off
+       it, so the not-empty guard below reads the two together — the containment still covers Home's. */
+    const both = (v: string, o: 'eric' | 'jill') =>
+      [...designControlsFor(v, o), ...designControlsFor(v, o, 'invite')].map((f) => f.key)
+    const demo = both('eric-atlas-e2e', 'eric')
+    const copy = both(ID, 'jill')
     /* Home declares no surface, so this is the bar as it opens on it.
 
        ⚠ NOT-EMPTY, NOT A FLOOR — and the history is why. This read `>= 8`,

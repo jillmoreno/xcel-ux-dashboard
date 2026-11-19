@@ -67,6 +67,15 @@ export function AtlasAdminLayout() {
   const search = window.location.search
   // The learner Home keeps the demo flags; Admin is where the reviewer is.
   const learnerHome = `/dashboard-rebrand${search}`
+  /* The learner header's two nav buttons on admin too (2026-11-19, Eric: "duplicate the header nav buttons from the
+     learner side, replacing the home one here") — Home and My Courses in the Figma 754:1964 style, both at rest here since
+     admin is neither page; My Courses opens the learner's My Courses. The same flag as the learner side's. */
+  const myCoursesNav = useFeatureFlag('atlas-header-my-courses').enabled
+  const learnerCourses = (() => {
+    const next = new URLSearchParams(search)
+    next.set('section', 'courses')
+    return `/dashboard-rebrand?${next.toString()}`
+  })()
   /* ONE PERSON IN BOTH MODES — 2026-10-20, Eric: "change the admin mode user
      name to the same name as the learner user name". The global nav reads
      the learner's account here exactly as `AtlasHeaderConnected` does (name,
@@ -112,6 +121,8 @@ export function AtlasAdminLayout() {
         showCourses={false}
         links={{ home: learnerHome, logo: learnerHome, help: `${ADMIN_BASE}/resources${search}` }}
         onNavigate={(href) => navigate(href)}
+        extraNav={myCoursesNav ? [{ label: 'My Courses', href: learnerCourses }] : undefined}
+        outlinedNav={myCoursesNav}
         /* The admin menu's rows in the learner menu's style (2026-11-19, Eric) — 13/18 secondary text, the FA icon at 13
            in an 18 box in the home-icon colour, the blue Medium hover and the angle-right. `quickLinksMenu` is the switch
            the learner header (`AtlasHeaderConnected`) already sets; the admin header never did. */
@@ -131,6 +142,9 @@ export function AtlasAdminLayout() {
           <QuickLinksNav />
         ) : (
           <>
+            {/* A label over the rows in the learner account nav's title style (2026-11-19, Eric) — AtlasProfileNav's
+                "My Account": Playfair Bold 22/24, 16 in on the rows' text line, 12 above the first row. */}
+            <p style={SIDEBAR_LABEL}>Admin</p>
             <nav aria-label="Primary" style={{ display: 'flex', flex: 1, flexDirection: 'column', gap: 2, overflowY: 'auto' }}>
               {NAV.map((item) => (
                 <SideLink key={item.to} item={item} />
@@ -241,6 +255,16 @@ const SIDEBAR: CSSProperties = {
   padding: '20px 16px 24px',
   background: 'var(--admin-surface)',
   borderRight: '1px solid var(--admin-chrome-rule)',
+}
+const SIDEBAR_LABEL: CSSProperties = {
+  margin: '0 0 12px 16px',
+  /* Playfair spelled out: the admin pages re-point --font-heading-serif to DM Serif Display, and this label is the
+     learner nav's Playfair title. */
+  fontFamily: "'Playfair', Georgia, serif",
+  fontWeight: 700,
+  fontSize: 22,
+  lineHeight: '24px',
+  color: 'var(--color-text-primary)',
 }
 /* Quick Links (Home's card, as the E2E Home draws it): radius 20, padding
    24, the slate hairline it computes to (--admin-quicklinks-rule — spelled

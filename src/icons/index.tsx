@@ -116,6 +116,8 @@ import CircleUserRegularSvg from './circle-user-regular.svg?react'
 // FA Pro 7.2.0 Light, from the desktop download — the account pages' admin-style nav (2026-11-19).
 import HouseLightSvg from './house-light.svg?react'
 import BookLightSvg from './book-light.svg?react'
+// FA Pro 7.2.0 `square-list` (regular) — the transcripts table's Records column (2026-11-19).
+import SquareListRegularSvg from './square-list-regular.svg?react'
 import BellRegularSvg from './bell-regular.svg?react'
 import ReceiptRegularSvg from './receipt-regular.svg?react'
 import GiftRegularSvg from './gift-regular.svg?react'
@@ -387,6 +389,7 @@ export const UserRegular = makeIcon(UserRegularSvg) // FA: user (regular)
 export const CircleUserRegular = makeIcon(CircleUserRegularSvg) // FA: circle-user (regular)
 export const HouseLight = makeIcon(HouseLightSvg) // FA: house (light)
 export const BookLight = makeIcon(BookLightSvg) // FA: book (light)
+export const SquareListRegular = makeIcon(SquareListRegularSvg) // FA: square-list (regular)
 export const BellRegular = makeIcon(BellRegularSvg) // FA: bell (regular)
 export const ReceiptRegular = makeIcon(ReceiptRegularSvg) // FA: receipt (regular)
 export const GiftRegular = makeIcon(GiftRegularSvg) // FA: gift (regular)

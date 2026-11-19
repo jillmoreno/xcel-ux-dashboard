@@ -41,7 +41,9 @@ describe('what the design bar selects', () => {
        was empty and this case failed for a reason that had nothing to do
        with its subject. */
     const v = VERSION('eric-atlas-e2e')
-    const picked = designControlsFor(v.id, flagOwner(v))
+    /* …on the invite flow's surface since 2026-11-19, when the learner bar (no surface) was emptied on purpose (Eric: every
+       learner control off, Breakpoint last, "for now"). The invite flow still carries this version's controls. */
+    const picked = designControlsFor(v.id, flagOwner(v), 'invite')
     expect(picked.length).toBeGreaterThan(0)
     expect(picked.every((f) => f.surface === 'design')).toBe(true)
   })

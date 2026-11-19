@@ -130,11 +130,12 @@ describe('AffidavitModalV2', () => {
     expect([FORMS.FL_LH_ES, FORMS.FL_PC_ES, FORMS.GEN_PRE_ES].every(Boolean)).toBe(true)
   })
 
-  it('is on by default on this branch, on the Design bar of both Homes that open it', () => {
+  it('is on by default on this branch, scoped to both Homes that open it — and off the Design bar since 2026-11-19', () => {
     for (const key of ['atlas-affidavit-v2', 'affidavit-v2-moment', 'affidavit-v2-state', 'affidavit-v2-pattern', 'affidavit-v2-loa']) {
       const flag = FEATURE_FLAGS.find((f) => f.key === key)
       expect(flag?.defaultEnabled, key).toBe(true)
-      expect(flag?.surface, key).toBe('design')
+      // Off the learner bar (Eric: "hide all design controls, except for breakpoint") — the Feature Flag panel still has it.
+      expect(flag?.surface, key).toBeUndefined()
       // jill-atlas-main is where the invite flow lands (END_TO_END_VERSION).
       expect(flag?.versions, key).toEqual(['jill-atlas-main', 'eric-atlas-e2e'])
     }
@@ -553,7 +554,8 @@ describe('AffidavitModalV2 — the explorer’s forms', () => {
   /* MIDDLE NAME IS UNDECIDED (2026-11-06): a Design bar control. */
   it('drops Middle Name when the Design bar’s Affidavit middle name is Off', () => {
     const flag = FEATURE_FLAGS.find((f) => f.key === 'affidavit-v2-middle')!
-    expect(flag.surface).toBe('design')
+    // Off the Design bar since 2026-11-19 (Eric); the drop it drives still works from the Feature Flag panel.
+    expect(flag.surface).toBeUndefined()
     expect(flag.defaultVariant).toBe('show')
     for (const key of SIGNED_FORMS) {
       const f = withoutMiddle(FORMS[key]!)
@@ -969,7 +971,10 @@ describe('the Design bar’s affidavit controls', () => {
     )
   }
 
-  it('drops Line of authority while State is Non-state specific, and brings it back after', () => {
+  /* ⚠ SKIPPED SINCE 2026-11-19 — the affidavit controls are off the Design bar (Eric: "on the learner side hide all design
+     controls, except for breakpoint"), and this is the bar's own narrowing, which nothing exercises while they are off it.
+     Unskip with `surface: 'design'` on the affidavit flags in FeatureFlagContext. */
+  it.skip('drops Line of authority while State is Non-state specific, and brings it back after', () => {
     render(
       <MemoryRouter>
         <FeatureFlagProvider>
@@ -997,7 +1002,10 @@ describe('the Design bar’s affidavit controls', () => {
     }
   })
 
-  it('narrows Affidavit state as Affidavit moment changes, keeping the state picked', () => {
+  /* ⚠ SKIPPED SINCE 2026-11-19 — the affidavit controls are off the Design bar (Eric: "on the learner side hide all design
+     controls, except for breakpoint"), and this is the bar's own narrowing, which nothing exercises while they are off it.
+     Unskip with `surface: 'design'` on the affidavit flags in FeatureFlagContext. */
+  it.skip('narrows Affidavit state as Affidavit moment changes, keeping the state picked', () => {
     function States() {
       const { setVariant } = useFeatureFlags()
       const state = designControlsFor('jill-atlas-main', 'jill').find((f) => f.key === 'affidavit-v2-state')!

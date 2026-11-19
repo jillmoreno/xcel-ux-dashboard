@@ -80,7 +80,7 @@ describe('the Transcripts section', () => {
     expect(within(note).getByText('official').tagName).toBe('STRONG')
   })
 
-  it('draws the design’s six columns, in order', () => {
+  it('draws the design’s six columns, then Score and Records, in order', () => {
     renderSection()
     const headers = [...document.querySelectorAll('thead th')].map((th) => th.textContent?.trim())
     expect(headers).toEqual([
@@ -88,8 +88,13 @@ describe('the Transcripts section', () => {
       'License Type/Profession',
       'State',
       'Hours',
-      'Date Enrolled',
-      'Date Completed',
+      // Without "Date" since 2026-11-19 (Eric).
+      'Enrolled',
+      'Completed',
+      // After Completed (2026-11-19, Eric).
+      'Score',
+      // The certificate and transcript icons, last (same day).
+      'Records',
     ])
   })
 
@@ -273,7 +278,9 @@ describe('inGroups', () => {
   })
 })
 
-describe('the Download chooser', () => {
+/* ⚠ SKIPPED SINCE 2026-11-19 — Download and View are off the transcripts table (Eric: "remove the download and view links"),
+   so nothing opens the chooser. Unskip with SHOW_TABLE_ACTIONS true in TranscriptsPanel. The chooser itself is unchanged. */
+describe.skip('the Download chooser', () => {
   const openSheet = () => {
     renderSection()
     fireEvent.click(screen.getByRole('button', { name: /^Download$/ }))

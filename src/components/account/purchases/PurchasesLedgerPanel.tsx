@@ -120,14 +120,11 @@ export function PurchasesLedgerPanel() {
 
   return (
     <div className="cre-account-actions">
-      <div style={atlasFrame ? { ...ATLAS_TABLE_CARD, overflowX: 'auto' } : tableWrapStyle}>
+      {/* AS WIDE AS ITS COLUMNS (2026-11-19, Eric: "collapse the my purchases table to its content with 48 pixel padding
+          between the columns") — the card hugs the table, never wider than the page. */}
+      <div style={{ ...(atlasFrame ? { ...ATLAS_TABLE_CARD, overflowX: 'auto' } : tableWrapStyle), width: 'fit-content', maxWidth: '100%' }}>
         <table className={atlasFrame ? 'cre-atlas-table' : undefined} style={tableStyle}>
-          <colgroup>
-            {columns.map((col) => (
-              <col key={col.key} style={{ width: col.width }} />
-            ))}
-            <col style={{ width: 44 }} />
-          </colgroup>
+          {/* No colgroup widths since 2026-11-19 — each column is as wide as its content, then COLUMN_GAP. */}
           <thead style={atlasFrame ? ATLAS_THEAD : undefined}>
             <tr>
               {columns.map((col, i) => {
@@ -139,6 +136,7 @@ export function PurchasesLedgerPanel() {
                     aria-sort={ariaSort(col.key)}
                     style={{
                       ...head,
+                      ...COLUMN_FIT,
                       ...(i === 0 && (atlasFrame ? ATLAS_FIRST_CELL : { paddingLeft: 24 })),
                       ...(col.alignRight && { textAlign: 'right' }),
                     }}
@@ -173,7 +171,7 @@ export function PurchasesLedgerPanel() {
               })}
               {/* The chevron column has no label — it is an affordance, and a
                   header over it would imply something sortable. */}
-              <th scope="col" style={{ ...head, paddingRight: atlasFrame ? 20 : 24 }}>
+              <th scope="col" style={{ ...head, paddingLeft: 0, paddingRight: atlasFrame ? 20 : 24 }}>
                 <span className="cre-sr-only">Open receipt</span>
               </th>
             </tr>
@@ -219,16 +217,16 @@ export function PurchasesLedgerPanel() {
                     }
                   }}
                 >
-                  <td style={{ ...cell, paddingLeft: atlasFrame ? 20 : 24, whiteSpace: 'nowrap' }}>
+                  <td style={{ ...cell, ...COLUMN_FIT, paddingLeft: atlasFrame ? 20 : 24 }}>
                     {formatOrderDate(record.orderDate)}
                   </td>
-                  {summaryFirst ? null : <td style={{ ...cell, whiteSpace: 'nowrap' }}>{record.orderNumber}</td>}
-                  <td style={cell}>
+                  {summaryFirst ? null : <td style={{ ...cell, ...COLUMN_FIT }}>{record.orderNumber}</td>}
+                  <td style={{ ...cell, ...COLUMN_FIT }}>
                     <span style={summaryLeadStyle}>{lead}</span>
                     {more > 0 && <span style={summaryMoreStyle}> +{more} more</span>}
                   </td>
-                  {summaryFirst ? <td style={{ ...cell, whiteSpace: 'nowrap' }}>{record.orderNumber}</td> : null}
-                  <td style={cell}>
+                  {summaryFirst ? <td style={{ ...cell, ...COLUMN_FIT }}>{record.orderNumber}</td> : null}
+                  <td style={{ ...cell, ...COLUMN_FIT }}>
                     <span
                       style={{
                         ...statusTagStyle,
@@ -241,6 +239,7 @@ export function PurchasesLedgerPanel() {
                   <td
                     style={{
                       ...cell,
+                      ...COLUMN_FIT,
                       textAlign: 'right',
                       fontVariantNumeric: 'tabular-nums',
                       /* A refund is money coming BACK — it is not an error and
@@ -254,7 +253,7 @@ export function PurchasesLedgerPanel() {
                   >
                     {formatMoney(record.total)}
                   </td>
-                  <td style={{ ...cell, paddingRight: atlasFrame ? 20 : 24, textAlign: 'right' }}>
+                  <td style={{ ...cell, paddingLeft: 0, paddingRight: atlasFrame ? 20 : 24, textAlign: 'right' }}>
                     <ChevronRight size={14} aria-hidden style={{ color: 'var(--color-neutral-600)' }} />
                   </td>
                 </tr>
@@ -359,8 +358,12 @@ const tableWrapStyle: CSSProperties = {
   overflowX: 'auto',
 }
 
+/* 48 BETWEEN COLUMNS (2026-11-19, Eric) — every column as wide as its widest content, then 48, nothing before it, so 48 is the
+   whole gap. One line each. The first cell keeps its own left inset and the arrow column its end padding. */
+const COLUMN_GAP = 48
+const COLUMN_FIT: CSSProperties = { width: '1px', whiteSpace: 'nowrap', paddingLeft: 0, paddingRight: COLUMN_GAP }
 const tableStyle: CSSProperties = {
-  width: '100%',
+  width: 'auto',
   borderCollapse: 'collapse',
   fontFamily: 'var(--font-body)',
 }

@@ -3418,7 +3418,7 @@ function CourseBoxes({ courses, pickedId, onPick }: { courses: AtlasCourseTab[];
     const ro = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(measure)
     ro?.observe(row)
     return () => ro?.disconnect()
-  }, [courses, pickedId, hovered])
+  }, [courses, pickedId])
   const open = courses.findIndex((c) => c.id === (hovered ?? pickedId))
   const caps = natural.length === courses.length && room > 0 ? fillRow(natural, room, open) : []
   return (
@@ -3454,7 +3454,10 @@ function CourseBoxes({ courses, pickedId, onPick }: { courses: AtlasCourseTab[];
             }}
             type="button"
             tabIndex={-1}
-            style={{ ...(t.id === pickedId ? COURSE_BOX_PICKED : COURSE_BOX), ...(hovered === t.id ? { fontWeight: 600 } : null), flex: 'none' }}
+            /* Every box measured at the hover's SemiBold (2026-11-19, Eric: no "…" on hover when the title fits). Measured at
+               its resting weight, a hovered box went SemiBold — wider — inside the old width, and showed an ellipsis for the
+               280ms the cap took to catch up. The cap only bounds the box, so a Regular box still sits at its own width. */
+            style={{ ...(t.id === pickedId ? COURSE_BOX_PICKED : COURSE_BOX), fontWeight: 600, flex: 'none' }}
           >
             <span style={COURSE_BOX_TITLE}>{t.title}</span>
             {t.id === pickedId ? <AngleDownRegular style={COURSE_BOX_ICON} /> : null}

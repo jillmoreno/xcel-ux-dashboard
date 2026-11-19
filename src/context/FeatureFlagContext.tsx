@@ -3363,7 +3363,8 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        ⚠ DEFAULT House style, the "flags default ON on your branch" rule, so
        the branch build shows the work. Whether it stays is decided at
        share-to-stage. */
-    surface: 'design',
+    // OFF THE DESIGN BAR (2026-11-19, Eric: "on the learner side hide all design controls, except for breakpoint") — still in
+    // the Feature Flag panel at its default. `surface: 'design'` puts it back.
     /* ⚠ NO `owner`, like the affidavit flags around it. `afsana` is not in
        `DesignerId` on this branch — that entry is on Jill's
        `feat/affidavit-modal-house-style` and would have to arrive with it.
@@ -3395,7 +3396,8 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        `eric-atlas-e2e` is where the Affidavit control it modifies lives. No
        `owner`, so the panel files it under Jill rather than adding a row to
        Eric's pinned list. */
-    surface: 'design',
+    // OFF THE DESIGN BAR (2026-11-19, Eric: "on the learner side hide all design controls, except for breakpoint") — still in
+    // the Feature Flag panel at its default. `surface: 'design'` puts it back.
     versions: ['jill-atlas-main', 'eric-atlas-e2e'],
     group: 'Widgets',
     label: 'Affidavit V2',
@@ -3413,7 +3415,8 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
      Florida is the default state because it is the demo course's. */
   {
     key: 'affidavit-v2-moment',
-    surface: 'design',
+    // OFF THE DESIGN BAR (2026-11-19, Eric: "on the learner side hide all design controls, except for breakpoint") — still in
+    // the Feature Flag panel at its default. `surface: 'design'` puts it back.
     versions: ['jill-atlas-main', 'eric-atlas-e2e'],
     group: 'Widgets',
     /* ⚠ IT REPLACED THE AFFIDAVIT CONTROL ON THE BAR (2026-11-04, Afsana:
@@ -3439,7 +3442,8 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
   },
   {
     key: 'affidavit-v2-state',
-    surface: 'design',
+    // OFF THE DESIGN BAR (2026-11-19, Eric: "on the learner side hide all design controls, except for breakpoint") — still in
+    // the Feature Flag panel at its default. `surface: 'design'` puts it back.
     versions: ['jill-atlas-main', 'eric-atlas-e2e'],
     group: 'Widgets',
     label: 'Affidavit state',
@@ -3482,7 +3486,8 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
   },
   {
     key: 'affidavit-v2-pattern',
-    surface: 'design',
+    // OFF THE DESIGN BAR (2026-11-19, Eric: "on the learner side hide all design controls, except for breakpoint") — still in
+    // the Feature Flag panel at its default. `surface: 'design'` puts it back.
     versions: ['jill-atlas-main', 'eric-atlas-e2e'],
     group: 'Widgets',
     label: 'Affidavit pattern',
@@ -3510,7 +3515,8 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     /* UNDECIDED (2026-11-06, Afsana): is Middle Name part of the legal name
        a signature captures? On every form that has a signature, the name
        sits above it as First / Middle / Last, pre-filled; Off drops Middle. */
-    surface: 'design',
+    // OFF THE DESIGN BAR (2026-11-19, Eric: "on the learner side hide all design controls, except for breakpoint") — still in
+    // the Feature Flag panel at its default. `surface: 'design'` puts it back.
     versions: ['jill-atlas-main', 'eric-atlas-e2e'],
     group: 'Widgets',
     label: 'Affidavit middle name',
@@ -3534,7 +3540,8 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        forms name. A state that has no form for the chosen line shows its
        first one, as the explorer's own picker falls back, and every state
        that signs one form for all lines ignores this. */
-    surface: 'design',
+    // OFF THE DESIGN BAR (2026-11-19, Eric: "on the learner side hide all design controls, except for breakpoint") — still in
+    // the Feature Flag panel at its default. `surface: 'design'` puts it back.
     versions: ['jill-atlas-main', 'eric-atlas-e2e'],
     // XCEL's generic forms sign the same for every line (2026-11-04, Afsana).
     hiddenWhen: { flag: 'affidavit-v2-state', variants: ['GEN'] },
@@ -3579,7 +3586,8 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        Not the full walk's Step 2 (`?journey=full`), which is Jillienne's and
        keeps its own prompt. Default ON on Eric's branch so its build shows the
        work; whether it ships is decided at merge. */
-    surface: 'design',
+    // OFF THE DESIGN BAR (2026-11-19, Eric: "on the learner side hide all design controls, except for breakpoint") — still in
+    // the Feature Flag panel at its default. `surface: 'design'` puts it back.
     owner: 'eric',
     versions: ['eric-atlas-e2e'],
     group: 'Widgets',
@@ -4706,7 +4714,8 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        the panel 32 a side. Off: the card as it was. Swapped at the call sites
        of Jill/Atlas-Main and the End-to-End Home. ON on this branch, per the
        flag rule. */
-    surface: 'design',
+    // OFF THE DESIGN BAR (2026-11-19, Eric: "on the learner side hide all design controls, except for breakpoint") — still in
+    // the Feature Flag panel at its default. `surface: 'design'` puts it back.
     versions: ['eric-atlas-e2e'],
     group: 'Widgets',
     label: 'Pace card: Figma',
@@ -5358,7 +5367,8 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
 
        ⚠ A DESIGN CONTROL, so it never reaches Prototypes; the stylesheets ride only inside the frame. A breakpoint layout
        that should SHIP is a media query in the product's own styles, decided at merge. */
-    surface: 'design',
+    // OFF THE DESIGN BAR "for now" (2026-11-19, Eric) — the learner bar's last control; still in the Feature Flag panel at
+    // its default (Live). `surface: 'design'` puts it back.
     versions: ['eric-atlas-e2e'],
     group: 'Layout',
     label: 'Breakpoint',
