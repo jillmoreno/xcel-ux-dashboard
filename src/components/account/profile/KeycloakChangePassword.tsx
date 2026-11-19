@@ -1,8 +1,6 @@
 import { useId, useState, type CSSProperties } from 'react'
-import { CircleCheckSolid } from '@/icons'
 import { InvitePasswordChecklistV3 } from '@/components/e2e/InvitePasswordChecklistV3'
 import { meetsInvitePasswordRulesV3 } from '@/data/invitePasswordRulesV3'
-import { Button } from '@/components/ui/Button'
 import { PanelFooter } from './profileFormBits'
 import { introTextStyle, panelBodyStyle } from './profileFormStyles'
 
@@ -37,39 +35,31 @@ import { introTextStyle, panelBodyStyle } from './profileFormStyles'
  * the step twice; the lead sits in the sheet step's own size (2026-11-16,
  * Afsana: it now says what to do rather than the old security line).
  *
- * ⚠ OPEN ITEM — WHAT HAPPENS AFTER A SUCCESSFUL CHANGE. Nobody yet knows
- * whether the learner stays signed in or is signed out to sign back in with
- * the new password. Both are drawn, picked by the design control
- * `account-password-change-outcome`: `stay` closes and toasts (via
- * `onChanged`); `sign-out` swaps the form for a signed-out card. Retire the
- * losing arm once it is decided.
+ * ⚠ NO SIGN-OUT (2026-11-19, Afsana: "we are not logging them out after
+ * they have changed their password"). The open item is closed: a change
+ * closes the sheet and toasts, and the learner stays signed in. The
+ * signed-out card and its `account-password-change-outcome` control are in
+ * this file's history, not in the tree.
  *
  * It reads the passwords and never keeps them past close — nothing here
  * stores or logs a value.
  */
-export type PasswordChangeOutcome = 'stay' | 'sign-out'
-
 export function KeycloakChangePassword({
-  titleId,
   email,
-  outcome,
   onChanged,
   onCancel,
 }: {
-  titleId: string
   /** The learner's email — what "be different from email" compares against. */
   email: string
-  outcome: PasswordChangeOutcome
-  /** Called on a successful change when the learner stays signed in. */
+  /** Called on a successful change. */
   onChanged: () => void
-  /** Cancel, and Sign In on the signed-out card. */
+
   onCancel: () => void
 }) {
   const id = useId()
   const [current, setCurrent] = useState('')
   const [next, setNext] = useState('')
   const [confirm, setConfirm] = useState('')
-  const [signedOut, setSignedOut] = useState(false)
 
   /* Keycloak refuses a new password equal to the current one; say so here
      rather than after submit. */
@@ -84,30 +74,7 @@ export function KeycloakChangePassword({
   const submit = () => {
     if (!canSubmit) return
     console.info('account:keycloak-change-password')
-    if (outcome === 'sign-out') setSignedOut(true)
-    else onChanged()
-  }
-
-  if (signedOut) {
-    return (
-      <div style={panelBodyStyle}>
-        <span aria-hidden style={DONE_GLYPH}>
-          <CircleCheckSolid size={40} />
-        </span>
-        <div style={HEAD}>
-          <h2 id={titleId} style={TITLE}>
-            Password changed
-          </h2>
-          <div aria-hidden style={RULE} />
-          <p style={LEAD}>
-            For your security, we've signed you out. Sign in again with your new password.
-          </p>
-        </div>
-        <Button variant="primary" size="md" onClick={onCancel} style={SIGN_IN_BUTTON}>
-          Sign In
-        </Button>
-      </div>
-    )
+    onChanged()
   }
 
   return (
@@ -236,47 +203,36 @@ function PasswordField({
           aria-pressed={shown}
           style={EYE}
         >
-          <img
-            src={shown ? '/brand/confirmation/eye.svg' : '/brand/confirmation/eye-off.svg'}
-            alt=""
-            width={18}
-            height={18}
-            style={{ display: 'block' }}
-          />
+          <KeycloakEye slashed={shown} />
         </button>
       </div>
     </div>
   )
 }
 
+/**
+ * KEYCLOAK'S EYE, 1:1 (2026-11-19, Afsana: "match the eye icon 1:1 … there
+ * is no need for a pupil"). An almond outline round a hollow ring — no filled
+ * pupil, which is why it is drawn here rather than taken from `@/icons`
+ * (Font Awesome's eye has one). Open while the password is hidden; slashed
+ * once it is shown.
+ */
+function KeycloakEye({ slashed }: { slashed: boolean }) {
+  return (
+    <svg width={20} height={20} viewBox="0 0 24 24" fill="none" aria-hidden style={{ display: 'block' }}>
+      <path
+        d="M2 12c2.2-4.4 5.9-7 10-7s7.8 2.6 10 7c-2.2 4.4-5.9 7-10 7s-7.8-2.6-10-7Z"
+        stroke="currentColor"
+        strokeWidth={2}
+        strokeLinejoin="round"
+      />
+      <circle cx={12} cy={12} r={3.25} stroke="currentColor" strokeWidth={2} />
+      {slashed ? <path d="M4 4l16 16" stroke="currentColor" strokeWidth={2} strokeLinecap="round" /> : null}
+    </svg>
+  )
+}
+
 /* ── Styles — Invite Flow V3's field register (`VerifyEmailModalV3`) ────── */
-
-const HEAD: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 8 }
-
-const TITLE: CSSProperties = {
-  margin: 0,
-  fontFamily: 'var(--font-e2e-avenir)',
-  fontWeight: 800,
-  fontSize: 22,
-  lineHeight: '30px',
-  color: 'var(--color-text-primary)',
-}
-
-const RULE: CSSProperties = {
-  width: '22%',
-  height: 2,
-  borderRadius: 1,
-  background: '#dcdcdc',
-  margin: '2px 0 4px',
-}
-
-const LEAD: CSSProperties = {
-  margin: 0,
-  fontFamily: 'var(--font-e2e-avenir)',
-  fontSize: 14,
-  lineHeight: '21px',
-  color: 'var(--color-text-secondary)',
-}
 
 const FIELD_STACK: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 8 }
 
@@ -322,8 +278,9 @@ const FIELD_INVALID: CSSProperties = { boxShadow: 'inset 0 -2px 0 var(--color-er
 const EYE: CSSProperties = {
   position: 'absolute',
   right: 12,
-  top: 13,
+  top: 12,
   display: 'inline-flex',
+  color: 'var(--color-text-secondary)',
   padding: 0,
   border: 'none',
   background: 'none',
@@ -337,20 +294,4 @@ const ERROR: CSSProperties = {
   fontSize: 12,
   lineHeight: '16px',
   color: 'var(--color-error-600)',
-}
-
-/* The sheet footer's button size (`footerButtonStyle` in `profileFormBits`),
-   so Sign In reads as the same button as Save Password. */
-const SIGN_IN_BUTTON: CSSProperties = {
-  width: '100%',
-  height: 52,
-  padding: '12px 24px',
-  fontSize: 16,
-  lineHeight: '28px',
-}
-
-const DONE_GLYPH: CSSProperties = {
-  display: 'inline-flex',
-  alignSelf: 'flex-start',
-  color: 'var(--color-success-700)',
 }

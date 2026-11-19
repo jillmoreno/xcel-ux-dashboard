@@ -10,6 +10,7 @@ import { ComponentReviewPage } from '@/pages/ComponentReviewPage'
 import { VariantDeckPage } from '@/pages/VariantDeckPage'
 import { AtlasHeaderPreviewPage } from '@/pages/AtlasHeaderPreviewPage'
 import { ComparePage } from '@/pages/ComparePage'
+import { AccountPanelsReviewPage } from '@/pages/AccountPanelsReviewPage'
 /* THE INVITE FLOW IS VERSIONED SINCE 2026-10-22, so these four routes name a
    SWITCH rather than a page — each picks V1's page or its V2 fork from the
    `invite-flow-version` flag. The paths, and everything that depends on them,
@@ -217,6 +218,9 @@ export default function App() {
       <Route path="/compare/:compareId" element={<TestingGate><ComparePage /></TestingGate>} />
       {/* The Atlas header on its own, not wired into the shell. See `AtlasHeader`. */}
       <Route path="/atlas-header-preview" element={<TestingGate><AtlasHeaderPreviewPage /></TestingGate>} />
+      {/* Update Password and Update Email Address on their own, for the dev
+          team (2026-11-19) — `/invite-v3`'s pattern. See `AccountPanelsReviewPage`. */}
+      <Route path="/account-panels" element={<TestingGate><AccountPanelsReviewPage /></TestingGate>} />
       {/* The End-to-End Demo's first page, before its dashboard: blank under the
           partner header. "Invited Product Detail" — see `InvitedProductDetailPage`. */}
       {/* Under the app's providers and prototype chrome — the demo and design

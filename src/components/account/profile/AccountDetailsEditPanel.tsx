@@ -4,7 +4,7 @@ import { Sheet } from '@/components/ui/Sheet'
 import { Toast } from '@/components/ui/Toast'
 import { ActionRow, ActionRowGroup } from '@/components/ui/ActionRow'
 import { useFeatureFlag } from '@/context/FeatureFlagContext'
-import { KeycloakChangePassword, type PasswordChangeOutcome } from './KeycloakChangePassword'
+import { KeycloakChangePassword } from './KeycloakChangePassword'
 import { Field, InlineError, PanelFooter, PasswordInput, TextInput } from './profileFormBits'
 import { introTextStyle, panelBodyStyle } from './profileFormStyles'
 import {
@@ -35,7 +35,8 @@ import {
  * reload. There is no backend.
  */
 
-type Step = 'choose' | 'password' | 'email'
+export type AccountDetailsStep = 'choose' | 'password' | 'email'
+type Step = AccountDetailsStep
 
 type Props = {
   open: boolean
@@ -44,22 +45,28 @@ type Props = {
   currentEmail: string
   /** Lifts a saved email up to `AccountDetailsCard`'s local state. */
   onEmailSaved: (email: string) => void
+  /** Where the sheet opens. The Profile page always opens on the chooser;
+   *  `/account-panels` (the dev team's isolated link) opens on a step. */
+  initialStep?: Step
 }
 
-export function AccountDetailsEditPanel({ open, onClose, currentEmail, onEmailSaved }: Props) {
-  const [step, setStep] = useState<Step>('choose')
+export function AccountDetailsEditPanel({
+  open,
+  onClose,
+  currentEmail,
+  onEmailSaved,
+  initialStep = 'choose',
+}: Props) {
+  const [step, setStep] = useState<Step>(initialStep)
   const [toast, setToast] = useState<{ title: string; body: string } | null>(null)
-  const titleId = useId()
 
   /* Keycloak's Change Password (2026-11-12, `account-keycloak-change-password`)
      is the `password` step when on — embedded in the sheet the way Update
      Email Address sits in it. Off is the step as it stood. */
   const keycloakPassword = useFeatureFlag('account-keycloak-change-password').enabled
-  const passwordOutcome = (useFeatureFlag('account-password-change-outcome').variant ??
-    'stay') as PasswordChangeOutcome
 
   /*
-   * Reopening always starts at the chooser — without this the sheet reopens on
+   * Reopening always starts at the chooser (or `initialStep`) — without this the sheet reopens on
    * whichever sub-step it was closed from, which looks like it never closed.
    *
    * ADJUSTED DURING RENDER, not in an effect. React's own "adjusting state when
@@ -72,7 +79,7 @@ export function AccountDetailsEditPanel({ open, onClose, currentEmail, onEmailSa
   const [wasOpen, setWasOpen] = useState(open)
   if (open !== wasOpen) {
     setWasOpen(open)
-    if (open) setStep('choose')
+    if (open) setStep(initialStep)
   }
 
   const dismiss = step === 'choose' ? onClose : () => setStep('choose')
@@ -116,9 +123,7 @@ export function AccountDetailsEditPanel({ open, onClose, currentEmail, onEmailSa
         {step === 'choose' && <ChooserStep onPick={setStep} />}
         {step === 'password' && keycloakPassword && (
           <KeycloakChangePassword
-            titleId={`${titleId}-keycloak`}
             email={currentEmail}
-            outcome={passwordOutcome}
             onCancel={onClose}
             onChanged={() =>
               closeWithToast({ title: 'Password updated', body: 'Your password has been changed.' })

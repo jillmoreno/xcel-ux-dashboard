@@ -6041,26 +6041,6 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     defaultEnabled: true,
     page: 'dashboard-rebrand',
   },
-  {
-    /* ⚠ AN OPEN ITEM, NOT A DECISION. Nobody yet knows whether a learner who
-       changes their password stays signed in or is signed out to sign back
-       in. Both arms are drawn so the question can be shown; retire the loser
-       once it is answered. Only reads while Keycloak change password is on. */
-    key: 'account-password-change-outcome',
-    surface: 'design',
-    versions: ['jill-atlas-main', 'eric-atlas-e2e'],
-    group: 'Widgets',
-    label: 'After password change',
-    description:
-      'What a successful change in Keycloak\'s Change Password widget does — an open item. Stay signed in: the sheet closes and a "Password updated" toast confirms it. Sign out: the widget says the learner has been signed out and asks them to sign in again with the new password.',
-    variants: [
-      { value: 'stay', label: 'Stay signed in' },
-      { value: 'sign-out', label: 'Sign out' },
-    ],
-    defaultVariant: 'stay',
-    defaultEnabled: true,
-    page: 'dashboard-rebrand',
-  },
 ]
 
 /* ─── persistence ──────────────────────────────────────────────────── */
