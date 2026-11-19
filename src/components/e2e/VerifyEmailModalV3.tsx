@@ -13,7 +13,7 @@ import {
   type VerifiedIdentity,
 } from '@/data/inviteVerification'
 import { looksLikeEmail } from '@/data/inviteFlows'
-import { Check, CircleCheckSolid } from '@/icons'
+import { Check, CircleCheckSolid, Eye, EyeSlash } from '@/icons'
 import { V3_EXPIRED_DEMO_CODE, V3_INVALID_DEMO_CODE, V3_WRONG_DEMO_PASSWORD } from '@/data/inviteFlowsV3'
 import { E2E_LEARNER_EMAIL, E2E_LEARNER_FIRST, E2E_LEARNER_LAST } from '@/pages/endToEndDemo'
 import { LOADING_HANDOFF_MS } from '@/components/e2e/XcelLoadingPage'
@@ -749,15 +749,9 @@ function LoginStep({
                 onClick={() => setShown((v) => !v)}
                 aria-label={shown ? 'Hide password' : 'Show password'}
                 aria-pressed={shown}
-                style={EYE}
+                style={EYE_ACCOUNT}
               >
-                <img
-                  src={shown ? '/brand/confirmation/eye.svg' : '/brand/confirmation/eye-off.svg'}
-                  alt=""
-                  width={18}
-                  height={18}
-                  style={{ display: 'block' }}
-                />
+                {shown ? <EyeSlash size={16} aria-hidden /> : <Eye size={16} aria-hidden />}
               </button>
             </span>
           </label>
@@ -837,7 +831,7 @@ function ResetPasswordStep({ email, onReset }: { email: string; onReset: () => v
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
         <label htmlFor="reset-password" style={FIELD_GROUP}>
           <span style={FIELD_LABEL}>
-            Password <span aria-hidden>*</span>
+            New Password <span aria-hidden>*</span>
           </span>
           <span style={{ position: 'relative', display: 'block' }}>
             <input
@@ -854,11 +848,11 @@ function ResetPasswordStep({ email, onReset }: { email: string; onReset: () => v
             <button
               type="button"
               onClick={() => setShown((v) => !v)}
-              aria-label={shown ? 'Hide password' : 'Show password'}
+              aria-label={shown ? 'Hide new password' : 'Show new password'}
               aria-pressed={shown}
-              style={EYE}
+              style={EYE_ACCOUNT}
             >
-              <img src={shown ? '/brand/confirmation/eye.svg' : '/brand/confirmation/eye-off.svg'} alt="" width={18} height={18} style={{ display: 'block' }} />
+              {shown ? <EyeSlash size={16} aria-hidden /> : <Eye size={16} aria-hidden />}
             </button>
           </span>
         </label>
@@ -866,7 +860,7 @@ function ResetPasswordStep({ email, onReset }: { email: string; onReset: () => v
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
           <label htmlFor="reset-confirm" style={FIELD_GROUP}>
             <span style={FIELD_LABEL}>
-              Confirm new password <span aria-hidden>*</span>
+              Confirm New Password <span aria-hidden>*</span>
             </span>
             <span style={{ position: 'relative', display: 'block' }}>
               <input
@@ -889,9 +883,9 @@ function ResetPasswordStep({ email, onReset }: { email: string; onReset: () => v
                 onClick={() => setConfirmShown((v) => !v)}
                 aria-label={confirmShown ? 'Hide confirm new password' : 'Show confirm new password'}
                 aria-pressed={confirmShown}
-                style={EYE}
+                style={EYE_ACCOUNT}
               >
-                <img src={confirmShown ? '/brand/confirmation/eye.svg' : '/brand/confirmation/eye-off.svg'} alt="" width={18} height={18} style={{ display: 'block' }} />
+                {confirmShown ? <EyeSlash size={16} aria-hidden /> : <Eye size={16} aria-hidden />}
               </button>
             </span>
           </label>
@@ -1180,6 +1174,17 @@ const EYE: CSSProperties = {
   border: 'none',
   background: 'none',
   cursor: 'pointer',
+}
+
+/* Every password eye in V3 matches Update Password's in Account Details
+   (2026-11-19, Afsana: "all eye icons should match in the password fields"):
+   the icon set's Eye / Eye Slash at 16, in the secondary text colour, rather
+   than the confirmation page's images. Always visible, empty field or not. */
+const EYE_ACCOUNT: CSSProperties = {
+  ...EYE,
+  /* A 16 icon, where EYE was set for the 18 image: one px down to centre it. */
+  top: 11,
+  color: 'var(--color-text-secondary)',
 }
 
 const FORGOT: CSSProperties = {
