@@ -129,22 +129,24 @@ describe('the stand-alone invite flow page', () => {
    script writes. A tiny stand-in manifest is enough to pin the layout. */
 describe('the stand-alone page’s Screens tab', () => {
   const manifest = {
-    capturedAt: '2026-11-18',
-    flows: [
+    capturedAt: '2026-11-19',
+    components: [
       {
-        id: 'direct-email',
-        label: 'Direct Email',
-        model: 'b2b',
-        variants: [
-          {
-            label: 'No Atlas account',
-            slug: 'no-atlas',
-            shots: [
-              { file: 'direct-email/no-atlas/01-email.png', title: 'Invitation email', state: 'Unread' },
-              { file: 'direct-email/no-atlas/02-code.png', title: 'Verify your email', state: 'Wrong code' },
-            ],
-          },
+        id: 'modal-verify-your-email',
+        title: 'Verify your email',
+        kind: 'modal',
+        flows: ['Direct Email', 'QR Code'],
+        states: [
+          { file: 'modals/verify-your-email/01-empty.png', state: 'Empty', seenIn: ['Direct Email · No Atlas account'] },
+          { file: 'modals/verify-your-email/02-wrong-code.png', state: 'Wrong code', seenIn: ['QR Code · No Atlas account'] },
         ],
+      },
+      {
+        id: 'page-your-cart',
+        title: 'Your cart',
+        kind: 'page',
+        flows: ['Not signed into XCEL (OCD)'],
+        states: [{ file: 'pages/your-cart/01-targeted.png', state: 'Targeted course', seenIn: ['Not signed into XCEL (OCD) · Targeted only · No Atlas account'] }],
       },
     ],
   }
@@ -155,29 +157,36 @@ describe('the stand-alone page’s Screens tab', () => {
     vi.unstubAllGlobals()
   })
 
-  it('opens on Flows, and Screens lists each flow’s pictures with their states', async () => {
+  it('opens on Flows, and Screens lists each component once with its states and flows', async () => {
     render(
       <MemoryRouter initialEntries={['/invite-v3']}>
         <InviteV3StartPage />
       </MemoryRouter>,
     )
     expect(screen.getByRole('tab', { name: 'Flows' })).toHaveAttribute('aria-selected', 'true')
-    expect(screen.getByRole('heading', { name: 'Direct Email' })).toBeInTheDocument()
     await userEvent.click(screen.getByRole('tab', { name: 'Screens' }))
-    expect(await screen.findByRole('button', { name: '2. Verify your email — Wrong code' })).toBeInTheDocument()
-    expect(screen.getByText(/Captured 2026-11-18/)).toBeInTheDocument()
+    const modal = await screen.findByRole('article', { name: 'Verify your email (Modal)' })
+    expect(within(modal).getByText('Used in: Direct Email · QR Code')).toBeInTheDocument()
+    expect(within(modal).getByRole('button', { name: 'Verify your email — Wrong code' })).toBeInTheDocument()
+    /* Components first, pages after. */
+    const components = screen.getByRole('region', { name: 'Components' })
+    const pages = screen.getByRole('region', { name: 'Pages' })
+    expect(within(components).queryByRole('article', { name: /Your cart/ })).not.toBeInTheDocument()
+    expect(within(pages).getByRole('article', { name: 'Your cart (Page)' })).toBeInTheDocument()
+    expect(screen.getByText(/Captured 2026-11-19/)).toBeInTheDocument()
     expect(screen.queryByRole('link', { name: /No Atlas account/ })).not.toBeInTheDocument()
   })
 
-  it('opens a picture full size, and steps through them', async () => {
+  it('opens a state full size, says where it is seen, and steps through them', async () => {
     render(
       <MemoryRouter initialEntries={['/invite-v3?tab=screens']}>
         <InviteV3StartPage />
       </MemoryRouter>,
     )
-    await userEvent.click(await screen.findByRole('button', { name: '1. Invitation email — Unread' }))
-    const dialog = screen.getByRole('dialog', { name: 'Invitation email — Unread' })
-    expect(within(dialog).getByRole('img')).toHaveAttribute('src', '/invite-v3-screens/direct-email/no-atlas/01-email.png')
+    await userEvent.click(await screen.findByRole('button', { name: 'Verify your email — Empty' }))
+    const dialog = screen.getByRole('dialog', { name: 'Verify your email — Empty' })
+    expect(within(dialog).getByRole('img')).toHaveAttribute('src', '/invite-v3-screens/modals/verify-your-email/01-empty.png')
+    expect(dialog).toHaveTextContent('seen in Direct Email · No Atlas account')
     await userEvent.click(within(dialog).getByRole('button', { name: 'Next' }))
     expect(screen.getByRole('dialog', { name: 'Verify your email — Wrong code' })).toBeInTheDocument()
     await userEvent.keyboard('{Escape}')
