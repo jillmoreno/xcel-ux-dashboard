@@ -22,9 +22,12 @@ const HOME_ROWS = [
   // Home back at the top (2026-11-12, Eric: "add a button above My Courses for Home").
   'Home',
   'My Courses',
-  'Certificates and Transcripts',
+  'Certificates & Transcripts',
   // Exam Information and Applying for a License off the rail since 2026-11-18 (Eric).
   'State Licensing Requirements',
+  // Account last (2026-11-19, Eric) — `atlas-rail-account-group`. Its children are collapsed off an account page, so
+  // they are hidden and not counted here.
+  'Account',
 ]
 /* The course's own pages. `withoutCoursePages` is what keeps them off this
    rail, and it is the prop the previews dropped. */
@@ -42,7 +45,8 @@ describe('the Quick Links previews match the Home', () => {
          survive being rendered inside one — the condition the MemoryRouter
          wrapper failed. */
       render(<MemoryRouter>{node}</MemoryRouter>)
-      const rows = screen.getAllByRole('listitem').map((li) => li.textContent?.trim())
+      /* Each row's own button, not the whole <li> — the Account row's <li> also holds its (hidden) children. */
+      const rows = screen.getAllByRole('listitem').map((li) => li.querySelector('button')?.textContent?.trim())
       expect(rows).toEqual(HOME_ROWS)
       for (const gone of NOT_ON_THE_RAIL) expect(screen.queryByText(gone)).toBeNull()
     })

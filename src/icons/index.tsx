@@ -111,6 +111,11 @@ import CalendarRegularSvg from './calendar-regular.svg?react'
 import FileLinesRegularSvg from './file-lines-regular.svg?react'
 // 7.3.1 Regular (2026-11-18, Eric) — the Atlas account nav, at Quick Links' weight.
 import UserRegularSvg from './user-regular.svg?react'
+// FA Pro 7.2.0 `circle-user` (regular), from the desktop download — the Quick Links rail's Account row (2026-11-19).
+import CircleUserRegularSvg from './circle-user-regular.svg?react'
+// FA Pro 7.2.0 Light, from the desktop download — the account pages' admin-style nav (2026-11-19).
+import HouseLightSvg from './house-light.svg?react'
+import BookLightSvg from './book-light.svg?react'
 import BellRegularSvg from './bell-regular.svg?react'
 import ReceiptRegularSvg from './receipt-regular.svg?react'
 import GiftRegularSvg from './gift-regular.svg?react'
@@ -379,6 +384,9 @@ export const ArrowRightSolid = makeIcon(ArrowRightSolidSvg) // FA: arrow-right (
 export const CalendarRegular = makeIcon(CalendarRegularSvg) // FA: calendar (regular)
 export const FileLinesRegular = makeIcon(FileLinesRegularSvg) // FA: file-lines (regular)
 export const UserRegular = makeIcon(UserRegularSvg) // FA: user (regular)
+export const CircleUserRegular = makeIcon(CircleUserRegularSvg) // FA: circle-user (regular)
+export const HouseLight = makeIcon(HouseLightSvg) // FA: house (light)
+export const BookLight = makeIcon(BookLightSvg) // FA: book (light)
 export const BellRegular = makeIcon(BellRegularSvg) // FA: bell (regular)
 export const ReceiptRegular = makeIcon(ReceiptRegularSvg) // FA: receipt (regular)
 export const GiftRegular = makeIcon(GiftRegularSvg) // FA: gift (regular)

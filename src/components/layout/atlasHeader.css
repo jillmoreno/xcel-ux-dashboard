@@ -25,6 +25,11 @@
   --atlas-hdr-email: #2980b9; /* profile email in the dropdown */
   --atlas-hdr-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
   --atlas-hdr-ms: 150ms;
+  /* The main nav buttons — Figma "Atlas UX Design" 754:1964 (2026-11-19, Eric). Its Primary 100 is --atlas-hdr-tint and its
+     Primary 600 --atlas-hdr-navy; these are the other three, pinned like the rest so the header holds across brands. */
+  --atlas-hdr-nav-ink: #818181; /* Neutral 600 — Default text and icon */
+  --atlas-hdr-nav-hover-ink: #3d5a73; /* Primary 500 — Hover text and icon */
+  --atlas-hdr-nav-hover-rule: #cfd6dc; /* Primary 200 — Hover border */
 
   font-family: var(--font-body);
   color: var(--atlas-hdr-navy);
@@ -94,6 +99,58 @@
 .cre-atlas-hdr .cre-atlas-hdr-pill[aria-current='page'],
 .cre-atlas-hdr .cre-atlas-hdr-pill.is-selected {
   font-weight: 600;
+}
+
+/* THE MAIN NAV BUTTONS — Figma "Atlas UX Design" 754:1964 (2026-11-19, Eric), with `outlinedNav` on AtlasHeader.
+   30 tall, 12 in, 8 corners, a 12 FA Regular icon 4 from an Open Sans SemiBold 13/15 label. Three states:
+   · Default — white, a 1 Primary 100 border, Neutral 600 ink;
+   · Hover — Primary 100 fill, a 1 Primary 200 border, Primary 500 ink;
+   · Active (the page you are on) — Primary 100 fill, no border, Primary 600 ink.
+   Every state is SemiBold, so nothing changes width between them. It replaced the same day's outlined pills (white with
+   the #c8c8c8 border, Medium going to SemiBold on hover). */
+.cre-atlas-hdr .cre-atlas-hdr-pill--nav {
+  gap: 4px;
+  font-size: 13px;
+  line-height: 15px;
+  font-weight: 600;
+  background-color: var(--atlas-hdr-surface);
+  border-color: var(--atlas-hdr-tint);
+  color: var(--atlas-hdr-nav-ink);
+  transition:
+    background-color var(--atlas-hdr-ms) ease,
+    border-color var(--atlas-hdr-ms) ease,
+    color var(--atlas-hdr-ms) ease;
+}
+.cre-atlas-hdr .cre-atlas-hdr-pill--nav:hover {
+  background-color: var(--atlas-hdr-tint);
+  border-color: var(--atlas-hdr-nav-hover-rule);
+  color: var(--atlas-hdr-nav-hover-ink);
+}
+.cre-atlas-hdr .cre-atlas-hdr-pill--nav[aria-current='page'] {
+  background-color: var(--atlas-hdr-tint);
+  border-color: transparent;
+  color: var(--atlas-hdr-navy);
+}
+/* Figma's optical nudges: the icon sits on 2 below it, the label on 3 below it in a 20 box. */
+.cre-atlas-hdr .cre-atlas-hdr-pill-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding-bottom: 2px;
+  /* …then 1 lower (2026-11-19, Eric: "move the icons down one pixel"). */
+  position: relative;
+  top: 1px;
+}
+.cre-atlas-hdr .cre-atlas-hdr-pill-label {
+  display: inline-flex;
+  align-items: center;
+  height: 20px;
+  padding-bottom: 3px;
+  box-sizing: border-box;
+  /* …then 2 lower (2026-11-19, Eric: "the text down two pixels"). Offsets, not padding: padding inside a centred box
+     moves its content by half the change. */
+  position: relative;
+  top: 2px;
 }
 
 .cre-atlas-hdr .cre-atlas-hdr-eyebrow-link {

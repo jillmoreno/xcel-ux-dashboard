@@ -143,26 +143,28 @@ describe('My Courses on the Atlas baseline', () => {
  * ROUTE, not the page — a page nobody can reach is not done.
  */
 describe('Home’s Quick Links reach the two learning pages', () => {
+  /* Home's rail is hidden by default since 2026-11-19 (`atlas-pages-quick-links`), so these pin it shown. */
   const clickRow = (label: string) =>
-    fireEvent.click(within(screen.getByRole('navigation', { name: 'Quick links' })).getByText(label))
+    // By role, not text: the Account group's collapsed children repeat "Certificates & Transcripts", hidden (2026-11-19).
+    fireEvent.click(within(screen.getByRole('navigation', { name: 'Quick links' })).getByRole('button', { name: label }))
 
   it('My Courses opens My Courses', () => {
-    renderShell(`section=dashboard&version=${BASELINE}`)
+    renderShell(`section=dashboard&version=${BASELINE}&ff=atlas-pages-quick-links:shown`)
     clickRow('My Courses')
     expect(screen.getByRole('heading', { name: 'My Courses' })).toBeTruthy()
   })
 
-  it('Certificates and Transcripts opens My Certificates', () => {
-    renderShell(`section=dashboard&version=${BASELINE}`)
-    clickRow('Certificates and Transcripts')
-    expect(screen.getByRole('heading', { name: 'Certificates and Transcripts' })).toBeTruthy()
+  it('Certificates & Transcripts opens My Certificates', () => {
+    renderShell(`section=dashboard&version=${BASELINE}&ff=atlas-pages-quick-links:shown`)
+    clickRow('Certificates & Transcripts')
+    expect(screen.getByRole('heading', { name: 'Certificates & Transcripts' })).toBeTruthy()
   })
 
   /* The rows go quiet again with the control off — which is what they did
      between 2026-10-15 and today, and what the demo wanted while the
      destinations were dead ends. */
   it('goes quiet again when the control is off', () => {
-    renderShell(`section=dashboard&version=${BASELINE}&ff=atlas-home-opens-learning-pages:off`)
+    renderShell(`section=dashboard&version=${BASELINE}&ff=atlas-pages-quick-links:shown,atlas-home-opens-learning-pages:off`)
     clickRow('My Courses')
     expect(screen.queryByRole('heading', { name: 'My Courses' })).toBeNull()
   })
@@ -184,13 +186,21 @@ describe('My Certificates on the Atlas baseline', () => {
   /* The heading read "Certificates" while the only link that reaches it — the
      Quick Links row — said "My Certificates", and My Courses beside it already
      carries the possessive. */
-  it('is headed "Certificates and Transcripts"', () => {
+  it('is headed "Certificates & Transcripts"', () => {
+    renderShell(`section=certificates&version=${BASELINE}&ff=atlas-certificates-transcripts-body:off`)
+    expect(screen.getByRole('heading', { name: 'Certificates & Transcripts' })).toBeTruthy()
+  })
+
+  /* `atlas-certificates-transcripts-body` (2026-11-19, Eric): by default the
+     page keeps its title and draws the Transcripts course history as its body. */
+  it('draws the Transcripts table under its own title by default', () => {
     renderShell(`section=certificates&version=${BASELINE}`)
-    expect(screen.getByRole('heading', { name: 'Certificates and Transcripts' })).toBeTruthy()
+    expect(screen.getByRole('heading', { name: 'Certificates & Transcripts' })).toBeTruthy()
+    expect(screen.getByRole('tablist', { name: 'Filter transcripts' })).toBeTruthy()
   })
 
   it('draws no Quick Links rail', () => {
-    renderShell(`section=certificates&version=${BASELINE}`)
+    renderShell(`section=certificates&version=${BASELINE}&ff=atlas-certificates-transcripts-body:off`)
     expect(quickLinks()).toBeNull()
   })
 
@@ -199,7 +209,7 @@ describe('My Certificates on the Atlas baseline', () => {
      tabs — so the Action Required tab was unreachable and nothing on the page
      opened anything, while the kebab called `console.info`. */
   it('opens an issued certificate’s detail, with no Action Required banner', () => {
-    renderShell(`section=certificates&version=${BASELINE}`)
+    renderShell(`section=certificates&version=${BASELINE}&ff=atlas-certificates-transcripts-body:off`)
     fireEvent.click(screen.getByRole('button', { name: /View details for Annuity Initial Training/ }))
     const sheet = screen.getByRole('dialog')
     expect(within(sheet).getByText('Certificate Issued')).toBeTruthy()
@@ -213,7 +223,7 @@ describe('My Certificates on the Atlas baseline', () => {
      has always said. The panel's not-yet-earned state is covered directly at
      the foot of this file; no card reaches it from here any more. */
   it('opens the Life & Health certificate on the issued state as well', () => {
-    renderShell(`section=certificates&version=${BASELINE}`)
+    renderShell(`section=certificates&version=${BASELINE}&ff=atlas-certificates-transcripts-body:off`)
     fireEvent.click(screen.getByRole('button', { name: /View details for Life & Health Pre-Licensing/ }))
     const sheet = screen.getByRole('dialog')
     expect(within(sheet).getByText('Certificate Issued')).toBeTruthy()
@@ -221,7 +231,7 @@ describe('My Certificates on the Atlas baseline', () => {
   })
 
   it('leaves the cards inert when the flag is off', () => {
-    renderShell(`section=certificates&version=${BASELINE}&ff=atlas-certificates-open-detail:off`)
+    renderShell(`section=certificates&version=${BASELINE}&ff=atlas-certificates-transcripts-body:off,atlas-certificates-open-detail:off`)
     expect(screen.queryByRole('button', { name: /View details for Annuity Initial Training/ })).toBeNull()
   })
 })
@@ -246,7 +256,7 @@ describe('My Certificates on the Atlas baseline', () => {
  */
 describe('the certificates page draws the shared card', () => {
   it('spells the status out instead of pilling the obvious', () => {
-    renderShell(`section=certificates&version=${BASELINE}`)
+    renderShell(`section=certificates&version=${BASELINE}&ff=atlas-certificates-transcripts-body:off`)
     expect(screen.getAllByText('COMPLETED').length).toBeGreaterThan(0)
     // The pill every card could wear, and therefore the one that told you
     // nothing. Its absence IS the finding.
@@ -254,14 +264,14 @@ describe('the certificates page draws the shared card', () => {
   })
 
   it('carries the profession line again', () => {
-    renderShell(`section=certificates&version=${BASELINE}`)
+    renderShell(`section=certificates&version=${BASELINE}&ff=atlas-certificates-transcripts-body:off`)
     expect(screen.getAllByText('Insurance Continuing Education').length).toBeGreaterThan(0)
   })
 
   /* The accent custom property is what `.cre-cert-card` reads for the 6px hover
      stroke and the title underline. A card that opens has to say it does. */
   it('sets the accent the hover treatment reads', () => {
-    renderShell(`section=certificates&version=${BASELINE}`)
+    renderShell(`section=certificates&version=${BASELINE}&ff=atlas-certificates-transcripts-body:off`)
     const card = screen.getByRole('button', { name: /View details for Annuity/ })
     expect(card.style.getPropertyValue('--cert-accent')).not.toBe('')
   })
@@ -272,13 +282,13 @@ describe('the certificates page draws the shared card', () => {
      record is `status: 'completed'` with an issue date and a reporting date —
      it was an overlay this page painted over it. */
   it('shows no not-yet-earned certificate', () => {
-    renderShell(`section=certificates&version=${BASELINE}`)
+    renderShell(`section=certificates&version=${BASELINE}&ff=atlas-certificates-transcripts-body:off`)
     expect(screen.queryByText(/IN\s*PROGRESS/)).toBeNull()
     expect(screen.queryByText('Issued when you complete the course')).toBeNull()
   })
 
   it('draws the Life & Health certificate as issued, like its record', () => {
-    renderShell(`section=certificates&version=${BASELINE}`)
+    renderShell(`section=certificates&version=${BASELINE}&ff=atlas-certificates-transcripts-body:off`)
     const card = screen.getByRole('button', { name: /View details for Life & Health/ })
     expect(within(card).getByText('COMPLETED')).toBeTruthy()
   })
@@ -290,14 +300,14 @@ describe('the certificates page draws the shared card', () => {
      a later eye-dropper edit back to primary or to the brighter functional
      green fails here. */
   it('paints a completed certificate from the pass ramp', () => {
-    renderShell(`section=certificates&version=${BASELINE}`)
+    renderShell(`section=certificates&version=${BASELINE}&ff=atlas-certificates-transcripts-body:off`)
     const card = screen.getByRole('button', { name: /View details for Annuity/ })
     expect(card.style.getPropertyValue('--cert-accent')).toBe('var(--color-pass-500)')
     expect(card.style.getPropertyValue('--cert-link')).toBe('var(--color-pass-700)')
   })
 
   it('draws the Atlas card when the control says atlas', () => {
-    renderShell(`section=certificates&version=${BASELINE}&ff=atlas-certificates-card-style:atlas`)
+    renderShell(`section=certificates&version=${BASELINE}&ff=atlas-certificates-transcripts-body:off,atlas-certificates-card-style:atlas`)
     // The Figma 737:1477 card (2026-11-18): its View Certificate link, and the shared card's capitals nowhere.
     expect(screen.getAllByText('View Certificate').length).toBeGreaterThan(0)
     expect(screen.queryByText('COMPLETED')).toBeNull()
@@ -309,7 +319,7 @@ describe('the certificates page draws the shared card', () => {
    the card keeps the state — this is the host that still asks for it. */
 describe('the not-yet-earned treatment survives where it is still wanted', () => {
   it('Eric’s version still paints its certificate as not yet earned', () => {
-    renderShell(`section=certificates&version=${ERIC_WIP}`)
+    renderShell(`section=certificates&version=${ERIC_WIP}&ff=atlas-certificates-transcripts-body:off`)
     // The Figma 737:1477 card's badge (2026-11-18); 'In-Progress' on the card before it.
     expect(screen.getByText('In Progress')).toBeTruthy()
   })

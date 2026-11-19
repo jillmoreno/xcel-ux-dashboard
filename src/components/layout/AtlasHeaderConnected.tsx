@@ -49,6 +49,7 @@ export function AtlasHeaderConnected({
      admin pages are in this build, so Admin navigates here rather than to
      feat/atlas-admin's build — either switch turns it on. */
   const modeSwitch = useFeatureFlag('atlas-header-mode-switch').enabled
+  const myCoursesNav = useFeatureFlag('atlas-header-my-courses').enabled
   const atlasAdmin = useFeatureFlag('atlas-admin').enabled
   /* The profile menu's links in Quick Links' hover, with the account pages'
      Quick Links layout (2026-11-03). */
@@ -118,6 +119,14 @@ export function AtlasHeaderConnected({
   return (
     <AtlasHeader
       current={current}
+      /* MY COURSES BESIDE HOME (2026-11-19, Eric) — `atlas-header-my-courses`. Its own page, current on My Courses and a
+         course's pages, as the `current` above; the pills take the outlined treatment for whichever is not current. */
+      extraNav={
+        myCoursesNav
+          ? [{ label: 'My Courses', href: shell((n) => n.set('section', 'courses')), current: current === 'courses' }]
+          : undefined
+      }
+      outlinedNav={myCoursesNav}
       phoneLinks={phoneLinks}
       onHelp={onHelp}
       quickLinksMenu={quickLinksMenu}

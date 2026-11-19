@@ -3211,7 +3211,8 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        `?skin=` wins — holds here too. */
     surface: 'design',
     owner: 'eric',
-    versions: ['eric-atlas-v3', 'eric-atlas-white', 'eric-atlas-e2e'],
+    // 'eric-atlas-e2e' out (2026-11-19, Eric): Brand is off the end-to-end family's design bar. The skin itself is unchanged.
+    versions: ['eric-atlas-v3', 'eric-atlas-white'],
     group: 'Widgets',
     label: 'Brand',
     description:
@@ -4142,7 +4143,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        tab location for above card or in card". Above: the outlined course boxes over the course card ("Courses:", the picked
        course whole with its angle-down, the others cut to fit one line). In card: the tab strip in the card's head. Same
        courses, same pick, same progress per course either way. Jill/Atlas-Main's Home (AtlasHomeJillMain). */
-    surface: 'design',
+    // OFF THE DESIGN BAR (2026-11-19, Eric) — still in the Feature Flag panel at its default. `surface: 'design'` puts it back.
     versions: ['eric-atlas-e2e'],
     group: 'Layout',
     label: 'Course tabs',
@@ -4652,7 +4653,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        card in Quick Links' place. Off: the shared account sub-nav and title.
        Baseline versions only (`useAtlasAccountPages`). ON on this branch, per
        the flag rule. */
-    surface: 'design',
+    // OFF THE DESIGN BAR (2026-11-19, Eric) — still in the Feature Flag panel at its default. `surface: 'design'` puts it back.
     owner: 'eric',
     versions: ['eric-atlas-e2e'],
     group: 'Navigation',
@@ -4668,7 +4669,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        request). On: "My Courses (3)", 4 after the label, the figure bold —
        the count of what My Courses draws (`useMyCoursesCount`). Off: the
        label alone. ON on this branch, per the flag rule. */
-    surface: 'design',
+    // OFF THE DESIGN BAR (2026-11-19, Eric) — still in the Feature Flag panel at its default. `surface: 'design'` puts it back.
     owner: 'eric',
     versions: ['eric-atlas-e2e'],
     group: 'Navigation',
@@ -4685,7 +4686,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        Mode: Admin / Learner pills under the email — Admin opens the
        atlas-admin branch build, where the admin pages live. Off: the menu as
        it was. ON on this branch, per the flag rule. */
-    surface: 'design',
+    // OFF THE DESIGN BAR (2026-11-19, Eric) — still in the Feature Flag panel at its default. `surface: 'design'` puts it back.
     owner: 'eric',
     versions: ['eric-atlas-e2e'],
     group: 'Navigation',
@@ -4724,7 +4725,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        Off, the shared title style and padding. See `useSheetTitleSerif`.
        Default ON on Eric's branch so its build shows the work; whether it
        ships is decided at merge. */
-    surface: 'design',
+    // OFF THE DESIGN BAR (2026-11-19, Eric) — still in the Feature Flag panel at its default. `surface: 'design'` puts it back.
     owner: 'eric',
     versions: ['eric-atlas-e2e'],
     group: 'Widgets',
@@ -4755,14 +4756,17 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        ⚠ THE BASELINE ONLY, like the flags below. Eric asked for this rail on
        both pages on 2026-10-13 and his WIP / White keep it. */
     group: 'Navigation',
-    label: 'Quick Links on the learning pages',
+    label: 'Quick Links on Home and the learning pages',
     description:
-      'Whether My Courses and My Certificates carry the Quick Links rail. Hidden (default, 2026-11-02): no rail, cards full width. Shown: the rail returns and the pages re-centre at their October width. \u26a0 Hidden also removes the only route between the two pages that does not go through Home. Eric\u2019s WIP and White keep their rail either way.',
+      'Whether Home, My Courses, Certificates & Transcripts and the account pages (Profile, Notifications, Transcripts, My Purchases) carry the Quick Links rail. Hidden (default, 2026-11-02): no rail, cards full width. Shown: the rail returns and the pages re-centre at their October width. \u26a0 Hidden also removes the only route between the two pages that does not go through Home. Eric\u2019s WIP and White keep their rail either way.',
     defaultEnabled: true,
     // SHOWN on Eric's feat/quick-links (2026-11-03) — the rail beside the
     // cards, level with the crumb, as his breakpoints row. Hidden is
     // Jillienne's baseline on main; which ships is decided at merge.
-    defaultVariant: 'shown',
+    // HIDDEN on erics-atlas-primary since 2026-11-19 (Eric: "remove the quick links left nav from the home, my courses,
+    // certificates, and transcripts pages") — and it now covers Home (AtlasHomeJillMain, AtlasHomeEricE2E) and every
+    // account page (Transcripts first; Profile, Notifications and My Purchases the same day, "for now").
+    defaultVariant: 'hidden',
     variants: [
       { value: 'hidden', label: 'Hidden' },
       { value: 'shown', label: 'Shown' },
@@ -4910,6 +4914,61 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     label: 'Certificates open their detail',
     description:
       'Every Atlas certificate card \u2014 and its \u22ee \u2014 opens the Certificate Details slide-over, which now covers issued and not-yet-earned certificates as well as action-required ones. Off, the card and the kebab do nothing, as before.',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'atlas-account-profile-nav',
+    /* THE PROFILE PAGES' LEFT NAV (2026-11-19, Eric's request; Figma "Atlas UX Design" 754:2026) — `AtlasProfileNav`, a
+       "My Account" title (the file's "Profile:") over Profile, Notifications, Certificates & Transcripts and My Purchases, in the column the Quick
+       Links rail stood in on the account pages. Off, those pages are as `atlas-pages-quick-links` leaves them. */
+    group: 'Navigation',
+    label: 'Profile pages: left nav',
+    description:
+      'The account pages (Profile, Notifications, Transcripts, My Purchases) carry the Figma 754:2026 Profile nav down their left side \u2014 a \u201cMy Account\u201d title over the four pages, the current one tinted with a chevron. Off, they follow the Quick Links control.',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'atlas-header-my-courses',
+    /* MY COURSES IN THE TOP NAV (2026-11-19, Eric's request): a second button beside Home that opens My Courses, both drawn
+       as Figma "Atlas UX Design" 754:1964 — an icon before the label; Default white with a Primary 100 border in grey ink,
+       Hover tinted with a Primary 200 border, Active tinted in navy. Off, Home alone, as before. `AtlasHeaderConnected`
+       passes it as `extraNav`. */
+    group: 'Navigation',
+    label: 'Top nav: My Courses beside Home',
+    description:
+      'Adds My Courses beside Home in the Atlas header, both buttons in the Figma 754:1964 style \u2014 an icon before the label; white with a light outline and grey text by default, tinted with a darker outline on hover, tinted in navy for the page you are on. Off, Home alone.',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'atlas-rail-account-group',
+    /* AN ACCOUNT ROW ON THE QUICK LINKS RAIL (2026-11-19, Eric's request): below State Licensing Requirements, FA
+       circle-user (regular), with the learner profile dropdown's links — Profile, Notifications, Certificates &
+       Transcripts, My Purchases — as its children. The children show only while an account page is open, sliding down
+       with an ease in and out; their text sits on the parent rows' text line, with no icons. The account pages draw this
+       rail too, in place of `AtlasAccountLinksCard`, so the group has a page to be open on. Off, no Account row and the
+       account pages keep their own card. */
+    group: 'Navigation',
+    label: 'Account group on the Quick Links rail',
+    description:
+      'Adds an Account row (circle-user) under State Licensing Requirements on the Quick Links rail, with the profile dropdown\u2019s links as sub-items that slide open while an account page is open. The account pages draw this rail instead of their own account card. Off, no Account row, and the account pages keep their card.',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'atlas-certificates-transcripts-body',
+    /* CERTIFICATES AND TRANSCRIPTS SHOWS THE TRANSCRIPTS (2026-11-19, Eric's
+       request): the page keeps its name — the shell title still reads
+       "Certificates & Transcripts" — but its body is the account area's
+       `TranscriptsPanel`, the course-history table, in place of the
+       certificate cards. Off restores the cards. `CertificatesSection` is
+       untouched; the choice is made at its call site in `PlatformShell`. */
+    group: 'Navigation',
+    label: 'Certificates page shows the transcripts',
+    description:
+      'The Certificates & Transcripts page keeps its title but renders the Transcripts course-history table (the account area\u2019s Transcripts panel) as its body. Off, it shows the certificate cards as before.',
     defaultEnabled: true,
     page: 'dashboard-rebrand',
   },
@@ -5421,7 +5480,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        with it — that one, and the BOTTOM rule of Estimated completion, which
        separates this card from what follows. With nothing following, it is a
        line under the last thing on screen. */
-    surface: 'design',
+    // OFF THE DESIGN BAR (2026-11-19, Eric) — still in the Feature Flag panel at its default. `surface: 'design'` puts it back.
     versions: ['eric-atlas-e2e'],
     group: 'Widgets',
     label: 'Readiness section',

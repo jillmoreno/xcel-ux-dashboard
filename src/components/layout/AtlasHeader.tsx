@@ -1,5 +1,5 @@
 import type { MouseEvent, ReactNode } from 'react'
-import { AngleRightRegular, Bars, Bell, ChevronDown, CircleUser, FileText, LogOut, Receipt, User } from '@/icons'
+import { AngleRightRegular, Bars, Bell, BookRegular, ChevronDown, CircleUser, FileText, HouseRegular, LogOut, Receipt, User } from '@/icons'
 import { AtlasHeaderMenu, AtlasHeaderMenuDivider, AtlasHeaderMenuItem } from './AtlasHeaderMenu'
 import './atlasHeader.css'
 
@@ -51,6 +51,12 @@ export type AtlasHeaderMode = {
   onSwitch: () => void
 }
 
+/* The main nav buttons' icons — Figma 754:1964 (2026-11-19, Eric). */
+const NAV_ICONS: Record<string, ReactNode> = {
+  Home: <HouseRegular size={12} aria-hidden />,
+  'My Courses': <BookRegular size={12} aria-hidden />,
+}
+
 export function AtlasHeader({
   current = 'home',
   user,
@@ -62,6 +68,7 @@ export function AtlasHeader({
   showCourses = true,
   onHelp,
   extraNav = [],
+  outlinedNav = false,
   modeMenu,
   quickLinksMenu = false,
   phoneLinks,
@@ -88,6 +95,9 @@ export function AtlasHeader({
    *  request). `current` fills one; give it and leave `current` above null so
    *  Home is not filled too. Absent, the nav is exactly what it was. */
   extraNav?: readonly { label: string; href: string; current?: boolean }[]
+  /** The main nav buttons as Figma 754:1964 draws them (2026-11-19, Eric) — an icon before each label, and Default / Hover /
+   *  Active states (`.cre-atlas-hdr-pill--nav`, atlasHeader.css). Absent, every pill is the transparent one. */
+  outlinedNav?: boolean
   /** Learner / Admin mode — see `AtlasHeaderMode`. */
   modeMenu?: AtlasHeaderMode
   /** The profile menu's links in Quick Links' hover — no fill; the ink to
@@ -99,6 +109,18 @@ export function AtlasHeader({
   phoneLinks?: { label: string; icon?: ReactNode; count?: number | null; onSelect: () => void }[]
 }) {
   const trail = quickLinksMenu ? <AngleRightRegular size={13} aria-hidden /> : undefined
+  const navPill = outlinedNav ? 'cre-atlas-hdr-pill cre-atlas-hdr-pill--nav' : 'cre-atlas-hdr-pill'
+  /* With `outlinedNav` each button carries its 12 FA Regular icon before the label (Figma 754:1964) — house for Home, book
+     for My Courses (Quick Links' icon for the same page); a label with no icon here gets none. */
+  const navLabel = (label: string) =>
+    outlinedNav ? (
+      <>
+        {NAV_ICONS[label] ? <span className="cre-atlas-hdr-pill-icon" aria-hidden>{NAV_ICONS[label]}</span> : null}
+        <span className="cre-atlas-hdr-pill-label">{label}</span>
+      </>
+    ) : (
+      label
+    )
   const to = (k: keyof AtlasHeaderLinks) => links[k] ?? '#'
   // A link's href, routed through `onNavigate` when there is one.
   const go = (k: keyof AtlasHeaderLinks) => ({
@@ -143,8 +165,8 @@ export function AtlasHeader({
         </a>
 
         <nav aria-label="Primary" style={{ display: 'flex', alignItems: 'center', gap: 8, marginLeft: 32 }}>
-          <a {...go('home')} className="cre-atlas-hdr-pill" aria-current={current === 'home' ? 'page' : undefined}>
-            Home
+          <a {...go('home')} className={navPill} aria-current={current === 'home' ? 'page' : undefined}>
+            {navLabel('Home')}
           </a>
           {extraNav.map((item) => (
             <a
@@ -158,10 +180,10 @@ export function AtlasHeader({
                     }
                   : undefined
               }
-              className="cre-atlas-hdr-pill"
+              className={navPill}
               aria-current={item.current ? 'page' : undefined}
             >
-              {item.label}
+              {navLabel(item.label)}
             </a>
           ))}
           {showCourses ? (
@@ -302,7 +324,8 @@ export function AtlasHeader({
                     Notifications
                   </AtlasHeaderMenuItem>
                   <AtlasHeaderMenuItem trailing={trail} href={to('transcripts')} onSelect={pick('transcripts')} icon={<FileText size={18} />}>
-                    Transcripts
+                    {/* "Certificates & Transcripts" since 2026-11-19 (Eric), the Quick Links row's name for the same table. */}
+                    Certificates &amp; Transcripts
                   </AtlasHeaderMenuItem>
                   <AtlasHeaderMenuItem trailing={trail} href={to('purchases')} onSelect={pick('purchases')} icon={<Receipt size={18} />}>
                     My Purchases

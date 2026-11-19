@@ -209,7 +209,7 @@ describe('what the header displaced', () => {
        the search box — and this header replaces that hero. Honouring the prop
        leaves the page with no search at all, and nothing about the title would
        look wrong. */
-    renderShell('nav-placement:top', '&section=certificates')
+    renderShell('nav-placement:top,atlas-certificates-transcripts-body:off', '&section=certificates')
     expect(screen.getByLabelText('Search certificates')).toBeTruthy()
   })
 
@@ -260,7 +260,7 @@ describe('scroll position on a section change', () => {
   })
 
   it('scrolls to the top when the crumb returns to Home', async () => {
-    renderShell('nav-placement:top', '&section=certificates')
+    renderShell('nav-placement:top,atlas-certificates-transcripts-body:off', '&section=certificates')
     const scrollTo = spyScroll()
     await userEvent.click(crumb()!)
     expect(scrollTo).toHaveBeenCalledWith({ top: 0, behavior: 'auto' })

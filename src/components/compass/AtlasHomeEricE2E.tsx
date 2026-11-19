@@ -609,6 +609,9 @@ export function AtlasHomeEricE2E({
   const stackedTiles = (useFeatureFlag('atlas-v3-link-tiles').variant ?? 'stacked') !== 'inline'
   // The Design bar's Quick Links side (2026-10-13) — Left (default) or Right.
   const quickLinksRight = useFeatureFlag('atlas-wip-quick-links-side').variant === 'right'
+  /* THE RAIL OFF HOME TOO (2026-11-19, Eric: "remove the quick links left nav from the home, my courses, certificates, and
+     transcripts pages") — `atlas-pages-quick-links`, the control that already took it off My Courses and Certificates. */
+  const homeRail = useFeatureFlag('atlas-pages-quick-links').variant === 'shown'
   // Desktop, i.e. not the tablet or phone frame (2026-11-18) — see the row's left padding below.
   const homeBreakpointVariant = useFeatureFlag('home-breakpoint').variant
   const homeBreakpointDesktop = homeBreakpointVariant !== 'mobile' && homeBreakpointVariant !== 'tablet'
@@ -1297,6 +1300,7 @@ export function AtlasHomeEricE2E({
       {/* 234, not 230 (2026-10-14, Eric's request): at 230 "Applying for a
           License" wrapped when hover took it to Medium — it needs 134.6 of the
           row, and 230 left 133. */}
+      {homeRail ? (
       <div style={{ width: QUICK_LINKS_W /* 280 since 2026-11-18, was 234 */, flex: 'none', display: 'flex', flexDirection: 'column', gap: 24, order: quickLinksRight ? undefined : -1 }}>
         {/* THE EXAM-DATE CARD — Figma component 224:4118, all four states and
             a working calendar (2026-10-07, Eric's request). FIRST in the rail,
@@ -1331,6 +1335,7 @@ export function AtlasHomeEricE2E({
         />
 
       </div>
+      ) : null}
       {/* THE AFFIDAVIT, over Home on arrival from Confirmation & Password
           (`?affidavit=1`, 2026-10-15, Eric's request), or fired from the
           design bar's Affidavit control (2026-10-16).

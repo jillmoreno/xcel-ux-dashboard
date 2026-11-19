@@ -1,14 +1,15 @@
-import type { CSSProperties, ReactNode } from 'react'
+import { useEffect, useId, useState, type CSSProperties, type ReactNode } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useMyCoursesCount } from './useMyCoursesCount'
 import { useAccount } from '@/context/AccountContext'
 import { useFeatureFlag } from '@/context/FeatureFlagContext'
-import { accountSectionsFor, type AccountSectionId } from '@/components/account/accountSections'
+import { accountSectionsFor, isAccountSection, type AccountSectionId } from '@/components/account/accountSections'
 import {
   AngleRightRegular,
   BallotCheckRegular,
   BookRegular,
   CircleInfoRegular,
+  CircleUserRegular,
   ClipboardListCheckRegular,
   FileCertificateRegular,
   HouseRegular,
@@ -137,6 +138,7 @@ export function AtlasJourneyLinksCard({ onOpenStep, onOpenRequirements, style, w
       ? go(params.get('section'), { [ATLAS_OPEN_PARAM]: what, ...(coursePage ? { coursePage } : null) }, false)
       : go(null, { [ATLAS_OPEN_PARAM]: what })
   const apply = GET_LICENSED_STEPS[GET_LICENSED_STEPS.length - 1]
+  const accountGroup = useFeatureFlag('atlas-rail-account-group').enabled
 
   return (
     <nav aria-label="Quick links" className="cre-quick-links-card" style={{ ...SIDE_CARD, ...style, ...QUICK_LINKS_FRAME }}>
@@ -160,8 +162,9 @@ export function AtlasJourneyLinksCard({ onOpenStep, onOpenRequirements, style, w
         <SideLink icon={<BookRegular size={13} aria-hidden />} label="My Courses" count={coursesCount} active={here('courses')} onClick={() => go('courses', undefined, linksOff && !learningPagesLive)} />
         {/* 15% larger in WIP's card (2026-10-13, Eric's request): 15, not 13 —
             the wide certificate glyph read small beside the book.
-            "Certificates and Transcripts" since 2026-11-18 (Eric; "My Certificates" before). */}
-        <SideLink icon={<FileCertificateRegular size={withoutCoursePages ? 15 : 13} aria-hidden />} label="Certificates and Transcripts" active={here('certificates')} onClick={() => go('certificates', undefined, linksOff && !learningPagesLive)} />
+            "Certificates & Transcripts" since 2026-11-19 ("Certificates and Transcripts" from 2026-11-18,
+            "My Certificates" before; Eric). */}
+        <SideLink icon={<FileCertificateRegular size={withoutCoursePages ? 15 : 13} aria-hidden />} label="Certificates & Transcripts" active={here('certificates')} onClick={() => go('certificates', undefined, linksOff && !learningPagesLive)} />
         {withoutCoursePages ? null : (
         <>
         <SideLink icon={<NotebookRegular size={13} aria-hidden />} label="Flashcards" active={here('course', 'flashcards')} onClick={() => go('course', { coursePage: 'flashcards' })} />
@@ -185,7 +188,9 @@ export function AtlasJourneyLinksCard({ onOpenStep, onOpenRequirements, style, w
           </>
         ) : null}
         <SideLink
-          icon={<ClipboardListCheckRegular size={13} aria-hidden />}
+          // 15, not 13 (2026-11-19, Eric): the clipboard is FA's narrowest glyph here (384 wide to the book's 448), so at
+          // 13 it read smaller than the rows above it — the same fix the certificate glyph got.
+          icon={<ClipboardListCheckRegular size={15} aria-hidden />}
           // "State Licensing Requirements" since 2026-11-18 (Eric; "State Requirements" before).
           label="State Licensing Requirements"
           /* NO ACTION for now (2026-11-18, Eric: "it will be coded to load another page or document at some point"). A no-op
@@ -193,8 +198,86 @@ export function AtlasJourneyLinksCard({ onOpenStep, onOpenRequirements, style, w
              opened the State Requirements sheet — set REQUIREMENTS_LINK_LIVE true to put that back. */
           onClick={REQUIREMENTS_LINK_LIVE ? (onOpenRequirements ?? homeAndOpen('requirements')) : () => {}}
         />
+        {/* Account, under State Licensing Requirements (2026-11-19, Eric) — `atlas-rail-account-group`. */}
+        {accountGroup ? (
+          <AccountGroup
+            active={section != null && isAccountSection(section)}
+            here={(id) => here(id)}
+            onSelect={(id) => go(id, undefined, false)}
+          />
+        ) : null}
       </ul>
     </nav>
+  )
+}
+
+/* THE ACCOUNT GROUP (2026-11-19, Eric's request). The parent row is FA circle-user (regular) and opens Profile, the
+   account area's first page. Its children are the learner profile dropdown's links, in the dropdown's order and with
+   its labels (`AtlasHeader`), so the two navs name the same pages the same way.
+
+   · Shown only while an account page is open — the parent is "active" then.
+   · They slide down: the wrapper's grid row runs 0fr → 1fr, which animates to the content's own height with no measuring,
+     eased in and out. `.cre-quick-links-sub` in tokens.css turns the motion off under prefers-reduced-motion.
+   · It opens on the frame AFTER mount, so arriving on an account page plays the slide rather than landing open.
+   · Collapsed, the list is `inert` and `aria-hidden` — out of the tab order and the accessibility tree, not just out of
+     sight (jsdom does not read `inert` as hidden; `aria-hidden` is the half every tool agrees on).
+   · No icons: each child's text starts on the parent rows' text line, 26 in — the 18 icon slot and the row's 8 gap. */
+const ACCOUNT_CHILDREN: readonly { id: AccountSectionId; label: string }[] = [
+  { id: 'profile', label: 'Profile' },
+  { id: 'notifications', label: 'Notifications' },
+  { id: 'transcripts', label: 'Certificates & Transcripts' },
+  { id: 'purchases', label: 'My Purchases' },
+]
+const ACCOUNT_CHILD_INDENT = 18 + 8
+const ACCOUNT_SLIDE = 'grid-template-rows 320ms cubic-bezier(0.65, 0, 0.35, 1)'
+
+function AccountGroup({
+  active,
+  here,
+  onSelect,
+}: {
+  active: boolean
+  here: (id: AccountSectionId) => boolean
+  onSelect: (id: AccountSectionId) => void
+}) {
+  const [open, setOpen] = useState(false)
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => setOpen(active))
+    return () => cancelAnimationFrame(frame)
+  }, [active])
+  const listId = useId()
+  return (
+    <li>
+      <SideRow
+        icon={<CircleUserRegular size={13} aria-hidden />}
+        label="Account"
+        onClick={() => onSelect('profile')}
+        expanded={open}
+        controls={listId}
+        // SemiBold while its pages are open, without the capsule — the capsule is for the child you are on.
+        style={active ? { fontWeight: 600 } : undefined}
+      />
+      <div className="cre-quick-links-sub" style={{ display: 'grid', gridTemplateRows: open ? '1fr' : '0fr', transition: ACCOUNT_SLIDE }}>
+        {/* The 8 either side and 4 under are the active capsule's overhang (SIDE_ROW_ACTIVE), handed back by the margins —
+            without them the clip would cut the capsule's ends. */}
+        <div inert={!open} aria-hidden={!open || undefined} style={{ overflow: 'hidden', minHeight: 0, margin: '0 -8px -4px', padding: '0 8px 4px' }}>
+          <ul
+            id={listId}
+            aria-label="Account"
+            // 8 above the first child — the active row's 4 overhang (SIDE_ROW_ACTIVE) and 4 clear of the parent — and 12
+            // between children: that 8, plus 4 more (2026-11-19, Eric: "only enough to show their active state bg", then
+            // "add 4px padding between the child items").
+            style={{ listStyle: 'none', margin: 0, padding: `8px 0 0 ${ACCOUNT_CHILD_INDENT}px`, display: 'flex', flexDirection: 'column', gap: 12 }}
+          >
+            {ACCOUNT_CHILDREN.map(({ id, label }) => (
+              <li key={id}>
+                <SideRow label={label} active={here(id)} onClick={() => onSelect(id)} />
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </li>
   )
 }
 
@@ -248,14 +331,17 @@ const ACCOUNT_ICONS_REGULAR: Partial<Record<AccountSectionId, typeof UserRegular
   'gift-recipients': GiftRegular,
 }
 
-function SideLink({
-  icon,
-  label,
-  count,
-  active = false,
-  onClick,
-}: {
-  icon: ReactNode
+function SideLink(props: SideRowProps) {
+  return (
+    <li>
+      <SideRow {...props} />
+    </li>
+  )
+}
+
+type SideRowProps = {
+  /** Absent, no icon slot — the Account group's children (2026-11-19). */
+  icon?: ReactNode
   label: string
   /** A count after the label, 4 on — "(3)", the parentheses at the label's
    *  weight and the figure bold (2026-11-03, Eric's request). */
@@ -263,20 +349,29 @@ function SideLink({
   /** The page you are on — a white capsule behind the row. */
   active?: boolean
   onClick?: () => void
-}) {
+  /** A row that opens a group — the Account row (2026-11-19). */
+  expanded?: boolean
+  controls?: string
+  style?: CSSProperties
+}
+
+function SideRow({ icon, label, count, active = false, onClick, expanded, controls, style }: SideRowProps) {
   return (
-    <li>
       <button
         type="button"
         className="cre-compass-v2-row"
         aria-current={active ? 'page' : undefined}
+        aria-expanded={expanded}
+        aria-controls={controls}
         onClick={onClick}
         disabled={!onClick}
-        style={active ? { ...SIDE_ROW, ...SIDE_ROW_ACTIVE } : SIDE_ROW}
+        style={{ ...(active ? { ...SIDE_ROW, ...SIDE_ROW_ACTIVE } : SIDE_ROW), ...style }}
       >
-        <span aria-hidden style={{ width: 18, flex: 'none', display: 'inline-flex', justifyContent: 'center', color: 'var(--color-atlas-home-icon, var(--color-compass-page-button))' }}>
-          {icon}
-        </span>
+        {icon ? (
+          <span aria-hidden style={{ width: 18, flex: 'none', display: 'inline-flex', justifyContent: 'center', color: 'var(--color-atlas-home-icon, var(--color-compass-page-button))' }}>
+            {icon}
+          </span>
+        ) : null}
         {/* `data-label` feeds a hidden Medium copy (`.cre-quick-link-label`,
             tokens.css) that holds the hover weight's width, so a card sized to
             its content does not grow on hover (2026-10-13). */}
@@ -301,13 +396,12 @@ function SideLink({
           <AngleRightRegular size={13} aria-hidden />
         </span>
       </button>
-    </li>
   )
 }
 
 /** THE QUICK LINKS RAIL'S WIDTH, ONE NUMBER FOR EVERY PAGE (2026-11-18, Eric: "allow the left links rail to expand
  *  horizontally enough to fit … adjust the left rail width on all pages not just the homepage"). The card is fit-content
- *  and measured 279.5 once "Certificates and Transcripts" and "State Licensing Requirements" came in — so Home's column,
+ *  and measured 279.5 once "Certificates & Transcripts" and "State Licensing Requirements" came in — so Home's column,
  *  My Courses', Certificates' and the account pages' all take 280, and the card no longer spills 8 past its column.
  *  It was 234 (2026-10-14, sized to "Applying for a License"). */
 export const QUICK_LINKS_W = 280
@@ -352,8 +446,10 @@ const SIDE_ROW_ACTIVE: CSSProperties = {
   width: 'calc(100% + 16px)',
   margin: '-4px -8px',
   padding: '4px 8px',
-  borderRadius: 999,
-  background: 'var(--color-surface-card)',
+  // 8, not a full capsule (2026-11-19, Eric).
+  borderRadius: 8,
+  // Primary 100 (2026-11-19, Eric: "add the primary 100 bg back") — white vanished once the pages went white.
+  background: 'var(--color-primary-100)',
   // SemiBold — a step past the rows' Medium hover, so "here" never reads as a
   // hover (2026-10-06).
   fontWeight: 600,

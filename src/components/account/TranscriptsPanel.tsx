@@ -136,7 +136,8 @@ export function TranscriptsPanel() {
           SemiBold. It is the first thing on the page because it is the thing a
           learner most needs to know before they rely on what follows. */}
       <p style={disclaimerStyle}>
-        These are not “<strong style={{ fontWeight: 600 }}>official</strong>” transcripts and
+        {/* Reworded 2026-11-19 (Eric) — "Transcripts are not …" rather than "These are not … transcripts". */}
+        Transcripts are not “<strong style={{ fontWeight: 600 }}>official</strong>” and
         shouldn’t be used in place of signed course completion certificates. If you have completed
         courses that are not showing, try printing them individually to see if you need to submit
         any required documents, affidavits, etc.

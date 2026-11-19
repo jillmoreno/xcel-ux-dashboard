@@ -72,9 +72,9 @@ describe('the Transcripts section', () => {
      sheet with no caveat on it. */
   it('leads with the disclaimer, with "official" emphasised', () => {
     renderSection()
-    const note = screen.getByText(/These are not/)
+    const note = screen.getByText(/Transcripts are not/)
     expect(note.textContent).toContain(
-      'transcripts and shouldn’t be used in place of signed course completion certificates',
+      'Transcripts are not “official” and shouldn’t be used in place of signed course completion certificates',
     )
     expect(note.textContent).toContain('try printing them individually')
     expect(within(note).getByText('official').tagName).toBe('STRONG')

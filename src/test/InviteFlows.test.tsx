@@ -117,14 +117,16 @@ describe('the checkout audience flag', () => {
 
     it('…and leaves them exactly where they were on Atlas', () => {
       const onAtlas = onDesignBar(null)
-      // Long title left the bar on 2026-11-10 (Eric); Course tabs, added that day, stands in as the Atlas-only control.
-      expect(onAtlas).toContain('atlas-course-tabs-place')
+      // Long title left the bar on 2026-11-10 (Eric). Course tabs, Brand and Readiness section left it on 2026-11-19 (Eric);
+      // the Affidavit moment and the pace card's Figma control stand in as the Atlas-only controls.
       /* Affidavit moment replaced the Affidavit control on Atlas's bar
          (2026-11-04, `feat/affidavits`); the old one is panel-only now. */
       expect(onAtlas).toContain('affidavit-v2-moment')
       expect(onAtlas).not.toContain('atlas-affidavit')
-      expect(onAtlas).toContain('atlas-brand-skin-v3')
-      expect(onAtlas).toContain('atlas-readiness-section')
+      expect(onAtlas).toContain('atlas-pace-card-figma')
+      for (const gone of ['atlas-course-tabs-place', 'atlas-brand-skin-v3', 'atlas-readiness-section']) {
+        expect(onAtlas, gone).not.toContain(gone)
+      }
     })
 
     it('brings the whole flow\u2019s bar with it, not just this control', () => {

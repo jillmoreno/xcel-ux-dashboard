@@ -54,6 +54,7 @@ import {
 } from '@/components/account/AccountSectionLayout'
 import { isAccountSection, type AccountSectionId } from '@/components/account/accountSections'
 import { TranscriptsPanel } from '@/components/account/TranscriptsPanel'
+import { AtlasProfileNav, PROFILE_NAV_ROWS } from '@/components/account/AtlasProfileNav'
 import { NotificationsPanel } from '@/components/notifications/NotificationsPanel'
 import { GiftRecipientsPanel } from '@/components/account/purchases/GiftRecipientsPanel'
 import { PurchasesSection } from '@/components/account/purchases/PurchasesPanel'
@@ -453,16 +454,27 @@ function PlatformShellBody() {
   /* …and the account pages, in the same layout (2026-11-03) — see
      `useAtlasAccountPages`. */
   const atlasAccountPage = useAtlasAccountPages() && isAccountSection(active)
+  /* …except with the rail hidden (2026-11-19, Eric — Transcripts first, then every account page "for now"): no column to
+     step over, so the title is not indented and runs the page's width, as My Courses' and Certificates' do. */
+  // …and back in that frame when the profile pages' own nav stands there instead (`atlas-account-profile-nav`, Figma 754:2026).
+  const profileNavFlag = useFeatureFlag('atlas-account-profile-nav').enabled
+  const accountRailFrame = atlasAccountPage && (!atlasQuickLinksHidden || profileNavFlag)
+  /* THE ACCOUNT PAGES IN ADMIN'S LAYOUT (2026-11-19, Eric: "the same format as the admin left nav … align the page content
+     left as on the admin pages") — the full window, no centred section header; `AccountSection` draws the sidebar and the
+     title. */
+  const profileAdminLayout = atlasAccountPage && profileNavFlag
   /* The containers' 16 — see `--atlas-card-radius` on the grid. Read
      unconditionally, ANDed after (the hook-count trap). */
   const cardRadiusFlag = useFeatureFlag('atlas-card-radius-16').enabled
   const cardRadius16 = cardRadiusFlag && atlasNav && isE2ELikeVersion(shellVersion)
   const e2eSectionIndent =
-    atlasAccountPage ||
+    accountRailFrame ||
     (isE2ELikeVersion(shellVersion) && !atlasQuickLinksHidden && e2eQuickLinksLeft && (active === 'courses' || active === 'certificates'))
       ? /* The title over the page lines up with the page under it (2026-11-12, Eric): Certificates' aside is 5.5 wider and
            My Courses' 1, for Home's gutter — so their titles move with them. */
-        E2E_QUICK_LINKS_COLUMN_W + 24 + (atlasAccountPage ? 5 : active === 'certificates' ? 5.5 : active === 'courses' ? 1 : 0)
+        E2E_QUICK_LINKS_COLUMN_W + 24 + (atlasAccountPage ? 5 : active === 'certificates' ? 5.5 : active === 'courses' ? 1 : 0) -
+        // 40 closer to the Profile nav than to the rail (2026-11-19, Eric) — `PROFILE_NAV_GAP_TRIM`.
+        (accountRailFrame && profileNavFlag ? PROFILE_NAV_GAP_TRIM : 0)
       : undefined
   /* ⚠ THE ACCOUNT PAGES HAVE THEIR OWN NAV, AND IT IS NOT THIS ONE
      (2026-10-19, Jillienne: "clicking on profile should not show this random
@@ -1180,7 +1192,10 @@ function PlatformShellBody() {
            about Home, and everything else answers with `topNav`. One question,
            two authorities, and the version decides which one is asked. */
         gridTemplateColumns: atlasNav
-          ? atlasNoRail
+          ? profileAdminLayout
+          ? // The account pages in admin's layout fill the window (2026-11-19) — their sidebar is at its left edge.
+            '0px minmax(0, 1fr) 0px'
+          : atlasNoRail
           ? // No rail: the course player still fills the window; every other
             // page centres its usual width (1278 Home, 1180 elsewhere).
             compassCourseRail
@@ -1468,7 +1483,8 @@ function PlatformShellBody() {
           /* Eric/Atlas White's Home takes the grid's full 1278 (2026-10-12):
              its left rail, page and exam-date rail need it. …and WIP's
              (2026-10-13): its course card grew to 846 (a 750 content area). */
-          ...(topNav && !compassCourseRail
+          // Not the account pages in admin's layout (2026-11-19): they run the window's width, sidebar at its edge.
+          ...(topNav && !compassCourseRail && !profileAdminLayout
             ? {
                 maxWidth:
                   active === 'dashboard' && (shellVersion === 'eric-atlas-v3' || isEricAtlasWhiteLike(shellVersion))
@@ -1502,7 +1518,7 @@ function PlatformShellBody() {
             drops its top gutter in exchange — see `headerAbove` there. */}
         {/* The Quick Links' sheets over a section page, so they open where you are (2026-11-10) — see AtlasInfoSheets. */}
         {atlasNav && active !== 'dashboard' ? <AtlasInfoSheets /> : null}
-        {sectionHeader && !launcher.courseId ? (
+        {sectionHeader && !launcher.courseId && !profileAdminLayout ? (
           // Atlas: its own copy — Serif H1 title, FA angle-left crumb (2026-10-06).
           atlasNav ? (
             <AtlasSectionPageHeader
@@ -1515,9 +1531,10 @@ function PlatformShellBody() {
                  version; renaming it there would rename the nav for Testing,
                  Testing 2/3 and Hybrid as well. This is the page's own
                  heading, and only on the Atlas chrome that draws it. */
-              // "Certificates and Transcripts" since 2026-11-18 (Eric), to match its Quick Links row — the heading and the path's
+              // "Certificates and Transcripts" since 2026-11-18 (Eric), to match its Quick Links row; written with an
+              // ampersand since 2026-11-19 (Eric), here and on the Quick Links row alike — the heading and the path's
               // last crumb both read it.
-              title={active === 'certificates' ? 'Certificates and Transcripts' : SECTION_TITLES[active]}
+              title={active === 'certificates' ? 'Certificates & Transcripts' : SECTION_TITLES[active]}
               onBack={() => handleSelect('dashboard')}
               /* THE MY ACCOUNT PAGES' PATH — "Home / My Account / Profile" on every width (2026-11-10, Eric; until then the
                  phone's alone, and through Profile: "Home / Profile / Transcripts"). My Account opens its first page, Profile. */
@@ -1527,10 +1544,12 @@ function PlatformShellBody() {
               // My Courses", "Home / My Certificates" (Eric: "make the quick links pages breadcrumb align with the profile pages").
               // Hybrid and the other Atlas versions keep Back to Home.
               path={isAccountSection(active) || isE2ELikeVersion(shellVersion)}
+              // No crumb on the profile pages while their own nav stands beside them (2026-11-19, Eric).
+              noCrumb={accountRailFrame && profileNavFlag}
               // My Courses centres its content; the header follows it — until
               // the rail goes and the cards run full width (2026-11-02).
               contentWidth={
-                ((active === 'courses' || wipCertificates) && !atlasQuickLinksHidden) || atlasAccountPage
+                ((active === 'courses' || wipCertificates) && !atlasQuickLinksHidden) || accountRailFrame
                   ? ATLAS_MY_COURSES_WIDTH
                   : undefined
               }
@@ -2886,6 +2905,42 @@ function AccountSection({
   body: ReactNode
 }) {
   const atlas = useAtlasAccountPages()
+  const railAccountGroup = useFeatureFlag('atlas-rail-account-group').enabled
+  /* The account pages drop the rail with `atlas-pages-quick-links` hidden (2026-11-19, Eric: Transcripts, then "remove this
+     nav for now" on the rest) — read unconditionally (hook count). */
+  const railHidden = useFeatureFlag('atlas-pages-quick-links').variant !== 'shown'
+  const profileNav = useFeatureFlag('atlas-account-profile-nav').enabled
+  /* THE PROFILE PAGES' OWN NAV (2026-11-19, Eric; Figma 754:2026) — `AtlasProfileNav` in the column the rail stood in, its
+     "Profile:" title level with the crumb as the rail's top was. The same frame, so the page and its title sit where they
+     did with the rail. */
+  if (atlas && profileNav) {
+    return (
+      /* Admin's frame (AtlasAdminLayout): the sidebar against the window's left edge, under the header, and the page beside
+         it left-aligned with admin's 32 / 40 padding. The negative margins step out of the section's own 40 gutter and 64
+         foot, which admin does not have. */
+      /* No fill of its own (2026-11-19, Eric: "remove the bg color from the body of the account pages") — it was admin's
+         --admin-page. */
+      <div style={{ display: 'flex', alignItems: 'stretch', margin: '0 -40px -64px' }}>
+        <AtlasProfileNav active={active} onSelect={onSelect} />
+        <div className="cre-atlas-account-body" style={{ flex: '1 1 0', minWidth: 0, padding: '32px 40px 140px' }}>
+          {/* The page's own title, which the shell draws over the centred column elsewhere — here it sits on the page's
+              left edge, as admin's titles do. */}
+          {/* Named as its row in the nav names it (2026-11-19, Eric) — Transcripts reads "Certificates & Transcripts". */}
+          <h1 className="cre-compass-course-title" style={ACCOUNT_PAGE_TITLE}>
+            {PROFILE_NAV_ROWS.find((r) => r.id === active)?.label ?? SECTION_TITLES[active]}
+          </h1>
+          {body}
+        </div>
+      </div>
+    )
+  }
+  if (atlas && railHidden) {
+    return (
+      <div className="cre-atlas-account-body" style={{ marginTop: 24, minWidth: 0 }}>
+        {body}
+      </div>
+    )
+  }
   if (!atlas) {
     return (
       <AccountSectionLayout active={active} onSelect={onSelect}>
@@ -2908,7 +2963,13 @@ function AccountSection({
       }}
     >
       {/* As wide as Home's Quick Links, though its own rows are shorter (2026-11-12, Eric). */}
-      <AtlasAccountLinksCard active={active} onSelect={onSelect} onHome={onHome} style={{ ...WIP_QUICK_LINKS_LIFTED, minWidth: HOME_QUICK_LINKS_W }} />
+      {/* With `atlas-rail-account-group` (2026-11-19, Eric) the account pages draw the Quick Links rail, its Account group
+          open on the page you are on, in place of their own card — so the rail is one nav everywhere. */}
+      {railAccountGroup ? (
+        <AtlasJourneyLinksCard withoutCoursePages style={{ ...WIP_QUICK_LINKS_LIFTED, minWidth: HOME_QUICK_LINKS_W }} />
+      ) : (
+        <AtlasAccountLinksCard active={active} onSelect={onSelect} onHome={onHome} style={{ ...WIP_QUICK_LINKS_LIFTED, minWidth: HOME_QUICK_LINKS_W }} />
+      )}
       <div style={{ minWidth: 0 }}>{body}</div>
     </div>
   )
@@ -2930,6 +2991,20 @@ const WIP_QUICK_LINKS: CSSProperties = { border: '1px solid color-mix(in srgb, v
    the header steps right over the first card (`indent`). */
 const E2E_PAGE_DROP = 16
 const E2E_QUICK_LINKS_LIFT = 16.5 + 6 + 34 + 24
+/* The Profile nav's column is this much narrower than the rail's, and the account pages' title indent with it, so the page
+   sits 40 closer to the nav (2026-11-19, Eric: "reduce the padding between the left nav and the right side … by 40px"). */
+const PROFILE_NAV_GAP_TRIM = 40
+/* The account pages' title in admin's layout — the shell header's (AtlasSectionPageHeader's TITLE), with the 24 the page
+   kept above its first row. */
+const ACCOUNT_PAGE_TITLE: CSSProperties = {
+  margin: '0 0 24px',
+  fontFamily: 'var(--font-heading-serif)',
+  fontWeight: 400,
+  fontSize: 'var(--type-atlas-h5-size, 32px)',
+  lineHeight: 'var(--type-atlas-h5-line, 34px)',
+  letterSpacing: '-0.01em',
+  color: 'var(--color-compass-page-heading)',
+}
 /* Its column: 8 in, the card's 234 and 8 more — with the page's own 24 gap
    after it, the cards sit Home's 32 from Quick Links (2026-11-03). */
 const E2E_QUICK_LINKS_COLUMN_W = 8 + WIP_QUICK_LINKS_W + 8
@@ -2947,6 +3022,61 @@ const WIP_QUICK_LINKS_LIFTED: CSSProperties = { ...WIP_QUICK_LINKS, marginTop: -
    count and filter rail, and status tabs (2026-10-13, Eric's request), and
    takes Quick Links as a right rail at My Courses' width — the shell drops
    its left rail there (`wipCertificates`). The other versions keep all. */
+/* Certificates & Transcripts keeps its title (the shell's `<h1>`) but can
+   render the Transcripts course-history table as its body —
+   `atlas-certificates-transcripts-body`, on by default on this branch
+   (2026-11-19, Eric). The flag is read here rather than inside
+   `CertificatesSection` so that component is untouched.
+
+   The page keeps ITS OWN left rail — the Quick Links card Certificates draws
+   (Home · My Courses · Certificates & Transcripts · State Licensing
+   Requirements), under the same conditions — and the table sits in the
+   account pages' frame (`AccountSection`): the same max width, the same left
+   column and gap, the same `.cre-atlas-account-body` scope. So the table is
+   exactly as wide, and starts exactly where, it does on the Transcripts page
+   the profile dropdown opens. */
+function CertificatesOrTranscripts() {
+  const [params] = useSearchParams()
+  const { brand } = useAccount()
+  const sectionVersion = resolveDashboardVersion(params.get('version'), brand)
+  const transcriptsBody = useFeatureFlag('atlas-certificates-transcripts-body').enabled
+  // As `CertificatesSection` decides its rail — read unconditionally, ANDed after (the hook-count trap).
+  const quickLinksRight = useFeatureFlag('atlas-wip-quick-links-side').variant === 'right'
+  const quickLinksMode = useFeatureFlag('atlas-pages-quick-links').variant
+  if (!transcriptsBody) return <CertificatesSection />
+  const wip = sectionVersion === 'eric-atlas-v3' || isEricAtlasWhiteLike(sectionVersion)
+  const baseline = isE2ELikeVersion(sectionVersion)
+  const showQuickLinks = wip && !(baseline && quickLinksMode !== 'shown')
+  const links = showQuickLinks ? (
+    <AtlasJourneyLinksCard
+      withoutCoursePages
+      style={{ ...(baseline && !quickLinksRight ? WIP_QUICK_LINKS_LIFTED : WIP_QUICK_LINKS), minWidth: HOME_QUICK_LINKS_W }}
+    />
+  ) : null
+  const column = `${E2E_QUICK_LINKS_COLUMN_W + 5}px`
+  return (
+    <div
+      className="cre-atlas-account-body"
+      style={{
+        // Without the rail it runs the page's width, as My Courses does (2026-11-19, Eric).
+        maxWidth: links ? ATLAS_MY_COURSES_WIDTH : undefined,
+        margin: links ? '24px auto 0' : '24px 0 0',
+        display: 'grid',
+        gridTemplateColumns: !links ? 'minmax(0, 1fr)' : quickLinksRight ? `minmax(0, 1fr) ${column}` : `${column} minmax(0, 1fr)`,
+        gap: 24,
+        alignItems: 'start',
+        paddingBottom: 64,
+      }}
+    >
+      {links && !quickLinksRight ? links : null}
+      <div style={{ minWidth: 0 }}>
+        <TranscriptsPanel />
+      </div>
+      {links && quickLinksRight ? links : null}
+    </div>
+  )
+}
+
 function CertificatesSection() {
   const [params] = useSearchParams()
   const { brand } = useAccount()
@@ -3151,7 +3281,7 @@ function renderBody(
   // Atlas: the journey-links card from Home V2 in place of the filter column
   // (2026-10-05, the designer's request).
   if (active === 'courses') return <MyCoursesSection />
-  if (active === 'certificates') return <CertificatesSection />
+  if (active === 'certificates') return <CertificatesOrTranscripts />
   // Recommended for You — the Netflix-style personalized recommendation shelves
   // (reused from the V1 Membership "Recommended for you" tab — For your license
   // / Required CE / Fresh in the catalog / Quick wins, each a horizontal-scroll

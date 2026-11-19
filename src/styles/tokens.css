@@ -8129,6 +8129,11 @@ thead .cre-admin-sticky-col { background: var(--admin-fill-soft); }
   text-decoration: none;
   transition: background-color 120ms ease;
 }
+/* The account pages' nav wears this class on <button>s (AtlasProfileNav, 2026-11-19): no button grey at rest. Lower
+   specificity than the hover and current rules below, so they still fill it. */
+button.cre-admin-side-row {
+  background: transparent;
+}
 .cre-admin-side-row:hover {
   background: #eceef0;
   color: #263d50;
@@ -8317,3 +8322,11 @@ thead .cre-admin-sticky-col { background: var(--admin-fill-soft); }
   .cre-cert-card:is(:hover, :focus-visible) .cre-cert-card-title,
   .cre-course-card:hover .cre-tag-cert-link
 )[style*='font-weight: 700'] { font-weight: 800 !important; }
+
+/* The Quick Links rail's Account group slides open (AtlasJourneyLinksCard, 2026-11-19) — not for anyone who has asked
+   for less motion: it simply appears. */
+@media (prefers-reduced-motion: reduce) {
+  .cre-quick-links-sub {
+    transition: none !important;
+  }
+}

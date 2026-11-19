@@ -439,7 +439,7 @@ describe('Atlas/Compass Global Navigation — the Testing home under the Figma r
     expect(within(card).getByRole('region', { name: 'Pass State Exam' })).toBeTruthy()
     expect(screen.getByRole('region', { name: 'Do you know your state exam date?' })).toBeTruthy()
     const links = screen.getByRole('navigation', { name: 'Quick links' })
-    for (const name of ['My Courses', 'Certificates and Transcripts', 'Flashcards', 'Exam Simulator', 'State Licensing Requirements']) {
+    for (const name of ['My Courses', 'Certificates & Transcripts', 'Flashcards', 'Exam Simulator', 'State Licensing Requirements']) {
       expect(within(links).getByRole('button', { name })).toBeTruthy()
     }
     // V1's pieces are gone.

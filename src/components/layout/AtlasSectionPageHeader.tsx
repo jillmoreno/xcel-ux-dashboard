@@ -22,6 +22,7 @@ export function AtlasSectionPageHeader({
   extraTop,
   crumbs,
   path = false,
+  noCrumb = false,
 }: {
   title: string
   onBack: () => void
@@ -40,6 +41,9 @@ export function AtlasSectionPageHeader({
   crumbs?: { label: string; onClick: () => void }[]
   /** The path crumb on every width, not just the phone's — the My Account pages, "Home / My Account / Profile" (2026-11-10). */
   path?: boolean
+  /** No crumb row at all — neither the path nor Back to Home (2026-11-19, Eric: "remove the breadcrumb from the profile
+   *  pages", where the Profile nav does that job). The title takes the row's place. */
+  noCrumb?: boolean
 }) {
   /* ON A PHONE THE CRUMB IS A PATH (2026-11-04, Eric's request): "Home /
      Profile / Transcripts" — Home and the pages between are links, the page
@@ -59,7 +63,7 @@ export function AtlasSectionPageHeader({
         ...(extraTop != null ? { paddingTop: 24 + extraTop } : null),
       }}
     >
-      {phonePath ? (
+      {noCrumb ? null : phonePath ? (
         <nav aria-label="Breadcrumb" style={CRUMB_ROW}>
           <button type="button" onClick={onBack} data-cta-id="nav.back-home" className="cre-crumb-link cre-cta-ink" style={CRUMB_BUTTON}>
             Home

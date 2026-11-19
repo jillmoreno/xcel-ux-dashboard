@@ -112,6 +112,10 @@ export function AtlasAdminLayout() {
         showCourses={false}
         links={{ home: learnerHome, logo: learnerHome, help: `${ADMIN_BASE}/resources${search}` }}
         onNavigate={(href) => navigate(href)}
+        /* The admin menu's rows in the learner menu's style (2026-11-19, Eric) — 13/18 secondary text, the FA icon at 13
+           in an 18 box in the home-icon colour, the blue Medium hover and the angle-right. `quickLinksMenu` is the switch
+           the learner header (`AtlasHeaderConnected`) already sets; the admin header never did. */
+        quickLinksMenu
         modeMenu={{
           mode: 'admin',
           adminLinks: USER_MENU.map(({ to, label, icon: Icon }) => ({ label, href: to + search, icon: <Icon size={18} aria-hidden /> })),
