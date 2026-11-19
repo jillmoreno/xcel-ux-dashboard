@@ -606,9 +606,16 @@ describe('Invite Flow V3 — the email check', () => {
     expect(reset).toBeDisabled()
 
     expect(within(dialog).getByLabelText(/^New Password/)).toHaveAttribute('id', 'reset-password')
-    /* The eyes are Update Password's icons, not the confirmation page's images. */
-    expect(within(dialog).getByRole('button', { name: 'Show new password' }).querySelector('img')).toBeNull()
-    expect(within(dialog).getByRole('button', { name: 'Show new password' }).querySelector('svg')).not.toBeNull()
+    /* The eye is Keycloak's — an outline and a hollow ring, no filled pupil,
+       no slash while hidden — not an image (2026-11-19). */
+    const eye = within(dialog).getByRole('button', { name: 'Show new password' })
+    expect(eye.querySelector('img')).toBeNull()
+    expect(eye.querySelector('svg')).toHaveAttribute('fill', 'none')
+    expect(eye.querySelector('svg circle')).not.toHaveAttribute('fill')
+    expect(eye.querySelectorAll('svg path')).toHaveLength(1)
+    await userEvent.click(eye)
+    expect(within(dialog).getByRole('button', { name: 'Hide new password' }).querySelectorAll('svg path')).toHaveLength(2)
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Hide new password' }))
     await userEvent.type(dialog.querySelector<HTMLInputElement>('#reset-password')!, 'Navarro#2027')
     await userEvent.type(within(dialog).getByLabelText(/^Confirm New Password/), 'Navarro#20')
     expect(within(dialog).getByRole('alert')).toHaveTextContent('Passwords do not match.')

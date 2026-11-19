@@ -13,7 +13,8 @@ import {
   type VerifiedIdentity,
 } from '@/data/inviteVerification'
 import { looksLikeEmail } from '@/data/inviteFlows'
-import { Check, CircleCheckSolid, Eye, EyeSlash } from '@/icons'
+import { Check, CircleCheckSolid } from '@/icons'
+import { PasswordEyeV3 } from '@/components/e2e/PasswordEyeV3'
 import { V3_EXPIRED_DEMO_CODE, V3_INVALID_DEMO_CODE, V3_WRONG_DEMO_PASSWORD } from '@/data/inviteFlowsV3'
 import { E2E_LEARNER_EMAIL, E2E_LEARNER_FIRST, E2E_LEARNER_LAST } from '@/pages/endToEndDemo'
 import { LOADING_HANDOFF_MS } from '@/components/e2e/XcelLoadingPage'
@@ -820,7 +821,7 @@ function LoginStep({
                 aria-pressed={shown}
                 style={EYE_ACCOUNT}
               >
-                {shown ? <EyeSlash size={16} aria-hidden /> : <Eye size={16} aria-hidden />}
+                <PasswordEyeV3 slashed={shown} />
               </button>
             </span>
           </label>
@@ -921,7 +922,7 @@ function ResetPasswordStep({ email, onReset }: { email: string; onReset: () => v
               aria-pressed={shown}
               style={EYE_ACCOUNT}
             >
-              {shown ? <EyeSlash size={16} aria-hidden /> : <Eye size={16} aria-hidden />}
+              <PasswordEyeV3 slashed={shown} />
             </button>
           </span>
         </label>
@@ -954,7 +955,7 @@ function ResetPasswordStep({ email, onReset }: { email: string; onReset: () => v
                 aria-pressed={confirmShown}
                 style={EYE_ACCOUNT}
               >
-                {confirmShown ? <EyeSlash size={16} aria-hidden /> : <Eye size={16} aria-hidden />}
+                <PasswordEyeV3 slashed={confirmShown} />
               </button>
             </span>
           </label>
@@ -1245,14 +1246,15 @@ const EYE: CSSProperties = {
   cursor: 'pointer',
 }
 
-/* Every password eye in V3 matches Update Password's in Account Details
-   (2026-11-19, Afsana: "all eye icons should match in the password fields"):
-   the icon set's Eye / Eye Slash at 16, in the secondary text colour, rather
-   than the confirmation page's images. Always visible, empty field or not. */
+/* Every password eye in V3 is Keycloak's, as on Change Password in Account
+   Details (2026-11-19, Afsana: "all eye icons should match in the password
+   fields" … "not supposed to have a pupil") — `PasswordEyeV3`, in the
+   secondary text colour, always visible. Centred on the field rather than
+   pinned at a top offset, so the 20px drawing sits mid-field. */
 const EYE_ACCOUNT: CSSProperties = {
   ...EYE,
-  /* A 16 icon, where EYE was set for the 18 image: one px down to centre it. */
-  top: 11,
+  top: '50%',
+  transform: 'translateY(-50%)',
   color: 'var(--color-text-secondary)',
 }
 

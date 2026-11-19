@@ -24,7 +24,7 @@ const feature: PrototypeFeature = {
   devStatus: 'not-ready',
   surface: 'invite',
   owner: 'Afsana',
-  lastUpdated: '2026-11-19T21:17:23Z',
+  lastUpdated: '2026-11-19T21:54:22Z',
   accent: 'gold',
   icon: 'flag',
   brands: ['xcel'],
@@ -262,7 +262,7 @@ const feature: PrototypeFeature = {
           { name: 'Password reset', when: 'Reset password was clicked. Back to Log in to continue, the password field empty, with a green banner under the heading: "Your password has been reset." A proposal — see Questions.' },
         ],
         ctas: [
-          { name: 'Password eye', does: 'Shows or hides the password. Always shown; the same Eye / Eye Slash as Update Password in Account Details.' },
+          { name: 'Password eye', does: 'Shows or hides the password. Always shown. Keycloak’s eye, as on Change Password in Account Details: an outline round a hollow ring, no pupil; open while hidden, slashed once shown.' },
           { name: 'Forgot password?', does: 'Turns the modal into Reset your password — enter email.' },
           { name: 'Send reset link', does: 'Off until the Email field holds a valid address. Sends a reset link to it and turns the modal into Check your email.' },
           { name: 'Back to sign in (Reset your password — enter email)', does: 'Returns to Log in to continue without sending anything.' },
@@ -270,7 +270,7 @@ const feature: PrototypeFeature = {
           { name: 'Visit our help center', does: 'Under Log in, centred: "Can’t log in? Visit our help center", the link in brick red. Drawn only — it goes nowhere yet; the help center’s address is not settled.' },
           { name: 'Resend link (Check your email)', does: 'Disabled for 30 seconds after each send, the first included, with the countdown under it. Then sends another reset link and is disabled again.' },
           { name: 'Back to sign in (Check your email)', does: 'Returns to Log in to continue.' },
-          { name: 'New Password and Confirm New Password eyes (Reset your password)', does: 'Show or hide each field. Always shown; the same Eye / Eye Slash as Update Password in Account Details.' },
+          { name: 'New Password and Confirm New Password eyes (Reset your password)', does: 'Show or hide each field. Always shown. Keycloak’s eye, as on Change Password in Account Details: an outline round a hollow ring, no pupil; open while hidden, slashed once shown.' },
           { name: 'Reset password', does: 'Off until all seven rules are met and both fields match. Then saves the new password and returns to Log in to continue with the Password reset banner (proposed).' },
         ],
         statesMatrix: [

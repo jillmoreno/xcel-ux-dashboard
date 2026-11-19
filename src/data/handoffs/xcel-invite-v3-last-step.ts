@@ -23,7 +23,7 @@ const feature: PrototypeFeature = {
   devStatus: 'not-ready',
   surface: 'invite',
   owner: 'Afsana',
-  lastUpdated: '2026-11-19T21:06:33Z',
+  lastUpdated: '2026-11-19T21:54:22Z',
   accent: 'gold',
   icon: 'flag',
   brands: ['xcel'],
@@ -165,8 +165,8 @@ const feature: PrototypeFeature = {
           { name: 'Ready', when: 'All seven rules are met and both fields match. Confirm turns on.' },
         ],
         ctas: [
-          { name: 'Password eye', does: 'Shows or hides the password. Always shown; the same Eye / Eye Slash as Update Password in Account Details.' },
-          { name: 'Confirm password eye', does: 'Shows or hides the confirmation. Always shown; the same Eye / Eye Slash as Update Password in Account Details.' },
+          { name: 'Password eye', does: 'Shows or hides the password. Always shown. Keycloak’s eye, as on Change Password in Account Details: an outline round a hollow ring, no pupil; open while hidden, slashed once shown.' },
+          { name: 'Confirm password eye', does: 'Shows or hides the confirmation. Always shown. Keycloak’s eye, as on Change Password in Account Details: an outline round a hollow ring, no pupil; open while hidden, slashed once shown.' },
           { name: 'Confirm', does: 'Off until all seven rules are met and both fields match. Then creates the account and opens Setting up your account….' },
         ],
         statesMatrix: [
