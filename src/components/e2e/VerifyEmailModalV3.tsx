@@ -157,7 +157,7 @@ export function VerifyEmailModalV3({
                 {/* "Email", not "Email address" — every V3 modal (2026-11-18,
                     Afsana). */}
                 <span style={FIELD_LABEL}>
-                  Email<span aria-hidden>*</span>
+                  Email <span aria-hidden>*</span>
                 </span>
                 <input
                   id="verify-email"
