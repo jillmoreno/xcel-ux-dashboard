@@ -23,7 +23,7 @@ const feature: PrototypeFeature = {
   devStatus: 'not-ready',
   surface: 'invite',
   owner: 'Afsana',
-  lastUpdated: '2026-11-11T21:23:24Z',
+  lastUpdated: '2026-11-19T21:06:33Z',
   accent: 'gold',
   icon: 'flag',
   brands: ['xcel'],
@@ -165,8 +165,8 @@ const feature: PrototypeFeature = {
           { name: 'Ready', when: 'All seven rules are met and both fields match. Confirm turns on.' },
         ],
         ctas: [
-          { name: 'Password eye', does: 'Shows or hides the password.' },
-          { name: 'Confirm password eye', does: 'Shows or hides the confirmation.' },
+          { name: 'Password eye', does: 'Shows or hides the password. Always shown; the same Eye / Eye Slash as Update Password in Account Details.' },
+          { name: 'Confirm password eye', does: 'Shows or hides the confirmation. Always shown; the same Eye / Eye Slash as Update Password in Account Details.' },
           { name: 'Confirm', does: 'Off until all seven rules are met and both fields match. Then creates the account and opens Setting up your account….' },
         ],
         statesMatrix: [

@@ -577,12 +577,16 @@ describe('Invite Flow V3 — the email check', () => {
     const reset = within(dialog).getByRole('button', { name: 'Reset password' })
     expect(reset).toBeDisabled()
 
+    expect(within(dialog).getByLabelText(/^New Password/)).toHaveAttribute('id', 'reset-password')
+    /* The eyes are Update Password's icons, not the confirmation page's images. */
+    expect(within(dialog).getByRole('button', { name: 'Show new password' }).querySelector('img')).toBeNull()
+    expect(within(dialog).getByRole('button', { name: 'Show new password' }).querySelector('svg')).not.toBeNull()
     await userEvent.type(dialog.querySelector<HTMLInputElement>('#reset-password')!, 'Navarro#2027')
-    await userEvent.type(within(dialog).getByLabelText(/^Confirm new password/), 'Navarro#20')
+    await userEvent.type(within(dialog).getByLabelText(/^Confirm New Password/), 'Navarro#20')
     expect(within(dialog).getByRole('alert')).toHaveTextContent('Passwords do not match.')
     expect(reset).toBeDisabled()
-    expect(within(dialog).getByLabelText(/^Confirm new password/).style.boxShadow).toBe('')
-    await userEvent.type(within(dialog).getByLabelText(/^Confirm new password/), '27')
+    expect(within(dialog).getByLabelText(/^Confirm New Password/).style.boxShadow).toBe('')
+    await userEvent.type(within(dialog).getByLabelText(/^Confirm New Password/), '27')
     expect(reset).toBeEnabled()
 
     await userEvent.click(reset)
