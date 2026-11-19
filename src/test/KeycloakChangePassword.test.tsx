@@ -71,6 +71,7 @@ describe('Keycloak change password', () => {
     expect(screen.getByRole('meter', { name: 'Password strength' })).toBeTruthy()
     expect(screen.getByText('Password must:')).toBeTruthy()
     expect(screen.queryByText('Password Requirements')).toBeNull()
+    expect(screen.getByRole('button', { name: 'Forgot password?' })).toBeTruthy()
   })
 
   it('puts Cancel first and Save Password second', () => {
