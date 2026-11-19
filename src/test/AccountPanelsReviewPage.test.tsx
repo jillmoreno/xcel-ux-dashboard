@@ -45,6 +45,7 @@ describe('/account-panels', () => {
     expect(screen.getByRole('button', { name: 'Update Password — Passwords do not match' })).toBeTruthy()
     /* Pictures, not live panels. */
     expect(screen.queryByRole('dialog')).toBeNull()
+    expect(screen.getByText(/Images as of \d+\/\d+\. Design changes made since then/)).toBeTruthy()
   })
 
   it('capture mode draws the real panel open on its step', () => {
