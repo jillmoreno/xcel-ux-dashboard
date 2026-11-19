@@ -123,14 +123,23 @@ export function KeycloakChangePassword({
           Enter your current password and create a new one that meets the requirements below.
         </p>
 
-        <PasswordField
-          id={`${id}-current`}
-          label="Current Password"
-          placeholder="Enter current password"
-          value={current}
-          onChange={setCurrent}
-          autoComplete="current-password"
-        />
+        {/* Forgot password? — 2026-11-19, Afsana: under Current Password as on
+            the sheet's own step, but in the invite flow's blue link (`FORGOT`
+            in `VerifyEmailModalV3`), not the old step's red, and no lock.
+            Clicking it does nothing for now, on purpose. */}
+        <div style={FIELD_STACK}>
+          <PasswordField
+            id={`${id}-current`}
+            label="Current Password"
+            placeholder="Enter current password"
+            value={current}
+            onChange={setCurrent}
+            autoComplete="current-password"
+          />
+          <button type="button" style={FORGOT}>
+            Forgot password?
+          </button>
+        </div>
 
         <div style={FIELD_STACK}>
           <PasswordField
@@ -270,6 +279,19 @@ const LEAD: CSSProperties = {
 }
 
 const FIELD_STACK: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 8 }
+
+/* The invite flow's link (`FORGOT` in `VerifyEmailModalV3`), colour and all. */
+const FORGOT: CSSProperties = {
+  alignSelf: 'flex-start',
+  padding: 0,
+  border: 'none',
+  background: 'none',
+  fontFamily: 'var(--font-e2e-avenir)',
+  fontWeight: 800,
+  fontSize: 13,
+  color: '#00539a',
+  cursor: 'pointer',
+}
 
 const FIELD_GROUP: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 6, minWidth: 0 }
 
