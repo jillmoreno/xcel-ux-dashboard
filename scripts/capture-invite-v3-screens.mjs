@@ -300,6 +300,17 @@ async function loginCheck(w, { fromEmailAsk = false, prefilled = false, email = 
   }
   if (forgot) {
     await w.click('Forgot password?', { scope: d })
+    /* Forgot password? asks for the address first (2026-11-19, Afsana). Its
+       heading is "Reset your password", the same as the new-password step's,
+       so it is filed under its own name. */
+    await w.waitDialog('Reset your password')
+    const ask = w.dialog('Reset your password')
+    await w.shot('Reset your password — enter email', 'Empty, Send reset link disabled')
+    await ask.getByLabel(/^Email/).fill('jordan@example')
+    await w.shot('Reset your password — enter email', 'Invalid email address')
+    await ask.getByLabel(/^Email/).fill(email)
+    await w.shot('Reset your password — enter email', 'Filled, Send reset link enabled')
+    await w.click('Send reset link', { scope: ask })
     await w.waitDialog('Check your email')
     await w.shot('Check your email', 'Reset link sent, Resend link counting down')
     if (waitResend) {
@@ -317,9 +328,9 @@ async function loginCheck(w, { fromEmailAsk = false, prefilled = false, email = 
     const r = w.dialog('Reset your password')
     await w.shot('Reset your password', 'Empty, Reset password disabled')
     await r.locator('#reset-password').fill('Navarro#2027')
-    await r.getByLabel(/^Confirm new password/).fill('Navarro#20')
+    await r.getByLabel(/^Confirm New Password/).fill('Navarro#20')
     await w.shot('Reset your password', 'Passwords do not match')
-    await r.getByLabel(/^Confirm new password/).fill('Navarro#2027')
+    await r.getByLabel(/^Confirm New Password/).fill('Navarro#2027')
     await w.shot('Reset your password', 'Filled, Reset password enabled')
     await w.click('Reset password', { scope: r })
     await w.waitDialog('Log in to continue')

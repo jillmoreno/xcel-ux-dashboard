@@ -590,6 +590,49 @@
       ]
     },
     {
+      "id": "modal-reset-your-password-enter-email",
+      "title": "Reset your password — enter email",
+      "kind": "modal",
+      "flows": [
+        "Direct Email",
+        "QR Code",
+        "Not signed into XCEL (OCD)",
+        "Signed into XCEL (OCD)"
+      ],
+      "states": [
+        {
+          "file": "modals/reset-your-password-enter-email/01-empty-send-reset-link-disabled.png",
+          "state": "Empty, Send reset link disabled",
+          "seenIn": [
+            "Direct Email · Has Atlas account",
+            "QR Code · Has Atlas account",
+            "Not signed into XCEL (OCD) · Targeted only · Has Atlas account",
+            "Signed into XCEL (OCD) · Targeted only · Has Atlas account"
+          ]
+        },
+        {
+          "file": "modals/reset-your-password-enter-email/02-invalid-email-address.png",
+          "state": "Invalid email address",
+          "seenIn": [
+            "Direct Email · Has Atlas account",
+            "QR Code · Has Atlas account",
+            "Not signed into XCEL (OCD) · Targeted only · Has Atlas account",
+            "Signed into XCEL (OCD) · Targeted only · Has Atlas account"
+          ]
+        },
+        {
+          "file": "modals/reset-your-password-enter-email/03-filled-send-reset-link-enabled.png",
+          "state": "Filled, Send reset link enabled",
+          "seenIn": [
+            "Direct Email · Has Atlas account",
+            "QR Code · Has Atlas account",
+            "Not signed into XCEL (OCD) · Targeted only · Has Atlas account",
+            "Signed into XCEL (OCD) · Targeted only · Has Atlas account"
+          ]
+        }
+      ]
+    },
+    {
       "id": "modal-check-your-email",
       "title": "Check your email",
       "kind": "modal",
