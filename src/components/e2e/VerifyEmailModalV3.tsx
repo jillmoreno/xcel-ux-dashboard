@@ -7,6 +7,7 @@ import {
   type KeyboardEvent,
 } from 'react'
 import { createPortal } from 'react-dom'
+import { useSearchParams } from 'react-router-dom'
 import {
   VERIFICATION_CODE_LENGTH,
   codeComplete,
@@ -588,12 +589,20 @@ function LoginStep({
      straight to Check your email. Empty on purpose: "Enter your email". */
   const [requesting, setRequesting] = useState(false)
   const [resetEmail, setResetEmail] = useState('')
-  /* Reset your password — 2026-11-12, Afsana: for the demo, a click on
-     Check your email (anywhere but its two buttons) stands in for following
-     the link. Reset password comes back here with a green banner — a
-     proposal; where a reset lands is still open. */
-  const [resetting, setResetting] = useState(false)
-  const [wasReset, setWasReset] = useState(false)
+  /* The reset itself is NOT in this modal (2026-11-19, Afsana): the link in
+     the email opens Reset your password on a page of its own, in a new tab
+     (`ResetPasswordPageV3`). For the demo, a click on Check your email
+     (anywhere but its two buttons) — or its demo link — opens that page in
+     a new tab, and this tab stays on Check your email. Until 2026-11-19 the
+     modal itself turned into the reset form, then came back to Log in with
+     a "Your password has been reset." banner; both are gone, since a
+     checkout tab cannot know a reset happened in another. */
+  const [params] = useSearchParams()
+  const openResetLink = () => {
+    const q = new URLSearchParams(params)
+    q.set('email', resetEmail.trim())
+    window.open(`/end-to-end-demo/reset-password?${q.toString()}`, '_blank', 'noopener')
+  }
   /* Resend link waits after every send, the first included (2026-11-05,
      Afsana: "disabled for a bit until the system enables the user to make
      another request"). The real wait is the system's; the demo's is
@@ -606,20 +615,6 @@ function LoginStep({
   }, [linkWait])
   const canResend = linkWait <= 0
   const ready = password !== ''
-  if (resetting) {
-    return (
-      <ResetPasswordStep
-        email={resetEmail}
-        onReset={() => {
-          setResetting(false)
-          setResetSent(false)
-          setPassword('')
-          setFailed(false)
-          setWasReset(true)
-        }}
-      />
-    )
-  }
   if (requesting) {
     const valid = looksLikeEmail(resetEmail)
     const badResetEmail = resetEmail.trim() !== '' && !valid
@@ -694,7 +689,7 @@ function LoginStep({
         style={{ ...BODY, cursor: 'pointer' }}
         title="Demo: click to follow the reset link"
         onClick={(e) => {
-          if (!(e.target as HTMLElement).closest('button')) setResetting(true)
+          if (!(e.target as HTMLElement).closest('button')) openResetLink()
         }}
       >
         <img src="/brand/xcel-logo.webp" alt="XCEL Insurance Training by Colibri" style={CODE_LOGO} />
@@ -737,6 +732,14 @@ function LoginStep({
             Back to sign in
           </button>
         </div>
+        {/* Demo only — the email's link, so a reviewer can find the reset
+            page without knowing the whole modal is clickable. */}
+        <p style={{ ...NOTE, textAlign: 'center' }}>
+          Demo:{' '}
+          <button type="button" className="cre-e2e-textlink" style={TEXT_LINK} onClick={openResetLink}>
+            open the reset link in a new tab
+          </button>
+        </p>
       </div>
     )
   }
@@ -757,12 +760,6 @@ function LoginStep({
           Log in to continue
         </h2>
         <div aria-hidden style={RULE} />
-        {wasReset ? (
-          <p role="status" style={RESENT_BANNER}>
-            <CircleCheckSolid size={16} aria-hidden style={{ flex: 'none' }} />
-            <span>Your password has been reset.</span>
-          </p>
-        ) : null}
         {/* The address goes in the locked field below, on every flow
             (2026-11-18, Afsana). From 2026-11-03 it was bold in this sentence
             on all but Direct Email. */}
@@ -866,8 +863,40 @@ function LoginStep({
   )
 }
 
-/** "Reset your password" — 2026-11-12, Afsana. Reached in the demo by
- *  clicking Check your email. The same meter and seven rules as the password
+/** RESET YOUR PASSWORD, ON ITS OWN PAGE — 2026-11-19, Afsana: the reset
+ *  link in the email opens a page in a new tab, not a step of the checkout
+ *  modal. The card is the modal's card, so the form, the rules and the eyes
+ *  are the same ones; `ResetPasswordPageV3` centres it under a header.
+ *  Reset password turns the card into Password reset: Email verified's green
+ *  check and "Your password has been successfully reset!". No XCEL logo in
+ *  either — the page's header carries it. */
+export function ResetPasswordCardV3({ email }: { email: string }) {
+  const [done, setDone] = useState(false)
+  return (
+    <section aria-labelledby="verify-email-title" style={{ ...MODAL, maxHeight: 'none', overflowY: 'visible' }}>
+      {done ? <PasswordResetDone /> : <ResetPasswordStep email={email} onReset={() => setDone(true)} />}
+    </section>
+  )
+}
+
+/** Password reset — Email verified's layout and check, without its logo
+ *  (2026-11-19, Afsana). */
+function PasswordResetDone() {
+  return (
+    <div style={VERIFIED} role="status">
+      {/* No logo — the page's header carries it (2026-11-19, Afsana). */}
+      <span aria-hidden style={VERIFIED_RING}>
+        <Check size={24} style={{ stroke: 'currentColor', strokeWidth: 28 }} />
+      </span>
+      <h2 id="verify-email-title" style={TITLE}>
+        Your password has been successfully reset!
+      </h2>
+    </div>
+  )
+}
+
+/** "Reset your password" — 2026-11-12, Afsana. On its own page since
+ *  2026-11-19 (above). The same meter and seven rules as the password
  *  the learner creates at the end of the flow, for continuity; Reset password
  *  stays off until every rule is met and both fields match. */
 function ResetPasswordStep({ email, onReset }: { email: string; onReset: () => void }) {
@@ -887,7 +916,7 @@ function ResetPasswordStep({ email, onReset }: { email: string; onReset: () => v
       }}
       noValidate
     >
-      <img src="/brand/xcel-logo.webp" alt="XCEL Insurance Training by Colibri" style={CODE_LOGO} />
+      {/* No logo — the page's header carries it (2026-11-19, Afsana). */}
       <div style={HEAD}>
         <h2 id="verify-email-title" style={TITLE}>
           Reset your password

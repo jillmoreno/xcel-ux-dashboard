@@ -7698,6 +7698,9 @@ a.cre-library-card-title::after {
      other payment methods' warm fill, the summary's detail rows (#DDD at
      30%), the header's shadow, and the reCAPTCHA badge's own colours. */
   --color-e2e-field: #f2f5f7;
+  /* The reset-password page's ground under its white header (2026-11-19,
+     Afsana: "below the header the fill is a light grey"). */
+  --color-e2e-reset-ground: #f3f4f6;
   --color-e2e-summary: #f5f2ee;
   --color-e2e-detail-row: rgb(221 221 221 / 0.3);
   --color-e2e-header-shadow: rgb(0 0 0 / 0.1);
