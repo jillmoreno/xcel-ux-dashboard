@@ -248,12 +248,22 @@ export function entryPathV3(flow: InviteFlowV3): string {
  *  first screen (2026-10-30, Afsana: "make sure that all the B2C flows start
  *  with this screen", the cart). */
 export function v3ScreensFor(model: InviteModelId): readonly string[] {
+  /* Reset your password, the page the reset email opens in a new tab, is
+     reachable from every flow's Log in (2026-11-19, Afsana). */
   return model === 'b2b'
-    ? ['/end-to-end-demo/email', '/end-to-end-demo/qr', '/end-to-end-demo', '/end-to-end-demo/checkout', '/end-to-end-demo/confirmation']
+    ? [
+        '/end-to-end-demo/email',
+        '/end-to-end-demo/qr',
+        '/end-to-end-demo',
+        '/end-to-end-demo/checkout',
+        '/end-to-end-demo/confirmation',
+        '/end-to-end-demo/reset-password',
+      ]
     : [
         '/end-to-end-demo/cart',
         '/end-to-end-demo/checkout',
         '/end-to-end-demo/confirmation',
+        '/end-to-end-demo/reset-password',
       ]
 }
 

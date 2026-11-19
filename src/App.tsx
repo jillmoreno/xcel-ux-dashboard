@@ -11,6 +11,7 @@ import { VariantDeckPage } from '@/pages/VariantDeckPage'
 import { AtlasHeaderPreviewPage } from '@/pages/AtlasHeaderPreviewPage'
 import { ComparePage } from '@/pages/ComparePage'
 import { InviteV3StartPage } from '@/pages/InviteV3StartPage'
+import { ResetPasswordPageV3 } from '@/pages/ResetPasswordPageV3'
 /* THE INVITE FLOW IS VERSIONED SINCE 2026-10-22, so these four routes name a
    SWITCH rather than a page — each picks V1's page or its V2 fork from the
    `invite-flow-version` flag. The paths, and everything that depends on them,
@@ -261,6 +262,9 @@ export default function App() {
         <Route path="/end-to-end-demo/checkout" element={<TestingGate><InvitedCheckoutRoute /></TestingGate>} />
         {/* …then Confirmation & Password, which Place your order opens. */}
         <Route path="/end-to-end-demo/confirmation" element={<TestingGate><InvitedConfirmationRoute /></TestingGate>} />
+        {/* …and Reset your password, the page the reset email's link opens in a
+            new tab — not a step of the checkout's modal (2026-11-19, Afsana). */}
+        <Route path="/end-to-end-demo/reset-password" element={<TestingGate><ResetPasswordPageV3 /></TestingGate>} />
       </Route>
       <Route
         path="/prototype/:featureId/handoff/:componentId"

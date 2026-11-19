@@ -24,7 +24,7 @@ const feature: PrototypeFeature = {
   devStatus: 'not-ready',
   surface: 'invite',
   owner: 'Afsana',
-  lastUpdated: '2026-11-19T21:54:22Z',
+  lastUpdated: '2026-11-19T22:46:52Z',
   accent: 'gold',
   icon: 'flag',
   brands: ['xcel'],
@@ -43,6 +43,11 @@ const feature: PrototypeFeature = {
       label: 'Log in to continue — B2B, QR Code, Atlas account',
       note: 'Type any email and Continue. The password "wrong" shows the log-in error; any other password signs in. Forgot password? asks for an email; Send reset link opens Check your email.',
       to: '/end-to-end-demo/checkout?demo=1&ff=invite-flow-version:v3,invite-v3-model:b2b,invite-v3-flow-b2b:qr,invite-v3-email-account:atlas',
+    },
+    {
+      label: 'Reset your password — the page the reset email opens',
+      note: 'Opened in a new tab from Check your email in the product. The hidden bottom-right corner of the card fills a valid new password; Reset password shows Password reset.',
+      to: '/end-to-end-demo/reset-password?demo=1&ff=invite-flow-version:v3,invite-v3-model:b2b,invite-v3-flow-b2b:qr,invite-v3-email-account:atlas&email=jordan.navarro@gmail.com',
     },
     {
       label: 'Direct Email, no Atlas — the email step, pre-filled, then the code',
@@ -257,9 +262,6 @@ const feature: PrototypeFeature = {
           { name: 'Reset your password — enter email', when: 'Forgot password? was clicked. The XCEL logo, "Reset your password", "Enter your email and we’ll send you a link to reset your password.", one Email field (empty, editable), Send reset link (primary, off until the address is valid) and Back to sign in (secondary) right under it. A malformed address shows "Please enter a valid email address" under the field, as Enter your email does.', why: 'The learner says where the link goes before one is sent, rather than a link going out the moment they click Forgot password?.' },
           { name: 'Check your email', when: 'Send reset link was clicked. The modal becomes "Check your email": "We sent a password reset link to [the address entered, bold]. Follow the instructions in the email to reset your password. Be sure to check your spam or junk folders." No Email field — the sentence already names the address. Resend link (primary), the countdown under it while it waits, then Back to sign in (secondary).' },
           { name: 'Resend link waiting', when: 'Check your email, straight after a link is sent and after every resend. Resend link is disabled for 30 seconds, and a line under it counts down: "You can resend the link in 0:30". The line goes when the button turns on.', why: 'A link has just gone out; a second request before the first can arrive only multiplies the emails.' },
-          { name: 'Reset your password', when: 'The learner followed the reset link (in the demo: a click anywhere on Check your email except its two buttons). The XCEL logo, "Reset your password", "Create a new password for [email, bold].", New Password, the strength meter and "Password must:" with the seven rules, Confirm New Password, and Reset password.', why: 'The same meter and rules as the password the learner creates at the end of the flow, so a new password is held to the same bar and looks the same.' },
-          { name: 'Passwords don’t match', when: 'Reset your password, with Confirm New Password filled and different. "Passwords do not match." in red under it — no red stroke on the field. Reset password stays off.' },
-          { name: 'Password reset', when: 'Reset password was clicked. Back to Log in to continue, the password field empty, with a green banner under the heading: "Your password has been reset." A proposal — see Questions.' },
         ],
         ctas: [
           { name: 'Password eye', does: 'Shows or hides the password. Always shown. Keycloak’s eye, as on Change Password in Account Details: an outline round a hollow ring, no pupil; open while hidden, slashed once shown.' },
@@ -269,9 +271,7 @@ const feature: PrototypeFeature = {
           { name: 'Log in', does: 'Off until there is a password. Then signs in and opens Signing you in…, or shows the wrong-password error.' },
           { name: 'Visit our help center', does: 'Under Log in, centred: "Can’t log in? Visit our help center", the link in brick red. Drawn only — it goes nowhere yet; the help center’s address is not settled.' },
           { name: 'Resend link (Check your email)', does: 'Disabled for 30 seconds after each send, the first included, with the countdown under it. Then sends another reset link and is disabled again.' },
-          { name: 'Back to sign in (Check your email)', does: 'Returns to Log in to continue.' },
-          { name: 'New Password and Confirm New Password eyes (Reset your password)', does: 'Show or hide each field. Always shown. Keycloak’s eye, as on Change Password in Account Details: an outline round a hollow ring, no pupil; open while hidden, slashed once shown.' },
-          { name: 'Reset password', does: 'Off until all seven rules are met and both fields match. Then saves the new password and returns to Log in to continue with the Password reset banner (proposed).' },
+          { name: 'Back to sign in (Check your email)', does: 'Returns to Log in to continue — the plain Log in, no banner: this tab cannot know whether a reset happened in another.' },
         ],
         statesMatrix: [
           { question: 'What if the password is wrong?', answer: '"We couldn’t log you in. Please try again." in red under the field, 12px — no red stroke on the field. Log in stays on.' },
@@ -282,8 +282,8 @@ const feature: PrototypeFeature = {
         edgeCases: [
           'Demo only: the password "wrong" fails; any other password signs in.',
           'Check your email has no ✕ — Back to sign in is the only way back.',
-          'Demo only: a click anywhere on Check your email except Resend link and Back to sign in stands in for following the link in the email, and opens Reset your password. In the product the link opens it.',
-          'Demo only: a hidden corner at Reset your password’s bottom-right fills a valid new password into both fields. On the enter-email step the same corner fills the demo learner’s email.',
+          'Demo only: a click anywhere on Check your email except Resend link and Back to sign in — or the "Demo: open the reset link in a new tab" line under them — stands in for following the link in the email, and opens the Reset your password page in a new tab. This tab stays on Check your email. In the product the email’s link opens the page.',
+          'Demo only: on the enter-email step a hidden corner at the bottom-right fills the demo learner’s email.',
         ],
         designSpec: {
           tokens: [
@@ -294,11 +294,10 @@ const feature: PrototypeFeature = {
             { role: 'Secondary button — outline and text', token: '--color-xcel-brick-600' },
             { role: 'Secondary button — fill', token: '--color-fixed-light' },
             { role: 'Disabled button', token: '--color-e2e-form-locked' },
-            { role: 'Password reset banner — fill, border, text', token: '--color-success-100, --color-success-200, --color-success-700' },
             { role: 'Font', token: '--font-e2e-avenir' },
           ],
           states: [
-            'Log in, Resend link and Reset password: disabled (grey) until they can be used, then the brick primary.',
+            'Log in, Send reset link and Resend link: disabled (grey) until they can be used, then the brick primary.',
             'Back to sign in: the primary’s size and shape, white with a 1px brick outline and brick text.',
           ],
           responsive: [
@@ -313,9 +312,64 @@ const feature: PrototypeFeature = {
         },
       },
       {
+        id: 'v3-reset-password-page',
+        order: 5,
+        name: 'Reset your password (page)',
+        tabLabel: 'Reset password page',
+        badge: 'NEW',
+        badgeDate: '2026-11-19',
+        location: 'A page of its own, opened in a NEW TAB by the link in the reset email — not a step of the checkout’s modal. /end-to-end-demo/reset-password. src/pages/ResetPasswordPageV3.tsx (the page) and ResetPasswordCardV3 in src/components/e2e/VerifyEmailModalV3.tsx (the card).',
+        summary:
+          'A white header with the XCEL logo top-left, a light grey ground, and the reset card centred on it — no logo of its own, since the header carries it: "Reset your password", "Create a new password for [email, bold].", New Password, the strength meter and "Password must:" with the seven rules, Confirm New Password, and Reset password. Reset password turns the card into Password reset.',
+        variants: [
+          { name: 'Empty', when: 'On arrival from the email’s link. No rule is met; Reset password is off.', why: 'The same meter and rules as the password the learner creates at the end of the flow, so a new password is held to the same bar and looks the same.' },
+          { name: 'Passwords don’t match', when: 'Confirm New Password filled and different. "Passwords do not match." in red under it — no red stroke on the field. Reset password stays off.' },
+          { name: 'Ready', when: 'All seven rules are met and both fields match. Reset password turns on.' },
+          { name: 'Password reset', when: 'Reset password was clicked. The card holds Email verified’s green check, centred, and "Your password has been successfully reset!" — no logo, as above. Nothing else on the page changes.', why: 'The reset happens in its own tab, so it cannot hand the learner back into the checkout. They return to the checkout tab, where Back to sign in leads to Log in, and sign in with the new password.' },
+        ],
+        ctas: [
+          { name: 'New Password and Confirm New Password eyes', does: 'Show or hide each field. Always shown. Keycloak’s eye, as on Change Password in Account Details: an outline round a hollow ring, no pupil; open while hidden, slashed once shown.' },
+          { name: 'Reset password', does: 'Off until all seven rules are met and both fields match. Then saves the new password and turns the card into Password reset.' },
+        ],
+        statesMatrix: [
+          { question: 'Where does the learner reset their password?', answer: 'Only here, on this page in a new tab, from the link in the email. Never inside the checkout.' },
+          { question: 'What happens after Reset password?', answer: 'The card says "Your password has been successfully reset!" with the green check. The page has no button onward; the learner goes back to the checkout tab and logs in.' },
+          { question: 'Does the checkout tab know the password was reset?', answer: 'No. It stays on Check your email; Back to sign in shows the plain Log in to continue, with no banner.' },
+        ],
+        edgeCases: [
+          'Demo only: a hidden corner at the card’s bottom-right fills a valid new password into both fields.',
+          'Demo only: the address in "Create a new password for…" comes from the page’s ?email=, which Check your email sets to the address the link was sent to.',
+        ],
+        designSpec: {
+          tokens: [
+            { role: 'Header — fill', token: '--color-fixed-light' },
+            { role: 'Header — outline', token: '--color-e2e-partner-outline' },
+            { role: 'Page ground', token: '--color-e2e-reset-ground' },
+            { role: 'Card', token: '--color-fixed-light, shadow --color-e2e-form-shadow' },
+            { role: 'Field', token: '--color-e2e-field' },
+            { role: 'Error text', token: '--color-error-600' },
+            { role: 'Primary button', token: '--color-xcel-brick-600' },
+            { role: 'Disabled button', token: '--color-e2e-form-locked' },
+            { role: 'Password reset check — ring, fill, check', token: '--color-success-600, --color-e2e-verified-fill' },
+            { role: 'Font', token: '--font-e2e-avenir' },
+          ],
+          states: ['Reset password: disabled (grey) until it can be used, then the brick primary.'],
+          responsive: [
+            'Header: 8px × 32px padding, the logo 115 × 48 on the left.',
+            'The card is the checkout modals’ card — 460px wide, 36px padding, 8px radius — centred both ways on the grey ground below the header, with at least 48px × 24px around it.',
+            'Password reset: centred; a 56px ring with a 2px border and a 24px check, 20px to the line (22px / 30px, bold).',
+            'No XCEL logo in the card, in either state — the header’s logo top-left is the page’s one (Afsana, 2026-11-19).',
+          ],
+          sources: [
+            'The final prototype is the source of truth — open it from Check your email.',
+            'Implemented in src/pages/ResetPasswordPageV3.tsx and src/components/e2e/VerifyEmailModalV3.tsx (ResetPasswordCardV3).',
+          ],
+        },
+      },
+      {
         id: 'v3-signing-in',
         thumbnail: '/prototype-thumbs/components/xcel-invite-v3-checkout-modals-v3-signing-in.png',
-        order: 5,
+        order: 6,
         name: 'Signing you in…',
         tabLabel: 'Signing you in',
         location: 'The same modal, after Log in. src/components/e2e/VerifyEmailModalV3.tsx — the signing-in step.',
@@ -344,7 +398,7 @@ const feature: PrototypeFeature = {
       {
         id: 'v3-partner-code',
         thumbnail: '/prototype-thumbs/components/xcel-invite-v3-checkout-modals-v3-partner-code.png',
-        order: 6,
+        order: 7,
         name: 'Partner code? (Yes / No)',
         tabLabel: 'Partner code',
         location: 'B2C guest, after Checkout is clicked: over the cart on the two OCD flows, over the checkout on the other B2C flows. src/components/e2e/PartnerCodeAsk.tsx.',
@@ -377,7 +431,7 @@ const feature: PrototypeFeature = {
       {
         id: 'v3-not-supported',
         thumbnail: '/prototype-thumbs/components/xcel-invite-v3-checkout-modals-v3-not-supported.png',
-        order: 7,
+        order: 8,
         name: '1 item in your cart is not supported',
         tabLabel: 'Not supported',
         location: 'Over the cart on the two OCD flows, after No to the partner code, when the cart mixes supported and unsupported SKUs. src/components/e2e/SignedInCartDialogs.tsx — UnsupportedItemDialog.',
@@ -411,7 +465,7 @@ const feature: PrototypeFeature = {
       {
         id: 'v3-signing-out',
         thumbnail: '/prototype-thumbs/components/xcel-invite-v3-checkout-modals-v3-signing-out.png',
-        order: 8,
+        order: 9,
         name: 'Signing you out…',
         tabLabel: 'Signing you out',
         location: 'Over the cart, Signed into XCEL (OCD) only, after No to the partner code (and after Proceed on a mixed cart). src/components/e2e/SigningOutDialog.tsx.',
@@ -441,7 +495,7 @@ const feature: PrototypeFeature = {
       {
         id: 'v3-placing-order',
         thumbnail: '/prototype-thumbs/components/xcel-invite-v3-checkout-modals-v3-placing-order.png',
-        order: 9,
+        order: 10,
         name: 'Placing your order…',
         tabLabel: 'Placing your order',
         location: 'Over the checkout, after Place your order. src/pages/InvitedCheckoutPageV3.tsx — PlacingOrderDialog.',
@@ -546,9 +600,8 @@ const feature: PrototypeFeature = {
         },
         {
           question: 'Where does Reset password take the learner?',
-          decision: 'Open. Proposed, and what the prototype does: back to Log in to continue, the password field empty, with a green banner — "Your password has been reset." — so they sign in with the new password. The alternative is to sign them in straight away.',
-          status: 'Needs weigh-in',
-          owner: 'Design and Engineering',
+          decision: 'Nowhere. The reset is a page of its own, opened in a new tab by the email’s link, so it cannot hand the learner back into the checkout. Reset password turns the card into "Your password has been successfully reset!" with Email verified’s green check, and no logo in the card (the header has it); the learner returns to the checkout tab and logs in. The Log in banner ("Your password has been reset.") is gone — the checkout tab cannot know a reset happened (Afsana, 2026-11-19).',
+          status: 'Decided',
         },
         {
           question: 'What if the code email fails to send?',
@@ -568,7 +621,6 @@ const feature: PrototypeFeature = {
         'Set how long the Code resent banner stays up.',
         'Set how long Signing you out… shows.',
         'Decide whether Check your email states how long the reset link is valid.',
-        'Decide where Reset password takes the learner — proposed: Log in to continue with a "Your password has been reset." banner.',
         'Design the code email failing to send.',
         'Design the order failing to place.',
       ],

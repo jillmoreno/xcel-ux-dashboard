@@ -566,17 +566,7 @@
           ]
         },
         {
-          "file": "modals/log-in-to-continue/03-your-password-has-been-reset.png",
-          "state": "Your password has been reset",
-          "seenIn": [
-            "Direct Email · Has Atlas account",
-            "QR Code · Has Atlas account",
-            "Not signed into XCEL (OCD) · Targeted only · Has Atlas account",
-            "Signed into XCEL (OCD) · Targeted only · Has Atlas account"
-          ]
-        },
-        {
-          "file": "modals/log-in-to-continue/04-password-entered.png",
+          "file": "modals/log-in-to-continue/03-password-entered.png",
           "state": "Password entered",
           "seenIn": [
             "Direct Email · Has Atlas account",
@@ -663,9 +653,9 @@
       ]
     },
     {
-      "id": "modal-reset-your-password",
-      "title": "Reset your password",
-      "kind": "modal",
+      "id": "page-reset-your-password-page",
+      "title": "Reset your password (page)",
+      "kind": "page",
       "flows": [
         "Direct Email",
         "QR Code",
@@ -674,31 +664,65 @@
       ],
       "states": [
         {
-          "file": "modals/reset-your-password/01-empty-reset-password-disabled.png",
-          "state": "Empty, Reset password disabled",
+          "file": "pages/reset-your-password-page/01-empty-reset-password-disabled-b2b2c.png",
+          "state": "Empty, Reset password disabled — B2B2C",
           "seenIn": [
             "Direct Email · Has Atlas account",
-            "QR Code · Has Atlas account",
+            "QR Code · Has Atlas account"
+          ]
+        },
+        {
+          "file": "pages/reset-your-password-page/02-passwords-do-not-match-b2b2c.png",
+          "state": "Passwords do not match — B2B2C",
+          "seenIn": [
+            "Direct Email · Has Atlas account",
+            "QR Code · Has Atlas account"
+          ]
+        },
+        {
+          "file": "pages/reset-your-password-page/03-filled-reset-password-enabled-b2b2c.png",
+          "state": "Filled, Reset password enabled — B2B2C",
+          "seenIn": [
+            "Direct Email · Has Atlas account",
+            "QR Code · Has Atlas account"
+          ]
+        },
+        {
+          "file": "pages/reset-your-password-page/04-password-reset-b2b2c.png",
+          "state": "Password reset — B2B2C",
+          "seenIn": [
+            "Direct Email · Has Atlas account",
+            "QR Code · Has Atlas account"
+          ]
+        },
+        {
+          "file": "pages/reset-your-password-page/05-empty-reset-password-disabled-b2c.png",
+          "state": "Empty, Reset password disabled — B2C",
+          "seenIn": [
             "Not signed into XCEL (OCD) · Targeted only · Has Atlas account",
             "Signed into XCEL (OCD) · Targeted only · Has Atlas account"
           ]
         },
         {
-          "file": "modals/reset-your-password/02-passwords-do-not-match.png",
-          "state": "Passwords do not match",
+          "file": "pages/reset-your-password-page/06-passwords-do-not-match-b2c.png",
+          "state": "Passwords do not match — B2C",
           "seenIn": [
-            "Direct Email · Has Atlas account",
-            "QR Code · Has Atlas account",
             "Not signed into XCEL (OCD) · Targeted only · Has Atlas account",
             "Signed into XCEL (OCD) · Targeted only · Has Atlas account"
           ]
         },
         {
-          "file": "modals/reset-your-password/03-filled-reset-password-enabled.png",
-          "state": "Filled, Reset password enabled",
+          "file": "pages/reset-your-password-page/07-filled-reset-password-enabled-b2c.png",
+          "state": "Filled, Reset password enabled — B2C",
           "seenIn": [
-            "Direct Email · Has Atlas account",
-            "QR Code · Has Atlas account",
+            "Not signed into XCEL (OCD) · Targeted only · Has Atlas account",
+            "Signed into XCEL (OCD) · Targeted only · Has Atlas account"
+          ]
+        },
+        {
+          "file": "pages/reset-your-password-page/08-password-reset-b2c.png",
+          "state": "Password reset — B2C",
+          "seenIn": [
             "Not signed into XCEL (OCD) · Targeted only · Has Atlas account",
             "Signed into XCEL (OCD) · Targeted only · Has Atlas account"
           ]

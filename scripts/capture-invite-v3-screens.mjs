@@ -323,18 +323,28 @@ async function loginCheck(w, { fromEmailAsk = false, prefilled = false, email = 
       )
       await w.shot('Check your email', 'Resend link available')
     }
-    await w.dialog('Check your email').getByText(/We sent a password reset link/).click()
-    await w.waitDialog('Reset your password')
-    const r = w.dialog('Reset your password')
-    await w.shot('Reset your password', 'Empty, Reset password disabled')
+    /* The email's link opens Reset your password on a PAGE of its own, in a
+       new tab (2026-11-19, Afsana) — this tab stays on Check your email.
+       Captured whole, header and grey ground included. */
+    const [tab] = await Promise.all([
+      p.context().waitForEvent('page'),
+      w.dialog('Check your email').getByText(/We sent a password reset link/).click(),
+    ])
+    await tab.waitForLoadState('networkidle')
+    const rw = new Walk(tab)
+    const r = tab.getByRole('region', { name: 'Reset your password' })
+    await r.waitFor()
+    await rw.shot('Reset your password (page)', 'Empty, Reset password disabled')
     await r.locator('#reset-password').fill('Navarro#2027')
     await r.getByLabel(/^Confirm New Password/).fill('Navarro#20')
-    await w.shot('Reset your password', 'Passwords do not match')
+    await rw.shot('Reset your password (page)', 'Passwords do not match')
     await r.getByLabel(/^Confirm New Password/).fill('Navarro#2027')
-    await w.shot('Reset your password', 'Filled, Reset password enabled')
-    await w.click('Reset password', { scope: r })
+    await rw.shot('Reset your password (page)', 'Filled, Reset password enabled')
+    await rw.click('Reset password', { scope: r })
+    await rw.shot('Reset your password (page)', 'Password reset')
+    await tab.close()
+    await w.click('Back to sign in', { scope: w.dialog('Check your email') })
     await w.waitDialog('Log in to continue')
-    await w.shot('Log in to continue', 'Your password has been reset')
   }
   await w.dialog('Log in to continue').getByLabel(/^Password/).fill('Navarro#2027')
   await w.shot('Log in to continue', 'Password entered')

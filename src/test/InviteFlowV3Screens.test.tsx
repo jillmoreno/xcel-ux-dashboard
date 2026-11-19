@@ -17,6 +17,7 @@ import { InviteFlowEntrySync } from '@/pages/EndToEndPageSync'
 import { LOADING_HANDOFF_MS } from '@/components/e2e/XcelLoadingPage'
 import { E2E_LEARNER_EMAIL } from '@/pages/endToEndDemo'
 import { SETTING_UP_MS } from '@/pages/InvitedConfirmationPageV3'
+import { ResetPasswordPageV3 } from '@/pages/ResetPasswordPageV3'
 import {
   INVITE_FLOWS_V3,
   emailCheckV3,
@@ -585,51 +586,81 @@ describe('Invite Flow V3 — the email check', () => {
     }
   })
 
-  it('a click on Check your email opens Reset your password; Reset password returns to Log in with a banner', async () => {
-    renderAt(CHECKOUT, `${V3_B2B},invite-v3-email-account:atlas`)
-    await userEvent.type(within(screen.getByRole('dialog')).getByLabelText(/^Email\s*\*?$/), 'jordan@example.com')
-    await userEvent.click(screen.getByRole('button', { name: 'Continue' }))
-    await requestReset('jordan@example.com')
+  it('a click on Check your email opens the reset page in a new tab; the checkout tab stays put', async () => {
+    const open = vi.spyOn(window, 'open').mockImplementation(() => null)
+    try {
+      renderAt(CHECKOUT, `${V3_B2B},invite-v3-email-account:atlas`)
+      await userEvent.type(within(screen.getByRole('dialog')).getByLabelText(/^Email\s*\*?$/), 'jordan@example.com')
+      await userEvent.click(screen.getByRole('button', { name: 'Continue' }))
+      await requestReset('pat@example.com')
 
-    /* Its two buttons keep their jobs: Back to sign in still goes back. */
-    await userEvent.click(screen.getByRole('button', { name: 'Back to sign in' }))
-    expect(screen.getByRole('heading', { name: 'Log in to continue' })).toBeInTheDocument()
-    await requestReset('jordan@example.com')
+      /* Its two buttons keep their jobs: Back to sign in still goes back. */
+      await userEvent.click(screen.getByRole('button', { name: 'Back to sign in' }))
+      expect(screen.getByRole('heading', { name: 'Log in to continue' })).toBeInTheDocument()
+      await requestReset('pat@example.com')
+      expect(open).not.toHaveBeenCalled()
 
-    /* Anywhere else on the modal stands in for following the link. */
-    await userEvent.click(screen.getByText(/We sent a password reset link/))
-    const dialog = screen.getByRole('dialog', { name: 'Reset your password' })
-    expect(within(dialog).getByText('jordan@example.com').tagName).toBe('STRONG')
-    expect(within(dialog).getByRole('meter', { name: 'Password strength' })).toHaveAttribute('aria-valuenow', '0')
-    expect(within(dialog).getByText(/^be different from email/)).toBeInTheDocument()
-    const reset = within(dialog).getByRole('button', { name: 'Reset password' })
+      /* Anywhere else on the modal — or its demo link — stands in for the
+         email's link: the reset page, in a new tab, for that address. */
+      await userEvent.click(screen.getByText(/We sent a password reset link/))
+      await userEvent.click(screen.getByRole('button', { name: 'open the reset link in a new tab' }))
+      expect(open).toHaveBeenCalledTimes(2)
+      const [url, target] = open.mock.calls[0]
+      expect(String(url)).toMatch(/^\/end-to-end-demo\/reset-password\?/)
+      expect(new URLSearchParams(String(url).split('?')[1]).get('email')).toBe('pat@example.com')
+      expect(target).toBe('_blank')
+
+      /* This tab stays on Check your email; no reset here, and no banner on
+         Log in afterwards (2026-11-19). */
+      expect(screen.getByRole('dialog', { name: 'Check your email' })).toBeInTheDocument()
+      await userEvent.click(screen.getByRole('button', { name: 'Back to sign in' }))
+      expect(within(screen.getByRole('dialog', { name: 'Log in to continue' })).queryByRole('status')).not.toBeInTheDocument()
+    } finally {
+      open.mockRestore()
+    }
+  })
+
+  it('the reset page: header logo, the card centred, the rules and eyes, then Password reset', async () => {
+    window.history.replaceState({}, '', '/end-to-end-demo/reset-password?email=jordan@example.com')
+    render(
+      <MemoryRouter initialEntries={['/end-to-end-demo/reset-password?email=jordan@example.com']}>
+        <ResetPasswordPageV3 />
+      </MemoryRouter>,
+    )
+    expect(within(screen.getByRole('banner')).getByAltText('XCEL Insurance Training by Colibri')).toBeInTheDocument()
+    const card = screen.getByRole('region', { name: 'Reset your password' })
+    /* The logo is the header's alone (2026-11-19). */
+    expect(within(card).queryByAltText('XCEL Insurance Training by Colibri')).not.toBeInTheDocument()
+    expect(within(card).getByText('jordan@example.com').tagName).toBe('STRONG')
+    expect(within(card).getByRole('meter', { name: 'Password strength' })).toHaveAttribute('aria-valuenow', '0')
+    expect(within(card).getByText(/^be different from email/)).toBeInTheDocument()
+    const reset = within(card).getByRole('button', { name: 'Reset password' })
     expect(reset).toBeDisabled()
 
-    expect(within(dialog).getByLabelText(/^New Password/)).toHaveAttribute('id', 'reset-password')
+    expect(within(card).getByLabelText(/^New Password/)).toHaveAttribute('id', 'reset-password')
     /* The eye is Keycloak's — an outline and a hollow ring, no filled pupil,
        no slash while hidden — not an image (2026-11-19). */
-    const eye = within(dialog).getByRole('button', { name: 'Show new password' })
+    const eye = within(card).getByRole('button', { name: 'Show new password' })
     expect(eye.querySelector('img')).toBeNull()
     expect(eye.querySelector('svg')).toHaveAttribute('fill', 'none')
     expect(eye.querySelector('svg circle')).not.toHaveAttribute('fill')
     expect(eye.querySelectorAll('svg path')).toHaveLength(1)
     await userEvent.click(eye)
-    expect(within(dialog).getByRole('button', { name: 'Hide new password' }).querySelectorAll('svg path')).toHaveLength(2)
-    await userEvent.click(within(dialog).getByRole('button', { name: 'Hide new password' }))
-    await userEvent.type(dialog.querySelector<HTMLInputElement>('#reset-password')!, 'Navarro#2027')
-    await userEvent.type(within(dialog).getByLabelText(/^Confirm New Password/), 'Navarro#20')
-    expect(within(dialog).getByRole('alert')).toHaveTextContent('Passwords do not match.')
+    expect(within(card).getByRole('button', { name: 'Hide new password' }).querySelectorAll('svg path')).toHaveLength(2)
+    await userEvent.click(within(card).getByRole('button', { name: 'Hide new password' }))
+    await userEvent.type(card.querySelector<HTMLInputElement>('#reset-password')!, 'Navarro#2027')
+    await userEvent.type(within(card).getByLabelText(/^Confirm New Password/), 'Navarro#20')
+    expect(within(card).getByRole('alert')).toHaveTextContent('Passwords do not match.')
     expect(reset).toBeDisabled()
-    expect(within(dialog).getByLabelText(/^Confirm New Password/).style.boxShadow).toBe('')
-    await userEvent.type(within(dialog).getByLabelText(/^Confirm New Password/), '27')
+    expect(within(card).getByLabelText(/^Confirm New Password/).style.boxShadow).toBe('')
+    await userEvent.type(within(card).getByLabelText(/^Confirm New Password/), '27')
     expect(reset).toBeEnabled()
 
     await userEvent.click(reset)
-    expect(screen.getByRole('heading', { name: 'Log in to continue' })).toBeInTheDocument()
-    expect(within(screen.getByRole('dialog', { name: 'Log in to continue' })).getByRole('status')).toHaveTextContent(
-      'Your password has been reset.',
-    )
-    expect(document.querySelector('#login-password')).toHaveValue('')
+    const done = screen.getByRole('status')
+    expect(within(done).getByRole('heading', { name: 'Your password has been successfully reset!' })).toBeInTheDocument()
+    expect(within(done).queryByAltText('XCEL Insurance Training by Colibri')).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Reset password' })).not.toBeInTheDocument()
   })
 
   it('asks after the partner question on a B2C flow, never both at once', async () => {
