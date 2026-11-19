@@ -8,8 +8,7 @@ import { AccountDetailsEditPanel } from '@/components/account/profile/AccountDet
 /**
  * KEYCLOAK'S CHANGE PASSWORD — 2026-11-12, Afsana. Update Password on the Edit
  * Account Details sheet embeds Keycloak's widget as the sheet's step, with the
- * invite flow's strength bar and rules under New Password, and the open item
- * (stay signed in, or sign out) drawn both ways.
+ * invite flow's strength bar and rules under New Password.
  */
 
 const EMAIL = 'learner@example.com'
@@ -114,15 +113,6 @@ describe('Keycloak change password', () => {
     fireEvent.click(save())
     expect(screen.queryByLabelText('New Password')).toBeNull()
     expect(screen.getByText('Password updated')).toBeTruthy()
-  })
-
-  it('sign out: says so and asks the learner to sign in again', () => {
-    renderPanel({ 'account-password-change-outcome': { variant: 'sign-out' } })
-    fireEvent.click(screen.getByText('Update Password'))
-    fill('OldPass1!', 'NewPass12!', 'NewPass12!')
-    fireEvent.click(save())
-    expect(screen.getByRole('heading', { name: 'Password changed' })).toBeTruthy()
-    expect(screen.getByRole('button', { name: 'Sign In' })).toBeTruthy()
   })
 
   it('off: the sheet\'s own Update Password step, as before', () => {

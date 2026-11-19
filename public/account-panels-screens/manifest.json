@@ -1,0 +1,89 @@
+{
+  "capturedAt": "2026-11-19",
+  "components": [
+    {
+      "id": "edit-account-details",
+      "title": "Edit Account Details",
+      "kind": "panel",
+      "flows": [],
+      "states": [
+        {
+          "file": "edit-account-details/01-default.png",
+          "state": "Default",
+          "seenIn": []
+        }
+      ]
+    },
+    {
+      "id": "update-password",
+      "title": "Update Password",
+      "kind": "panel",
+      "flows": [],
+      "states": [
+        {
+          "file": "update-password/01-empty-save-password-disabled.png",
+          "state": "Empty — Save Password disabled",
+          "seenIn": []
+        },
+        {
+          "file": "update-password/02-weak-new-password-rules-unmet.png",
+          "state": "Weak new password — rules unmet",
+          "seenIn": []
+        },
+        {
+          "file": "update-password/03-new-password-same-as-current.png",
+          "state": "New password same as current",
+          "seenIn": []
+        },
+        {
+          "file": "update-password/04-passwords-do-not-match.png",
+          "state": "Passwords do not match",
+          "seenIn": []
+        },
+        {
+          "file": "update-password/05-all-rules-met-save-password-enabled.png",
+          "state": "All rules met — Save Password enabled",
+          "seenIn": []
+        },
+        {
+          "file": "update-password/06-new-password-shown-eye-toggled.png",
+          "state": "New password shown (eye toggled)",
+          "seenIn": []
+        }
+      ]
+    },
+    {
+      "id": "update-email-address",
+      "title": "Update Email Address",
+      "kind": "panel",
+      "flows": [],
+      "states": [
+        {
+          "file": "update-email-address/01-empty-save-email-disabled.png",
+          "state": "Empty — Save Email disabled",
+          "seenIn": []
+        },
+        {
+          "file": "update-email-address/02-invalid-email-address.png",
+          "state": "Invalid email address",
+          "seenIn": []
+        },
+        {
+          "file": "update-email-address/03-same-as-the-current-email.png",
+          "state": "Same as the current email",
+          "seenIn": []
+        },
+        {
+          "file": "update-email-address/04-emails-do-not-match.png",
+          "state": "Emails do not match",
+          "seenIn": []
+        },
+        {
+          "file": "update-email-address/05-valid-save-email-enabled.png",
+          "state": "Valid — Save Email enabled",
+          "seenIn": []
+        }
+      ]
+    }
+  ]
+}
