@@ -1,5 +1,5 @@
 import { useMemo, useState, type CSSProperties } from 'react'
-import { ChevronDown, Download, FileCertificateRegular, FileText, SquareListRegular } from '@/icons'
+import { ChevronDown, Download, DownloadRegular, FileCertificateRegular, FileText } from '@/icons'
 import { ExportTranscriptSheet } from './ExportTranscriptSheet'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { PillTabs, type PillTabItem } from '@/components/ui/PillTabs'
@@ -26,8 +26,8 @@ import {
 const SHOW_TABLE_ACTIONS: boolean = false
 /** The Hours value under the middle of its label — see the Hours cell. */
 const HOURS_UNDER_LABEL: CSSProperties = { display: 'inline-block', width: 33, marginRight: 12 + 6, textAlign: 'center' }
-/** …and Score's under its own — the word measures 30. */
-const SCORE_UNDER_LABEL: CSSProperties = { ...HOURS_UNDER_LABEL, width: 30 }
+/** …and Final Score's under its own — the label measures 59.5 ("Score", 30, before 2026-11-19's rename). */
+const SCORE_UNDER_LABEL: CSSProperties = { ...HOURS_UNDER_LABEL, width: 59.5 }
 /* 40 BETWEEN COLUMNS (2026-11-19, Eric: "reduce the space between the columns to 40 pixels between columns' widest content,
    and the next column"). Every column sizes to its widest content and keeps 40 after it, none before it — so 40 is the whole
    gap. Course Name is the one that wraps, at COURSE_NAME_W, so a long title cannot push the table past its card. The table
@@ -37,15 +37,33 @@ const COLUMN_GAP = 40
 const COURSE_NAME_W = 260
 function fit(i: number): CSSProperties {
   if (i === 0) return { width: COURSE_NAME_W, paddingRight: COLUMN_GAP }
-  /* The last column (Records) ends the table: the 20 the first cell starts with, not a 40 gap to nothing. */
+  /* The last column (Certificate) ends the table: the 20 the first cell starts with, not a 40 gap to nothing. */
   const last = i === COLUMNS.length
   return { width: '1px', whiteSpace: 'nowrap', paddingLeft: 0, paddingRight: last ? LAST_CELL_PAD : COLUMN_GAP }
 }
 const LAST_CELL_PAD = 20
-/* The Records column's two icons: 16 FA Regular, 12 apart, in the page-button blue so they read as things to press. */
-const RECORD_ICONS: CSSProperties = { display: 'inline-flex', alignItems: 'center', gap: 12, verticalAlign: 'middle' }
+/* VALID TILL (2026-11-19, Eric: "a valid till date configured as 11 July 2027, using three letter abbreviations for the
+   months … based off of their completion date and based on a six month expiration"). Demo data: six months after the
+   course was completed — so the dates vary down the page with the completions. A day the later month lacks (31 Aug + 6)
+   clamps to that month's last day. "11 Jul 2027". */
+const CERT_VALID_MONTHS = 6
+function certificateValidTill(completedIso: string): Date {
+  const [y, m, d] = completedIso.split('-').map(Number)
+  const target = new Date(y, m - 1 + CERT_VALID_MONTHS, 1)
+  const last = new Date(target.getFullYear(), target.getMonth() + 1, 0).getDate()
+  return new Date(target.getFullYear(), target.getMonth(), Math.min(d, last))
+}
+const MONTHS_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+function formatValidTill(date: Date): string {
+  return `${date.getDate()} ${MONTHS_SHORT[date.getMonth()]} ${date.getFullYear()}`
+}
+/* THREE THAT DO NOT EXPIRE (2026-11-19, Eric: "change three of the certificate expirations to no expiry") — the two
+   zero-hour "How to Add Courses" walkthroughs and the ethics assessment, the three least like a licence credit that lapses. */
+const NO_EXPIRY: ReadonlySet<string> = new Set(['t-xcel-howto-ce', 't-xcel-howto-qe', 't-xcel-ethics-assessment'])
+/* The Certificate and Transcripts icons: 16 FA Regular, in the page-button blue so they read as things to press. */
 const RECORD_BUTTON: CSSProperties = {
   display: 'inline-flex',
+  verticalAlign: 'middle',
   padding: 0,
   border: 'none',
   background: 'none',
@@ -199,6 +217,9 @@ export function TranscriptsPanel() {
           they drop, still right-aligned, rather than crushing the pills — but
           at this width and these labels nothing wraps. Lengthening either
           label is what would bring the wrap back. */}
+      {/* THE ROW AND THE TABLE AS ONE BLOCK, as wide as the table (2026-11-19) — so Download Transcript, pushed right, ends on
+          the table's right edge. */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 20, width: 'fit-content', maxWidth: '100%' }}>
       <div style={controlRowStyle}>
         {/* The count FIRST, left of All (2026-11-19, Eric) — it was after the pills. */}
         <span style={countStyle}>{showingLabel(rows.length)}</span>
@@ -231,6 +252,16 @@ export function TranscriptsPanel() {
           </a>
         </div>
         ) : null}
+        {/* DOWNLOAD TRANSCRIPT (2026-11-19, Eric) — in place of the table's Transcript column, a download icon after the label,
+            flush with the table's right edge. It does what Download did — the
+            chooser when there is more than one transcript, straight to the PDF when there is one. */}
+        {/* No leading icon since the same day (Eric); the download icon one weight up, Light → Regular; the label in Home's text
+            links' type — Exam Information, Applying for a License: Open Sans SemiBold 13/18. */}
+        <button type="button" onClick={openExport} style={{ ...actionStyle, ...HOME_TEXT_LINK, marginLeft: 'auto' }}>
+          {/* The label sets the button's baseline, so the row's baseline alignment puts it on the count's and the pills' line. */}
+          <span style={{ alignSelf: 'baseline' }}>Download Transcript</span>
+          <DownloadRegular size={16} aria-hidden />
+        </button>
       </div>
 
       {rows.length === 0 ? (
@@ -257,17 +288,16 @@ export function TranscriptsPanel() {
             <h3 style={ROW_CARD_TITLE}>{rows[0].title}</h3>
             <dl style={ROW_CARD_LIST}>
               {[
-                ['License Type/Profession', rows[0].profession],
+                ['License Line', rows[0].profession],
                 ['State', rows[0].state],
                 ['Hours', String(rows[0].hours)],
-                ['Enrolled', formatTranscriptDate(rows[0].enrolledDate)],
                 ['Completed', formatTranscriptDate(rows[0].completedDate)],
-                ['Score', `${transcriptScore(rows[0])}%`],
+                ['Final Score', `${transcriptScore(rows[0])}%`],
               ].map(([term, value]) => (
                 <div key={term} className="cre-transcript-card-line" style={ROW_CARD_ITEM}>
                   <dt style={ROW_CARD_TERM}>{term}:</dt>{' '}
                   {/* Only the licence type's value on a line of its own (same day, Eric). */}
-                  <dd style={{ ...ROW_CARD_VALUE, ...(term === 'License Type/Profession' && { display: 'block' }) }}>{value}</dd>
+                  <dd style={{ ...ROW_CARD_VALUE, ...(term === 'License Line' && { display: 'block' }) }}>{value}</dd>
                 </div>
               ))}
             </dl>
@@ -323,18 +353,22 @@ export function TranscriptsPanel() {
                     </th>
                   )
                 })}
-                {/* RECORDS (2026-11-19, Eric) — the course's certificate and transcript, as icons. Not sortable: a column of
-                    icons has no order. */}
-                <th
-                  scope="col"
-                  style={
-                    atlasFrame
-                      ? { ...ATLAS_TH, verticalAlign: 'bottom', ...fit(COLUMNS.length) }
-                      : { ...HEADER_CELL, ...fit(COLUMNS.length) }
-                  }
-                >
-                  Records
-                </th>
+                {/* CERTIFICATE and TRANSCRIPT (2026-11-19, Eric) — one "Records" column of both icons first, then split, one
+                    icon each ("Transcripts", then "Transcript"); the Transcript column went the same day for the Download Transcript
+                    button over the table. Not sortable here. Left-aligned since it took the valid-till date. */}
+                {['Certificate'].map((label, k) => (
+                  <th
+                    key={label}
+                    scope="col"
+                    style={
+                      atlasFrame
+                        ? { ...ATLAS_TH, verticalAlign: 'bottom', ...fit(COLUMNS.length + k) }
+                        : { ...HEADER_CELL, ...fit(COLUMNS.length + k) }
+                    }
+                  >
+                    {label}
+                  </th>
+                ))}
               </tr>
             </thead>
             <tbody>
@@ -356,21 +390,21 @@ export function TranscriptsPanel() {
                   <td style={{ ...cell, ...NUMERIC_CELL, ...fit(3) }}>
                     <span style={HOURS_UNDER_LABEL}>{row.hours}</span>
                   </td>
-                  <td style={{ ...cell, ...fit(4) }}>{formatTranscriptDate(row.enrolledDate)}</td>
-                  <td style={{ ...cell, ...fit(5) }}>{formatTranscriptDate(row.completedDate)}</td>
-                  <td style={{ ...cell, ...NUMERIC_CELL, ...fit(6) }}>
+                  <td style={{ ...cell, ...fit(4) }}>{formatTranscriptDate(row.completedDate)}</td>
+                  <td style={{ ...cell, ...NUMERIC_CELL, ...fit(5) }}>
                     <span style={SCORE_UNDER_LABEL}>{transcriptScore(row)}%</span>
                   </td>
+                  {/* ⚠ NOT WIRED YET — labelled buttons that open nothing, so each reads as an action and has the name a
+                      screen reader needs; give each an onClick when the certificate and transcript views land. */}
+                  {/* The icon, then when the certificate is good till (2026-11-19, Eric) — left-aligned now it carries text. */}
                   <td style={{ ...cell, ...fit(COLUMNS.length) }}>
-                    {/* ⚠ NOT WIRED YET — two labelled buttons that open nothing, so the column reads as actions and has the
-                        names a screen reader needs; give each an onClick when the certificate and transcript views land. */}
-                    <span style={RECORD_ICONS}>
-                      <button type="button" aria-label={`Certificate — ${row.title}`} title="Certificate" style={RECORD_BUTTON}>
-                        <FileCertificateRegular size={16} aria-hidden />
-                      </button>
-                      <button type="button" aria-label={`Transcript — ${row.title}`} title="Transcript" style={RECORD_BUTTON}>
-                        <SquareListRegular size={16} aria-hidden />
-                      </button>
+                    {/* Plain inline, not a flex pair: the date sits on the cell's own text line — the row's baseline — and the
+                        icon is set middle beside it (2026-11-19, Eric). A centred flex pair put it 1.88 high. */}
+                    <button type="button" aria-label={`Certificate — ${row.title}`} title="Certificate" style={{ ...RECORD_BUTTON, marginRight: 8, position: 'relative', top: -2.5 /* 1.5 up to centre on the text, then 1 more (2026-11-19, Eric: up 2, back down 1) */ }}>
+                      <FileCertificateRegular size={16} aria-hidden />
+                    </button>
+                    <span>
+                      {NO_EXPIRY.has(row.id) ? 'No expiry' : `Valid till ${formatValidTill(certificateValidTill(row.completedDate))}`}
                     </span>
                   </td>
                 </tr>
@@ -380,6 +414,7 @@ export function TranscriptsPanel() {
         </div>
         </>
       )}
+      </div>
 
       <ExportTranscriptSheet
         open={exporting}
@@ -414,15 +449,16 @@ type SortState = { key: SortKey | null; dir: 'asc' | 'desc' }
    312 / 282 / 151 / 99 / 128 / 129. */
 const COLUMNS: { key: SortKey; label: string; width: string; cellStyle?: CSSProperties }[] = [
   // 4.3 and 4.7 narrower than the design's, for Score (2026-11-19).
-  { key: 'title', label: 'Course Name', width: '24%' },
-  { key: 'profession', label: 'License Type/Profession', width: '20.9%' },
+  // "Program" and "License Line" (2026-11-19, Eric) — "Course Name" and "License Type/Profession" before.
+  { key: 'title', label: 'Program', width: '24%' },
+  { key: 'profession', label: 'License Line', width: '20.9%' },
   { key: 'state', label: 'State', width: '13.7%' },
   { key: 'hours', label: 'Hours', width: '9%', cellStyle: { textAlign: 'right' } },
-  // "Enrolled" and "Completed", without "Date" (2026-11-19, Eric).
-  { key: 'enrolledDate', label: 'Enrolled', width: '11.6%' },
+  // "Completed", without "Date" (2026-11-19, Eric). Enrolled went the same day — the data and its sort key stay.
   { key: 'completedDate', label: 'Completed', width: '11.7%' },
-  // After Completed (2026-11-19, Eric); right-aligned like Hours, its value centred under the label the same way.
-  { key: 'score', label: 'Score', width: '9%', cellStyle: { textAlign: 'right' } },
+  // After Completed (2026-11-19, Eric), "Final Score" since later that day; right-aligned like Hours, its value centred
+  // under the label the same way.
+  { key: 'score', label: 'Final Score', width: '9%', cellStyle: { textAlign: 'right' } },
 ]
 
 const disclaimerStyle: CSSProperties = {
@@ -452,6 +488,8 @@ const countStyle: CSSProperties = {
 
 /* The two text buttons (nodes 2009:28300–28301). `--color-action` rather than
    the Figma's #F59233 — see the note at the top of the file. */
+/* Home's text links (Exam Information, Applying for a License — measured 2026-11-19): Open Sans SemiBold 13/18. */
+const HOME_TEXT_LINK: CSSProperties = { fontSize: 13, lineHeight: '18px', fontWeight: 600 }
 const actionStyle: CSSProperties = {
   background: 'transparent',
   border: 'none',

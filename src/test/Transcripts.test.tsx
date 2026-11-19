@@ -80,21 +80,20 @@ describe('the Transcripts section', () => {
     expect(within(note).getByText('official').tagName).toBe('STRONG')
   })
 
-  it('draws the design’s six columns, then Score and Records, in order', () => {
+  it('draws Program, License Line, State, Hours, Completed, Final Score and Certificate, in order', () => {
     renderSection()
     const headers = [...document.querySelectorAll('thead th')].map((th) => th.textContent?.trim())
     expect(headers).toEqual([
-      'Course Name',
-      'License Type/Profession',
+      // Renamed 2026-11-19 (Eric): Course Name → Program, License Type/Profession → License Line, Score → Final Score;
+      // Enrolled removed; "Date" dropped from Completed; Records split into Certificate and Transcript, then
+      // Transcript removed for the Download Transcript button.
+      'Program',
+      'License Line',
       'State',
       'Hours',
-      // Without "Date" since 2026-11-19 (Eric).
-      'Enrolled',
       'Completed',
-      // After Completed (2026-11-19, Eric).
-      'Score',
-      // The certificate and transcript icons, last (same day).
-      'Records',
+      'Final Score',
+      'Certificate',
     ])
   })
 
@@ -153,7 +152,7 @@ describe('the Transcripts section', () => {
 
   it('sorts a column when its header is pressed', () => {
     renderSection()
-    const header = screen.getByRole('columnheader', { name: /Course Name/ })
+    const header = screen.getByRole('columnheader', { name: /Program/ })
     fireEvent.click(within(header).getByRole('button'))
     expect(header.getAttribute('aria-sort')).toBe('ascending')
     const titles = [...bodyRows()].map((r) => r.querySelector('th')?.textContent ?? '')
