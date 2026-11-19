@@ -515,25 +515,53 @@ describe('Invite Flow V3 — the email check', () => {
     expect(screen.queryByRole('alert')).not.toBeInTheDocument()
   })
 
-  it('Forgot password? says a reset link went to the address; Resend link waits; Back to sign in returns', async () => {
+  /* Forgot password? asks for the address first (2026-11-19, Afsana). */
+  async function requestReset(address: string) {
+    await userEvent.click(screen.getByRole('button', { name: 'Forgot password?' }))
+    const ask = screen.getByRole('dialog', { name: 'Reset your password' })
+    await userEvent.type(within(ask).getByLabelText(/^Email\s*\*?$/), address)
+    await userEvent.click(within(ask).getByRole('button', { name: 'Send reset link' }))
+  }
+
+  it('Forgot password? asks for an email first; Send reset link waits for a valid one; Back to sign in returns', async () => {
+    renderAt(CHECKOUT, `${V3_B2B},invite-v3-email-account:atlas`)
+    await userEvent.type(within(screen.getByRole('dialog')).getByLabelText(/^Email\s*\*?$/), 'jordan@example.com')
+    await userEvent.click(screen.getByRole('button', { name: 'Continue' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Forgot password?' }))
+
+    const dialog = screen.getByRole('dialog', { name: 'Reset your password' })
+    expect(within(dialog).getByAltText('XCEL Insurance Training by Colibri')).toBeInTheDocument()
+    expect(dialog).toHaveTextContent('Enter your email and we’ll send you a link to reset your password.')
+    const field = within(dialog).getByLabelText(/^Email\s*\*?$/)
+    expect(field).toHaveValue('')
+    expect(field).toBeEnabled()
+    const send = within(dialog).getByRole('button', { name: 'Send reset link' })
+    expect(send).toBeDisabled()
+    await userEvent.type(field, 'jordan@')
+    expect(within(dialog).getByRole('alert')).toHaveTextContent('Please enter a valid email address')
+    expect(send).toBeDisabled()
+
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Back to sign in' }))
+    expect(screen.getByRole('heading', { name: 'Log in to continue' })).toBeInTheDocument()
+  })
+
+  it('Send reset link says a reset link went to the address; Resend link waits; Back to sign in returns', async () => {
     vi.useFakeTimers({ shouldAdvanceTime: true })
     try {
       renderAt(CHECKOUT, `${V3_B2B},invite-v3-email-account:atlas`)
       await userEvent.type(within(screen.getByRole('dialog')).getByLabelText(/^Email\s*\*?$/), 'jordan@example.com')
       await userEvent.click(screen.getByRole('button', { name: 'Continue' }))
-      await userEvent.click(screen.getByRole('button', { name: 'Forgot password?' }))
+      await requestReset('pat@example.com')
 
       const dialog = screen.getByRole('dialog', { name: 'Check your email' })
       expect(dialog).toHaveTextContent(
-        'We sent a password reset link to jordan@example.com. Follow the instructions in the email to reset your password. Be sure to check your spam or junk folders.',
+        'We sent a password reset link to pat@example.com. Follow the instructions in the email to reset your password. Be sure to check your spam or junk folders.',
       )
-      expect(within(dialog).getByText('jordan@example.com').tagName).toBe('STRONG')
+      /* The address the learner typed, not the log-in's. */
+      expect(within(dialog).getByText('pat@example.com').tagName).toBe('STRONG')
       expect(within(dialog).queryByLabelText(/^Password/)).not.toBeInTheDocument()
-
-      /* The address, in a field nobody can change (2026-11-13). */
-      const field = within(dialog).getByLabelText(/^Email\s*\*?$/)
-      expect(field).toHaveValue('jordan@example.com')
-      expect(field).toBeDisabled()
+      /* No Email field — the lead names it (2026-11-19). */
+      expect(within(dialog).queryByLabelText(/^Email/)).not.toBeInTheDocument()
 
       /* A link just went out, so Resend link waits, counting down under the
          button — and again after each resend. */
@@ -561,12 +589,12 @@ describe('Invite Flow V3 — the email check', () => {
     renderAt(CHECKOUT, `${V3_B2B},invite-v3-email-account:atlas`)
     await userEvent.type(within(screen.getByRole('dialog')).getByLabelText(/^Email\s*\*?$/), 'jordan@example.com')
     await userEvent.click(screen.getByRole('button', { name: 'Continue' }))
-    await userEvent.click(screen.getByRole('button', { name: 'Forgot password?' }))
+    await requestReset('jordan@example.com')
 
     /* Its two buttons keep their jobs: Back to sign in still goes back. */
     await userEvent.click(screen.getByRole('button', { name: 'Back to sign in' }))
     expect(screen.getByRole('heading', { name: 'Log in to continue' })).toBeInTheDocument()
-    await userEvent.click(screen.getByRole('button', { name: 'Forgot password?' }))
+    await requestReset('jordan@example.com')
 
     /* Anywhere else on the modal stands in for following the link. */
     await userEvent.click(screen.getByText(/We sent a password reset link/))
