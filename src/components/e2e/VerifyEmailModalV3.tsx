@@ -581,6 +581,12 @@ function LoginStep({
   /* Forgot password? — 2026-11-05, Afsana: the modal says a reset link went
      to the address, bold, and to follow the email's instructions. */
   const [resetSent, setResetSent] = useState(false)
+  /* Reset your password, asked first — 2026-11-19, Afsana: Forgot password?
+     opens a step that takes the address and sends the link, and only Send
+     reset link reaches Check your email. Until then Forgot password? went
+     straight to Check your email. Empty on purpose: "Enter your email". */
+  const [requesting, setRequesting] = useState(false)
+  const [resetEmail, setResetEmail] = useState('')
   /* Reset your password — 2026-11-12, Afsana: for the demo, a click on
      Check your email (anywhere but its two buttons) stands in for following
      the link. Reset password comes back here with a green banner — a
@@ -602,7 +608,7 @@ function LoginStep({
   if (resetting) {
     return (
       <ResetPasswordStep
-        email={email}
+        email={resetEmail}
         onReset={() => {
           setResetting(false)
           setResetSent(false)
@@ -611,6 +617,74 @@ function LoginStep({
           setWasReset(true)
         }}
       />
+    )
+  }
+  if (requesting) {
+    const valid = looksLikeEmail(resetEmail)
+    const badResetEmail = resetEmail.trim() !== '' && !valid
+    return (
+      <form
+        style={BODY}
+        onSubmit={(e) => {
+          e.preventDefault()
+          if (!valid) return
+          setRequesting(false)
+          setResetSent(true)
+          setLinkWait(RESEND_LINK_AFTER_S)
+        }}
+        noValidate
+      >
+        <img src="/brand/xcel-logo.webp" alt="XCEL Insurance Training by Colibri" style={CODE_LOGO} />
+        <div style={HEAD}>
+          <h2 id="verify-email-title" style={TITLE}>
+            Reset your password
+          </h2>
+          <div aria-hidden style={RULE} />
+          <p id="verify-email-lead" style={LEAD}>
+            Enter your email and we’ll send you a link to reset your password.
+          </p>
+        </div>
+        <div style={FIELD_AND_ERROR}>
+          <label htmlFor="reset-request-email" style={FIELD_GROUP}>
+            <span style={FIELD_LABEL}>
+              Email <span aria-hidden>*</span>
+            </span>
+            <input
+              id="reset-request-email"
+              type="email"
+              required
+              autoComplete="email"
+              placeholder="you@example.com"
+              value={resetEmail}
+              onChange={(e) => setResetEmail(e.target.value)}
+              aria-invalid={badResetEmail}
+              aria-describedby={badResetEmail ? 'reset-request-invalid' : undefined}
+              className="cre-e2e-input cre-e2e-input-v3"
+              style={FIELD}
+            />
+          </label>
+          {badResetEmail ? <EmailInvalid id="reset-request-invalid" /> : null}
+        </div>
+        {/* Send reset link, primary, over Back to sign in, secondary — the
+            same pair as Check your email's. */}
+        <div style={ACTIONS}>
+          <button type="submit" className="cre-e2e-cta" disabled={!valid} aria-disabled={!valid} style={valid ? CTA : CTA_OFF}>
+            Send reset link
+          </button>
+          <button type="button" style={CTA_SECONDARY} onClick={() => setRequesting(false)}>
+            Back to sign in
+          </button>
+        </div>
+        {/* The demo fill — the same invisible, labelled corner as the email
+            step's. */}
+        <button
+          type="button"
+          aria-label="Fill in the demo learner’s email"
+          title="Demo shortcut: fill in the demo learner’s email"
+          style={DEMO_FILL}
+          onClick={() => setResetEmail(E2E_LEARNER_EMAIL)}
+        />
+      </form>
     )
   }
   if (resetSent) {
@@ -629,17 +703,12 @@ function LoginStep({
           </h2>
           <div aria-hidden style={RULE} />
           <p id="verify-email-lead" style={LEAD}>
-            We sent a password reset link to <strong style={{ fontWeight: 800 }}>{email.trim()}</strong>. Follow the
+            We sent a password reset link to <strong style={{ fontWeight: 800 }}>{resetEmail.trim()}</strong>. Follow the
             instructions in the email to reset your password. Be sure to check your spam or junk folders.
           </p>
         </div>
-        {/* The address the link went to, in a field the learner cannot change
-            — grey, no lock, as the checkout's fixed fields (2026-11-13,
-            Afsana). */}
-        <label htmlFor="reset-email" style={FIELD_GROUP}>
-          <span style={FIELD_LABEL}>Email</span>
-          <input id="reset-email" type="email" value={email.trim()} disabled readOnly style={{ ...FIELD, ...FIELD_DISABLED }} />
-        </label>
+        {/* No Email field — the lead already names the address (2026-11-19,
+            Afsana). From 2026-11-13 it sat here, grey and locked. */}
         {/* Resend link, primary, over Back to sign in, secondary (2026-11-05,
             Afsana). Back is the way out — the modal has no ✕. */}
         <div style={ACTIONS}>
@@ -764,8 +833,8 @@ function LoginStep({
             type="button"
             style={FORGOT}
             onClick={() => {
-              setResetSent(true)
-              setLinkWait(RESEND_LINK_AFTER_S)
+              setResetEmail('')
+              setRequesting(true)
             }}
           >
             Forgot password?
