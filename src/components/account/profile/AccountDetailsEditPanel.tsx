@@ -390,6 +390,7 @@ function EmailStep({
         </div>
       </div>
       <PanelFooter
+        saveLabel="Save Email"
         saveDisabled={!canSave}
         onSave={() => {
           console.info('account:update-email')
