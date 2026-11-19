@@ -1,4 +1,5 @@
 import { useEffect, useState, type CSSProperties } from 'react'
+import { X } from '@/icons'
 
 /**
  * THE PICTURES ON `/account-panels` — 2026-11-19, Afsana: "isolate the
@@ -125,19 +126,21 @@ function Lightbox({
             </strong>
             <span style={CAPTION_SUB}>{position}</span>
           </span>
-          <span style={{ display: 'flex', gap: 8 }}>
-            <button type="button" onClick={onPrev ?? undefined} disabled={!onPrev} style={NAV}>
-              Previous
-            </button>
-            <button type="button" onClick={onNext ?? undefined} disabled={!onNext} style={NAV}>
-              Next
-            </button>
-            <button type="button" onClick={onClose} style={NAV}>
-              Close
-            </button>
-          </span>
+          <button type="button" onClick={onClose} aria-label="Close" style={CLOSE}>
+            <X size={18} aria-hidden />
+          </button>
         </figcaption>
         <img src={BASE + shot.file} alt={`${shot.title} — ${shot.state}`} style={FULL} />
+        {/* Previous and Next under the picture (2026-11-19, Afsana); the close
+            is an ✕, top right. */}
+        <span style={PAGER}>
+          <button type="button" onClick={onPrev ?? undefined} disabled={!onPrev} style={NAV}>
+            Previous
+          </button>
+          <button type="button" onClick={onNext ?? undefined} disabled={!onNext} style={NAV}>
+            Next
+          </button>
+        </span>
       </figure>
     </div>
   )
@@ -232,6 +235,23 @@ const CAPTION: CSSProperties = {
 
 const CAPTION_SUB: CSSProperties = { fontSize: 13, color: 'var(--color-text-secondary)' }
 
+const PAGER: CSSProperties = { display: 'flex', justifyContent: 'center', gap: 8 }
+
+const CLOSE: CSSProperties = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  alignSelf: 'flex-start',
+  width: 32,
+  height: 32,
+  padding: 0,
+  color: 'var(--color-text-secondary)',
+  background: 'none',
+  border: 'none',
+  borderRadius: 'var(--radius-pill)',
+  cursor: 'pointer',
+}
+
 const NAV: CSSProperties = {
   padding: '6px 12px',
   font: 'inherit',
@@ -248,7 +268,7 @@ const FULL: CSSProperties = {
   display: 'block',
   justifySelf: 'center',
   maxWidth: '100%',
-  maxHeight: 'calc(100vh - 140px)',
+  maxHeight: 'calc(100vh - 180px)',
   objectFit: 'contain',
   border: '1px solid var(--color-e2e-card-outline)',
   borderRadius: 6,
