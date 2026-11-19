@@ -48,9 +48,11 @@ export function AccountPanelsScreensGallery() {
 
   return (
     <div style={{ display: 'grid', gap: 24 }}>
-      <p style={NOTE}>
-        Captured {manifest.capturedAt}. Pictures of the build on that day — a panel changed since then will not show
-        it until they are captured again.
+      {/* A grey-outlined banner (2026-11-19, Afsana), so a stale picture is
+          never mistaken for the build. */}
+      <p style={BANNER}>
+        Images as of {shortDate(manifest.capturedAt)}. Design changes made since then will not show until they are
+        captured again.
       </p>
       {manifest.components.map((c, n) => (
         <article key={c.id} aria-label={c.title} style={CARD}>
@@ -147,6 +149,22 @@ function Lightbox({
 }
 
 /* ── Styles — `InviteV3ScreensGallery`'s ──────────────────────────────── */
+
+/* `2026-11-19` → `11/19`. */
+const shortDate = (iso: string) => {
+  const [, m, d] = iso.split('-')
+  return m && d ? `${Number(m)}/${Number(d)}` : iso
+}
+
+const BANNER: CSSProperties = {
+  margin: 0,
+  padding: '14px 16px',
+  fontSize: 15,
+  lineHeight: '22px',
+  background: 'var(--color-fixed-light)',
+  border: '1px solid var(--color-e2e-card-outline)',
+  borderRadius: 8,
+}
 
 const NOTE: CSSProperties = { margin: 0, fontSize: 13, lineHeight: '18px', color: 'var(--color-text-secondary)' }
 
