@@ -4927,6 +4927,26 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'atlas-header-logo',
+    /* THE XCEL LOGO, OLD OR NEW (2026-11-19, Eric's request) — a Design-bar control for the Atlas header's logo. Old is the
+       lockup the header has drawn since 2026-09-09 (`/brand/xcel-logo.webp`); New is Figma "Atlas UX Design" 757:2138
+       (`/brand/xcel-logo-new.svg`), the two vector groups composed at their frame positions. Old by default, so nothing
+       moves until someone picks New. The header only — the other places the lockup appears are untouched. */
+    surface: 'design',
+    versions: ['eric-atlas-e2e'],
+    group: 'Layout',
+    label: 'XCEL logo',
+    description:
+      'Which XCEL logo the Atlas header draws. Old: the current lockup. New: the Figma 757:2138 logo — the mark and XCEL in brick over "Insurance Training by Colibri".',
+    defaultEnabled: true,
+    defaultVariant: 'old',
+    variants: [
+      { value: 'old', label: 'Old', description: 'The lockup the header has drawn since 2026-09-09.' },
+      { value: 'new', label: 'New', description: 'Figma 757:2138, drawn 110 wide like the old one.' },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'atlas-account-profile-nav',
     /* THE PROFILE PAGES' LEFT NAV (2026-11-19, Eric's request; Figma "Atlas UX Design" 754:2026) — `AtlasProfileNav`, a
        "My Account" title (the file's "Profile:") over Profile, Notifications, Certificates & Transcripts and My Purchases, in the column the Quick

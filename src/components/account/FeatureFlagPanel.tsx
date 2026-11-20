@@ -273,6 +273,7 @@ const REBRAND_FLAGS = [
   'atlas-rail-account-group',
   'atlas-header-my-courses',
   'atlas-account-profile-nav',
+  'atlas-header-logo',
   'e2e-walk-journey-steps',
   'atlas-header-v2',
   'atlas-white-top-nav',

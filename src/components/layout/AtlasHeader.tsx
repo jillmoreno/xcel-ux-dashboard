@@ -1,6 +1,7 @@
 import type { MouseEvent, ReactNode } from 'react'
 import { AngleRightRegular, Bars, Bell, BookRegular, ChevronDown, CircleUser, FileText, HouseRegular, LogOut, Receipt, User } from '@/icons'
 import { AtlasHeaderMenu, AtlasHeaderMenuDivider, AtlasHeaderMenuItem } from './AtlasHeaderMenu'
+import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import './atlasHeader.css'
 
 /**
@@ -109,6 +110,7 @@ export function AtlasHeader({
   phoneLinks?: { label: string; icon?: ReactNode; count?: number | null; onSelect: () => void }[]
 }) {
   const trail = quickLinksMenu ? <AngleRightRegular size={13} aria-hidden /> : undefined
+  const logoNew = useFeatureFlag('atlas-header-logo').variant === 'new'
   const navPill = outlinedNav ? 'cre-atlas-hdr-pill cre-atlas-hdr-pill--nav' : 'cre-atlas-hdr-pill'
   /* With `outlinedNav` each button carries its 12 FA Regular icon before the label (Figma 754:1964) — house for Home, book
      for My Courses (Quick Links' icon for the same page); a label with no icon here gets none. */
@@ -161,7 +163,14 @@ export function AtlasHeader({
         {/* `links.logo` when given, else Home — the End-to-End Demo's goes back to
             Invited Product Detail (2026-10-15). */}
         <a {...go(links.logo ? 'logo' : 'home')} className="cre-atlas-hdr-logo" aria-label="XCEL Insurance Training by Colibri — home" style={{ display: 'flex', flex: 'none' }}>
-          <img src="/brand/xcel-logo.webp" alt="" width={110} height={40} style={{ display: 'block' }} />
+          {/* Old or New — the Design bar's XCEL logo (`atlas-header-logo`, 2026-11-19). New is Figma 757:2138 at the old
+              one's 110 width: 144 × 65 scaled, so 49.65 tall, inside the row's 72. */}
+          {logoNew ? (
+            // 1 lower than centred (2026-11-19, Eric).
+            <img src="/brand/xcel-logo-new.svg" alt="" width={110} height={49.65} style={{ display: 'block', position: 'relative', top: 1 }} />
+          ) : (
+            <img src="/brand/xcel-logo.webp" alt="" width={110} height={40} style={{ display: 'block' }} />
+          )}
         </a>
 
         <nav aria-label="Primary" style={{ display: 'flex', alignItems: 'center', gap: 8, marginLeft: 32 }}>

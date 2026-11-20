@@ -2920,7 +2920,10 @@ function AccountSection({
          foot, which admin does not have. */
       /* No fill of its own (2026-11-19, Eric: "remove the bg color from the body of the account pages") — it was admin's
          --admin-page. */
-      <div style={{ display: 'flex', alignItems: 'stretch', margin: '0 -40px -64px' }}>
+      /* At least as tall as the shell's content row — its own floor, `calc(100vh - 64px)` (2026-11-19, Eric: the nav's right
+         rule "always goes full browser depth"). Without it a short page — My Purchases' four orders — ended the column, and
+         its rule, halfway down the window. */
+      <div style={{ display: 'flex', alignItems: 'stretch', margin: '0 -40px -64px', minHeight: 'calc(100vh - 64px)' }}>
         <AtlasProfileNav active={active} onSelect={onSelect} />
         <div className="cre-atlas-account-body" style={{ flex: '1 1 0', minWidth: 0, padding: '32px 40px 140px' }}>
           {/* The page's own title, which the shell draws over the centred column elsewhere — here it sits on the page's
