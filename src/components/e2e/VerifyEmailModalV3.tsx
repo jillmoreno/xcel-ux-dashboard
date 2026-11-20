@@ -4,7 +4,9 @@ import {
   useState,
   type ClipboardEvent,
   type CSSProperties,
+  type InputHTMLAttributes,
   type KeyboardEvent,
+  type ReactNode,
 } from 'react'
 import { createPortal } from 'react-dom'
 import { useSearchParams } from 'react-router-dom'
@@ -1424,4 +1426,46 @@ const SIGNING_IN: CSSProperties = {
   alignItems: 'center',
   gap: 28,
   padding: '4px 0 20px',
+}
+
+/** The card's title, grey rule and lead, for a card drawn outside this file —
+ *  OCD's log-in page on the Log In flow (2026-11-20, Afsana: "add the 'Log in'
+ *  header and the grey line under it that exist in the keycloak widget to
+ *  maintain consistency"). The same objects, so the two cannot drift. */
+export function V3CardHead({ title, lead }: { title: string; lead: string }) {
+  return (
+    <div style={HEAD}>
+      <h1 style={TITLE}>{title}</h1>
+      <div aria-hidden style={RULE} />
+      <p style={LEAD}>{lead}</p>
+    </div>
+  )
+}
+
+/** The card's text field — rounded, the light fill, Avenir — for a card drawn
+ *  outside this file: OCD's log-in page on the Log In flow (2026-11-20, Afsana:
+ *  "the same field design (rounded corners) as the keycloak fields"). `locked`
+ *  is the grey of an address already given. */
+export function V3CardInput({ locked = false, ...input }: InputHTMLAttributes<HTMLInputElement> & { locked?: boolean }) {
+  return (
+    <input
+      {...input}
+      readOnly={locked || input.readOnly}
+      className="cre-e2e-input cre-e2e-input-v3"
+      style={locked ? { ...FIELD, ...FIELD_DISABLED } : FIELD}
+    />
+  )
+}
+
+/** The card's primary button — full width, the brick, grey and off until
+ *  `ready` — for the same card (2026-11-20, Afsana: Continue "match the
+ *  styling of the log in button"). */
+export function V3CardSubmit({ ready, children }: { ready: boolean; children: ReactNode }) {
+  return (
+    <div style={ACTIONS}>
+      <button type="submit" className="cre-e2e-cta" disabled={!ready} aria-disabled={!ready} style={ready ? CTA : CTA_OFF}>
+        {children}
+      </button>
+    </div>
+  )
 }
