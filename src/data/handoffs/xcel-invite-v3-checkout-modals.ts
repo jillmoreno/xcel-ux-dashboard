@@ -24,7 +24,7 @@ const feature: PrototypeFeature = {
   devStatus: 'not-ready',
   surface: 'invite',
   owner: 'Afsana',
-  lastUpdated: '2026-11-19T23:07:43Z',
+  lastUpdated: '2026-11-20T14:33:41Z',
   accent: 'gold',
   icon: 'flag',
   brands: ['xcel'],
@@ -259,7 +259,7 @@ const feature: PrototypeFeature = {
           { name: 'Password entered', when: 'Anything in the field. Log in turns on.' },
           { name: 'Direct Email — address pre-filled', when: 'Direct Email with an Atlas account. The Email field holds the address from the email step, disabled in the checkout’s grey — no lock icon; the line drops the address. Log in needs a password.', why: 'The learner sees which account they are signing in to; the address was settled on the email step, so it is not changed here.' },
           { name: 'Wrong password', when: 'Log in with a password that does not match. Red text under the field — "We couldn’t log you in. Please try again." — and nothing on the field itself. Editing the password clears it.' },
-          { name: 'Reset your password — enter email', when: 'Forgot password? was clicked. The XCEL logo, "Reset your password", "Enter your email and we’ll send you a link to reset your password.", one Email field (empty, editable), Send reset link (primary, off until the address is valid) and Back to sign in (secondary) right under it. A malformed address shows "Please enter a valid email address" under the field, as Enter your email does.', why: 'The learner says where the link goes before one is sent, rather than a link going out the moment they click Forgot password?.' },
+          { name: 'Reset your password — enter email', when: 'Forgot password? was clicked. The XCEL logo, "Reset your password", "Enter your email and we’ll send you a link to reset your password.", one Email field (empty, editable), Send reset link (primary, off until the address is valid), then a light grey rule, the subheader "Forgot Email?" with "If you no longer have access to the email on file or have forgotten which one you used, please contact our support team.", and Back to sign in (secondary) under that. A malformed address shows "Please enter a valid email address" under the field, as Enter your email does.', why: 'The learner says where the link goes before one is sent, rather than a link going out the moment they click Forgot password?.' },
           { name: 'Check your email', when: 'Send reset link was clicked. The modal becomes "Check your email": "We sent a password reset link to [the address entered, bold]. Follow the instructions in the email to reset your password. Be sure to check your spam or junk folders." No Email field — the sentence already names the address. Resend link (primary), the countdown under it while it waits, then Back to sign in (secondary).' },
           { name: 'Resend link waiting', when: 'Check your email, straight after a link is sent and after every resend. Resend link is disabled for 30 seconds, and a line under it counts down: "You can resend the link in 0:30". The line goes when the button turns on.', why: 'A link has just gone out; a second request before the first can arrive only multiplies the emails.' },
         ],
@@ -278,6 +278,7 @@ const feature: PrototypeFeature = {
           { question: 'How long is Resend link disabled?', answer: '30 seconds after each send, counted down under the button.' },
           { question: 'Can the learner change the address on Check your email?', answer: 'No — it is only named in the sentence. To use a different address they go Back to sign in and click Forgot password? again.' },
           { question: 'Is the reset email field filled in from Log in?', answer: 'No. It starts empty, as "Enter your email" asks.' },
+          { question: 'What if the learner no longer has the email, or cannot remember which one they used?', answer: 'Forgot Email? under Send reset link tells them to contact the support team. It is text only — no link or address yet.' },
         ],
         edgeCases: [
           'Demo only: the password "wrong" fails; any other password signs in.',
@@ -302,7 +303,7 @@ const feature: PrototypeFeature = {
           ],
           responsive: [
             'The same 460px modal and spacing as Enter your email. Error line 12px / 16px under the field; Forgot password? 13px under that.',
-            'Reset your password — enter email: the Email field under the text, then Send reset link and Back to sign in, full width, stacked 14px apart.',
+            'Reset your password — enter email: the Email field under the text, then Send reset link, a 1px rule (--color-e2e-form-outline, full width, 4px clear either side), "Forgot Email?" (16px / 22px, bold) over its line (14px / 21px, secondary text) 4px apart, and Back to sign in — stacked 14px apart, buttons full width.',
             'Check your email: under the text, Resend link, the countdown line (13px / 18px, secondary text, left-aligned) and Back to sign in, full width, stacked 14px apart.',
           ],
           sources: [
