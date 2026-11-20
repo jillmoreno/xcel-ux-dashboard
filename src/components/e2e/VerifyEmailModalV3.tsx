@@ -1491,7 +1491,9 @@ const CARD_BACK: CSSProperties = {
   border: 'none',
   borderRadius: 4,
   background: 'transparent',
-  color: 'var(--color-text-secondary)',
+  /* The brick of the card's Log in button (2026-11-20, Afsana: "the back
+     button with the arrow should be red"). */
+  color: 'var(--color-xcel-brick-600)',
   fontFamily: 'var(--font-e2e-avenir)',
   fontWeight: 800,
   fontSize: 14,
@@ -1523,5 +1525,17 @@ export function V3CardSubmit({ ready, children }: { ready: boolean; children: Re
         {children}
       </button>
     </div>
+  )
+}
+
+/** Forgot password?, under a card's password field — Keycloak's link, for
+ *  OCD's password step on the Log In flow (2026-11-20, Afsana: it "should
+ *  match the existing keycloak design where 'Forgot password?' is shown below
+ *  the password field"). Drawn only there: OCD's reset is OCD's. */
+export function V3CardForgot({ onClick }: { onClick?: () => void }) {
+  return (
+    <button type="button" style={FORGOT} onClick={onClick}>
+      Forgot password?
+    </button>
   )
 }

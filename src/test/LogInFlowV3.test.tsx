@@ -106,10 +106,13 @@ describe('Invite Flow V3 — Log In', () => {
     const email = screen.getByLabelText('Email')
     expect(email).toHaveAttribute('type', 'text')
     expect(screen.queryByLabelText('Password')).not.toBeInTheDocument()
-    expect(screen.queryByText('Forgot your password?')).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Forgot password?' })).not.toBeInTheDocument()
     await user.type(email, 'jsmith42')
     await user.click(screen.getByRole('button', { name: 'Continue' }))
     expect(screen.getByLabelText('Password')).toBeInTheDocument()
+    /* Keycloak's Forgot password?, under the field — not OCD's under the card. */
+    expect(screen.getByRole('button', { name: 'Forgot password?' })).toBeInTheDocument()
+    expect(screen.queryByText('Forgot your password?')).not.toBeInTheDocument()
     /* Keycloak's shape: no email field, ← Back to change it. */
     expect(screen.queryByLabelText('Email')).not.toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: 'Back' }))
