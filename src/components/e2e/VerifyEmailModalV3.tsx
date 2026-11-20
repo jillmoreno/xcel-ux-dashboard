@@ -927,10 +927,7 @@ export function KeycloakLogInCardV3({
       style={{ ...MODAL, maxHeight: 'none', overflowY: 'visible' }}
     >
       {signingIn ? (
-        <div style={SIGNING_IN}>
-          <img src="/brand/xcel-logo.webp" alt="XCEL Insurance Training by Colibri" style={CODE_LOGO} />
-          <XcelLoadingStatus message="Signing you in" size={SIGNING_SPINNER} />
-        </div>
+        <V3CardSigningIn />
       ) : (
         /* No lead and no email field — the email step is the page before,
            and ← Back returns to it to change the address (2026-11-20,
@@ -1474,8 +1471,11 @@ export function V3CardHead({ title, lead }: { title: string; lead?: string }) {
 }
 
 /** ← Back, in a card's top left corner — the Log In flow's way back to the
- *  email step to change the address (2026-11-20, Afsana). The card must be
- *  positioned; Keycloak's and OCD's both are. */
+ *  email step to change the address (2026-11-20, Afsana). ⚠ ITS OWN ROW, the
+ *  first in the card, above the logo — not laid over the logo's row: Afsana,
+ *  the same day, "a bit more space between the row that contains the back
+ *  link and the row that contains the centered xcel logo". The card's gap is
+ *  that space. */
 export function V3CardBack({ onBack }: { onBack: () => void }) {
   return (
     <button type="button" onClick={onBack} style={CARD_BACK}>
@@ -1486,9 +1486,10 @@ export function V3CardBack({ onBack }: { onBack: () => void }) {
 }
 
 const CARD_BACK: CSSProperties = {
-  position: 'absolute',
-  top: 20,
-  left: 20,
+  /* Left, in a column that centres; pulled up and out by its own padding so
+     it sits where it did in the corner (20 in from the top and side). */
+  alignSelf: 'flex-start',
+  margin: '-16px 0 0 -16px',
   display: 'inline-flex',
   alignItems: 'center',
   gap: 6,
@@ -1542,5 +1543,17 @@ export function V3CardForgot({ onClick }: { onClick?: () => void }) {
     <button type="button" style={FORGOT} onClick={onClick}>
       Forgot password?
     </button>
+  )
+}
+
+/** "Signing you in" — the logo over the spinner, as the checkout modal holds
+ *  on — for a card drawn outside this file: OCD's, after the right password
+ *  on the Log In flow (2026-11-20, Afsana), and Keycloak's above. */
+export function V3CardSigningIn() {
+  return (
+    <div style={SIGNING_IN}>
+      <img src="/brand/xcel-logo.webp" alt="XCEL Insurance Training by Colibri" style={CODE_LOGO} />
+      <XcelLoadingStatus message="Signing you in" size={SIGNING_SPINNER} />
+    </div>
   )
 }

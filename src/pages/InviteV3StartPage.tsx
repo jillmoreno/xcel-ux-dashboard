@@ -193,7 +193,8 @@ function FlowRow({ flow }: { flow: InviteFlowV3 }) {
              inviteFlow.css. */
           <Link
             key={s.label}
-            to={startHref(flow, s.account, b2c ? cart : null, b2c ? null : product)}
+            /* No cart for Log In — it buys nothing (2026-11-20). */
+            to={startHref(flow, s.account, b2c && !logIn ? cart : null, b2c ? null : product)}
             target="_blank"
             rel="noopener noreferrer"
             className="cre-v3-start"
