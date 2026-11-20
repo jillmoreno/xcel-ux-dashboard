@@ -4,7 +4,7 @@ import { StandaloneBrowserChrome } from '@/components/layout/BrowserChromeBar'
 import { XcelFooter } from '@/components/e2e/XcelFooter'
 import { XcelSiteHeader } from '@/components/e2e/XcelSiteHeader'
 import { PartnerCodeAskPage, XcelAccountAskPage } from '@/components/e2e/PartnerCodeAsk'
-import { KeycloakLogInCardV3, V3CardHead, V3CardInput, V3CardSubmit } from '@/components/e2e/VerifyEmailModalV3'
+import { KeycloakLogInCardV3, V3CardBack, V3CardHead, V3CardInput, V3CardSubmit } from '@/components/e2e/VerifyEmailModalV3'
 import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { CircleInfo } from '@/icons'
 import {
@@ -37,16 +37,19 @@ import './inviteFlow.css'
  *   Do you have an XCEL account? the live page; No is not mocked
  *   OCD's log-in page            the email, looked up in Keycloak first —
  *     in Keycloak                Keycloak's log-in widget, then Atlas Home
- *     not in Keycloak            assumed OCD's: OCD's password, then OCD, or
- *                                "Either username or password is incorrect."
+ *     not in Keycloak            assumed OCD's: OCD's password, then OCD;
+ *                                "The Username or Password is incorrect." for
+ *                                a wrong password; "An account does not
+ *                                exist." when OCD has no such account either
  *
- * ⚠ NOTHING SAYS AN ACCOUNT DOES NOT EXIST. OCD has no service that answers
- * whether a username exists (Swati, 2026-11-18), and an identity screen should
- * not say which half was wrong — so an email nobody knows walks exactly like
- * an OCD one until the password is in, and then gets the same words as a
- * wrong password. "Please create a user account." is gone (decisions,
- * 2026-11-18). Where the account is, the demo cannot look up: Account found
- * in (`invite-v3-log-in-account`) says.
+ * ⚠ THE ACCOUNT IS ONLY KNOWN MISSING AFTER THE PASSWORD. OCD has no service
+ * that answers whether a username exists before a log-in is tried (Swati,
+ * 2026-11-18), so an email nobody knows walks exactly like an OCD one until
+ * the password is in. Then it says so — two messages, not the 2026-11-18
+ * decision's one ("Either username or password is incorrect." for both):
+ * Afsana, 2026-11-20. "Please create a user account." is gone. Where the
+ * account is, the demo cannot look up: Account found in
+ * (`invite-v3-log-in-account`) says.
  *
  * Four pages, one file: they are one short walk and share the frame.
  */
@@ -85,9 +88,9 @@ export function XcelLogInAccountPage() {
 
 /**
  * OCD'S LOG-IN PAGE, REPURPOSED — the page being redesigned. The live page's
- * grey and its Arial labels with colons; everything else is Keycloak's card,
- * since this card hands over to it (2026-11-20, Afsana): 460 wide, its Log in
- * title and grey rule, its rounded fields and its full-width button
+ * grey; everything else is Keycloak's card, since this card hands over to it
+ * (2026-11-20, Afsana): 460 wide, its Avenir, its Log in title and grey rule,
+ * its labels (no colon), its rounded fields and its full-width button
  * (`V3CardHead`, `V3CardInput`, `V3CardSubmit`).
  *
  * What changed, and why:
@@ -97,8 +100,9 @@ export function XcelLogInAccountPage() {
  *     get through to OCD's password.
  *   - The email alone first, CONTINUE; the password only once Keycloak has
  *     said no. Keycloak's yes leaves this page for Keycloak's own.
- *   - "Either username or password is incorrect." under the password, the
- *     same words for an unknown account and a wrong password.
+ *   - Under the password: "The Username or Password is incorrect." for a
+ *     wrong password, "An account does not exist." for no account at all
+ *     (2026-11-20, Afsana).
  *   - Forgot your password? only with the password: before the email is in,
  *     nobody knows which system's password it is.
  */
@@ -107,10 +111,13 @@ export function XcelOcdLogInPage() {
   useEndToEndPageChrome('OnCourse Direct Login')
   const go = useLogInNavigate()
   const account = resolveV3LogInAccount(useFeatureFlag(INVITE_V3_LOG_IN_ACCOUNT_FLAG).variant)
-  const [email, setEmail] = useState('')
+  const [params] = useSearchParams()
+  /* Filled when Keycloak's ← Back brings the learner here to change it. */
+  const [email, setEmail] = useState(() => params.get('email') ?? '')
   const [step, setStep] = useState<'email' | 'password'>('email')
   const [password, setPassword] = useState('')
-  const [failed, setFailed] = useState(false)
+  /* Why the log-in failed, which says which line shows under the password. */
+  const [failed, setFailed] = useState<false | 'incorrect' | 'no-account'>(false)
   const [tip, setTip] = useState(false)
   const tipId = useId()
   const given = email.trim()
@@ -123,9 +130,8 @@ export function XcelOcdLogInPage() {
   }
   const submitPassword = () => {
     if (!password) return
-    /* Neither system knows the pair: an unknown account and a wrong password
-       read the same. */
-    if (account === 'none' || password === V3_WRONG_DEMO_PASSWORD) setFailed(true)
+    if (account === 'none') setFailed('no-account')
+    else if (password === V3_WRONG_DEMO_PASSWORD) setFailed('incorrect')
     else go(LOG_IN_PATHS.ocdHome)
   }
 
@@ -140,68 +146,65 @@ export function XcelOcdLogInPage() {
           else submitPassword()
         }}
       >
-        {/* Keycloak's card's title, rule and lead (2026-11-20, Afsana), so
-            the email step and the Log in it may hand over to read as one. The
-            password step asks for the password instead. */}
-        <V3CardHead title="Log in" lead={step === 'email' ? 'Enter your email' : 'Enter your password'} />
-        <div style={OCD_FIELD}>
-          <span style={OCD_LABEL_ROW}>
-            <label htmlFor="ocd-email" style={OCD_LABEL}>
-              Email:
-            </label>
-            <span style={{ position: 'relative', display: 'inline-flex' }}>
-              <button
-                type="button"
-                aria-label="About this field"
-                aria-describedby={tip ? tipId : undefined}
-                aria-expanded={tip}
-                onClick={() => setTip((v) => !v)}
-                onMouseEnter={() => setTip(true)}
-                onMouseLeave={() => setTip(false)}
-                onBlur={() => setTip(false)}
-                style={OCD_INFO}
-              >
-                <CircleInfo size={14} aria-hidden />
-              </button>
-              {tip ? (
-                <span id={tipId} role="tooltip" style={OCD_TIP}>
-                  Enter the email address or username you use for your XCEL account.
-                </span>
-              ) : null}
-            </span>
-          </span>
-          {/* ⚠ type="text", not "email" — a username must get through. */}
-          {/* Keycloak's field (2026-11-20, Afsana): rounded, the light fill —
-              grey once Keycloak has said no, so the learner sees which address
-              the password is for. */}
-          <V3CardInput
-            id="ocd-email"
-            type="text"
-            autoComplete="username"
-            spellCheck={false}
-            placeholder="Enter your email"
-            value={email}
-            locked={step === 'password'}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-          {step === 'password' ? (
-            <button
-              type="button"
-              style={OCD_CHANGE}
-              onClick={() => {
-                setStep('email')
-                setPassword('')
-                setFailed(false)
-              }}
-            >
-              Not you? Change email
-            </button>
-          ) : null}
-        </div>
+        {/* Keycloak's card's title and rule (2026-11-20, Afsana), so the
+            email step and the Log in it may hand over to read as one. No lead
+            on either step: the field says what it wants. */}
+        <V3CardHead title="Log in" />
+        {/* OCD's password step is Keycloak's: no email field, ← Back to
+            change it (2026-11-20, Afsana). */}
         {step === 'password' ? (
+          <V3CardBack
+            onBack={() => {
+              setStep('email')
+              setPassword('')
+              setFailed(false)
+            }}
+          />
+        ) : null}
+        {step === 'email' ? (
+          <div style={OCD_FIELD}>
+            <span style={OCD_LABEL_ROW}>
+              <label htmlFor="ocd-email" style={OCD_LABEL}>
+                Email
+              </label>
+              <span style={{ position: 'relative', display: 'inline-flex' }}>
+                <button
+                  type="button"
+                  aria-label="About this field"
+                  aria-describedby={tip ? tipId : undefined}
+                  aria-expanded={tip}
+                  onClick={() => setTip((v) => !v)}
+                  onMouseEnter={() => setTip(true)}
+                  onMouseLeave={() => setTip(false)}
+                  onBlur={() => setTip(false)}
+                  style={OCD_INFO}
+                >
+                  <CircleInfo size={14} aria-hidden />
+                </button>
+                {tip ? (
+                  <span id={tipId} role="tooltip" style={OCD_TIP}>
+                    Enter the email address or username you use for your XCEL account.
+                  </span>
+                ) : null}
+              </span>
+            </span>
+            {/* ⚠ type="text", not "email" — a username must get through. */}
+            {/* Keycloak's field (2026-11-20, Afsana): rounded, the light fill. */}
+            <V3CardInput
+              id="ocd-email"
+              type="text"
+              autoComplete="username"
+              spellCheck={false}
+              autoFocus
+              placeholder="Enter your email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          </div>
+        ) : (
           <div style={OCD_FIELD}>
             <label htmlFor="ocd-password" style={OCD_LABEL}>
-              Password:
+              Password
             </label>
             <V3CardInput
               id="ocd-password"
@@ -214,16 +217,16 @@ export function XcelOcdLogInPage() {
                 setPassword(e.target.value)
                 setFailed(false)
               }}
-              aria-invalid={failed}
+              aria-invalid={failed !== false}
               aria-describedby={failed ? 'ocd-incorrect' : undefined}
             />
             {failed ? (
               <p id="ocd-incorrect" role="alert" style={OCD_ERROR}>
-                Either username or password is incorrect.
+                {failed === 'no-account' ? 'An account does not exist.' : 'The Username or Password is incorrect.'}
               </p>
             ) : null}
           </div>
-        ) : null}
+        )}
         {/* Keycloak's Log in button (2026-11-20, Afsana): full width, the
             brick, off until the field has something in it. */}
         {step === 'email' ? (
@@ -252,8 +255,8 @@ export function XcelOcdLogInPage() {
   )
 }
 
-/** Keycloak's log-in, on a page of its own — it is its own system — with the
- *  address OCD's page was given, locked. Then Atlas Home, the flow's usual
+/** Keycloak's log-in, on a page of its own — it is its own system — for the
+ *  address OCD's page was given, which ← Back returns to change. Then Atlas Home, the flow's usual
  *  way in (`InvitedConfirmationPageV3`); opened from `/invite-v3` it holds on
  *  Signing you in instead, as every flow there does.
  *
@@ -280,7 +283,16 @@ export function XcelKeycloakLogInPage() {
     <div style={OCD_PAGE}>
       <StandaloneBrowserChrome />
       <main style={OCD_MAIN}>
-        <KeycloakLogInCardV3 email={email} onSignedIn={onSignedIn} />
+        <KeycloakLogInCardV3
+          email={email}
+          onSignedIn={onSignedIn}
+          onBack={() => {
+            /* Back to the email step, the address still in it. */
+            const next = new URLSearchParams(params)
+            next.set('email', email)
+            navigate({ pathname: LOG_IN_PATHS.ocd, search: next.toString() })
+          }}
+        />
       </main>
     </div>
   )
@@ -352,7 +364,7 @@ const SITE_PAGE: CSSProperties = { minHeight: '100%', background: 'var(--color-f
 const OCD_PAGE: CSSProperties = {
   minHeight: '100vh',
   background: 'var(--color-e2e-ocd-ground)',
-  fontFamily: 'var(--font-e2e-ocd)',
+  fontFamily: 'var(--font-e2e-avenir)',
 }
 
 const OCD_MAIN: CSSProperties = { display: 'flex', justifyContent: 'center', padding: '82px 16px 48px' }
@@ -390,10 +402,13 @@ const OCD_FIELD: CSSProperties = { display: 'flex', flexDirection: 'column', gap
 
 const OCD_LABEL_ROW: CSSProperties = { display: 'flex', alignItems: 'center', gap: 6 }
 
+/* Keycloak's field label (`VerifyEmailModalV3`'s FIELD_LABEL), no colon —
+   2026-11-20, Afsana. */
 const OCD_LABEL: CSSProperties = {
-  fontFamily: 'var(--font-e2e-ocd)',
+  fontFamily: 'var(--font-e2e-avenir)',
   fontSize: 14,
-  fontWeight: 700,
+  fontWeight: 800,
+  lineHeight: '19px',
   color: 'var(--color-text-primary)',
 }
 
@@ -417,28 +432,18 @@ const OCD_TIP: CSSProperties = {
   borderRadius: 4,
   background: 'var(--color-neutral-950)',
   color: 'var(--color-fixed-light)',
-  fontFamily: 'var(--font-e2e-ocd)',
+  fontFamily: 'var(--font-e2e-avenir)',
   fontSize: 12,
   lineHeight: '17px',
   fontWeight: 400,
 }
 
-const OCD_CHANGE: CSSProperties = {
-  alignSelf: 'flex-start',
-  padding: 0,
-  border: 'none',
-  background: 'transparent',
-  color: 'var(--color-e2e-ocd-link)',
-  fontFamily: 'var(--font-e2e-ocd)',
-  fontSize: 13,
-  cursor: 'pointer',
-}
-
-/* The live page's own red for its message under the field. */
+/* Keycloak's wrong-password line (`VerifyEmailModalV3`'s INVALID). */
 const OCD_ERROR: CSSProperties = {
   margin: 0,
-  fontFamily: 'var(--font-e2e-ocd)',
-  fontSize: 14,
+  fontFamily: 'var(--font-e2e-avenir)',
+  fontSize: 12,
+  lineHeight: '16px',
   color: 'var(--color-error-600)',
 }
 
@@ -453,7 +458,7 @@ const OCD_BELOW: CSSProperties = {
 }
 
 const OCD_FORGOT: CSSProperties = {
-  fontFamily: 'var(--font-e2e-ocd)',
+  fontFamily: 'var(--font-e2e-avenir)',
   fontSize: 14,
   fontWeight: 300,
   color: 'var(--color-e2e-ocd-link)',
