@@ -63,16 +63,42 @@ git log origin/main..HEAD --format=%ci | tail -1 # when the first of them landed
   designer's.
 - Detached HEAD: stop and say so.
 
-**Read the name against the shape above.** If it has no scope word
-(`feat/streak`, `my-branch`), say in one line what it will look like on the
-Hub — *"this will list under Other branches as 'Streak'"* — and offer the
-rename, once:
+**Read the name against the shape above.** If it already names a surface,
+say which row it will land under and move on — there is nothing to ask.
+
+If it has NO scope word (`feat/streak`, `my-branch`), **ask what kind of work
+it is before anything else.** This is the one question that decides whether
+the branch becomes a row at all (2026-11-18, Jillienne: *"do I want this on
+the design page, or is this something that is backend work that needs to be
+pushed"*):
+
+> Is `feat/streak` design work someone should look at on the Hub, or is it
+> backend / infrastructure that just needs pushing?
+
+**Design work** → it needs a surface in its name, or it files nowhere. Offer
+the rename, once, and name the surface you would pick from what the branch
+touches:
 
 > Rename it `feat/compass-streak` so it lands under Compass? (`git branch -m`,
 > and I'll push the new name.)
 
-Either answer is fine. A branch already pushed under the old name leaves a
-stale row until Netlify's deploy window rolls past it; say so if they rename.
+**Backend / infrastructure** → say so in one line and push it unchanged. No
+rename, no row, no second question:
+
+> Pushing `feat/streak` as it is — no Design row, since it is not design work.
+
+⚠ **NEITHER ANSWER BLOCKS THE PUSH.** The question sorts the branch; it never
+refuses one. A designer who does not want to answer gets the push.
+
+⚠ **WHY ASKING BEATS GUESSING.** Until today this step assumed every branch
+was design work and only ever offered the rename, so infrastructure branches
+either got a name they did not need or sat on the page unnamed — which is how
+the section came to be mostly rows nobody was reviewing. The author is the
+only one who knows which kind it is, and they know it in the second before
+they push.
+
+A branch already pushed under the old name leaves a stale row until Netlify's
+deploy window rolls past it; say so if they rename.
 
 **A long branch gets one sentence here, and this is the only moment anyone
 will listen.** More than about 10 commits or older than about a week:
