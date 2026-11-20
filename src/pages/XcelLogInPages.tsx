@@ -244,7 +244,14 @@ export function XcelOcdLogInPage() {
 /** Keycloak's log-in, on a page of its own — it is its own system — with the
  *  address OCD's page was given, locked. Then Atlas Home, the flow's usual
  *  way in (`InvitedConfirmationPageV3`); opened from `/invite-v3` it holds on
- *  Signing you in instead, as every flow there does. */
+ *  Signing you in instead, as every flow there does.
+ *
+ *  ⚠ THE EMAIL STEP'S FRAME, NOT RESET YOUR PASSWORD'S (2026-11-20, Afsana:
+ *  "this page should not have the header with the logo, just like the initial
+ *  email capture screen"; the card "need[s] to start at the same location").
+ *  No header, OCD's grey, and the card's top edge where OCD's card's is —
+ *  `OCD_MAIN`'s padding, not centred — so moving from one to the other is a
+ *  card changing in place, not a page jumping. */
 export function XcelKeycloakLogInPage() {
   useEndToEndDemoParams()
   useEndToEndPageChrome('Log in | XCEL')
@@ -259,12 +266,9 @@ export function XcelKeycloakLogInPage() {
     })
   }, [standalone, navigate])
   return (
-    <div style={KEYCLOAK_PAGE}>
+    <div style={OCD_PAGE}>
       <StandaloneBrowserChrome />
-      <header style={KEYCLOAK_HEADER}>
-        <img src="/brand/xcel-logo.webp" alt="XCEL Insurance Training by Colibri" style={KEYCLOAK_LOGO} />
-      </header>
-      <main style={KEYCLOAK_MAIN}>
+      <main style={OCD_MAIN}>
         <KeycloakLogInCardV3 email={email} onSignedIn={onSignedIn} />
       </main>
     </div>
@@ -342,11 +346,13 @@ const OCD_PAGE: CSSProperties = {
 
 const OCD_MAIN: CSSProperties = { display: 'flex', justifyContent: 'center', padding: '82px 16px 48px' }
 
-/* The live card: 500 wide, white, 15 padding, the fields 370 wide inside. */
+/* White, 15 padding, the fields 371 wide inside. ⚠ 460 WIDE, NOT THE LIVE
+   PAGE'S 500 (2026-11-20, Afsana): the width of Keycloak's card, which takes
+   its place, so the two are one card changing rather than two sizes. */
 const OCD_CARD: CSSProperties = {
   position: 'relative',
   boxSizing: 'border-box',
-  width: 500,
+  width: 460,
   maxWidth: '100%',
   display: 'flex',
   flexDirection: 'column',
@@ -490,30 +496,4 @@ const DEMO_FILL: CSSProperties = {
   border: 'none',
   background: 'transparent',
   cursor: 'default',
-}
-
-const KEYCLOAK_PAGE: CSSProperties = {
-  display: 'flex',
-  flexDirection: 'column',
-  minHeight: '100vh',
-  background: 'var(--color-e2e-reset-ground)',
-}
-
-/* Reset your password's header (`ResetPasswordPageV3`): the logo alone. */
-const KEYCLOAK_HEADER: CSSProperties = {
-  display: 'flex',
-  alignItems: 'center',
-  padding: '8px 32px',
-  background: 'var(--color-fixed-light)',
-  boxShadow: 'inset 0 0 0 1px var(--color-e2e-partner-outline)',
-}
-
-const KEYCLOAK_LOGO: CSSProperties = { display: 'block', width: 115, height: 48, flex: 'none', objectFit: 'contain' }
-
-const KEYCLOAK_MAIN: CSSProperties = {
-  flex: '1 0 auto',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  padding: '48px 24px',
 }
