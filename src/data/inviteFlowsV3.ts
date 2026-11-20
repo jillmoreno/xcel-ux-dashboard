@@ -137,8 +137,8 @@ export const INVITE_FLOWS_V3: InviteFlowV3[] = [
        (No is not mocked) → Yes → the OCD log-in page, repurposed: the email
        alone, looked up in Keycloak first. Found: Keycloak's log-in widget,
        then Atlas Home. Not found: assumed to be OCD's, so OCD's password —
-       then "The Username or Password is incorrect." for a wrong one, or "An
-       account does not exist." when OCD has none either. Which it is, the demo
+       then "The Username or Password is incorrect." for a wrong one and when
+       OCD has no account either — the same words. Which it is, the demo
        cannot look up: Account found in (`invite-v3-log-in-account`) says.
        It starts on the cart, as every B2C flow does — the live site's
        Partner Code page is opened from there too (`referer` is the cart). */
@@ -388,7 +388,7 @@ export function logInFlowV3(flow: InviteFlowV3, account: V3LogInAccount): Invite
         ? [...start, 'log-in-keycloak', 'signing-in']
         : account === 'ocd'
           ? [...start, 'log-in-ocd-password', 'log-in-ocd-home']
-          : [...start, 'log-in-ocd-password', 'log-in-no-account'],
+          : [...start, 'log-in-ocd-password', 'log-in-incorrect'],
   }
 }
 

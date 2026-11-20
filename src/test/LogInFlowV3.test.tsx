@@ -74,7 +74,7 @@ describe('Invite Flow V3 — Log In', () => {
     expect(inviteV3Surface('b2c', 'xcel-log-in')).toBe('invite:v3-b2c-log-in')
     for (const path of Object.values(LOG_IN_PATHS)) expect(v3ScreensFor('b2c')).toContain(path)
     expect(logInFlowV3(flow, 'atlas').screens).toContain('log-in-keycloak')
-    expect(logInFlowV3(flow, 'none').screens).toContain('log-in-no-account')
+    expect(logInFlowV3(flow, 'none').screens).toContain('log-in-incorrect')
   })
 
   it('Log In opens the Partner Code question; Yes does nothing', async () => {
@@ -145,6 +145,20 @@ describe('Invite Flow V3 — Log In', () => {
     expect(screen.getByLabelText('Signing you in')).toBeInTheDocument()
   })
 
+  it('Keycloak’s Reset your password has ← Back to Log in, and no Back to sign in', async () => {
+    const user = userEvent.setup()
+    renderAt('/end-to-end-demo/cart', 'atlas')
+    await toOcdPage(user)
+    await user.type(screen.getByLabelText('Email'), 'learner@example.com')
+    await user.click(screen.getByRole('button', { name: 'Continue' }))
+    await user.click(screen.getByRole('button', { name: 'Forgot password?' }))
+    expect(screen.getByRole('heading', { name: 'Reset your password' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Back to sign in' })).not.toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Back' }))
+    expect(screen.getByRole('heading', { name: 'Log in' })).toBeInTheDocument()
+    expect(where()).toBe(LOG_IN_PATHS.keycloak)
+  })
+
   it('Keycloak’s ← Back returns to the email step, the address still in it', async () => {
     const user = userEvent.setup()
     renderAt('/end-to-end-demo/cart', 'atlas')
@@ -172,7 +186,7 @@ describe('Invite Flow V3 — Log In', () => {
     expect(where()).toBe(LOG_IN_PATHS.ocdHome)
   })
 
-  it('neither: An account does not exist., after the password — never “create a user account”', async () => {
+  it('neither: the same words as a wrong password — never “does not exist” or “create a user account”', async () => {
     const user = userEvent.setup()
     renderAt('/end-to-end-demo/cart', 'none')
     await toOcdPage(user)
@@ -183,7 +197,8 @@ describe('Invite Flow V3 — Log In', () => {
     await act(async () => {
       await user.click(screen.getByRole('button', { name: 'Log in' }))
     })
-    expect(screen.getByRole('alert')).toHaveTextContent('An account does not exist.')
+    expect(screen.getByRole('alert')).toHaveTextContent('The Username or Password is incorrect.')
+    expect(screen.queryByText(/does not exist/i)).not.toBeInTheDocument()
     expect(screen.queryByText(/create a user account/i)).not.toBeInTheDocument()
     expect(where()).toBe(LOG_IN_PATHS.ocd)
   })
