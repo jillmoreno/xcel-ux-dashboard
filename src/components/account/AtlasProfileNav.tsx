@@ -41,7 +41,11 @@ export function AtlasProfileNav({
   style?: CSSProperties
 }) {
   return (
-    <aside className="cre-profile-nav" style={{ ...SIDEBAR, ...style }}>
+    /* THE COLUMN and THE NAV IN IT (2026-11-19, Eric: "on vertical scroll stop the left nav … when it reaches the top"). The
+       column carries the fill and the right rule down the whole page; the nav inside it pins under the header. One
+       window-tall sticky box could not stick — it was as tall as the space it had, so it scrolled away with the page. */
+    <aside className="cre-profile-nav" style={{ ...COLUMN, ...style }}>
+      <div style={PINNED}>
       {SHOW_TITLE ? (
         <>
           {/* "My Account" (2026-11-19, Eric) — the file's "Profile:" before. */}
@@ -65,26 +69,29 @@ export function AtlasProfileNav({
           </button>
         ))}
       </nav>
+      </div>
     </aside>
   )
 }
 
-/* Admin's SIDEBAR (AtlasAdminLayout), at this nav's width. `--atlas-header-bottom` is where the Atlas header ends (the shell
-   sets it), so it pins under the header as admin's does under its own. */
-const SIDEBAR: CSSProperties = {
-  position: 'sticky',
-  top: 'var(--atlas-header-bottom, 0px)',
-  alignSelf: 'flex-start',
-  height: 'calc(100vh - var(--atlas-header-bottom, 0px))',
+/* Admin's SIDEBAR (AtlasAdminLayout), at this nav's width, as two boxes — see the component. The column stretches to the
+   page's height with the fill and the rule; the content pins at `--atlas-header-bottom` (where the Atlas header ends — the
+   shell sets it) as admin's sidebar pins under its header. */
+const COLUMN: CSSProperties = {
+  alignSelf: 'stretch',
   boxSizing: 'border-box',
   width: PROFILE_NAV_W,
   flex: 'none',
+  background: 'var(--admin-surface)',
+  borderRight: '1px solid var(--admin-chrome-rule)',
+}
+const PINNED: CSSProperties = {
+  position: 'sticky',
+  top: 'var(--atlas-header-bottom, 0px)',
   display: 'flex',
   flexDirection: 'column',
   gap: 12,
   padding: '20px 16px 24px',
-  background: 'var(--admin-surface)',
-  borderRight: '1px solid var(--admin-chrome-rule)',
 }
 /* Playfair Bold 22/24, Text Primary — 16 in, on the rows' label line. */
 const TITLE: CSSProperties = {
