@@ -4,7 +4,7 @@ import { StandaloneBrowserChrome } from '@/components/layout/BrowserChromeBar'
 import { XcelFooter } from '@/components/e2e/XcelFooter'
 import { XcelSiteHeader } from '@/components/e2e/XcelSiteHeader'
 import { PartnerCodeAskPage, XcelAccountAskPage } from '@/components/e2e/PartnerCodeAsk'
-import { KeycloakLogInCardV3 } from '@/components/e2e/VerifyEmailModalV3'
+import { KeycloakLogInCardV3, V3CardHead, V3CardInput, V3CardSubmit } from '@/components/e2e/VerifyEmailModalV3'
 import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { CircleInfo } from '@/icons'
 import {
@@ -85,8 +85,10 @@ export function XcelLogInAccountPage() {
 
 /**
  * OCD'S LOG-IN PAGE, REPURPOSED — the page being redesigned. The live page's
- * frame, measured off it: the grey form, the 500 white card, the logo, Arial
- * labels with colons, square 41-high fields and the brick LOG IN.
+ * grey and its Arial labels with colons; everything else is Keycloak's card,
+ * since this card hands over to it (2026-11-20, Afsana): 460 wide, its Log in
+ * title and grey rule, its rounded fields and its full-width button
+ * (`V3CardHead`, `V3CardInput`, `V3CardSubmit`).
  *
  * What changed, and why:
  *   - Email, not Username — with an info icon saying a username works too.
@@ -138,6 +140,10 @@ export function XcelOcdLogInPage() {
           else submitPassword()
         }}
       >
+        {/* Keycloak's card's title, rule and lead (2026-11-20, Afsana), so
+            the email step and the Log in it may hand over to read as one. The
+            password step asks for the password instead. */}
+        <V3CardHead title="Log in" lead={step === 'email' ? 'Enter your email' : 'Enter your password'} />
         <div style={OCD_FIELD}>
           <span style={OCD_LABEL_ROW}>
             <label htmlFor="ocd-email" style={OCD_LABEL}>
@@ -165,16 +171,18 @@ export function XcelOcdLogInPage() {
             </span>
           </span>
           {/* ⚠ type="text", not "email" — a username must get through. */}
-          <input
+          {/* Keycloak's field (2026-11-20, Afsana): rounded, the light fill —
+              grey once Keycloak has said no, so the learner sees which address
+              the password is for. */}
+          <V3CardInput
             id="ocd-email"
             type="text"
             autoComplete="username"
             spellCheck={false}
+            placeholder="Enter your email"
             value={email}
-            readOnly={step === 'password'}
+            locked={step === 'password'}
             onChange={(e) => setEmail(e.target.value)}
-            className="cre-e2e-input"
-            style={step === 'password' ? { ...OCD_INPUT, ...OCD_INPUT_LOCKED } : OCD_INPUT}
           />
           {step === 'password' ? (
             <button
@@ -195,11 +203,12 @@ export function XcelOcdLogInPage() {
             <label htmlFor="ocd-password" style={OCD_LABEL}>
               Password:
             </label>
-            <input
+            <V3CardInput
               id="ocd-password"
               type="password"
               autoComplete="current-password"
               autoFocus
+              placeholder="Enter your password"
               value={password}
               onChange={(e) => {
                 setPassword(e.target.value)
@@ -207,8 +216,6 @@ export function XcelOcdLogInPage() {
               }}
               aria-invalid={failed}
               aria-describedby={failed ? 'ocd-incorrect' : undefined}
-              className="cre-e2e-input"
-              style={OCD_INPUT}
             />
             {failed ? (
               <p id="ocd-incorrect" role="alert" style={OCD_ERROR}>
@@ -217,9 +224,13 @@ export function XcelOcdLogInPage() {
             ) : null}
           </div>
         ) : null}
-        <button type="submit" className="cre-e2e-cta" style={OCD_BUTTON}>
-          {step === 'email' ? 'Continue' : 'Log in'}
-        </button>
+        {/* Keycloak's Log in button (2026-11-20, Afsana): full width, the
+            brick, off until the field has something in it. */}
+        {step === 'email' ? (
+          <V3CardSubmit ready={given !== ''}>Continue</V3CardSubmit>
+        ) : (
+          <V3CardSubmit ready={password !== ''}>Log in</V3CardSubmit>
+        )}
       </form>
       {/* The demo fill — the invisible, labelled corner V3's modals carry. */}
       {step === 'email' ? (
@@ -346,7 +357,8 @@ const OCD_PAGE: CSSProperties = {
 
 const OCD_MAIN: CSSProperties = { display: 'flex', justifyContent: 'center', padding: '82px 16px 48px' }
 
-/* White, 15 padding, the fields 371 wide inside. ⚠ 460 WIDE, NOT THE LIVE
+/* White, Keycloak's card's padding, so its fields and button are the same
+   width as Keycloak's (2026-11-20, Afsana). ⚠ 460 WIDE, NOT THE LIVE
    PAGE'S 500 (2026-11-20, Afsana): the width of Keycloak's card, which takes
    its place, so the two are one card changing rather than two sizes. */
 const OCD_CARD: CSSProperties = {
@@ -357,20 +369,21 @@ const OCD_CARD: CSSProperties = {
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',
-  gap: 48,
-  padding: '64px 15px 56px',
+  /* Keycloak's card's top: its padding, gap and logo (`VerifyEmailModalV3`),
+     so Log in sits at the same height on both (2026-11-20, Afsana). */
+  gap: 20,
+  padding: '36px 36px 32px',
   background: 'var(--color-fixed-light)',
 }
 
-const OCD_LOGO: CSSProperties = { display: 'block', width: 140, height: 56, objectFit: 'contain' }
+const OCD_LOGO: CSSProperties = { display: 'block', width: 132, height: 42, objectFit: 'contain' }
 
 const OCD_FORM: CSSProperties = {
-  width: 371,
-  maxWidth: '100%',
+  width: '100%',
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'stretch',
-  gap: 22,
+  gap: 20,
 }
 
 const OCD_FIELD: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 6 }
@@ -382,26 +395,6 @@ const OCD_LABEL: CSSProperties = {
   fontSize: 14,
   fontWeight: 700,
   color: 'var(--color-text-primary)',
-}
-
-const OCD_INPUT: CSSProperties = {
-  boxSizing: 'border-box',
-  width: '100%',
-  height: 41,
-  padding: 10,
-  border: '1px solid var(--color-e2e-partner-divider)',
-  borderRadius: 0,
-  background: 'var(--color-fixed-light)',
-  fontFamily: 'var(--font-e2e-ocd)',
-  fontSize: 16,
-  color: 'var(--color-text-primary)',
-}
-
-/* The email once Keycloak has said no — kept on screen, so the learner sees
-   which address the password is for. */
-const OCD_INPUT_LOCKED: CSSProperties = {
-  background: 'var(--color-e2e-form-locked)',
-  color: 'var(--color-e2e-form-text)',
 }
 
 const OCD_INFO: CSSProperties = {
@@ -447,26 +440,6 @@ const OCD_ERROR: CSSProperties = {
   fontFamily: 'var(--font-e2e-ocd)',
   fontSize: 14,
   color: 'var(--color-error-600)',
-}
-
-/* The live LOG IN: 145 × 50, the brick, 5 radius, Arial 14 bold, uppercase,
-   1.6 tracking. */
-const OCD_BUTTON: CSSProperties = {
-  alignSelf: 'center',
-  minWidth: 145,
-  height: 50,
-  marginTop: 14,
-  padding: '15px 20px',
-  border: '2px solid var(--color-xcel-brick)',
-  borderRadius: 5,
-  background: 'var(--color-xcel-brick)',
-  color: 'var(--color-fixed-light)',
-  fontFamily: 'var(--font-e2e-ocd)',
-  fontSize: 14,
-  fontWeight: 700,
-  letterSpacing: '1.6px',
-  textTransform: 'uppercase',
-  cursor: 'pointer',
 }
 
 /* Forgot your password? sits under the card, on the grey. */
