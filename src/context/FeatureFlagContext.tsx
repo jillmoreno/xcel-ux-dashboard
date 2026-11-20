@@ -3980,7 +3980,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        B2C. */
     surface: 'design',
     versions: ['eric-atlas-e2e'],
-    surfaces: ['invite:v3-b2c', 'invite:v3-b2c-signed-in'],
+    surfaces: ['invite:v3-b2c', 'invite:v3-b2c-signed-in', 'invite:v3-b2c-log-in'],
     group: 'Navigation',
     /* "Guest checkout", not "Invite flow" — 2026-10-30, Afsana: the B2C flows
        "are actually not invite flows, rather they pertain to guest checkout".
@@ -3994,6 +3994,10 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
       /* Both descriptions in Afsana's words (2026-11-03). */
       { value: 'xcel-signed-in', label: 'Signed into XCEL (OCD)', description: 'Signed in to an existing XCEL account. Presence of a partner code dictates next steps. If they have a partner code, cart items affect next steps. If no partner code and all items are part of the 526 SKU list, or if they agree to drop unsupported items, they are signed out. The subsequent flow is affected by whether they have an Atlas account or not.' },
       { value: 'xcel-signed-out', label: 'Not signed into XCEL (OCD)', description: 'Presence of a partner code dictates next steps. If they have a partner code, cart items affect next steps. The subsequent flow is affected by whether they have an Atlas account or not.' },
+      /* LOG IN — 2026-11-20, Afsana (PRD 5.7). Not a checkout, but the B2C
+         flow is where Swati asked for it: "if you have the B2C flow … just
+         plug in the login one". */
+      { value: 'xcel-log-in', label: 'Log In', description: 'A returning learner presses Log In. Partner Code? No → XCEL account? Yes → the OCD log-in page asks for the email alone, then Atlas’s log-in or OCD’s password depending on where the account is.' },
     ],
     page: 'dashboard-rebrand',
   },
@@ -4015,6 +4019,30 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
       { value: 'targeted', label: 'Targeted only', description: 'Only targeted SKUs (Arizona Health Pre-licensing Premier). No partner code: the new guest checkout — signed out first, if signed in.' },
       { value: 'mixed', label: 'Mixed', description: 'A targeted SKU and one that is not (New York Life and Health Flashcards). No partner code: told it will be dropped, then on — signed out first, if signed in.' },
       { value: 'none', label: 'None targeted', description: 'No targeted SKUs (New York Life and Health Flashcards). Checkout does nothing, Atlas account or not: the learner goes on to today’s OCD checkout, which this prototype does not mock.' },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'invite-v3-log-in-account',
+    /* WHERE THE LOG IN FLOW'S ACCOUNT IS — 2026-11-20, Afsana. The product
+       looks the email up in Keycloak; the demo cannot, so this says what the
+       lookup finds. ⚠ NOT FOUND ANYWHERE IS NOT ITS OWN SCREEN: OCD has no
+       service that says whether a username exists (Swati, 2026-11-18), so an
+       email Keycloak does not know is assumed to be OCD's and asked for its
+       password — `none` and `ocd` part only after the password, at "Either
+       username or password is incorrect." */
+    surface: 'design',
+    versions: ['eric-atlas-e2e'],
+    surfaces: ['invite:v3-b2c-log-in'],
+    group: 'Navigation',
+    label: 'Account found in',
+    description: 'Invite Flow V3, Log In. Where the email given on the OCD log-in page has an account: Atlas (Keycloak’s log-in, then Atlas Home), OCD only (OCD’s password, then OCD), or neither (OCD’s password, then “Either username or password is incorrect.”). On OCD, the password “wrong” is a wrong password.',
+    defaultEnabled: true,
+    defaultVariant: 'atlas',
+    variants: [
+      { value: 'atlas', label: 'Atlas (Keycloak)', description: 'Keycloak knows the email: Atlas’s log-in widget, then Atlas Home.' },
+      { value: 'ocd', label: 'OCD only', description: 'Keycloak does not know it: OCD’s password, then into OCD.' },
+      { value: 'none', label: 'Neither', description: 'Not in Keycloak or OCD: OCD’s password, then “Either username or password is incorrect.”' },
     ],
     page: 'dashboard-rebrand',
   },

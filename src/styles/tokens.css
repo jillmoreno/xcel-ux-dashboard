@@ -7610,6 +7610,12 @@ a.cre-library-card-title::after {
      nearest slab the viewer has, then Georgia. */
   --font-e2e-serif: Rockwell, 'Rockwell Std', 'Roboto Slab', 'Courier New', Georgia, serif;
   --font-e2e-avenir: 'Avenir', 'Avenir Next', 'Nunito Sans', system-ui, sans-serif;
+  /* OCD'S LOG-IN PAGE (my.xcelsolutions.com/login.aspx), measured off the
+     live page 2026-11-20 for the Log In flow: Arial labels and button, the
+     form's grey ground, and the blue of Forgot your password?. */
+  --font-e2e-ocd: Arial, Helvetica, sans-serif;
+  --color-e2e-ocd-ground: #f5f5f5;
+  --color-e2e-ocd-link: #4183c4;
   /* ⚠ THE INVITE EMAIL'S MAIL CLIENT — 2026-10-19. A MOCK OF SOMEBODY
      ELSE'S PRODUCT, so these are fixed rather than brand tokens: the one
      thing that page has to say is "you are not in XCEL yet", and a webmail

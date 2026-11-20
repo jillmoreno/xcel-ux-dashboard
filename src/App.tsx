@@ -14,6 +14,13 @@ import { VariantDeckPage } from '@/pages/VariantDeckPage'
 import { AtlasHeaderPreviewPage } from '@/pages/AtlasHeaderPreviewPage'
 import { ComparePage } from '@/pages/ComparePage'
 import { InviteV3StartPage } from '@/pages/InviteV3StartPage'
+import {
+  XcelKeycloakLogInPage,
+  XcelLogInAccountPage,
+  XcelLogInPartnerCodePage,
+  XcelOcdHomeStandIn,
+  XcelOcdLogInPage,
+} from '@/pages/XcelLogInPages'
 import { ResetPasswordPageV3 } from '@/pages/ResetPasswordPageV3'
 /* THE INVITE FLOW IS VERSIONED SINCE 2026-10-22, so these four routes name a
    SWITCH rather than a page — each picks V1's page or its V2 fork from the
@@ -286,6 +293,15 @@ export default function App() {
         {/* …and Reset your password, the page the reset email's link opens in a
             new tab — not a step of the checkout's modal (2026-11-19, Afsana). */}
         <Route path="/end-to-end-demo/reset-password" element={<TestingGate><ResetPasswordPageV3 /></TestingGate>} />
+        {/* …and V3's Log In flow (2026-11-20, Afsana — PRD 5.7): the header's
+            Log In, the live site's two questions, then OCD's log-in page asking
+            for the email alone, and Keycloak's when it knows it. See
+            `XcelLogInPages`. */}
+        <Route path="/end-to-end-demo/log-in" element={<TestingGate><XcelLogInPartnerCodePage /></TestingGate>} />
+        <Route path="/end-to-end-demo/log-in/account" element={<TestingGate><XcelLogInAccountPage /></TestingGate>} />
+        <Route path="/end-to-end-demo/log-in/sign-in" element={<TestingGate><XcelOcdLogInPage /></TestingGate>} />
+        <Route path="/end-to-end-demo/log-in/keycloak" element={<TestingGate><XcelKeycloakLogInPage /></TestingGate>} />
+        <Route path="/end-to-end-demo/log-in/ocd-home" element={<TestingGate><XcelOcdHomeStandIn /></TestingGate>} />
       </Route>
       <Route
         path="/prototype/:featureId/handoff/:componentId"

@@ -63,7 +63,7 @@ describe('the stand-alone invite flow page', () => {
     expect(screen.getByText('User is signed into XCEL and wants to make a purchase.')).toBeInTheDocument()
   })
 
-  it('lists Not signed in to XCEL before Signed in', () => {
+  it('lists Not signed in to XCEL before Signed in, then Log In', () => {
     render(
       <MemoryRouter>
         <InviteV3StartPage />
@@ -73,6 +73,7 @@ describe('the stand-alone invite flow page', () => {
     expect(within(b2c).getAllByRole('heading', { level: 3 }).map((h) => h.textContent)).toEqual([
       'Not signed into XCEL (OCD)',
       'Signed into XCEL (OCD)',
+      'Log In',
     ])
   })
 
@@ -102,7 +103,8 @@ describe('the stand-alone invite flow page', () => {
       </MemoryRouter>,
     )
     const starts = screen.getAllByRole('link', { name: /Atlas account \(opens in a new tab\)/ })
-    expect(starts).toHaveLength(8)
+    /* Two per checkout flow, and Log In's Atlas account (2026-11-20). */
+    expect(starts).toHaveLength(9)
     for (const link of starts) {
       expect(link).toHaveAttribute('target', '_blank')
       expect(link).toHaveAttribute('rel', 'noopener noreferrer')
