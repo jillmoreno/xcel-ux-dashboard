@@ -95,6 +95,8 @@ export type DesignSurfaceId =
   /* …and B2C's signed-in OCD flow, which adds its cart and email controls
      (2026-11-02). */
   | 'invite:v3-b2c-signed-in'
+  /* …and B2C's Log In flow, which adds Account found in (2026-11-20). */
+  | 'invite:v3-b2c-log-in'
 
 export type DesignSurfaceCtx = {
   surface: DesignSurfaceId | null
@@ -155,4 +157,5 @@ export const DESIGN_SURFACE_LABELS: Record<DesignSurfaceId, string> = {
   'invite:v3-b2b-direct-email': 'Invite Flow V3 · B2B2C',
   'invite:v3-b2c': 'Invite Flow V3 · B2C',
   'invite:v3-b2c-signed-in': 'Invite Flow V3 · B2C',
+  'invite:v3-b2c-log-in': 'Invite Flow V3 · B2C',
 }

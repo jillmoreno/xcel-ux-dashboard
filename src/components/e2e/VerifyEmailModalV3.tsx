@@ -571,9 +571,14 @@ function formatCountdown(seconds: number): string {
 function LoginStep({
   email,
   onLoggedIn,
+  title = 'Log in to continue',
+  lead = `Welcome back, ${E2E_LEARNER_FIRST}! Sign in to finish checking out.`,
 }: {
   email: string
   onLoggedIn: () => void
+  /** The Log In flow's own words (2026-11-20) — the checkout's otherwise. */
+  title?: string
+  lead?: string
 }) {
   const [password, setPassword] = useState('')
   const [shown, setShown] = useState(false)
@@ -768,14 +773,14 @@ function LoginStep({
       <img src="/brand/xcel-logo.webp" alt="XCEL Insurance Training by Colibri" style={CODE_LOGO} />
       <div style={HEAD}>
         <h2 id="verify-email-title" style={TITLE}>
-          Log in to continue
+          {title}
         </h2>
         <div aria-hidden style={RULE} />
         {/* The address goes in the locked field below, on every flow
             (2026-11-18, Afsana). From 2026-11-03 it was bold in this sentence
             on all but Direct Email. */}
         <p id="verify-email-lead" style={LEAD}>
-          Welcome back, {E2E_LEARNER_FIRST}! Sign in to finish checking out.
+          {lead}
         </p>
       </div>
 
@@ -871,6 +876,42 @@ function LoginStep({
         </button>
       </p>
     </form>
+  )
+}
+
+/** KEYCLOAK'S LOG-IN WIDGET, ON A PAGE — 2026-11-20, Afsana: the Log In
+ *  flow's Atlas arm. Swati (2026-11-18): it "needs to match the keycloak
+ *  widget", so it IS the checkout modal's Log in step — the same form, eye,
+ *  wrong password and Forgot password? — on a card of its own, then the
+ *  modal's "Signing you in". The address is the one given on OCD's page,
+ *  locked. No name in the lead: nobody has signed in yet to be greeted. */
+export function KeycloakLogInCardV3({ email, onSignedIn }: { email: string; onSignedIn: () => void }) {
+  const [signingIn, setSigningIn] = useState(false)
+  useEffect(() => {
+    if (!signingIn) return
+    const timer = window.setTimeout(onSignedIn, LOADING_HANDOFF_MS)
+    return () => window.clearTimeout(timer)
+  }, [signingIn, onSignedIn])
+  return (
+    <section
+      aria-labelledby={signingIn ? undefined : 'verify-email-title'}
+      aria-label={signingIn ? 'Signing you in' : undefined}
+      style={{ ...MODAL, maxHeight: 'none', overflowY: 'visible' }}
+    >
+      {signingIn ? (
+        <div style={SIGNING_IN}>
+          <img src="/brand/xcel-logo.webp" alt="XCEL Insurance Training by Colibri" style={CODE_LOGO} />
+          <XcelLoadingStatus message="Signing you in" size={SIGNING_SPINNER} />
+        </div>
+      ) : (
+        <LoginStep
+          email={email}
+          title="Log in"
+          lead="Enter your password to log in to your learning dashboard."
+          onLoggedIn={() => setSigningIn(true)}
+        />
+      )}
+    </section>
   )
 }
 

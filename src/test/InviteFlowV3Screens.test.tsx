@@ -884,8 +884,11 @@ describe('Invite Flow V3 — the Has Atlas sign-in', () => {
   })
 
   it('asks every flow’s email, and knows which sign in', () => {
-    /* The OCD flows' check depends on the cart — see their own tests. */
-    for (const flow of INVITE_FLOWS_V3.filter((f) => f.id !== 'xcel-signed-in' && f.id !== 'xcel-signed-out')) {
+    /* The OCD flows' check depends on the cart — see their own tests. Log In
+       buys nothing, so it has no checkout to check an email over
+       (`LogInFlowV3.test.tsx`). */
+    const checksOut = (id: string) => id !== 'xcel-signed-in' && id !== 'xcel-signed-out' && id !== 'xcel-log-in'
+    for (const flow of INVITE_FLOWS_V3.filter((f) => checksOut(f.id))) {
       expect(verifiesEmailFirst(flow)).toBe(true)
     }
     const qr = INVITE_FLOWS_V3.find((f) => f.id === 'qr')!

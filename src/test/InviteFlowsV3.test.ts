@@ -46,11 +46,12 @@ describe('Invite Flow V3 model types and flows', () => {
       const rows = INVITE_FLOWS_V3.filter((f) => f.model === model).map((f) => f.id).sort()
       expect(variants).toEqual(rows)
       expect(def?.defaultVariant).toBe(DEFAULT_INVITE_FLOW_V3[model])
-      /* B2C's list also shows on the signed-in flow's own surface. */
+      /* B2C's list also shows on the signed-in flow's own surface, and on
+         Log In's (2026-11-20). */
       expect(def?.surfaces).toEqual(
         model === 'b2b'
           ? [inviteV3Surface(model), inviteV3Surface(model, 'direct-email')]
-          : [inviteV3Surface(model), inviteV3Surface(model, 'xcel-signed-in')],
+          : [inviteV3Surface(model), inviteV3Surface(model, 'xcel-signed-in'), inviteV3Surface(model, 'xcel-log-in')],
       )
     })
   }
@@ -75,10 +76,14 @@ describe('Invite Flow V3 model types and flows', () => {
     expect(keys).not.toContain(INVITE_V3_FLOW_FLAGS.b2c)
   })
 
-  it('carries two B2B flows — Direct Email and QR Code — and the two OCD flows', () => {
-    expect(INVITE_FLOWS_V3).toHaveLength(4)
+  it('carries two B2B flows — Direct Email and QR Code — the two OCD flows, and Log In', () => {
+    expect(INVITE_FLOWS_V3).toHaveLength(5)
     expect(INVITE_FLOWS_V3.filter((f) => f.model === 'b2b').map((f) => f.id)).toEqual(['direct-email', 'qr'])
-    expect(INVITE_FLOWS_V3.filter((f) => f.model === 'b2c').map((f) => f.id)).toEqual(['xcel-signed-in', 'xcel-signed-out'])
+    expect(INVITE_FLOWS_V3.filter((f) => f.model === 'b2c').map((f) => f.id)).toEqual([
+      'xcel-signed-in',
+      'xcel-signed-out',
+      'xcel-log-in',
+    ])
     expect(INVITE_FLOWS_V3.find((f) => f.id === 'qr')?.label).toBe('QR Code')
   })
 

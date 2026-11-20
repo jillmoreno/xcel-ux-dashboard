@@ -8,6 +8,7 @@ import {
   INVITE_V3_CART_FLAG,
   INVITE_V3_EMAIL_ACCOUNT_FLAG,
   INVITE_V3_FLOW_FLAGS,
+  INVITE_V3_LOG_IN_ACCOUNT_FLAG,
   INVITE_V3_MODEL_FLAG,
   V3_B2C_CART,
   entryPathV3,
@@ -53,10 +54,11 @@ export function InviteV3StartPage() {
   const [params, setParams] = useSearchParams()
   const tab: Tab = params.get('tab') === 'screens' ? 'screens' : 'flows'
   const b2b = INVITE_FLOWS_V3.filter((f) => f.model === 'b2b')
-  /* Not signed in first, then signed in (2026-11-18, Afsana) — this page's
-     order only; the Design bar keeps the catalog's. */
+  /* Not signed in first, then signed in (2026-11-18, Afsana), then Log In
+     (2026-11-20) — this page's order only; the Design bar keeps the
+     catalog's. */
   const b2c = INVITE_FLOWS_V3.filter((f) => f.model === 'b2c').sort(
-    (a, b) => Number(a.id === 'xcel-signed-in') - Number(b.id === 'xcel-signed-in'),
+    (a, b) => b2cOrder(a.id) - b2cOrder(b.id),
   )
   return (
     <div style={PAGE}>
@@ -105,6 +107,10 @@ export function InviteV3StartPage() {
   )
 }
 
+function b2cOrder(id: string): number {
+  return id === 'xcel-log-in' ? 2 : id === 'xcel-signed-in' ? 1 : 0
+}
+
 function FlowGroup({ title, flows }: { title: string; flows: InviteFlowV3[] }) {
   return (
     <section style={{ display: 'grid', gap: 12 }} aria-label={title}>
@@ -134,7 +140,16 @@ const SUBTEXT: Readonly<Record<string, string>> = {
   qr: 'User scans an XCEL partner’s QR code.',
   'xcel-signed-out': 'User is not signed into XCEL and wants to make a purchase.',
   'xcel-signed-in': 'User is signed into XCEL and wants to make a purchase.',
+  'xcel-log-in': 'User has an account and presses Log In. The log-in page sends them to Atlas or OCD.',
 }
+
+/* Log In's starts, by where the account is (`invite-v3-log-in-account`) —
+   2026-11-20. Its walk starts on the cart but buys nothing, so no Cart. */
+const LOG_IN_STARTS = [
+  { label: 'Atlas account', account: 'atlas' },
+  { label: 'OCD account', account: 'ocd' },
+  { label: 'No account', account: 'none' },
+] as const
 
 const PRODUCTS_FLAG = FEATURE_FLAGS.find((f) => f.key === 'pdp-products')
 /* Without Multi-product (Old) — this page only; the Design bar keeps it
@@ -144,8 +159,11 @@ const PRODUCTS = (PRODUCTS_FLAG?.variants ?? []).filter((v) => v.value !== 'mult
 function FlowRow({ flow }: { flow: InviteFlowV3 }) {
   const [cart, setCart] = useState<string>('targeted')
   const [product, setProduct] = useState<string>(PRODUCTS_FLAG?.defaultVariant ?? 'standard')
+  const logIn = flow.id === 'xcel-log-in'
   const b2c = flow.model === 'b2c'
-  const starts = ASKS_ACCOUNT.has(flow.id)
+  const starts = logIn
+    ? LOG_IN_STARTS
+    : ASKS_ACCOUNT.has(flow.id)
     ? [
         { label: 'No Atlas account', account: 'no-atlas' },
         { label: 'Has Atlas account', account: 'atlas' },
@@ -158,7 +176,7 @@ function FlowRow({ flow }: { flow: InviteFlowV3 }) {
         <p style={ROW_TEXT}>{SUBTEXT[flow.id] ?? flow.description}</p>
       </div>
       <div style={ACTIONS}>
-        {b2c ? (
+        {logIn ? null : b2c ? (
           <label style={CART_LABEL}>
             Cart
             <Dropdown value={cart} onChange={setCart} options={CARTS} />
@@ -225,7 +243,9 @@ function startHref(flow: InviteFlowV3, account: string | null, cart: string | nu
     `${INVITE_FLOW_VERSION_FLAG}:v3`,
     `${INVITE_V3_MODEL_FLAG}:${model}`,
     `${INVITE_V3_FLOW_FLAGS[model]}:${flow.id}`,
-    ...(account ? [`${INVITE_V3_EMAIL_ACCOUNT_FLAG}:${account}`] : []),
+    ...(account
+      ? [`${flow.id === 'xcel-log-in' ? INVITE_V3_LOG_IN_ACCOUNT_FLAG : INVITE_V3_EMAIL_ACCOUNT_FLAG}:${account}`]
+      : []),
     ...(cart ? [`${INVITE_V3_CART_FLAG}:${cart}`] : []),
     ...(product ? [`pdp-products:${product}`] : []),
   ]
