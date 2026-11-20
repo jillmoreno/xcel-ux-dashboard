@@ -196,6 +196,18 @@ import UsersSvg from './users.svg?react'
 import VideoSvg from './video.svg?react'
 import FacebookSvg from './facebook.svg?react'
 import XmarkSvg from './xmark.svg?react'
+// Eric's product page (`ProductDetailPageV3Multi.tsx`), copied from `erics-atlas-primary` @ c9ec0ca2 (2026-11-17).
+import AngleDownRegularSvg from './angle-down-regular.svg?react'
+import AngleDownSolidSvg from './angle-down-solid.svg?react'
+import ArrowDownSolidSvg from './arrow-down-solid.svg?react'
+import BallotCheckLightSvg from './ballot-check-light.svg?react'
+import BookThinSvg from './book-thin.svg?react'
+import CardsBlankThinSvg from './cards-blank-thin.svg?react'
+import ChartLineUpLightSvg from './chart-line-up-light.svg?react'
+import CrownSolidSvg from './crown-solid.svg?react'
+import FaceGrinLightSvg from './face-grin-light.svg?react'
+import FileCertificateSolidSvg from './file-certificate-solid.svg?react'
+import ShieldCheckSolidSvg from './shield-check-solid.svg?react'
 
 type LucideLikeProps = {
   size?: number
@@ -468,3 +480,15 @@ export const UserSlash = makeIcon(UserSlashSvg) // FA: user-slash
 export const Users = makeIcon(UsersSvg)
 export const Video = makeIcon(VideoSvg)
 export const X = makeIcon(XmarkSvg) // FA: xmark
+// Eric's product page, 2026-11-17 — his branch registers the same eleven.
+export const AngleDownRegular = makeIcon(AngleDownRegularSvg) // FA: angle-down (regular)
+export const AngleDownSolid = makeIcon(AngleDownSolidSvg) // FA: angle-down (solid)
+export const ArrowDownSolid = makeIcon(ArrowDownSolidSvg) // FA: arrow-down (solid)
+export const BallotCheckLight = makeIcon(BallotCheckLightSvg) // FA: ballot-check (light)
+export const BookThin = makeIcon(BookThinSvg) // FA: book (thin)
+export const CardsBlankThin = makeIcon(CardsBlankThinSvg) // FA: cards-blank (thin)
+export const ChartLineUpLight = makeIcon(ChartLineUpLightSvg) // FA: chart-line-up (light)
+export const CrownSolid = makeIcon(CrownSolidSvg) // FA: crown (solid)
+export const FaceGrinLight = makeIcon(FaceGrinLightSvg) // FA: face-grin (light)
+export const FileCertificateSolid = makeIcon(FileCertificateSolidSvg) // FA: file-certificate (solid)
+export const ShieldCheckSolid = makeIcon(ShieldCheckSolidSvg) // FA: shield-check (solid)

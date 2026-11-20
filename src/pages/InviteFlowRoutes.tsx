@@ -1,4 +1,5 @@
 import { useFeatureFlag } from '@/context/FeatureFlagContext'
+import { useInviteDetailsMissing } from '@/data/inviteMissingDetails'
 import {
   INVITE_FLOW_VERSION_FLAG,
   resolveInviteFlowVersion,
@@ -10,6 +11,7 @@ import { InviteEmailPageV3 } from './InviteEmailPageV3'
 import { InvitedProductDetailPage } from './InvitedProductDetailPage'
 import { InvitedProductDetailPageV2 } from './InvitedProductDetailPageV2'
 import { InvitedProductDetailPageV3 } from './InvitedProductDetailPageV3'
+import { ProductDetailPageV3Multi } from './ProductDetailPageV3Multi'
 import { InvitedCheckoutPage } from './InvitedCheckoutPage'
 import { InvitedCheckoutPageV2 } from './InvitedCheckoutPageV2'
 import { InvitedCheckoutPageV3 } from './InvitedCheckoutPageV3'
@@ -76,7 +78,14 @@ export function InviteEmailRoute() {
 
 export function InvitedProductDetailRoute() {
   const version = useInviteFlowVersion()
-  if (version === 'v3') return <InvitedProductDetailPageV3 />
+  /* V3's product page is Eric's multi-product page while its flag is on
+     (2026-11-17) — see `ProductDetailPageV3Multi`. ⚠ NOT WHILE THE COURSE IS
+     UNKNOWN: V3's own page asks it first ("Select your state and line of
+     authority", the QR code's step 2), and Continue writes the pick and
+     redraws this route — as Eric's page, on the course picked. */
+  const ericPdp = useFeatureFlag('invite-v3-eric-pdp').enabled
+  const askingCourse = useInviteDetailsMissing()
+  if (version === 'v3') return ericPdp && !askingCourse ? <ProductDetailPageV3Multi /> : <InvitedProductDetailPageV3 />
   return version === 'v2' ? <InvitedProductDetailPageV2 /> : <InvitedProductDetailPage />
 }
 

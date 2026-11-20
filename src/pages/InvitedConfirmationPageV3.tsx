@@ -32,6 +32,7 @@ import { PartnerHeader } from '@/components/e2e/PartnerHeader'
 import { TopoBackground } from '@/components/e2e/TopoBackground'
 import { TakingYouToCourseDialog } from '@/components/e2e/TakingYouToCourseDialog'
 import { InvitePasswordChecklistV3 } from '@/components/e2e/InvitePasswordChecklistV3'
+import { PasswordEyeV3 } from '@/components/e2e/PasswordEyeV3'
 import { ConfirmationReceiptV3 } from '@/components/e2e/ConfirmationReceiptV3'
 import { CART_PACKAGE_PARAM, cartPackage } from '@/data/xcelCourseFinder'
 import { usePartnerAttribution } from '@/data/inviteFlows'
@@ -79,15 +80,19 @@ export function InvitedConfirmationPageV3() {
      account. A click outside still closes it first. */
   const [signingIn, setSigningIn] = useState(false)
   const navigate = useNavigate()
+  /* Opened from `/invite-v3` (2026-11-17): the walk is the flow alone, so
+     Setting up your account is where it ends — it holds rather than going on
+     into Atlas Home. */
+  const standalone = params.get('standalone') === '1'
   useEffect(() => {
-    if (!signingIn) return
+    if (!signingIn || standalone) return
     const t = window.setTimeout(() => {
       navigate(`/dashboard-rebrand?demo=1&version=${END_TO_END_VERSION}&${E2E_JOURNEY_PARAM}=${E2E_JOURNEY_FULL}`, {
         replace: true,
       })
     }, SETTING_UP_MS)
     return () => window.clearTimeout(t)
-  }, [signingIn, navigate])
+  }, [signingIn, standalone, navigate])
 
   /* What was bought, and for how much — V2's ending's reading of the same
      address, so the receipt agrees with the checkout. */
@@ -155,13 +160,7 @@ export function InvitedConfirmationPageV3() {
                       aria-pressed={shown}
                       style={EYE}
                     >
-                      <img
-                        src={shown ? '/brand/confirmation/eye.svg' : '/brand/confirmation/eye-off.svg'}
-                        alt=""
-                        width={18}
-                        height={18}
-                        style={{ display: 'block' }}
-                      />
+                      <PasswordEyeV3 slashed={shown} />
                     </button>
                   </span>
                 </label>
@@ -169,7 +168,9 @@ export function InvitedConfirmationPageV3() {
                 <div style={FIELD_GROUP}>
                   <label style={FIELD_GROUP}>
                     <span style={FIELD_LABEL}>Confirm password</span>
-                    <span style={mismatch ? { ...INPUT_SHELL, border: '1px solid var(--color-error-600)' } : INPUT_SHELL}>
+                    {/* No red outline on a mismatch — "Passwords do not match." under
+                        it is enough (2026-11-18, Afsana). */}
+                    <span style={INPUT_SHELL}>
                       <input
                         type={confirmShown ? 'text' : 'password'}
                         value={confirm}
@@ -187,13 +188,7 @@ export function InvitedConfirmationPageV3() {
                         aria-pressed={confirmShown}
                         style={EYE}
                       >
-                        <img
-                          src={confirmShown ? '/brand/confirmation/eye.svg' : '/brand/confirmation/eye-off.svg'}
-                          alt=""
-                          width={18}
-                          height={18}
-                          style={{ display: 'block' }}
-                        />
+                        <PasswordEyeV3 slashed={confirmShown} />
                       </button>
                     </span>
                   </label>
@@ -374,8 +369,11 @@ const PASSWORD_INPUT: CSSProperties = {
   color: 'var(--color-text-primary)',
 }
 
+/* Keycloak's eye, no pupil — `PasswordEyeV3`, the same as every V3 password
+   field and Change Password in Account Details (2026-11-19, Afsana). */
 const EYE: CSSProperties = {
   flex: 'none',
+  color: 'var(--color-text-secondary)',
   display: 'inline-flex',
   padding: 0,
   border: 'none',

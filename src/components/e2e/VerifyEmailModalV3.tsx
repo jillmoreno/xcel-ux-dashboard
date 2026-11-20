@@ -4,16 +4,20 @@ import {
   useState,
   type ClipboardEvent,
   type CSSProperties,
+  type InputHTMLAttributes,
   type KeyboardEvent,
+  type ReactNode,
 } from 'react'
 import { createPortal } from 'react-dom'
+import { useSearchParams } from 'react-router-dom'
 import {
   VERIFICATION_CODE_LENGTH,
   codeComplete,
   type VerifiedIdentity,
 } from '@/data/inviteVerification'
 import { looksLikeEmail } from '@/data/inviteFlows'
-import { Check, CircleCheckSolid } from '@/icons'
+import { ArrowLeft, Check, CircleCheckSolid } from '@/icons'
+import { PasswordEyeV3 } from '@/components/e2e/PasswordEyeV3'
 import { V3_EXPIRED_DEMO_CODE, V3_INVALID_DEMO_CODE, V3_WRONG_DEMO_PASSWORD } from '@/data/inviteFlowsV3'
 import { E2E_LEARNER_EMAIL, E2E_LEARNER_FIRST, E2E_LEARNER_LAST } from '@/pages/endToEndDemo'
 import { LOADING_HANDOFF_MS } from '@/components/e2e/XcelLoadingPage'
@@ -70,17 +74,16 @@ export function VerifyEmailModalV3({
   /** Hold on "Signing you in" before the checkout. */
   signsIn?: boolean
   /** An address the flow already has — Direct Email's invitation supplied it
-   *  (2026-11-04). The check opens on its second step with it, and there is
-   *  no "Use a different email": the partner named this one. */
+   *  (2026-11-04). The email step opens filled with it, and the code step
+   *  has no "Use a different email": the partner named this one. */
   suppliedEmail?: string
 }) {
-  /* A supplied address with Atlas goes straight to Log in. Without Atlas it
-     no longer goes straight to the code (2026-11-13, Afsana): the email step
-     comes first, filled with the invitation's address, so no code is sent
-     before the learner says where. */
-  const [step, setStep] = useState<'email' | 'code' | 'verified' | 'name' | 'login' | 'signing-in'>(() =>
-    suppliedEmail && second === 'login' ? 'login' : 'email',
-  )
+  /* The email step always comes first — filled with a supplied address, so
+     nothing is sent and nobody is asked to sign in before the learner says
+     where (2026-11-13, Afsana, for the code; 2026-11-18 for Log in, which
+     until then opened straight on a supplied address with Atlas). Log in
+     keeps its own Email field, filled with what the step was given. */
+  const [step, setStep] = useState<'email' | 'code' | 'verified' | 'name' | 'login' | 'signing-in'>('email')
   const layer = useV3DialogLayer()
   const [email, setEmail] = useState(suppliedEmail ?? '')
   const ready = looksLikeEmail(email)
@@ -155,8 +158,10 @@ export function VerifyEmailModalV3({
 
             <div style={FIELD_AND_ERROR}>
               <label htmlFor="verify-email" style={FIELD_GROUP}>
+                {/* "Email", not "Email address" — every V3 modal (2026-11-18,
+                    Afsana). */}
                 <span style={FIELD_LABEL}>
-                  Email address<span aria-hidden>*</span>
+                  Email <span aria-hidden>*</span>
                 </span>
                 <input
                   id="verify-email"
@@ -169,7 +174,9 @@ export function VerifyEmailModalV3({
                   aria-invalid={badEmail}
                   aria-describedby={badEmail ? 'verify-email-invalid' : undefined}
                   className="cre-e2e-input cre-e2e-input-v3"
-                  style={badEmail ? { ...FIELD, ...FIELD_INVALID } : FIELD}
+                  /* No red stroke — the line under it is enough (2026-11-18,
+                     Afsana). */
+                  style={FIELD}
                 />
               </label>
               {badEmail ? <EmailInvalid id="verify-email-invalid" /> : null}
@@ -212,8 +219,6 @@ export function VerifyEmailModalV3({
              whether or not the flow's `signsIn` does. */
           <LoginStep
             email={email}
-            supplied={Boolean(suppliedEmail)}
-            onEmailChange={setEmail}
             onLoggedIn={() => setStep('signing-in')}
           />
         ) : (
@@ -567,16 +572,23 @@ function formatCountdown(seconds: number): string {
  *  is a password. Any password is accepted, as in the file. */
 function LoginStep({
   email,
-  supplied,
-  onEmailChange,
   onLoggedIn,
+  title = 'Log in to continue',
+  lead = `Welcome back, ${E2E_LEARNER_FIRST}! Sign in to finish checking out.`,
+  showEmail = true,
+  onBack,
 }: {
   email: string
-  /** Direct Email: the partner supplied the address, and Log in shows it in
-   *  an email field, filled and editable (2026-11-13, Afsana). */
-  supplied: boolean
-  onEmailChange: (email: string) => void
   onLoggedIn: () => void
+  /** The Log In flow's own words (2026-11-20) — the checkout's otherwise. */
+  title?: string
+  /** `null` draws no lead — the Log In flow's (2026-11-20, Afsana: "remove the
+   *  subtext"). */
+  lead?: string | null
+  /** Off on the Log In flow, whose email step is the page before; ← Back
+   *  returns to it instead (2026-11-20, Afsana). */
+  showEmail?: boolean
+  onBack?: () => void
 }) {
   const [password, setPassword] = useState('')
   const [shown, setShown] = useState(false)
@@ -586,12 +598,26 @@ function LoginStep({
   /* Forgot password? — 2026-11-05, Afsana: the modal says a reset link went
      to the address, bold, and to follow the email's instructions. */
   const [resetSent, setResetSent] = useState(false)
-  /* Reset your password — 2026-11-12, Afsana: for the demo, a click on
-     Check your email (anywhere but its two buttons) stands in for following
-     the link. Reset password comes back here with a green banner — a
-     proposal; where a reset lands is still open. */
-  const [resetting, setResetting] = useState(false)
-  const [wasReset, setWasReset] = useState(false)
+  /* Reset your password, asked first — 2026-11-19, Afsana: Forgot password?
+     opens a step that takes the address and sends the link, and only Send
+     reset link reaches Check your email. Until then Forgot password? went
+     straight to Check your email. Empty on purpose: "Enter your email". */
+  const [requesting, setRequesting] = useState(false)
+  const [resetEmail, setResetEmail] = useState('')
+  /* The reset itself is NOT in this modal (2026-11-19, Afsana): the link in
+     the email opens Reset your password on a page of its own, in a new tab
+     (`ResetPasswordPageV3`). For the demo, a click on Check your email
+     (anywhere but its two buttons) — or its demo link — opens that page in
+     a new tab, and this tab stays on Check your email. Until 2026-11-19 the
+     modal itself turned into the reset form, then came back to Log in with
+     a "Your password has been reset." banner; both are gone, since a
+     checkout tab cannot know a reset happened in another. */
+  const [params] = useSearchParams()
+  const openResetLink = () => {
+    const q = new URLSearchParams(params)
+    q.set('email', resetEmail.trim())
+    window.open(`/end-to-end-demo/reset-password?${q.toString()}`, '_blank', 'noopener')
+  }
   /* Resend link waits after every send, the first included (2026-11-05,
      Afsana: "disabled for a bit until the system enables the user to make
      another request"). The real wait is the system's; the demo's is
@@ -603,21 +629,87 @@ function LoginStep({
     return () => window.clearTimeout(t)
   }, [linkWait])
   const canResend = linkWait <= 0
-  /* Direct Email's field can be edited, so it has to hold an address too. */
-  const ready = password !== '' && (!supplied || looksLikeEmail(email))
-  const badEmail = supplied && email.trim() !== '' && !looksLikeEmail(email)
-  if (resetting) {
+  const ready = password !== ''
+  if (requesting) {
+    const valid = looksLikeEmail(resetEmail)
+    const badResetEmail = resetEmail.trim() !== '' && !valid
     return (
-      <ResetPasswordStep
-        email={email}
-        onReset={() => {
-          setResetting(false)
-          setResetSent(false)
-          setPassword('')
-          setFailed(false)
-          setWasReset(true)
+      <form
+        style={BODY}
+        onSubmit={(e) => {
+          e.preventDefault()
+          if (!valid) return
+          setRequesting(false)
+          setResetSent(true)
+          setLinkWait(RESEND_LINK_AFTER_S)
         }}
-      />
+        noValidate
+      >
+        {/* On the Log In flow, ← Back in the top left returns to Log in, in
+            place of Back to sign in (2026-11-20, Afsana). */}
+        {onBack ? <V3CardBack onBack={() => setRequesting(false)} /> : null}
+        <img src="/brand/xcel-logo.webp" alt="XCEL Insurance Training by Colibri" style={CODE_LOGO} />
+        <div style={HEAD}>
+          <h2 id="verify-email-title" style={TITLE}>
+            Reset your password
+          </h2>
+          <div aria-hidden style={RULE} />
+          <p id="verify-email-lead" style={LEAD}>
+            Enter your email and we’ll send you a link to reset your password.
+          </p>
+        </div>
+        <div style={FIELD_AND_ERROR}>
+          <label htmlFor="reset-request-email" style={FIELD_GROUP}>
+            <span style={FIELD_LABEL}>
+              Email <span aria-hidden>*</span>
+            </span>
+            <input
+              id="reset-request-email"
+              type="email"
+              required
+              autoComplete="email"
+              placeholder="you@example.com"
+              value={resetEmail}
+              onChange={(e) => setResetEmail(e.target.value)}
+              aria-invalid={badResetEmail}
+              aria-describedby={badResetEmail ? 'reset-request-invalid' : undefined}
+              className="cre-e2e-input cre-e2e-input-v3"
+              style={FIELD}
+            />
+          </label>
+          {badResetEmail ? <EmailInvalid id="reset-request-invalid" /> : null}
+        </div>
+        {/* Send reset link, primary; then a light rule, "Forgot Email?" and
+            where to turn, then Back to sign in, secondary (2026-11-20,
+            Afsana). */}
+        <div style={ACTIONS}>
+          <button type="submit" className="cre-e2e-cta" disabled={!valid} aria-disabled={!valid} style={valid ? CTA : CTA_OFF}>
+            Send reset link
+          </button>
+          <hr aria-hidden style={FORGOT_EMAIL_RULE} />
+          <div style={FORGOT_EMAIL}>
+            <h3 style={FORGOT_EMAIL_TITLE}>Forgot Email?</h3>
+            <p style={FORGOT_EMAIL_TEXT}>
+              If you no longer have access to the email on file or have forgotten which one you used, please contact our
+              support team.
+            </p>
+          </div>
+          {onBack ? null : (
+            <button type="button" style={CTA_SECONDARY} onClick={() => setRequesting(false)}>
+              Back to sign in
+            </button>
+          )}
+        </div>
+        {/* The demo fill — the same invisible, labelled corner as the email
+            step's. */}
+        <button
+          type="button"
+          aria-label="Fill in the demo learner’s email"
+          title="Demo shortcut: fill in the demo learner’s email"
+          style={DEMO_FILL}
+          onClick={() => setResetEmail(E2E_LEARNER_EMAIL)}
+        />
+      </form>
     )
   }
   if (resetSent) {
@@ -626,7 +718,7 @@ function LoginStep({
         style={{ ...BODY, cursor: 'pointer' }}
         title="Demo: click to follow the reset link"
         onClick={(e) => {
-          if (!(e.target as HTMLElement).closest('button')) setResetting(true)
+          if (!(e.target as HTMLElement).closest('button')) openResetLink()
         }}
       >
         <img src="/brand/xcel-logo.webp" alt="XCEL Insurance Training by Colibri" style={CODE_LOGO} />
@@ -636,17 +728,12 @@ function LoginStep({
           </h2>
           <div aria-hidden style={RULE} />
           <p id="verify-email-lead" style={LEAD}>
-            We sent a password reset link to <strong style={{ fontWeight: 800 }}>{email.trim()}</strong>. Follow the
+            We sent a password reset link to <strong style={{ fontWeight: 800 }}>{resetEmail.trim()}</strong>. Follow the
             instructions in the email to reset your password. Be sure to check your spam or junk folders.
           </p>
         </div>
-        {/* The address the link went to, in a field the learner cannot change
-            — grey, no lock, as the checkout's fixed fields (2026-11-13,
-            Afsana). */}
-        <label htmlFor="reset-email" style={FIELD_GROUP}>
-          <span style={FIELD_LABEL}>Email address</span>
-          <input id="reset-email" type="email" value={email.trim()} disabled readOnly style={{ ...FIELD, ...FIELD_DISABLED }} />
-        </label>
+        {/* No Email field — the lead already names the address (2026-11-19,
+            Afsana). From 2026-11-13 it sat here, grey and locked. */}
         {/* Resend link, primary, over Back to sign in, secondary (2026-11-05,
             Afsana). Back is the way out — the modal has no ✕. */}
         <div style={ACTIONS}>
@@ -674,6 +761,16 @@ function LoginStep({
             Back to sign in
           </button>
         </div>
+        {/* Demo only — the email's link, so a reviewer can find the reset
+            page without knowing the whole modal is clickable.
+            `data-demo-only`: the screenshot scripts hide it, so the pictures
+            developers read show the design alone (2026-11-19, Afsana). */}
+        <p data-demo-only style={{ ...NOTE, textAlign: 'center' }}>
+          Demo:{' '}
+          <button type="button" className="cre-e2e-textlink" style={TEXT_LINK} onClick={openResetLink}>
+            open the reset link in a new tab
+          </button>
+        </p>
       </div>
     )
   }
@@ -688,55 +785,43 @@ function LoginStep({
       }}
       noValidate
     >
+      {onBack ? <V3CardBack onBack={onBack} /> : null}
       <img src="/brand/xcel-logo.webp" alt="XCEL Insurance Training by Colibri" style={CODE_LOGO} />
       <div style={HEAD}>
         <h2 id="verify-email-title" style={TITLE}>
-          Log in to continue
+          {title}
         </h2>
         <div aria-hidden style={RULE} />
-        {wasReset ? (
-          <p role="status" style={RESENT_BANNER}>
-            <CircleCheckSolid size={16} aria-hidden style={{ flex: 'none' }} />
-            <span>Your password has been reset.</span>
-          </p>
-        ) : null}
-        {/* The address in the sentence, not a field (2026-11-03, Afsana) — it
-            was a locked email field above the password. */}
-        {supplied ? (
+        {/* The address goes in the locked field below, on every flow
+            (2026-11-18, Afsana). From 2026-11-03 it was bold in this sentence
+            on all but Direct Email. */}
+        {lead === null ? null : (
           <p id="verify-email-lead" style={LEAD}>
-            Welcome back, {E2E_LEARNER_FIRST}! Sign in to finish checking out.
-          </p>
-        ) : (
-          <p id="verify-email-lead" style={LEAD}>
-            Welcome back, {E2E_LEARNER_FIRST}! Sign in to <strong style={{ fontWeight: 800 }}>{email.trim()}</strong>{' '}
-            to finish checking out.
+            {lead}
           </p>
         )}
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-        {/* Direct Email's address, pre-filled from the invitation and
-            editable — no lock, no grey (2026-11-13, Afsana). */}
-        {supplied ? (
+        {/* The address from the email step, pre-filled and locked — the
+            checkout's grey, no lock icon — on every flow (2026-11-18,
+            Afsana). */}
+        {showEmail ? (
           <div style={FIELD_AND_ERROR}>
             <label htmlFor="login-email" style={FIELD_GROUP}>
               <span style={FIELD_LABEL}>
-                Email address <span aria-hidden>*</span>
+                Email <span aria-hidden>*</span>
               </span>
               <input
                 id="login-email"
                 type="email"
-                required
-                autoComplete="email"
                 value={email}
-                onChange={(e) => onEmailChange(e.target.value)}
-                aria-invalid={badEmail}
-                aria-describedby={badEmail ? 'login-email-invalid' : undefined}
+                disabled
+                readOnly
                 className="cre-e2e-input cre-e2e-input-v3"
-                style={badEmail ? { ...FIELD, ...FIELD_INVALID } : FIELD}
+                style={{ ...FIELD, ...FIELD_DISABLED }}
               />
             </label>
-            {badEmail ? <EmailInvalid id="login-email-invalid" /> : null}
           </div>
         ) : null}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
@@ -758,22 +843,18 @@ function LoginStep({
                 }}
                 aria-invalid={failed}
                 aria-describedby={failed ? 'login-failed' : undefined}
-                style={failed ? { ...FIELD, paddingRight: 40, ...FIELD_INVALID } : { ...FIELD, paddingRight: 40 }}
+                /* No red stroke on a wrong password either — the line under it is
+                   enough (2026-11-18, Afsana). */
+                style={{ ...FIELD, paddingRight: 40 }}
               />
               <button
                 type="button"
                 onClick={() => setShown((v) => !v)}
                 aria-label={shown ? 'Hide password' : 'Show password'}
                 aria-pressed={shown}
-                style={EYE}
+                style={EYE_ACCOUNT}
               >
-                <img
-                  src={shown ? '/brand/confirmation/eye.svg' : '/brand/confirmation/eye-off.svg'}
-                  alt=""
-                  width={18}
-                  height={18}
-                  style={{ display: 'block' }}
-                />
+                <PasswordEyeV3 slashed={shown} />
               </button>
             </span>
           </label>
@@ -786,8 +867,8 @@ function LoginStep({
             type="button"
             style={FORGOT}
             onClick={() => {
-              setResetSent(true)
-              setLinkWait(RESEND_LINK_AFTER_S)
+              setResetEmail('')
+              setRequesting(true)
             }}
           >
             Forgot password?
@@ -818,8 +899,86 @@ function LoginStep({
   )
 }
 
-/** "Reset your password" — 2026-11-12, Afsana. Reached in the demo by
- *  clicking Check your email. The same meter and seven rules as the password
+/** KEYCLOAK'S LOG-IN WIDGET, ON A PAGE — 2026-11-20, Afsana: the Log In
+ *  flow's Atlas arm. Swati (2026-11-18): it "needs to match the keycloak
+ *  widget", so it IS the checkout modal's Log in step — the same form, eye,
+ *  wrong password and Forgot password? — on a card of its own, then the
+ *  modal's "Signing you in". The address is the one given on OCD's page,
+ *  locked. No name in the lead: nobody has signed in yet to be greeted. */
+export function KeycloakLogInCardV3({
+  email,
+  onSignedIn,
+  onBack,
+}: {
+  email: string
+  onSignedIn: () => void
+  onBack: () => void
+}) {
+  const [signingIn, setSigningIn] = useState(false)
+  useEffect(() => {
+    if (!signingIn) return
+    const timer = window.setTimeout(onSignedIn, LOADING_HANDOFF_MS)
+    return () => window.clearTimeout(timer)
+  }, [signingIn, onSignedIn])
+  return (
+    <section
+      aria-labelledby={signingIn ? undefined : 'verify-email-title'}
+      aria-label={signingIn ? 'Signing you in' : undefined}
+      style={{ ...MODAL, maxHeight: 'none', overflowY: 'visible' }}
+    >
+      {signingIn ? (
+        <V3CardSigningIn />
+      ) : (
+        /* No lead and no email field — the email step is the page before,
+           and ← Back returns to it to change the address (2026-11-20,
+           Afsana). */
+        <LoginStep
+          email={email}
+          title="Log in"
+          lead={null}
+          showEmail={false}
+          onBack={onBack}
+          onLoggedIn={() => setSigningIn(true)}
+        />
+      )}
+    </section>
+  )
+}
+
+/** RESET YOUR PASSWORD, ON ITS OWN PAGE — 2026-11-19, Afsana: the reset
+ *  link in the email opens a page in a new tab, not a step of the checkout
+ *  modal. The card is the modal's card, so the form, the rules and the eyes
+ *  are the same ones; `ResetPasswordPageV3` centres it under a header.
+ *  Reset password turns the card into Password reset: Email verified's green
+ *  check and "Your password has been successfully reset!". No XCEL logo in
+ *  either — the page's header carries it. */
+export function ResetPasswordCardV3({ email }: { email: string }) {
+  const [done, setDone] = useState(false)
+  return (
+    <section aria-labelledby="verify-email-title" style={{ ...MODAL, maxHeight: 'none', overflowY: 'visible' }}>
+      {done ? <PasswordResetDone /> : <ResetPasswordStep email={email} onReset={() => setDone(true)} />}
+    </section>
+  )
+}
+
+/** Password reset — Email verified's layout and check, without its logo
+ *  (2026-11-19, Afsana). */
+function PasswordResetDone() {
+  return (
+    <div style={VERIFIED} role="status">
+      {/* No logo — the page's header carries it (2026-11-19, Afsana). */}
+      <span aria-hidden style={VERIFIED_RING}>
+        <Check size={24} style={{ stroke: 'currentColor', strokeWidth: 28 }} />
+      </span>
+      <h2 id="verify-email-title" style={RESET_DONE_LINE}>
+        Your password has been successfully reset!
+      </h2>
+    </div>
+  )
+}
+
+/** "Reset your password" — 2026-11-12, Afsana. On its own page since
+ *  2026-11-19 (above). The same meter and seven rules as the password
  *  the learner creates at the end of the flow, for continuity; Reset password
  *  stays off until every rule is met and both fields match. */
 function ResetPasswordStep({ email, onReset }: { email: string; onReset: () => void }) {
@@ -839,7 +998,7 @@ function ResetPasswordStep({ email, onReset }: { email: string; onReset: () => v
       }}
       noValidate
     >
-      <img src="/brand/xcel-logo.webp" alt="XCEL Insurance Training by Colibri" style={CODE_LOGO} />
+      {/* No logo — the page's header carries it (2026-11-19, Afsana). */}
       <div style={HEAD}>
         <h2 id="verify-email-title" style={TITLE}>
           Reset your password
@@ -853,7 +1012,7 @@ function ResetPasswordStep({ email, onReset }: { email: string; onReset: () => v
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
         <label htmlFor="reset-password" style={FIELD_GROUP}>
           <span style={FIELD_LABEL}>
-            Password <span aria-hidden>*</span>
+            New Password <span aria-hidden>*</span>
           </span>
           <span style={{ position: 'relative', display: 'block' }}>
             <input
@@ -870,11 +1029,11 @@ function ResetPasswordStep({ email, onReset }: { email: string; onReset: () => v
             <button
               type="button"
               onClick={() => setShown((v) => !v)}
-              aria-label={shown ? 'Hide password' : 'Show password'}
+              aria-label={shown ? 'Hide new password' : 'Show new password'}
               aria-pressed={shown}
-              style={EYE}
+              style={EYE_ACCOUNT}
             >
-              <img src={shown ? '/brand/confirmation/eye.svg' : '/brand/confirmation/eye-off.svg'} alt="" width={18} height={18} style={{ display: 'block' }} />
+              <PasswordEyeV3 slashed={shown} />
             </button>
           </span>
         </label>
@@ -882,7 +1041,7 @@ function ResetPasswordStep({ email, onReset }: { email: string; onReset: () => v
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
           <label htmlFor="reset-confirm" style={FIELD_GROUP}>
             <span style={FIELD_LABEL}>
-              Confirm new password <span aria-hidden>*</span>
+              Confirm New Password <span aria-hidden>*</span>
             </span>
             <span style={{ position: 'relative', display: 'block' }}>
               <input
@@ -896,16 +1055,18 @@ function ResetPasswordStep({ email, onReset }: { email: string; onReset: () => v
                 aria-invalid={mismatch}
                 aria-describedby={mismatch ? 'reset-mismatch' : undefined}
                 className="cre-e2e-input cre-e2e-input-v3"
-                style={mismatch ? { ...FIELD, paddingRight: 40, ...FIELD_INVALID } : { ...FIELD, paddingRight: 40 }}
+                /* No red stroke — the line under it is enough (2026-11-18,
+                   Afsana). */
+                style={{ ...FIELD, paddingRight: 40 }}
               />
               <button
                 type="button"
                 onClick={() => setConfirmShown((v) => !v)}
                 aria-label={confirmShown ? 'Hide confirm new password' : 'Show confirm new password'}
                 aria-pressed={confirmShown}
-                style={EYE}
+                style={EYE_ACCOUNT}
               >
-                <img src={confirmShown ? '/brand/confirmation/eye.svg' : '/brand/confirmation/eye-off.svg'} alt="" width={18} height={18} style={{ display: 'block' }} />
+                <PasswordEyeV3 slashed={confirmShown} />
               </button>
             </span>
           </label>
@@ -994,6 +1155,17 @@ const RULE: CSSProperties = {
   borderRadius: 1,
   background: '#dcdcdc',
   margin: '2px 0 4px',
+}
+
+/* Password reset's line: smaller than a title and not bold (2026-11-19,
+   Afsana) — 16px regular, a step above the 14px body. */
+const RESET_DONE_LINE: CSSProperties = {
+  margin: 0,
+  fontFamily: 'var(--font-e2e-avenir)',
+  fontWeight: 400,
+  fontSize: 16,
+  lineHeight: '24px',
+  color: 'var(--color-text-primary)',
 }
 
 const LEAD: CSSProperties = {
@@ -1105,8 +1277,8 @@ const CODE_BOX: CSSProperties = {
    `border` shorthand above. */
 const CODE_BOX_INVALID: CSSProperties = { boxShadow: 'inset 0 -2px 0 var(--color-error-600)' }
 
-/* The same stroke under the log-in password on a wrong password. */
-const FIELD_INVALID: CSSProperties = CODE_BOX_INVALID
+/* The fields themselves take no stroke — email, password and confirm show
+   only the red line under them (2026-11-18, Afsana). The code boxes keep it. */
 
 /* A field with its error line under it, 6px apart — as the password's. */
 const FIELD_AND_ERROR: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 6 }
@@ -1119,6 +1291,35 @@ function EmailInvalid({ id }: { id: string }) {
       Please enter a valid email address
     </p>
   )
+}
+
+/* Reset your password — enter email: the rule under Send reset link, and
+   "Forgot Email?" under it (2026-11-20, Afsana). */
+const FORGOT_EMAIL_RULE: CSSProperties = {
+  alignSelf: 'stretch',
+  height: 0,
+  margin: '4px 0',
+  border: 'none',
+  borderTop: '1px solid var(--color-e2e-form-outline)',
+}
+
+const FORGOT_EMAIL: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 4 }
+
+const FORGOT_EMAIL_TITLE: CSSProperties = {
+  margin: 0,
+  fontFamily: 'var(--font-e2e-avenir)',
+  fontWeight: 800,
+  fontSize: 16,
+  lineHeight: '22px',
+  color: 'var(--color-text-primary)',
+}
+
+const FORGOT_EMAIL_TEXT: CSSProperties = {
+  margin: 0,
+  fontFamily: 'var(--font-e2e-avenir)',
+  fontSize: 14,
+  lineHeight: '21px',
+  color: 'var(--color-text-secondary)',
 }
 
 const ACTIONS: CSSProperties = {
@@ -1196,6 +1397,18 @@ const EYE: CSSProperties = {
   cursor: 'pointer',
 }
 
+/* Every password eye in V3 is Keycloak's, as on Change Password in Account
+   Details (2026-11-19, Afsana: "all eye icons should match in the password
+   fields" … "not supposed to have a pupil") — `PasswordEyeV3`, in the
+   secondary text colour, always visible. Centred on the field rather than
+   pinned at a top offset, so the 20px drawing sits mid-field. */
+const EYE_ACCOUNT: CSSProperties = {
+  ...EYE,
+  top: '50%',
+  transform: 'translateY(-50%)',
+  color: 'var(--color-text-secondary)',
+}
+
 const FORGOT: CSSProperties = {
   alignSelf: 'flex-start',
   padding: 0,
@@ -1241,4 +1454,106 @@ const SIGNING_IN: CSSProperties = {
   alignItems: 'center',
   gap: 28,
   padding: '4px 0 20px',
+}
+
+/** The card's title, grey rule and lead, for a card drawn outside this file —
+ *  OCD's log-in page on the Log In flow (2026-11-20, Afsana: "add the 'Log in'
+ *  header and the grey line under it that exist in the keycloak widget to
+ *  maintain consistency"). The same objects, so the two cannot drift. */
+export function V3CardHead({ title, lead }: { title: string; lead?: string }) {
+  return (
+    <div style={HEAD}>
+      <h1 style={TITLE}>{title}</h1>
+      <div aria-hidden style={RULE} />
+      {lead ? <p style={LEAD}>{lead}</p> : null}
+    </div>
+  )
+}
+
+/** ← Back, in a card's top left corner — the Log In flow's way back to the
+ *  email step to change the address (2026-11-20, Afsana). ⚠ ITS OWN ROW, the
+ *  first in the card, above the logo — not laid over the logo's row: Afsana,
+ *  the same day, "a bit more space between the row that contains the back
+ *  link and the row that contains the centered xcel logo". The card's gap is
+ *  that space. */
+export function V3CardBack({ onBack }: { onBack: () => void }) {
+  return (
+    <button type="button" onClick={onBack} style={CARD_BACK}>
+      <ArrowLeft size={14} aria-hidden />
+      Back
+    </button>
+  )
+}
+
+const CARD_BACK: CSSProperties = {
+  /* Left, in a column that centres; pulled up and out by its own padding so
+     it sits where it did in the corner (20 in from the top and side). */
+  alignSelf: 'flex-start',
+  margin: '-16px 0 0 -16px',
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: 6,
+  padding: '4px 6px',
+  border: 'none',
+  borderRadius: 4,
+  background: 'transparent',
+  /* The brick of the card's Log in button (2026-11-20, Afsana: "the back
+     button with the arrow should be red"). */
+  color: 'var(--color-xcel-brick-600)',
+  fontFamily: 'var(--font-e2e-avenir)',
+  fontWeight: 800,
+  fontSize: 14,
+  cursor: 'pointer',
+}
+
+/** The card's text field — rounded, the light fill, Avenir — for a card drawn
+ *  outside this file: OCD's log-in page on the Log In flow (2026-11-20, Afsana:
+ *  "the same field design (rounded corners) as the keycloak fields"). `locked`
+ *  is the grey of an address already given. */
+export function V3CardInput({ locked = false, ...input }: InputHTMLAttributes<HTMLInputElement> & { locked?: boolean }) {
+  return (
+    <input
+      {...input}
+      readOnly={locked || input.readOnly}
+      className="cre-e2e-input cre-e2e-input-v3"
+      style={locked ? { ...FIELD, ...FIELD_DISABLED } : FIELD}
+    />
+  )
+}
+
+/** The card's primary button — full width, the brick, grey and off until
+ *  `ready` — for the same card (2026-11-20, Afsana: Continue "match the
+ *  styling of the log in button"). */
+export function V3CardSubmit({ ready, children }: { ready: boolean; children: ReactNode }) {
+  return (
+    <div style={ACTIONS}>
+      <button type="submit" className="cre-e2e-cta" disabled={!ready} aria-disabled={!ready} style={ready ? CTA : CTA_OFF}>
+        {children}
+      </button>
+    </div>
+  )
+}
+
+/** Forgot password?, under a card's password field — Keycloak's link, for
+ *  OCD's password step on the Log In flow (2026-11-20, Afsana: it "should
+ *  match the existing keycloak design where 'Forgot password?' is shown below
+ *  the password field"). Drawn only there: OCD's reset is OCD's. */
+export function V3CardForgot({ onClick }: { onClick?: () => void }) {
+  return (
+    <button type="button" style={FORGOT} onClick={onClick}>
+      Forgot password?
+    </button>
+  )
+}
+
+/** "Signing you in" — the logo over the spinner, as the checkout modal holds
+ *  on — for a card drawn outside this file: OCD's, after the right password
+ *  on the Log In flow (2026-11-20, Afsana), and Keycloak's above. */
+export function V3CardSigningIn() {
+  return (
+    <div style={SIGNING_IN}>
+      <img src="/brand/xcel-logo.webp" alt="XCEL Insurance Training by Colibri" style={CODE_LOGO} />
+      <XcelLoadingStatus message="Signing you in" size={SIGNING_SPINNER} />
+    </div>
+  )
 }
