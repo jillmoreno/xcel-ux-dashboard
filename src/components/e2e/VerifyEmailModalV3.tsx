@@ -16,7 +16,7 @@ import {
   type VerifiedIdentity,
 } from '@/data/inviteVerification'
 import { looksLikeEmail } from '@/data/inviteFlows'
-import { Check, CircleCheckSolid } from '@/icons'
+import { ArrowLeft, Check, CircleCheckSolid } from '@/icons'
 import { PasswordEyeV3 } from '@/components/e2e/PasswordEyeV3'
 import { V3_EXPIRED_DEMO_CODE, V3_INVALID_DEMO_CODE, V3_WRONG_DEMO_PASSWORD } from '@/data/inviteFlowsV3'
 import { E2E_LEARNER_EMAIL, E2E_LEARNER_FIRST, E2E_LEARNER_LAST } from '@/pages/endToEndDemo'
@@ -575,12 +575,20 @@ function LoginStep({
   onLoggedIn,
   title = 'Log in to continue',
   lead = `Welcome back, ${E2E_LEARNER_FIRST}! Sign in to finish checking out.`,
+  showEmail = true,
+  onBack,
 }: {
   email: string
   onLoggedIn: () => void
   /** The Log In flow's own words (2026-11-20) — the checkout's otherwise. */
   title?: string
-  lead?: string
+  /** `null` draws no lead — the Log In flow's (2026-11-20, Afsana: "remove the
+   *  subtext"). */
+  lead?: string | null
+  /** Off on the Log In flow, whose email step is the page before; ← Back
+   *  returns to it instead (2026-11-20, Afsana). */
+  showEmail?: boolean
+  onBack?: () => void
 }) {
   const [password, setPassword] = useState('')
   const [shown, setShown] = useState(false)
@@ -772,6 +780,7 @@ function LoginStep({
       }}
       noValidate
     >
+      {onBack ? <V3CardBack onBack={onBack} /> : null}
       <img src="/brand/xcel-logo.webp" alt="XCEL Insurance Training by Colibri" style={CODE_LOGO} />
       <div style={HEAD}>
         <h2 id="verify-email-title" style={TITLE}>
@@ -781,31 +790,35 @@ function LoginStep({
         {/* The address goes in the locked field below, on every flow
             (2026-11-18, Afsana). From 2026-11-03 it was bold in this sentence
             on all but Direct Email. */}
-        <p id="verify-email-lead" style={LEAD}>
-          {lead}
-        </p>
+        {lead === null ? null : (
+          <p id="verify-email-lead" style={LEAD}>
+            {lead}
+          </p>
+        )}
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
         {/* The address from the email step, pre-filled and locked — the
             checkout's grey, no lock icon — on every flow (2026-11-18,
             Afsana). */}
-        <div style={FIELD_AND_ERROR}>
-          <label htmlFor="login-email" style={FIELD_GROUP}>
-            <span style={FIELD_LABEL}>
-              Email <span aria-hidden>*</span>
-            </span>
-            <input
-              id="login-email"
-              type="email"
-              value={email}
-              disabled
-              readOnly
-              className="cre-e2e-input cre-e2e-input-v3"
-              style={{ ...FIELD, ...FIELD_DISABLED }}
-            />
-          </label>
-        </div>
+        {showEmail ? (
+          <div style={FIELD_AND_ERROR}>
+            <label htmlFor="login-email" style={FIELD_GROUP}>
+              <span style={FIELD_LABEL}>
+                Email <span aria-hidden>*</span>
+              </span>
+              <input
+                id="login-email"
+                type="email"
+                value={email}
+                disabled
+                readOnly
+                className="cre-e2e-input cre-e2e-input-v3"
+                style={{ ...FIELD, ...FIELD_DISABLED }}
+              />
+            </label>
+          </div>
+        ) : null}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
           <label htmlFor="login-password" style={FIELD_GROUP}>
             <span style={FIELD_LABEL}>
@@ -887,7 +900,15 @@ function LoginStep({
  *  wrong password and Forgot password? — on a card of its own, then the
  *  modal's "Signing you in". The address is the one given on OCD's page,
  *  locked. No name in the lead: nobody has signed in yet to be greeted. */
-export function KeycloakLogInCardV3({ email, onSignedIn }: { email: string; onSignedIn: () => void }) {
+export function KeycloakLogInCardV3({
+  email,
+  onSignedIn,
+  onBack,
+}: {
+  email: string
+  onSignedIn: () => void
+  onBack: () => void
+}) {
   const [signingIn, setSigningIn] = useState(false)
   useEffect(() => {
     if (!signingIn) return
@@ -906,10 +927,15 @@ export function KeycloakLogInCardV3({ email, onSignedIn }: { email: string; onSi
           <XcelLoadingStatus message="Signing you in" size={SIGNING_SPINNER} />
         </div>
       ) : (
+        /* No lead and no email field — the email step is the page before,
+           and ← Back returns to it to change the address (2026-11-20,
+           Afsana). */
         <LoginStep
           email={email}
           title="Log in"
-          lead="Enter your password to log in to your learning dashboard."
+          lead={null}
+          showEmail={false}
+          onBack={onBack}
           onLoggedIn={() => setSigningIn(true)}
         />
       )}
@@ -1432,14 +1458,44 @@ const SIGNING_IN: CSSProperties = {
  *  OCD's log-in page on the Log In flow (2026-11-20, Afsana: "add the 'Log in'
  *  header and the grey line under it that exist in the keycloak widget to
  *  maintain consistency"). The same objects, so the two cannot drift. */
-export function V3CardHead({ title, lead }: { title: string; lead: string }) {
+export function V3CardHead({ title, lead }: { title: string; lead?: string }) {
   return (
     <div style={HEAD}>
       <h1 style={TITLE}>{title}</h1>
       <div aria-hidden style={RULE} />
-      <p style={LEAD}>{lead}</p>
+      {lead ? <p style={LEAD}>{lead}</p> : null}
     </div>
   )
+}
+
+/** ← Back, in a card's top left corner — the Log In flow's way back to the
+ *  email step to change the address (2026-11-20, Afsana). The card must be
+ *  positioned; Keycloak's and OCD's both are. */
+export function V3CardBack({ onBack }: { onBack: () => void }) {
+  return (
+    <button type="button" onClick={onBack} style={CARD_BACK}>
+      <ArrowLeft size={14} aria-hidden />
+      Back
+    </button>
+  )
+}
+
+const CARD_BACK: CSSProperties = {
+  position: 'absolute',
+  top: 20,
+  left: 20,
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: 6,
+  padding: '4px 6px',
+  border: 'none',
+  borderRadius: 4,
+  background: 'transparent',
+  color: 'var(--color-text-secondary)',
+  fontFamily: 'var(--font-e2e-avenir)',
+  fontWeight: 800,
+  fontSize: 14,
+  cursor: 'pointer',
 }
 
 /** The card's text field — rounded, the light fill, Avenir — for a card drawn
