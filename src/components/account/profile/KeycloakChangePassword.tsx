@@ -1,6 +1,7 @@
-import { useId, useState, type CSSProperties } from 'react'
+import { useCallback, useId, useState, type CSSProperties } from 'react'
 import { InvitePasswordChecklistV3 } from '@/components/e2e/InvitePasswordChecklistV3'
 import { meetsInvitePasswordRulesV3 } from '@/data/invitePasswordRulesV3'
+import { ForgotPasswordModal } from './ForgotPasswordModal'
 import { PanelFooter } from './profileFormBits'
 import { introTextStyle, panelBodyStyle } from './profileFormStyles'
 
@@ -60,6 +61,8 @@ export function KeycloakChangePassword({
   const [current, setCurrent] = useState('')
   const [next, setNext] = useState('')
   const [confirm, setConfirm] = useState('')
+  const [forgotOpen, setForgotOpen] = useState(false)
+  const closeForgot = useCallback(() => setForgotOpen(false), [])
 
   /* Keycloak refuses a new password equal to the current one; say so here
      rather than after submit. */
@@ -93,7 +96,8 @@ export function KeycloakChangePassword({
         {/* Forgot password? — 2026-11-19, Afsana: under Current Password as on
             the sheet's own step, but in the invite flow's blue link (`FORGOT`
             in `VerifyEmailModalV3`), not the old step's red, and no lock.
-            Clicking it does nothing for now, on purpose. */}
+            From 2026-11-20 it opens V3's Reset your password, then Check your
+            email (`ForgotPasswordModal`), in Atlas's button colours. */}
         <div style={FIELD_STACK}>
           <PasswordField
             id={`${id}-current`}
@@ -103,7 +107,7 @@ export function KeycloakChangePassword({
             onChange={setCurrent}
             autoComplete="current-password"
           />
-          <button type="button" style={FORGOT}>
+          <button type="button" style={FORGOT} onClick={() => setForgotOpen(true)}>
             Forgot password?
           </button>
         </div>
@@ -150,6 +154,7 @@ export function KeycloakChangePassword({
         onCancel={onCancel}
         cancelFirst
       />
+      {forgotOpen ? <ForgotPasswordModal onClose={closeForgot} /> : null}
     </>
   )
 }
