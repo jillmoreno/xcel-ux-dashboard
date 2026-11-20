@@ -46,16 +46,18 @@ const LAST_CELL_PAD = 20
    months … based off of their completion date and based on a six month expiration"). Demo data: six months after the
    course was completed — so the dates vary down the page with the completions. A day the later month lacks (31 Aug + 6)
    clamps to that month's last day. "11 Jul 2027". */
-const CERT_VALID_MONTHS = 6
+// 5, not 6 (later 2026-11-19, Eric: the first row, completed 4/10/2026, "reads valid till 9/10/2026").
+const CERT_VALID_MONTHS = 5
 function certificateValidTill(completedIso: string): Date {
   const [y, m, d] = completedIso.split('-').map(Number)
   const target = new Date(y, m - 1 + CERT_VALID_MONTHS, 1)
   const last = new Date(target.getFullYear(), target.getMonth() + 1, 0).getDate()
   return new Date(target.getFullYear(), target.getMonth(), Math.min(d, last))
 }
-const MONTHS_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+/* M/D/YYYY, as the Completed column writes its dates (later 2026-11-19, Eric) — "10 Oct 2026" (three-letter months)
+   before. */
 function formatValidTill(date: Date): string {
-  return `${date.getDate()} ${MONTHS_SHORT[date.getMonth()]} ${date.getFullYear()}`
+  return `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`
 }
 /* THREE THAT DO NOT EXPIRE (2026-11-19, Eric: "change three of the certificate expirations to no expiry") — the two
    zero-hour "How to Add Courses" walkthroughs and the ethics assessment, the three least like a licence credit that lapses. */
@@ -404,7 +406,14 @@ export function TranscriptsPanel() {
                       <FileCertificateRegular size={16} aria-hidden />
                     </button>
                     <span>
-                      {NO_EXPIRY.has(row.id) ? 'No expiry' : `Valid till ${formatValidTill(certificateValidTill(row.completedDate))}`}
+                      {/* The date SemiBold, "Valid till" Regular (2026-11-19, Eric). */}
+                      {NO_EXPIRY.has(row.id) ? (
+                        'No expiry'
+                      ) : (
+                        <>
+                          Valid till <span style={{ fontWeight: 600 }}>{formatValidTill(certificateValidTill(row.completedDate))}</span>
+                        </>
+                      )}
                     </span>
                   </td>
                 </tr>
