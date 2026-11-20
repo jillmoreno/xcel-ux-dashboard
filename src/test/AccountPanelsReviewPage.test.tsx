@@ -26,10 +26,12 @@ afterEach(() => {
 })
 
 describe('/account-panels', () => {
-  it('the manifest lists the three panels, and every picture exists', () => {
+  it('the manifest lists the three panels and the two Forgot password modals, and every picture exists', () => {
     expect(manifest.components.map((c: { title: string }) => c.title)).toEqual([
       'Edit Account Details',
       'Update Password',
+      'Reset your password',
+      'Check your email',
       'Update Email Address',
     ])
     for (const c of manifest.components)
@@ -42,6 +44,8 @@ describe('/account-panels', () => {
     expect(await screen.findByRole('article', { name: 'Edit Account Details' })).toBeTruthy()
     expect(screen.getByRole('article', { name: 'Update Password' })).toBeTruthy()
     expect(screen.getByRole('article', { name: 'Update Email Address' })).toBeTruthy()
+    expect(screen.getByRole('article', { name: 'Reset your password' })).toBeTruthy()
+    expect(screen.getByRole('article', { name: 'Check your email' })).toBeTruthy()
     expect(screen.getByRole('button', { name: 'Update Password — Passwords do not match' })).toBeTruthy()
     /* Pictures, not live panels. */
     expect(screen.queryByRole('dialog')).toBeNull()

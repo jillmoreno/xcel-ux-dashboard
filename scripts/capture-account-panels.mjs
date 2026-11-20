@@ -70,6 +70,11 @@ const slugify = (s) =>
 const PANELS = [
   { id: 'edit-account-details', title: 'Edit Account Details' },
   { id: 'update-password', title: 'Update Password' },
+  /* Forgot password? on Update Password opens these two modals in turn
+     (2026-11-20, Afsana). Each picture is the modal alone, except the first,
+     which shows it over the panel. */
+  { id: 'reset-your-password', title: 'Reset your password' },
+  { id: 'check-your-email', title: 'Check your email' },
   { id: 'update-email-address', title: 'Update Email Address' },
 ]
 const SHOTS = Object.fromEntries(PANELS.map((p) => [p.id, []]))
@@ -126,6 +131,40 @@ async function main() {
     await shot(page, P, 'All rules met — Save Password enabled')
     await page.getByLabel('Show New Password').click()
     await shot(page, P, 'New password shown (eye toggled)')
+    await context.close()
+  }
+
+  /* 2a · Forgot password? → Reset your password → Check your email. The
+     clock is Playwright's, so Resend link's 30-second wait can be skipped. */
+  {
+    const context = await browser.newContext({ viewport: VIEWPORT, deviceScaleFactor: 2 })
+    const page = await context.newPage()
+    await page.clock.install()
+    await page.goto(`${BASE}/account-panels?capture=password`)
+    await page.getByRole('dialog').waitFor()
+    await page.clock.runFor(600)
+    await page.getByRole('button', { name: 'Forgot password?' }).click()
+    const R = 'reset-your-password'
+    const reset = page.getByRole('dialog', { name: 'Reset your password' })
+    await reset.waitFor()
+    await shot(page, R, 'Over Update Password', page)
+    await shot(page, R, 'Empty — Send reset link disabled', reset)
+    await page.getByLabel(/^Email/).fill('jordan.navarro@')
+    await shot(page, R, 'Invalid email address', reset)
+    await page.getByLabel(/^Email/).fill('jordan.navarro@gmail.com')
+    await shot(page, R, 'Valid — Send reset link enabled', reset)
+    await page.getByRole('button', { name: 'Send reset link' }).click()
+    const C = 'check-your-email'
+    const check = page.getByRole('dialog', { name: 'Check your email' })
+    await check.waitFor()
+    await shot(page, C, 'Sent — Resend link waits, with the countdown', check)
+    /* A second at a time: each tick's re-render sets the next timeout, so
+       one long jump moves the countdown by only a second. */
+    for (let i = 0; i < 31; i++) {
+      await page.clock.runFor(1000)
+      await page.waitForTimeout(20)
+    }
+    await shot(page, C, 'Resend link available', check)
     await context.close()
   }
   /* 3 · Update Email Address. */
