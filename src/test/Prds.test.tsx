@@ -37,6 +37,7 @@ const row = (over: Partial<StoredLink> = {}): StoredLink => ({
   archivedAt: '',
   archivedBy: '',
   feature: '',
+  typeOther: '',
   supersedes: '',
   ...over,
 })

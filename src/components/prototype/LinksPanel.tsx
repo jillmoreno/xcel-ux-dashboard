@@ -37,7 +37,9 @@
 import {
   useCallback,
   useEffect,
+  useLayoutEffect,
   useMemo,
+  useRef,
   useState,
   type CSSProperties,
   type ReactNode,
@@ -51,6 +53,7 @@ import {
   FileText,
   Grid,
   Layout,
+  MagnifyingGlassRegular,
   Package,
   PenToSquare,
   Plus,
@@ -67,6 +70,8 @@ import {
   DESIGNERS,
   LINKS_BOARD,
   MAX_FEATURE,
+  MAX_NOTE,
+  MAX_TYPE_OTHER,
   LINK_PRODUCTS,
   LINK_TYPES,
   LinkWriteError,
@@ -79,10 +84,10 @@ import {
   latestChunkFor,
   linkProductLabel,
   linkTypeLabel,
+  toMarkdown,
   matchesDesigner,
   matchesProduct,
   safeHref,
-  toMarkdown,
   type BoardItem,
   type Designer,
   type FeatureGroup,
@@ -95,7 +100,7 @@ import {
 import { DEMO_BOARD } from '@/data/demoStore'
 import { RESEARCH_BOARD } from '@/data/researchStore'
 import { PRD_BOARD } from '@/data/prdStore'
-import { GeneratedThumb } from './GeneratedThumb'
+import { GeneratedThumb, THUMB_ICON } from './GeneratedThumb'
 import { accentsByHost, hostKey, linkThumbKind } from './linkRowThumb'
 import { formatUpdated } from './formatUpdated'
 
@@ -177,6 +182,20 @@ export type LinkBoardPresentation = {
    * those chunks come in sequence.
    */
   showFeature?: boolean
+  /** What the grouping axis is CALLED on this board — "Feature" on Refinement,
+   *  "Project" on Research (2026-11-20). The stored field is the same one. */
+  featureNoun?: string
+  featurePlaceholder?: string
+  featureHint?: string
+  /** Whether a row may declare that it replaces an earlier one. Defaults ON so
+   *  Refinement is unchanged; Research turns it off — see the note at the
+   *  control. */
+  showSupersedes?: boolean
+  /** A tighter row: an icon-sized tile instead of the 160x110 panel, and the
+   *  tags right-aligned against the chevron. Both give their width to the
+   *  note. Research only so far — see `THUMB_ICON` and `HUB_TAG_COL_COMPACT`
+   *  for why each is safe to shrink on a link board. */
+  compactRows?: boolean
   /** The empty-state sentence when the endpoint IS reachable. */
   emptyHint: string
   /** The sentence under the form's fields. */
@@ -225,6 +244,16 @@ const THUMB_GLYPH = {
 
 /* ── styles ───────────────────────────────────────────────────────────────── */
 
+/* ⚠ `--ux-card`, NOT `--ux-bg` (2026-11-20, Jillienne: "update the fields to
+   not have the weird background color"). `--ux-bg` is this page's RECESSED
+   surface — a step down from a card, and on the Hub's green palette that step
+   is a mint tint. It is right for a note sitting on a white card. In the Add
+   form it was wrong twice over: the dialog is already a card, so the fields
+   read as green boxes on white rather than as inputs, and a recessed input
+   says "disabled" in every other interface a designer uses.
+
+   The inputs now sit on the same surface as the sheet, which is how a field
+   reads as a field — the border does the work of separating it. */
 const fieldStyle: CSSProperties = {
   width: '100%',
   font: 'inherit',
@@ -233,7 +262,7 @@ const fieldStyle: CSSProperties = {
   padding: '9px 11px',
   borderRadius: 8,
   border: '1px solid var(--ux-border)',
-  background: 'var(--ux-bg)',
+  background: 'var(--ux-card)',
   color: 'var(--ux-text)',
 }
 
@@ -256,6 +285,29 @@ const hintStyle: CSSProperties = {
   fontSize: 11,
   lineHeight: 1.4,
   color: 'var(--ux-text-3)',
+}
+
+/** The over-length line, under the field. Red because it reports a LOSS —
+ *  text the designer typed is not in the box any more — which `hintStyle`'s
+ *  grey would understate. It is not an error style: nothing is blocked, and
+ *  the Save button never dims for it. */
+const cutStyle: CSSProperties = {
+  margin: '4px 0 0',
+  fontSize: 11,
+  lineHeight: 1.4,
+  color: 'var(--ux-danger, #b3261e)',
+}
+
+/** The search field and its glyph. The icon is positioned rather than placed
+ *  in a flex row so the input keeps its own full width and focus ring — a
+ *  wrapper that draws the border instead would need to re-implement focus. */
+const searchWrapStyle: CSSProperties = { position: 'relative', display: 'inline-flex', alignItems: 'center' }
+
+const searchIconStyle: CSSProperties = {
+  position: 'absolute',
+  left: 10,
+  color: 'var(--ux-text-3)',
+  pointerEvents: 'none',
 }
 
 const fieldWrapStyle: CSSProperties = { marginBottom: 12 }
@@ -480,11 +532,6 @@ const EMPTY_DRAFT: LinkDraft = {
   supersedes: '',
 }
 
-/** Below this the search field is a dead control — it costs a row of chrome to
- *  filter a list you can already see all of. Same reasoning as the status pills
- *  on the project sections, which only render when there is more than one. */
-const SEARCH_THRESHOLD = 6
-
 /** null = closed. 'new' = adding. A `StoredLink` = editing that record. One
  *  form for all three, so the add and edit paths cannot drift in what they
  *  validate — the same shape `QaNotesPanel` uses for its editor. */
@@ -590,6 +637,64 @@ function FeatureGroupBlock({
 
 /* ── the form ─────────────────────────────────────────────────────────────── */
 
+/**
+ * A textarea that is as tall as its content, and that trims to a cap while
+ * saying how much it trimmed (2026-11-20).
+ *
+ * ⚠ THE HEIGHT IS SET ON EVERY RENDER, not only on input. A controlled value
+ * can change without anyone typing — opening the form to EDIT an existing row
+ * is the case that matters — and a textarea sized only in `onChange` opens at
+ * one row with a paragraph scrolled inside it. Reset to `auto` first: without
+ * that, `scrollHeight` is measured against the height already set and the box
+ * can only ever grow.
+ *
+ * ⚠ IT TRIMS; IT DOES NOT REFUSE. `maxLength` on the element would be simpler
+ * and is the wrong behaviour — the browser silently drops the overflow of a
+ * paste with no feedback at all, which is the failure this is replacing. The
+ * value is cut here so the field shows exactly what will be saved, and the
+ * caller is told the size of the cut so it can say so.
+ */
+function AutoGrowTextarea({
+  id,
+  value,
+  onValueChange,
+  onOverflow,
+  max,
+  placeholder,
+  minRows = 2,
+}: {
+  id: string
+  value: string
+  onValueChange: (v: string) => void
+  onOverflow: (cut: number) => void
+  max: number
+  placeholder?: string
+  minRows?: number
+}) {
+  const ref = useRef<HTMLTextAreaElement | null>(null)
+  useLayoutEffect(() => {
+    const el = ref.current
+    if (!el) return
+    el.style.height = 'auto'
+    el.style.height = `${el.scrollHeight}px`
+  }, [value])
+  return (
+    <textarea
+      id={id}
+      ref={ref}
+      rows={minRows}
+      value={value}
+      onChange={(e) => {
+        const raw = e.target.value
+        onOverflow(Math.max(0, raw.length - max))
+        onValueChange(raw.length > max ? raw.slice(0, max) : raw)
+      }}
+      placeholder={placeholder}
+      style={{ ...fieldStyle, resize: 'none', overflow: 'hidden', display: 'block' }}
+    />
+  )
+}
+
 function LinkFormModal({
   p,
   editing,
@@ -620,6 +725,11 @@ function LinkFormModal({
   links: StoredLink[]
 }) {
   const isEdit = editing !== null && editing !== 'new'
+  /** How much of the last paste or keystroke did not fit. Lives here rather
+   *  than in the draft because it is about the last EDIT, not about the
+   *  record: it clears the moment the note fits again, and a saved row carries
+   *  no memory of having been trimmed. */
+  const [noteCut, setNoteCut] = useState(0)
   /** The chunks this one could be replacing: the same feature, still live, and
    *  never the row being edited. NOT scoped to the author — picking up where
    *  someone else left off is a real thing that happens, and refusing to let
@@ -704,6 +814,23 @@ function LinkFormModal({
                 </option>
               ))}
             </select>
+            {/* THE ESCAPE HATCH (2026-11-20, Jillienne: "I want the Type field
+                to have an option to type in a custom link"). Only when `other`
+                is chosen — a box that is always there would read as a second
+                required field. The closed list stays closed because `type` is
+                a trust boundary the server keeps its own copy of; this is the
+                room beside it. Empty is fine: the tag then just reads
+                "Other". */}
+            {draft.type === 'other' && (
+              <input
+                aria-label="Custom type"
+                value={draft.typeOther ?? ''}
+                maxLength={MAX_TYPE_OTHER}
+                onChange={(e) => onChange({ typeOther: e.target.value })}
+                placeholder="Your word for it — e.g. Transcript, Survey"
+                style={{ ...fieldStyle, marginTop: 6 }}
+              />
+            )}
           </div>
         )}
 
@@ -711,13 +838,37 @@ function LinkFormModal({
           <label style={labelStyle} htmlFor="link-note">
             Note <span style={optionalStyle}>— optional</span>
           </label>
-          <input
+          {/* A TEXTAREA THAT GROWS, and a cut that is SAID OUT LOUD
+              (2026-11-20, Jillienne). Three things were wrong with the single
+              line it replaced:
+
+                • a pasted paragraph showed about eight words of itself, so
+                  nobody could read back what they had just put in;
+                • nothing client-side knew about `MAX_NOTE`, so an over-long
+                  note was refused by the SERVER — after pressing Save, as a
+                  validation error, with the note still too long and no way to
+                  tell by how much;
+                • that refusal blocked the whole save, losing the url and title
+                  alongside it.
+
+              So the note is trimmed to the cap AS IT IS TYPED — what you see
+              is exactly what will be saved — and the overflow is reported
+              underneath in red. The save is never blocked: a cut note is a
+              shorter note, not an invalid one. */}
+          <AutoGrowTextarea
             id="link-note"
             value={draft.note}
-            onChange={(e) => onChange({ note: e.target.value })}
+            onValueChange={(v) => onChange({ note: v })}
+            onOverflow={setNoteCut}
+            max={MAX_NOTE}
             placeholder="Why it is here, or what to look at"
-            style={fieldStyle}
           />
+          {noteCut > 0 && (
+            <p style={cutStyle}>
+              Cut off at {MAX_NOTE} characters — {noteCut.toLocaleString()} removed. The rest is
+              saved; put anything longer where it can be linked.
+            </p>
+          )}
         </div>
 
         <div style={fieldWrapStyle}>
@@ -760,7 +911,7 @@ function LinkFormModal({
           <>
             <div style={fieldWrapStyle}>
               <label style={labelStyle} htmlFor="link-feature">
-                Feature <span style={optionalStyle}>— optional</span>
+                {p.featureNoun ?? 'Feature'} <span style={optionalStyle}>— optional</span>
               </label>
               {/* FREE TEXT with suggestions, not a list to choose from
                   (2026-10-15, Jillienne). A curated list would mean every new
@@ -776,7 +927,7 @@ function LinkFormModal({
                 value={draft.feature ?? ''}
                 maxLength={MAX_FEATURE}
                 onChange={(e) => onChange({ feature: e.target.value })}
-                placeholder="What this is part of — e.g. Study streak card"
+                placeholder={p.featurePlaceholder ?? 'What this is part of — e.g. Study streak card'}
                 style={fieldStyle}
               />
               <datalist id="link-feature-options">
@@ -785,11 +936,17 @@ function LinkFormModal({
                 ))}
               </datalist>
               <p style={hintStyle}>
-                Chunks of the same feature group together on the board, newest first.
+                {p.featureHint ?? 'Chunks of the same feature group together on the board, newest first.'}
               </p>
             </div>
 
-            {replaceable.length > 0 && (
+            {/* ⚠ `showSupersedes`, NOT `showFeature` (2026-11-20). The two rode
+                together until Research started grouping: "this study replaces
+                that study" is a Refinement idea — one chunk of work closing
+                another — and on a research project it would invite someone to
+                hide the earlier evidence, which is the opposite of the point.
+                Grouping and superseding are now separate switches. */}
+            {(p.showSupersedes ?? true) && replaceable.length > 0 && (
               <div style={fieldWrapStyle}>
                 <label style={labelStyle} htmlFor="link-supersedes">
                   Replaces
@@ -888,10 +1045,12 @@ export function LinkBoardPanel({ p }: { p: LinkBoardPresentation }) {
   const [draft, setDraft] = useState<LinkDraft>(EMPTY_DRAFT)
   const [errors, setErrors] = useState<string[]>([])
   const [busy, setBusy] = useState(false)
-  const [copied, setCopied] = useState(false)
   /* Which row just had its link copied — a per-row confirmation, because a
      menu closes on select and has no label left to change. */
-  const [shared, setShared] = useState<string | null>(null)
+  /* Which row just had something copied, and WHAT — two kebab items write to
+     the clipboard now, and "Link copied" over a markdown copy would be a
+     quiet lie. */
+  const [shared, setShared] = useState<{ id: string; label: string } | null>(null)
   const [query, setQuery] = useState('')
   /** '' = All. Not a `LinkType`, because "no type" is itself a filterable
    *  value here and would collide with it. */
@@ -925,7 +1084,7 @@ export function LinkBoardPanel({ p }: { p: LinkBoardPresentation }) {
             l.url.toLowerCase().includes(q) ||
             l.note.toLowerCase().includes(q) ||
             l.addedBy.toLowerCase().includes(q) ||
-            linkTypeLabel(l.type).toLowerCase().includes(q)),
+            linkTypeLabel(l.type, l.typeOther).toLowerCase().includes(q)),
       ),
     [source, q, typeFilter, productFilter, designerFilter],
   )
@@ -1153,18 +1312,6 @@ export function LinkBoardPanel({ p }: { p: LinkBoardPresentation }) {
     }
   }
 
-  const copy = async () => {
-    try {
-      // What the list is SHOWING — the archive when that is open — not the
-      // whole store, so a paste matches the page the reader is looking at.
-      await navigator.clipboard.writeText(toMarkdown(source))
-      setCopied(true)
-      window.setTimeout(() => setCopied(false), 1500)
-    } catch {
-      /* clipboard blocked — the list is unchanged, nothing to recover */
-    }
-  }
-
   /**
    * Share Link copies the row's DESTINATION — the branch build a reviewer is
    * being sent to look at — not a link to this dashboard section. The row is
@@ -1178,7 +1325,31 @@ export function LinkBoardPanel({ p }: { p: LinkBoardPresentation }) {
     if (!href) return
     try {
       await navigator.clipboard.writeText(href)
-      setShared(link.id)
+      setShared({ id: link.id, label: 'Link copied' })
+      window.setTimeout(() => setShared(null), 1800)
+    } catch {
+      /* clipboard blocked — nothing was changed, and no false confirmation */
+    }
+  }
+
+  /**
+   * ONE ROW AS MARKDOWN (2026-11-20, Jillienne: "can we add the copy markdown
+   * into the kebab for each individual item?").
+   *
+   * `toMarkdown` is the board's export and it takes a LIST — handing it a
+   * single-item array is the whole implementation, and is why this is not a
+   * second formatter to keep in step with the first. A row pasted into
+   * Confluence or a ticket then looks exactly like its line in a full export.
+   *
+   * ⚠ IT REPLACES THE TOOLBAR BUTTON, which was removed the same day for
+   * competing with Add. The function it called is still the one called here,
+   * so "the way out of a store nothing backs up" survives the button going —
+   * it is now per row rather than whole-board.
+   */
+  const copyMarkdown = async (link: StoredLink) => {
+    try {
+      await navigator.clipboard.writeText(toMarkdown([link]))
+      setShared({ id: link.id, label: 'Markdown copied' })
       window.setTimeout(() => setShared(null), 1800)
     } catch {
       /* clipboard blocked — nothing was changed, and no false confirmation */
@@ -1208,6 +1379,15 @@ export function LinkBoardPanel({ p }: { p: LinkBoardPresentation }) {
         onSelect: () => void share(link),
       })
     }
+    // Offered to READERS as well, for the same reason Share is: copying takes
+    // nothing and changes nothing, and a stakeholder pasting a row into a
+    // ticket is the point of the board.
+    items.push({
+      id: 'markdown',
+      label: 'Copy as markdown',
+      icon: <ClipboardList size={13} aria-hidden />,
+      onSelect: () => void copyMarkdown(link),
+    })
     if (p.archivable && canAuthor) {
       items.push(
         isLive(link)
@@ -1303,7 +1483,7 @@ export function LinkBoardPanel({ p }: { p: LinkBoardPresentation }) {
       ...(p.showProduct
         ? [{ key: 'product', text: linkProductLabel(link.product), style: productBadgeStyle(link.product) }]
         : p.showType && link.type
-          ? [{ key: 'type', text: linkTypeLabel(link.type) }]
+          ? [{ key: 'type', text: linkTypeLabel(link.type, link.typeOther) }]
           : []),
     ]
     const actions = rowActions(link)
@@ -1315,9 +1495,14 @@ export function LinkBoardPanel({ p }: { p: LinkBoardPresentation }) {
           // `CSSProperties` cannot carry a pseudo-class.
           className="cre-uxlinks-row"
           titleClassName="cre-uxlinks-title"
+          compact={p.compactRows}
           thumb={
-            <GeneratedThumb accent={thumbAccents[hostKey(link.url)]} boost={1.7}>
-              <Glyph size={34} />
+            <GeneratedThumb
+              accent={thumbAccents[hostKey(link.url)]}
+              boost={1.7}
+              {...(p.compactRows ? { width: THUMB_ICON, height: THUMB_ICON } : null)}
+            >
+              <Glyph size={p.compactRows ? 20 : 34} />
             </GeneratedThumb>
           }
           title={link.title}
@@ -1330,8 +1515,11 @@ export function LinkBoardPanel({ p }: { p: LinkBoardPresentation }) {
           description={link.note.trim() || undefined}
           caption={href ? hostOf(link.url) : `${hostOf(link.url)} · not a linkable address`}
           tags={tags}
-          statusWidth={84}
-          status={shared === link.id ? <span style={hubTagStyle}>Link copied</span> : null}
+          // Wide enough for the longer of the two confirmations.
+          statusWidth={116}
+          status={
+            shared?.id === link.id ? <span style={hubTagStyle}>{shared.label}</span> : null
+          }
           href={href ?? undefined}
           external
           actions={canAuthor || actions.length > 0 ? actions : undefined}
@@ -1346,34 +1534,50 @@ export function LinkBoardPanel({ p }: { p: LinkBoardPresentation }) {
       {/* ── toolbar ── */}
       {index.links.length > 0 && (
         <div style={toolbarStyle}>
-          {canAuthor && !inArchive && (
-            <button type="button" onClick={beginAdd} style={primaryBtnStyle}>
-              <Plus size={12} aria-hidden />
-              Add {p.noun}
-            </button>
-          )}
           {inArchive && (
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 600, color: 'var(--ux-text)' }}>
               <Package size={13} aria-hidden />
               Archive
             </span>
           )}
-          {index.links.length >= SEARCH_THRESHOLD && (
+          {/* SEARCH FIRST, AND ALWAYS (2026-11-20, Jillienne: "make the search
+              field consistent on all pages, include a standard magnifying
+              glass icon").
+
+              ⚠ IT USED TO APPEAR ONLY AT SIX ROWS OR MORE. The threshold was
+              well meant — a search box over three rows is furniture — but it
+              made the four boards look like four different pages, and it moved
+              the whole toolbar the moment someone added a sixth row. A control
+              that comes and goes is harder to learn than one that is sometimes
+              unnecessary. */}
+          <span style={searchWrapStyle}>
+            <MagnifyingGlassRegular size={13} aria-hidden style={searchIconStyle} />
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder={`Search ${p.nounPlural}`}
               aria-label={`Search ${p.nounPlural}`}
-              style={{ ...fieldStyle, width: 200 }}
+              style={{ ...fieldStyle, width: 220, paddingLeft: 30 }}
             />
-          )}
+          </span>
           <span style={{ fontSize: 13, color: 'var(--ux-text-3)' }}>
             {rows.length} {rows.length === 1 ? p.noun : p.nounPlural}
           </span>
-          <button type="button" onClick={() => void copy()} style={{ ...btnStyle, marginLeft: 'auto' }}>
-            <ClipboardList size={12} aria-hidden />
-            {copied ? 'Copied' : 'Copy as markdown'}
-          </button>
+          {/* ── Add, far right ──
+              2026-11-20. It led the toolbar, which put the page's one WRITE
+              action in the place the eye starts — before anyone had seen what
+              was already on the board. Reading comes first and the action sits
+              at the end of the line.
+
+              "Copy as markdown" was removed in the same pass: a second button
+              competing with this one, for an export nobody on these boards was
+              using. The row kebab still copies a single link. */}
+          {canAuthor && !inArchive && (
+            <button type="button" onClick={beginAdd} style={{ ...primaryBtnStyle, marginLeft: 'auto' }}>
+              <Plus size={12} aria-hidden />
+              Add {p.noun}
+            </button>
+          )}
           {/* ── the archive door ──
               Top right, a link-shaped button rather than a pill in the filter
               strip: the archive is not a filter over the board, it is the
@@ -1590,7 +1794,33 @@ const RESEARCH_PRESENTATION: LinkBoardPresentation = {
   board: RESEARCH_BOARD,
   noun: 'link',
   nounPlural: 'links',
-  showType: true,
+  /* NO TYPE, AND SO NO FILTER STRIP (2026-11-20, Jillienne: "I dont think we
+     need filters. and I dont think we need type? This should be more of a
+     simple list of documents.").
+
+     One flag turns off three things, which is why it reads as a bigger change
+     than it is: the Type control in the form, the pills over the board (they
+     are derived from the types the rows actually carry), and the type tag on
+     the row. What is left is the thing itself — a title, a note, who added it
+     and when.
+
+     ⚠ THE TYPES THEMSELVES ARE NOT GONE. Links, Refinement and PRDs all keep
+     `showType: true`, so Confluence · Figma · Document and the custom `other`
+     word added earlier today still work there. This board simply does not ask
+     the question. Turning it back on is this line. */
+  showType: false,
+  /* PROJECTS (2026-11-20). The same stored field Refinement groups by, under
+     the word research uses for it. No supersedes: see the note at that
+     control — closing one study with another is not what this board does. */
+  showFeature: true,
+  featureNoun: 'Project',
+  featurePlaceholder: 'The project this belongs to — e.g. Onboarding study',
+  featureHint: 'Links in the same project group together, newest first.',
+  showSupersedes: false,
+  /* 2026-11-20: a research link's tile is a glyph chosen from its HOST, never
+     a picture — so the big panel was tinted space, and the note is the part
+     worth reading. */
+  compactRows: true,
   showThumb: false,
   showProduct: false,
   showBadges: false,

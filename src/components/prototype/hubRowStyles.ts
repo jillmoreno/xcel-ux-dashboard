@@ -82,14 +82,26 @@ export const hubNameStyle: CSSProperties = {
    title + 2 lines only fills ~62px of it. The third line uses space that was
    already being paid for, and the text column lost ~96px to the bigger tile —
    at two lines the blurbs were cutting mid-word. */
-export const hubBlurbStyle: CSSProperties = {
-  fontSize: 12.5,
-  lineHeight: 1.5,
-  color: 'var(--ux-text-2)',
-  display: '-webkit-box',
-  WebkitLineClamp: 3,
-  WebkitBoxOrient: 'vertical',
-  overflow: 'hidden',
+export function hubBlurbStyle(lines = 3): CSSProperties {
+  return {
+    fontSize: 12.5,
+    lineHeight: 1.5,
+    color: 'var(--ux-text-2)',
+    display: '-webkit-box',
+    /* ⚠ CLAMPED BY LINES, NOT BY CHARACTERS (2026-11-20, Jillienne asked for
+       "the body character limit … so its only 2 lines of a quick summary").
+       A character count cuts at a different point on every row, because the
+       text is proportional — two rows with the same count end at different
+       widths and the list looks ragged. The clamp ends every row on the same
+       line with the browser's own ellipsis, which is the thing actually being
+       asked for: a fixed number of LINES.
+
+       The note is not truncated in the store — only in the row. Opening the
+       row still shows all of it, so this costs nothing but the scroll. */
+    WebkitLineClamp: lines,
+    WebkitBoxOrient: 'vertical',
+    overflow: 'hidden',
+  }
 }
 
 /** A quiet third line under the description — the one fact a row may carry
@@ -147,17 +159,36 @@ export const hubIconTagStyle: CSSProperties = {
  *  between them. */
 export const HUB_TAG_COL = 156
 
-export const hubTagStackStyle: CSSProperties = {
-  display: 'grid',
-  gridTemplateColumns: `${HUB_TAG_COL}px`,
-  alignItems: 'center',
-  gap: 6,
-}
+/** The COMPACT column (2026-11-20, Jillienne, on the Research board): "shift
+ *  these tags to the right, closer to the chevron so there is more text for
+ *  the copy, this will allow better vertical spacing for these cards."
+ *
+ *  Wide enough for the longest tag a link board writes — "Added 2026-11-20" —
+ *  and 32px narrower than the full column, which the description takes. The
+ *  tags also right-align in this mode, so they sit against the chevron rather
+ *  than floating in the middle of a column sized for a tag nobody on this
+ *  board writes ("Updated Oct 14, 8:47 PM" is a Prototypes row's tag).
+ *
+ *  ⚠ STILL A FIXED WIDTH, not `auto`. Each row is its own grid, so a
+ *  content-sized column would be a different width on every row and the tags
+ *  would wander down the list — the opposite of the alignment rule this file
+ *  exists to hold ("have these all vertically align"). */
+export const HUB_TAG_COL_COMPACT = 124
 
-export function hubTagAreaStyle(statusWidth?: number): CSSProperties {
+export function hubTagStackStyle(compact = false): CSSProperties {
   return {
     display: 'grid',
-    gridTemplateColumns: statusWidth ? `${HUB_TAG_COL}px ${statusWidth}px` : `${HUB_TAG_COL}px`,
+    gridTemplateColumns: `${compact ? HUB_TAG_COL_COMPACT : HUB_TAG_COL}px`,
+    alignItems: 'center',
+    gap: 6,
+  }
+}
+
+export function hubTagAreaStyle(statusWidth?: number, compact = false): CSSProperties {
+  const col = compact ? HUB_TAG_COL_COMPACT : HUB_TAG_COL
+  return {
+    display: 'grid',
+    gridTemplateColumns: statusWidth ? `${col}px ${statusWidth}px` : `${col}px`,
     alignItems: 'center',
     gap: 6,
     flex: 'none',

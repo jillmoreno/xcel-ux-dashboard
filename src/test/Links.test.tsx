@@ -54,6 +54,7 @@ const link = (over: Partial<StoredLink> = {}): StoredLink => ({
   archivedAt: '',
   archivedBy: '',
   feature: '',
+  typeOther: '',
   supersedes: '',
   ...over,
 })
@@ -570,20 +571,66 @@ describe('LinksPanel', () => {
     expect(serverside).toEqual(LINK_TYPES.map((t) => t.id))
   })
 
-  it('shows no search field until the list is long enough to need one', async () => {
+  it('shows the search field on every board, at any length', async () => {
+    /* ⚠ THIS CASE USED TO ASSERT THE OPPOSITE — no search until six rows
+       (`SEARCH_THRESHOLD`). 2026-11-20, Jillienne: "make the search field
+       consistent on all pages". The threshold was well meant and it made the
+       four boards look like four different pages, and it moved the whole
+       toolbar the moment someone added a sixth row. A control that comes and
+       goes is harder to learn than one that is sometimes unnecessary. */
     mockEndpoint([link()])
     render(<LinksPanel />)
     await waitFor(() => expect(screen.getByText('1 link')).toBeInTheDocument())
-    expect(screen.queryByLabelText('Search links')).not.toBeInTheDocument()
+    expect(screen.getByLabelText('Search links')).toBeInTheDocument()
+  })
 
-    vi.unstubAllGlobals()
-    mockEndpoint(
-      Array.from({ length: 6 }, (_, i) =>
-        link({ id: `link-00${i + 1}`, title: `Link ${i + 1}`, addedDate: '2026-09-10' }),
-      ),
-    )
+  it('the toolbar reads left to right: search, count, then Add on the right', async () => {
+    // 2026-11-20. Add led the toolbar, which put the page's one WRITE action
+    // where the eye starts, before anyone had read the board.
+    mockEndpoint([link()])
     render(<LinksPanel />)
-    expect(await screen.findByLabelText('Search links')).toBeInTheDocument()
+    const add = await screen.findByRole('button', { name: /Add link/i })
+    expect(add.style.marginLeft).toBe('auto')
+    const search = screen.getByLabelText('Search links')
+    expect(search.compareDocumentPosition(add) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+  })
+
+  it('copies ONE row as markdown from its kebab, with its own confirmation', async () => {
+    /* 2026-11-20, replacing the toolbar button. `toMarkdown` takes a list, so
+       a single-item array is the whole implementation — a row pasted into a
+       ticket looks exactly like its line in a full export. */
+    const user = userEvent.setup()
+    const writes: string[] = []
+    // `navigator.clipboard` is getter-only in jsdom, so it is defined rather
+    // than assigned.
+    Object.defineProperty(navigator, 'clipboard', {
+      configurable: true,
+      value: { writeText: async (t: string) => void writes.push(t) },
+    })
+    mockEndpoint([link({ title: 'A study' })])
+    render(<LinksPanel />)
+    await screen.findByText('A study')
+
+    await user.click(screen.getByRole('button', { name: /Actions for A study/i }))
+    await user.click(await screen.findByRole('menuitem', { name: /Copy as markdown/i }))
+
+    await waitFor(() => expect(writes).toHaveLength(1))
+    expect(writes[0]).toContain('A study')
+    expect(writes[0]).toMatch(/^- \[/)
+    // ⚠ Its OWN confirmation. "Link copied" over a markdown copy would be a
+    // quiet lie, and both items write to the clipboard now.
+    expect(await screen.findByText('Markdown copied')).toBeInTheDocument()
+  })
+
+  it('offers no Copy as markdown button', async () => {
+    /* Removed 2026-11-20 — a second button competing with Add, for an export
+       nobody on these boards was using. ⚠ `toMarkdown` itself is KEPT and
+       still tested above: it is the only way out of a store nothing backs up,
+       and deleting the button is not a reason to lose the function. */
+    mockEndpoint([link()])
+    render(<LinksPanel />)
+    await waitFor(() => expect(screen.getByText('1 link')).toBeInTheDocument())
+    expect(screen.queryByRole('button', { name: /Copy as markdown/i })).not.toBeInTheDocument()
   })
 })
 

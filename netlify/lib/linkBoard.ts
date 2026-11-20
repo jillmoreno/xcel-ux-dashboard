@@ -101,7 +101,27 @@ export function rehostRetired(raw: string): string {
  * files and asserts they agree, so the duplication cannot drift silently.
  * '' is valid — the field is optional.
  */
-export const ALLOWED_TYPES = ['brief', 'design', 'prototype', 'reference']
+/* ⚠ KEEP THE ARRAY BELOW FREE OF COMMENTS. `Links.test.tsx` reads the
+   literal out of this file and compares it to `LINK_TYPES` on the client, so
+   the two cannot drift — and it does that by pulling every quoted string out
+   of the declaration. A comment with an apostrophe in it lands in that list
+   and fails the check.
+
+   2026-11-20 added the last four: the places research actually lives, for the
+   Research section's projects. `other` is the escape hatch, and the reason
+   `type` stays a CLOSED list — the designer's own word goes in `typeOther`,
+   bounded like `feature`, rather than opening this trust boundary to
+   arbitrary strings to get one flexible label. */
+export const ALLOWED_TYPES = [
+  'brief',
+  'design',
+  'prototype',
+  'reference',
+  'confluence',
+  'figma',
+  'document',
+  'other',
+]
 
 /**
  * The Refinement product tags, re-declared here for the same reason as
@@ -125,6 +145,9 @@ const MAX_ADDED_BY = 100
 /** Long enough for a real feature name ("Invited product detail — checkout"),
  *  short enough that the group header stays one line. */
 const MAX_FEATURE = 80
+/** A kind, not a sentence — "Transcript", "Survey results". Short enough that
+ *  the row's type tag stays a tag. */
+const MAX_TYPE_OTHER = 40
 /** A full ISO timestamp with a zone — what `new Date().toISOString()` writes. */
 const ISO_STAMP = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?Z$/
 
@@ -232,6 +255,16 @@ export function validateRecord(
     if (type && !cfg.types.includes(type)) {
       errors.push(`type must be one of: ${cfg.types.join(', ')}.`)
     } else out.type = type
+
+    /* The custom word, and ONLY for `other` (2026-11-20). Cleared for every
+       other type rather than carried quietly: a row that was "Other —
+       Transcript" and is edited to "Figma" must not keep a stale word that
+       nothing on the page shows. Free text, length-policed exactly like
+       `feature` — see that block's note for why a list would be wrong here. */
+    const typeOther = str(b.typeOther)?.trim() ?? ''
+    if (typeOther.length > MAX_TYPE_OTHER) {
+      errors.push(`typeOther is longer than ${MAX_TYPE_OTHER} characters.`)
+    } else out.typeOther = out.type === 'other' ? typeOther : ''
   }
 
   // Which product the row is about. NORMALISED, not rejected: an unreadable tag

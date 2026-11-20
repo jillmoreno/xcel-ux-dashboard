@@ -66,6 +66,12 @@ export type HubRowTag = {
 export type HubRowProps = {
   /** `data-row` — what the tests and the smoke suite find a row by. */
   id: string
+  /** A tighter row for a board whose tags are short and whose thumbnail is an
+   *  icon rather than a picture (2026-11-20, the Research board). Narrows the
+   *  tag column and pushes the tags right, against the chevron — the width it
+   *  gives up goes to the description. The caller sizes its own thumbnail;
+   *  this is only about the right-hand side. */
+  compact?: boolean
   thumb: ReactNode
   title: ReactNode
   /** Drawn beside the title at its size — an external-link glyph, an id. */
@@ -111,6 +117,7 @@ export function HubRow({
   tags,
   status,
   statusWidth,
+  compact = false,
   href,
   external,
   onOpen,
@@ -143,20 +150,29 @@ export function HubRow({
           </span>
           {titleAdornment}
         </span>
-        {description != null && description !== '' && <span style={hubBlurbStyle}>{description}</span>}
+        {description != null && description !== '' && (
+          // Two lines on a compact board — a quick summary, not the note.
+          <span style={hubBlurbStyle(compact ? 2 : 3)}>{description}</span>
+        )}
         {caption != null && caption !== '' && <span style={hubCaptionStyle}>{caption}</span>}
       </span>
 
       {/* The tags in their own column, so they line up down the list instead
           of starting at whatever x-position the description happened to end
           on. */}
-      <span style={hubTagAreaStyle(statusWidth)}>
-        <span style={hubTagStackStyle}>
+      <span style={hubTagAreaStyle(statusWidth, compact)}>
+        <span style={hubTagStackStyle(compact)}>
           {tags.map((t) => (
             <span
               key={t.key}
               title={t.title}
-              style={t.icon ? { ...hubIconTagStyle, ...t.style } : { ...hubTagStyle, ...t.style }}
+              style={{
+                ...(t.icon ? hubIconTagStyle : hubTagStyle),
+                // Right against the chevron in compact mode; left-aligned in
+                // the full one, which is where every other section wants them.
+                ...(compact ? { justifySelf: 'end', maxWidth: '100%' } : null),
+                ...t.style,
+              }}
             >
               {t.icon}
               {t.srPrefix && <span className="cre-visually-hidden">{t.srPrefix}</span>}

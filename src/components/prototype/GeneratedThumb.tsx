@@ -32,6 +32,18 @@ import type { FeatureAccent } from '@/data/prototypeFeatures'
 export const THUMB_W = 160
 export const THUMB_H = 110
 
+/** THE ICON FORM (2026-11-20, Jillienne on the Research board): "we will never
+ *  have large thumbnails, make this a smaller icon. gives more room for the
+ *  text."
+ *
+ *  A link board's tile is never a picture of anything — `linkRowThumb` picks a
+ *  glyph from the LINK'S HOST, so a 160x110 panel is a 34px icon centred in a
+ *  lot of tinted space. At 48 square it still colour-codes the host and still
+ *  marks the row, and the ~112px it gives back goes to the note, which on
+ *  Research is the part worth reading. It also takes the row's height down to
+ *  what the text needs, which is the vertical spacing she was after. */
+export const THUMB_ICON = 48
+
 const thumbStyle: CSSProperties = {
   display: 'inline-flex',
   alignItems: 'center',

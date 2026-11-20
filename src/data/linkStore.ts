@@ -64,16 +64,35 @@ export type LinkBoardConfig = {
  * `''` rather than an optional key so "never had one" and "had one and cleared
  * it" stay one state, the same rule `note` and `addedBy` follow.
  */
+/* THE FOUR ORIGINALS, then the places research actually lives (2026-11-20,
+   Jillienne, for the Research section's projects). Confluence, Figma and
+   Document are named because they are what a research project attaches:
+   a page, a file, a board.
+
+   `other` is the ESCAPE HATCH, and it is a real member rather than a free-text
+   `type` for one reason — the server keeps its own copy of this list
+   (`ALLOWED_TYPES` in `netlify/lib/linkBoard.ts`) because `type` is a trust
+   boundary. Opening that field to arbitrary strings would remove the boundary;
+   `other` keeps it closed and puts the designer's own word in `typeOther`, a
+   bounded free-text field validated the way `feature` is. */
 export const LINK_TYPES = [
   { id: 'brief', label: 'Brief' },
   { id: 'design', label: 'Design' },
   { id: 'prototype', label: 'Prototype' },
   { id: 'reference', label: 'Reference' },
+  { id: 'confluence', label: 'Confluence' },
+  { id: 'figma', label: 'Figma' },
+  { id: 'document', label: 'Document' },
+  { id: 'other', label: 'Other…' },
 ] as const
 
 export type LinkType = (typeof LINK_TYPES)[number]['id'] | ''
 
-export function linkTypeLabel(type: LinkType): string {
+export function linkTypeLabel(type: LinkType, typeOther = ''): string {
+  // `other` wears the designer's own word when there is one — the tag should
+  // say "Transcript", not "Other…". Falls back to the menu label when the
+  // custom word is empty, which is what an older record carries.
+  if (type === 'other') return typeOther.trim() || 'Other'
   return LINK_TYPES.find((t) => t.id === type)?.label ?? ''
 }
 
@@ -171,7 +190,15 @@ export function matchesDesigner(addedBy: string, filter: Designer | ''): boolean
  * ungrouped row, which renders exactly as a row does now. There is no backfill
  * and no migration — the board is mixed on purpose while the habit forms.
  */
+/** The note's cap — kept in step with `MAX_NOTE` in
+ *  `netlify/lib/linkBoard.ts`, which is the one that is enforced. The form
+ *  trims to it as you type so a long paste is cut HERE, with a message, rather
+ *  than refused by the server after you press Save. */
+export const MAX_NOTE = 500
 export const MAX_FEATURE = 80
+/** The custom type's cap — kept in step with `MAX_TYPE_OTHER` in
+ *  `netlify/lib/linkBoard.ts`, which is the one that is enforced. */
+export const MAX_TYPE_OTHER = 40
 
 /** The grouping key. Case- and whitespace-insensitive, so "Streak card" and
  *  "streak  Card" are one feature. Returns '' for an ungrouped row. */
@@ -332,6 +359,11 @@ export type StoredLink = {
   /** What kind of thing it points at. '' when unset — optional, so the records
    *  written before this field existed stay valid without a backfill. */
   type: LinkType
+  /** The designer's own word for the kind, when `type` is `other` — '' for
+   *  every other type and for records written before this existed. Bounded
+   *  free text, like `feature`: the closed `type` list is the trust boundary
+   *  and this is the room left beside it. */
+  typeOther: string
   /** Which product this row is about. Only the Demo board's endpoint stores it
    *  (Links drops the field); everywhere else it normalises to `both`. */
   product: LinkProduct
@@ -372,6 +404,8 @@ export type LinkDraft = Pick<StoredLink, 'title' | 'url' | 'note' | 'addedBy' | 
   archived?: boolean
   archivedAt?: string
   archivedBy?: string
+  /** Only meaningful when `type` is `other`; the server clears it otherwise. */
+  typeOther?: string
   /** Refinement only, both of them — the boards without the controls drop the
    *  fields on the way in, so a Resources row cannot quietly acquire a feature
    *  nothing on that board can show or edit. */
@@ -524,6 +558,7 @@ function normalise(v: StoredLink): StoredLink {
     // Absent on every record written before Feature Refinement, and on every
     // board but Refinement. Both read as an ungrouped row, which is what they
     // are — there is no backfill, by design.
+    typeOther: typeof v.typeOther === 'string' ? v.typeOther : '',
     feature: typeof v.feature === 'string' ? v.feature : '',
     supersedes: typeof v.supersedes === 'string' ? v.supersedes : '',
   }
