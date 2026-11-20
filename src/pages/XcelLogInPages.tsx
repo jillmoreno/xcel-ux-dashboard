@@ -4,7 +4,14 @@ import { StandaloneBrowserChrome } from '@/components/layout/BrowserChromeBar'
 import { XcelFooter } from '@/components/e2e/XcelFooter'
 import { XcelSiteHeader } from '@/components/e2e/XcelSiteHeader'
 import { PartnerCodeAskPage, XcelAccountAskPage } from '@/components/e2e/PartnerCodeAsk'
-import { KeycloakLogInCardV3, V3CardBack, V3CardHead, V3CardInput, V3CardSubmit } from '@/components/e2e/VerifyEmailModalV3'
+import {
+  KeycloakLogInCardV3,
+  V3CardBack,
+  V3CardForgot,
+  V3CardHead,
+  V3CardInput,
+  V3CardSubmit,
+} from '@/components/e2e/VerifyEmailModalV3'
 import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { CircleInfo } from '@/icons'
 import {
@@ -103,8 +110,9 @@ export function XcelLogInAccountPage() {
  *   - Under the password: "The Username or Password is incorrect." for a
  *     wrong password, "An account does not exist." for no account at all
  *     (2026-11-20, Afsana).
- *   - Forgot your password? only with the password: before the email is in,
- *     nobody knows which system's password it is.
+ *   - Forgot password? only with the password, under its field as on
+ *     Keycloak's card: before the email is in, nobody knows which system's
+ *     password it is.
  */
 export function XcelOcdLogInPage() {
   useEndToEndDemoParams()
@@ -225,6 +233,9 @@ export function XcelOcdLogInPage() {
                 {failed === 'no-account' ? 'An account does not exist.' : 'The Username or Password is incorrect.'}
               </p>
             ) : null}
+            {/* Keycloak's place for it, under the field (2026-11-20, Afsana) —
+                not OCD's, under the card. Drawn only: OCD's reset is OCD's. */}
+            <V3CardForgot />
           </div>
         )}
         {/* Keycloak's Log in button (2026-11-20, Afsana): full width, the
@@ -244,12 +255,6 @@ export function XcelOcdLogInPage() {
           style={DEMO_FILL}
           onClick={() => setEmail(E2E_LEARNER_EMAIL)}
         />
-      ) : null}
-      {/* Inert, as on every flow: OCD's reset is OCD's. */}
-      {step === 'password' ? (
-        <p style={OCD_BELOW} data-below-card>
-          <span style={OCD_FORGOT}>Forgot your password?</span>
-        </p>
       ) : null}
     </OcdFrame>
   )
@@ -445,23 +450,6 @@ const OCD_ERROR: CSSProperties = {
   fontSize: 12,
   lineHeight: '16px',
   color: 'var(--color-error-600)',
-}
-
-/* Forgot your password? sits under the card, on the grey. */
-const OCD_BELOW: CSSProperties = {
-  position: 'absolute',
-  left: 0,
-  right: 0,
-  bottom: -44,
-  margin: 0,
-  textAlign: 'center',
-}
-
-const OCD_FORGOT: CSSProperties = {
-  fontFamily: 'var(--font-e2e-avenir)',
-  fontSize: 14,
-  fontWeight: 300,
-  color: 'var(--color-e2e-ocd-link)',
 }
 
 const DEMO_FILL: CSSProperties = {
