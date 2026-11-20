@@ -645,6 +645,9 @@ function LoginStep({
         }}
         noValidate
       >
+        {/* On the Log In flow, ← Back in the top left returns to Log in, in
+            place of Back to sign in (2026-11-20, Afsana). */}
+        {onBack ? <V3CardBack onBack={() => setRequesting(false)} /> : null}
         <img src="/brand/xcel-logo.webp" alt="XCEL Insurance Training by Colibri" style={CODE_LOGO} />
         <div style={HEAD}>
           <h2 id="verify-email-title" style={TITLE}>
@@ -691,9 +694,11 @@ function LoginStep({
               support team.
             </p>
           </div>
-          <button type="button" style={CTA_SECONDARY} onClick={() => setRequesting(false)}>
-            Back to sign in
-          </button>
+          {onBack ? null : (
+            <button type="button" style={CTA_SECONDARY} onClick={() => setRequesting(false)}>
+              Back to sign in
+            </button>
+          )}
         </div>
         {/* The demo fill — the same invisible, labelled corner as the email
             step's. */}

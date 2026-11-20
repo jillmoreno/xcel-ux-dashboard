@@ -4029,21 +4029,21 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        lookup finds. ⚠ NOT FOUND ANYWHERE IS NOT ITS OWN SCREEN: OCD has no
        service that says whether a username exists (Swati, 2026-11-18), so an
        email Keycloak does not know is assumed to be OCD's and asked for its
-       password — `none` and `ocd` part only after the password: "An account
-       does not exist." for `none`, "The Username or Password is incorrect."
-       for a wrong password on `ocd` (2026-11-20, Afsana). */
+       password — `none` and `ocd` part only after the password, and then
+       read the same as a wrong password: "The Username or Password is
+       incorrect." (2026-11-20, Afsana). */
     surface: 'design',
     versions: ['eric-atlas-e2e'],
     surfaces: ['invite:v3-b2c-log-in'],
     group: 'Navigation',
     label: 'Account found in',
-    description: 'Invite Flow V3, Log In. Where the email given on the OCD log-in page has an account: Atlas (Keycloak’s log-in, then Atlas Home), OCD only (OCD’s password, then OCD), or neither (OCD’s password, then “An account does not exist.”). On OCD, the password “wrong” is a wrong password: “The Username or Password is incorrect.”',
+    description: 'Invite Flow V3, Log In. Where the email given on the OCD log-in page has an account: Atlas (Keycloak’s log-in, then Atlas Home), OCD only (OCD’s password, then OCD), or neither (OCD’s password, then “The Username or Password is incorrect.”). On OCD, the password “wrong” is a wrong password, with the same message.',
     defaultEnabled: true,
     defaultVariant: 'atlas',
     variants: [
       { value: 'atlas', label: 'Atlas (Keycloak)', description: 'Keycloak knows the email: Atlas’s log-in widget, then Atlas Home.' },
       { value: 'ocd', label: 'OCD only', description: 'Keycloak does not know it: OCD’s password, then into OCD.' },
-      { value: 'none', label: 'Neither', description: 'Not in Keycloak or OCD: OCD’s password, then “An account does not exist.”' },
+      { value: 'none', label: 'Neither', description: 'Not in Keycloak or OCD: OCD’s password, then “The Username or Password is incorrect.” — the same as a wrong password.' },
     ],
     page: 'dashboard-rebrand',
   },

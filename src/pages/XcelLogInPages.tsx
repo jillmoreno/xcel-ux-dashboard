@@ -46,16 +46,15 @@ import './inviteFlow.css'
  *     in Keycloak                Keycloak's log-in widget, then Atlas Home
  *     not in Keycloak            assumed OCD's: OCD's password, then OCD;
  *                                "The Username or Password is incorrect." for
- *                                a wrong password; "An account does not
- *                                exist." when OCD has no such account either
+ *                                a wrong password and for no account alike
  *
- * ⚠ THE ACCOUNT IS ONLY KNOWN MISSING AFTER THE PASSWORD. OCD has no service
- * that answers whether a username exists before a log-in is tried (Swati,
- * 2026-11-18), so an email nobody knows walks exactly like an OCD one until
- * the password is in. Then it says so — two messages, not the 2026-11-18
- * decision's one ("Either username or password is incorrect." for both):
- * Afsana, 2026-11-20. "Please create a user account." is gone. Where the
- * account is, the demo cannot look up: Account found in
+ * ⚠ NOTHING SAYS AN ACCOUNT DOES NOT EXIST. OCD has no service that answers
+ * whether a username exists (Swati, 2026-11-18), and an identity screen should
+ * not say which half was wrong — so an email nobody knows walks exactly like
+ * an OCD one until the password is in, and then gets the same words as a
+ * wrong password. (For part of 2026-11-20 it said "An account does not
+ * exist."; Afsana took it back the same day.) "Please create a user account."
+ * is gone. Where the account is, the demo cannot look up: Account found in
  * (`invite-v3-log-in-account`) says.
  *
  * Four pages, one file: they are one short walk and share the frame.
@@ -107,9 +106,8 @@ export function XcelLogInAccountPage() {
  *     get through to OCD's password.
  *   - The email alone first, CONTINUE; the password only once Keycloak has
  *     said no. Keycloak's yes leaves this page for Keycloak's own.
- *   - Under the password: "The Username or Password is incorrect." for a
- *     wrong password, "An account does not exist." for no account at all
- *     (2026-11-20, Afsana).
+ *   - Under the password: "The Username or Password is incorrect." — the same
+ *     words for a wrong password and for no account (2026-11-20, Afsana).
  *   - Forgot password? only with the password, under its field as on
  *     Keycloak's card: before the email is in, nobody knows which system's
  *     password it is.
@@ -124,8 +122,7 @@ export function XcelOcdLogInPage() {
   const [email, setEmail] = useState(() => params.get('email') ?? '')
   const [step, setStep] = useState<'email' | 'password'>('email')
   const [password, setPassword] = useState('')
-  /* Why the log-in failed, which says which line shows under the password. */
-  const [failed, setFailed] = useState<false | 'incorrect' | 'no-account'>(false)
+  const [failed, setFailed] = useState(false)
   const [tip, setTip] = useState(false)
   const tipId = useId()
   const given = email.trim()
@@ -138,8 +135,9 @@ export function XcelOcdLogInPage() {
   }
   const submitPassword = () => {
     if (!password) return
-    if (account === 'none') setFailed('no-account')
-    else if (password === V3_WRONG_DEMO_PASSWORD) setFailed('incorrect')
+    /* Neither system knows the pair: an unknown account and a wrong password
+       read the same. */
+    if (account === 'none' || password === V3_WRONG_DEMO_PASSWORD) setFailed(true)
     else go(LOG_IN_PATHS.ocdHome)
   }
 
@@ -225,12 +223,12 @@ export function XcelOcdLogInPage() {
                 setPassword(e.target.value)
                 setFailed(false)
               }}
-              aria-invalid={failed !== false}
+              aria-invalid={failed}
               aria-describedby={failed ? 'ocd-incorrect' : undefined}
             />
             {failed ? (
               <p id="ocd-incorrect" role="alert" style={OCD_ERROR}>
-                {failed === 'no-account' ? 'An account does not exist.' : 'The Username or Password is incorrect.'}
+                The Username or Password is incorrect.
               </p>
             ) : null}
             {/* Keycloak's place for it, under the field (2026-11-20, Afsana) —
