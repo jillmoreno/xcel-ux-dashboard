@@ -128,7 +128,11 @@ export const COURSE_FLAG_KEY = 'dashboard-course-state'
    lands on is the End-to-End family, which was ALREADY Florida, and Learner
    Focused is archived off the picker. What is left is Eric's versions moving
    NY → FL, which is the deliberate part. */
-export type CourseSelection = CourseId | 'auto'
+/* `none` (2026-11-19, Eric) — the Demo Controls' "No Courses": a learner with nothing enrolled; `error`, "Course
+   Error", its duplicate for courses that fail to load. Only My Courses reads it
+   (`isNoCoursesSelection`); every course-aware surface's data answers as Florida, the default, so Home and the rest do not
+   lose their content behind it. */
+export type CourseSelection = CourseId | 'auto' | 'none' | 'error'
 
 /**
  * ⚠ FLORIDA SINCE 2026-10-20, `auto` before it — Jillienne: "Course - i want
@@ -234,6 +238,10 @@ export const COURSE_PICKER: { course: CourseSelection; label: string }[] = [
      confirmed against XCEL's published page. */
   { course: 'ny', label: 'New York Life & Health Pre-Licensing' },
   { course: 'tx', label: 'Texas Life & Health Pre-Licensing' },
+  /* NO COURSES (2026-11-19, Eric) — last, because it is not a course: My Courses shows its Atlas empty state. */
+  { course: 'none', label: 'No Courses' },
+  /* COURSE ERROR (2026-11-19, Eric) — the No Courses page duplicated, for the case where courses fail to load. */
+  { course: 'error', label: 'Course Error' },
 ]
 
 /**
@@ -252,7 +260,9 @@ export function resolveSelection(variant: string | undefined): CourseSelection {
      opened the demo; it is no longer offered, so it resolves to the new
      default like any unknown value. Without that those machines would tick no
      row in the Course picker. */
-  return variant === 'tx' || variant === 'fl' || variant === 'ny' ? variant : DEFAULT_SELECTION
+  return variant === 'tx' || variant === 'fl' || variant === 'ny' || variant === 'none' || variant === 'error'
+    ? variant
+    : DEFAULT_SELECTION
 }
 
 /**
@@ -266,7 +276,19 @@ export function resolveSelection(variant: string | undefined): CourseSelection {
  * means, and it needs no second code path to maintain.
  */
 export function chosenCourse(selection: CourseSelection): CourseId | undefined {
+  // No Courses and Course Error answer as Florida everywhere but My Courses — see `isNoCoursesSelection`.
+  if (selection === 'none' || selection === 'error') return 'fl'
   return selection === 'auto' ? undefined : selection
+}
+
+/** The Demo Controls' "No Courses" — My Courses draws its empty state (2026-11-19). */
+export function isNoCoursesSelection(variant: string | undefined): boolean {
+  return resolveSelection(variant) === 'none'
+}
+
+/** The Demo Controls' "Course Error" — My Courses draws its error state (2026-11-19). */
+export function isCourseErrorSelection(variant: string | undefined): boolean {
+  return resolveSelection(variant) === 'error'
 }
 
 /** Normalise a flag SECONDARY variant to a sequencing mode. */

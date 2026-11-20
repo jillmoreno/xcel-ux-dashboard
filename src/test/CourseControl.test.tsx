@@ -116,7 +116,8 @@ describe('the committed defaults — a plain load of main is unchanged', () => {
        `COURSE_PICKER` are the same list in two places (the dropdown renders
        the second), so both lose the row together or the control offers a
        value its own catalog does not know. */
-    expect(def.variants?.map((v) => v.value)).toEqual(['fl', 'ny', 'tx'])
+    // …and No Courses and Course Error last (2026-11-19, Eric) — My Courses' empty state; in COURSE_PICKER too, for the reason above.
+    expect(def.variants?.map((v) => v.value)).toEqual(['fl', 'ny', 'tx', 'none', 'error'])
     expect(def.secondaryVariants?.map((v) => v.value)).toEqual(['unregulated', 'regulated'])
   })
 

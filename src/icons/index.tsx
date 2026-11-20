@@ -120,6 +120,8 @@ import BookLightSvg from './book-light.svg?react'
 import SquareListRegularSvg from './square-list-regular.svg?react'
 // FA Pro 7.2.0 `download` (regular) — one weight up from `download.svg` (light), for Download Transcript (2026-11-19).
 import DownloadRegularSvg from './download-regular.svg?react'
+// FA Pro 7.2.0 `circle-exclamation` (regular) — My Courses' Course Error state (2026-11-19). `circle-exclamation.svg` is Light.
+import CircleExclamationRegularSvg from './circle-exclamation-regular.svg?react'
 import BellRegularSvg from './bell-regular.svg?react'
 import ReceiptRegularSvg from './receipt-regular.svg?react'
 import GiftRegularSvg from './gift-regular.svg?react'
@@ -393,6 +395,7 @@ export const HouseLight = makeIcon(HouseLightSvg) // FA: house (light)
 export const BookLight = makeIcon(BookLightSvg) // FA: book (light)
 export const SquareListRegular = makeIcon(SquareListRegularSvg) // FA: square-list (regular)
 export const DownloadRegular = makeIcon(DownloadRegularSvg) // FA: download (regular)
+export const CircleExclamationRegular = makeIcon(CircleExclamationRegularSvg) // FA: circle-exclamation (regular)
 export const BellRegular = makeIcon(BellRegularSvg) // FA: bell (regular)
 export const ReceiptRegular = makeIcon(ReceiptRegularSvg) // FA: receipt (regular)
 export const GiftRegular = makeIcon(GiftRegularSvg) // FA: gift (regular)

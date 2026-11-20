@@ -6099,6 +6099,8 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
       { value: 'fl', label: 'Florida Life & Health Pre-Licensing', description: 'The course the CE and exam-prep fixtures were authored against. Published exam facts; ⚠ invented qualifying lesson count.' },
       { value: 'ny', label: 'New York Life & Health Pre-Licensing', description: 'The licence the qualifying journey has demoed since 2026-09-16, and the only one whose exam facts are confirmed against XCEL’s published page. Picking it explicitly puts CE and exam prep on New York too.' },
       { value: 'tx', label: 'Texas Life & Health Pre-Licensing', description: 'Its own curriculum (general knowledge, then the Texas Insurance Code), study plan and content tree. ⚠ Every figure invented.' },
+      { value: 'none', label: 'No Courses', description: 'A learner with nothing enrolled (2026-11-19): My Courses shows its empty state, \u201cYou currently have no courses available.\u201d, with Get Started to xcelsolutions.com. Every other surface answers as Florida.' },
+      { value: 'error', label: 'Course Error', description: 'My Courses shows its course-error state (2026-11-19) — a duplicate of No Courses\u2019 page, identical until it is changed. Every other surface answers as Florida.' },
     ],
     secondaryVariants: [
       { value: 'unregulated', label: 'Unregulated', description: 'Every item in the pre-licensing course is open, in any order. Today’s behaviour.' },

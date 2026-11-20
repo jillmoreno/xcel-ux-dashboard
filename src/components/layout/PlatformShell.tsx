@@ -40,7 +40,9 @@ import { isHomeActive } from '@/components/learning/learningPathsHomeUtil'
 import { useLearningPathSummariesForBrand } from '@/data/learningPathsCountVariant'
 import { activePathIdFor, learningPathsFor } from '@/data/learningFixtures'
 import { hasStudyCalendarFor, studyCalendarFor } from '@/data/studyCalendarFixtures'
-import { EXPIRY_FLAG_KEY, isCoursePathCe } from '@/data/courseFixtures'
+import { COURSE_FLAG_KEY, EXPIRY_FLAG_KEY, isCourseErrorSelection, isCoursePathCe, isNoCoursesSelection } from '@/data/courseFixtures'
+import { AtlasNoCoursesState } from '@/components/courses/AtlasNoCoursesState'
+import { AtlasCourseErrorState } from '@/components/courses/AtlasCourseErrorState'
 import { InlineStudyCalendar } from '@/components/learning/study-calendar/InlineStudyCalendar'
 import { useCeStudyPlanEnabled, useCourseDemo, useFeatureFlag, useFeatureFlags } from '@/context/FeatureFlagContext'
 import { StudyWeekSummary } from '@/components/learning/study-calendar/StudyWeekSummary'
@@ -2763,6 +2765,11 @@ function MyCoursesSection() {
   /* Whether the card goes anywhere on the baseline. Eric's WIP and White wire
      their first card themselves and are not gated on it. */
   const ctaOpensCourse = useFeatureFlag('atlas-courses-open-course').enabled
+  // The Demo Controls' Course on No Courses (2026-11-19, Eric) — the Atlas empty state in the cards' place.
+  const courseVariant = useFeatureFlag(COURSE_FLAG_KEY).variant
+  const noCourses = isNoCoursesSelection(courseVariant)
+  // …and Course Error, its duplicate (same day).
+  const courseError = isCourseErrorSelection(courseVariant)
   /* Which card, and whether the rail is drawn — both the baseline's alone.
      ⚠ READ UNCONDITIONALLY, THEN ANDed. `baseline && useFeatureFlag(...)`
      short-circuits the hook, so switching versions in the picker would change
@@ -2858,7 +2865,11 @@ function MyCoursesSection() {
          the real fixtures in a responsive grid with the \u22ee wired to its own
          Course Details panel and an empty state behind it. */
       cards={
-        !atlas || sharedCard ? undefined : cards.length === 0 ? (
+        atlas && noCourses ? (
+          <AtlasNoCoursesState />
+        ) : atlas && courseError ? (
+          <AtlasCourseErrorState />
+        ) : !atlas || sharedCard ? undefined : cards.length === 0 ? (
           /* AN EMPTY LIBRARY (2026-11-02). The Atlas arm replaces the page's
              list wholesale, so it has to carry its own empty state or an
              enrolment-free learner gets a title over blank space. */
