@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react'
 import { afterEach, describe, expect, it } from 'vitest'
 import { MemoryRouter } from 'react-router-dom'
 import { useEffect, useState } from 'react'
@@ -113,6 +113,39 @@ describe('Keycloak change password', () => {
     fireEvent.click(save())
     expect(screen.queryByLabelText('New Password')).toBeNull()
     expect(screen.getByText('Password updated')).toBeTruthy()
+  })
+
+  it('Forgot password? opens Reset your password, then Check your email; Escape leaves the panel open', () => {
+    renderPanel()
+    fireEvent.click(screen.getByText('Update Password'))
+    fireEvent.click(screen.getByRole('button', { name: 'Forgot password?' }))
+    expect(screen.getByRole('heading', { name: 'Reset your password' })).toBeTruthy()
+    const send = screen.getByRole('button', { name: 'Send reset link' }) as HTMLButtonElement
+    expect(send.disabled).toBe(true)
+    fireEvent.change(screen.getByLabelText(/^Email/), { target: { value: EMAIL } })
+    expect(send.disabled).toBe(false)
+    fireEvent.click(send)
+    expect(screen.getByRole('heading', { name: 'Check your email' })).toBeTruthy()
+    expect(screen.getByText(EMAIL)).toBeTruthy()
+    expect((screen.getByRole('button', { name: 'Resend link' }) as HTMLButtonElement).disabled).toBe(true)
+    fireEvent.keyDown(document, { key: 'Escape' })
+    expect(screen.queryByRole('heading', { name: 'Check your email' })).toBeNull()
+    expect(screen.getByLabelText('Current Password')).toBeTruthy()
+  })
+
+  it('the ✕ closes the modal on both steps, and only the modal', () => {
+    renderPanel()
+    fireEvent.click(screen.getByText('Update Password'))
+    const dialog = () => screen.queryByRole('dialog', { name: /Reset your password|Check your email/ })
+    fireEvent.click(screen.getByRole('button', { name: 'Forgot password?' }))
+    fireEvent.click(within(dialog()!).getByRole('button', { name: 'Close' }))
+    expect(dialog()).toBeNull()
+    fireEvent.click(screen.getByRole('button', { name: 'Forgot password?' }))
+    fireEvent.change(screen.getByLabelText(/^Email/), { target: { value: EMAIL } })
+    fireEvent.click(screen.getByRole('button', { name: 'Send reset link' }))
+    fireEvent.click(within(dialog()!).getByRole('button', { name: 'Close' }))
+    expect(dialog()).toBeNull()
+    expect(screen.getByLabelText('Current Password')).toBeTruthy()
   })
 
   it('off: the sheet\'s own Update Password step, as before', () => {
