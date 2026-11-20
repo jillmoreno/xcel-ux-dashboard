@@ -533,6 +533,19 @@ describe('Invite Flow V3 — the email check', () => {
     const dialog = screen.getByRole('dialog', { name: 'Reset your password' })
     expect(within(dialog).getByAltText('XCEL Insurance Training by Colibri')).toBeInTheDocument()
     expect(dialog).toHaveTextContent('Enter your email and we’ll send you a link to reset your password.')
+    /* Under Send reset link: a rule, then Forgot Email? and where to turn,
+       then Back to sign in (2026-11-20). */
+    expect(within(dialog).getByRole('heading', { name: 'Forgot Email?' })).toBeInTheDocument()
+    expect(dialog).toHaveTextContent(
+      'If you no longer have access to the email on file or have forgotten which one you used, please contact our support team.',
+    )
+    const order = [...dialog.querySelectorAll('button, h3, hr')].map((e) => e.tagName === 'BUTTON' ? e.textContent : e.tagName)
+    expect(order.slice(order.indexOf('Send reset link'), order.indexOf('Back to sign in') + 1)).toEqual([
+      'Send reset link',
+      'HR',
+      'H3',
+      'Back to sign in',
+    ])
     const field = within(dialog).getByLabelText(/^Email\s*\*?$/)
     expect(field).toHaveValue('')
     expect(field).toBeEnabled()

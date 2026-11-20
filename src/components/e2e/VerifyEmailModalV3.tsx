@@ -661,12 +661,21 @@ function LoginStep({
           </label>
           {badResetEmail ? <EmailInvalid id="reset-request-invalid" /> : null}
         </div>
-        {/* Send reset link, primary, over Back to sign in, secondary — the
-            same pair as Check your email's. */}
+        {/* Send reset link, primary; then a light rule, "Forgot Email?" and
+            where to turn, then Back to sign in, secondary (2026-11-20,
+            Afsana). */}
         <div style={ACTIONS}>
           <button type="submit" className="cre-e2e-cta" disabled={!valid} aria-disabled={!valid} style={valid ? CTA : CTA_OFF}>
             Send reset link
           </button>
+          <hr aria-hidden style={FORGOT_EMAIL_RULE} />
+          <div style={FORGOT_EMAIL}>
+            <h3 style={FORGOT_EMAIL_TITLE}>Forgot Email?</h3>
+            <p style={FORGOT_EMAIL_TEXT}>
+              If you no longer have access to the email on file or have forgotten which one you used, please contact our
+              support team.
+            </p>
+          </div>
           <button type="button" style={CTA_SECONDARY} onClick={() => setRequesting(false)}>
             Back to sign in
           </button>
@@ -1211,6 +1220,35 @@ function EmailInvalid({ id }: { id: string }) {
       Please enter a valid email address
     </p>
   )
+}
+
+/* Reset your password — enter email: the rule under Send reset link, and
+   "Forgot Email?" under it (2026-11-20, Afsana). */
+const FORGOT_EMAIL_RULE: CSSProperties = {
+  alignSelf: 'stretch',
+  height: 0,
+  margin: '4px 0',
+  border: 'none',
+  borderTop: '1px solid var(--color-e2e-form-outline)',
+}
+
+const FORGOT_EMAIL: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 4 }
+
+const FORGOT_EMAIL_TITLE: CSSProperties = {
+  margin: 0,
+  fontFamily: 'var(--font-e2e-avenir)',
+  fontWeight: 800,
+  fontSize: 16,
+  lineHeight: '22px',
+  color: 'var(--color-text-primary)',
+}
+
+const FORGOT_EMAIL_TEXT: CSSProperties = {
+  margin: 0,
+  fontFamily: 'var(--font-e2e-avenir)',
+  fontSize: 14,
+  lineHeight: '21px',
+  color: 'var(--color-text-secondary)',
 }
 
 const ACTIONS: CSSProperties = {
