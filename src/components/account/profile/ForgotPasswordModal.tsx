@@ -14,14 +14,12 @@ import '@/pages/inviteFlow.css'
  * brick. A copy, so it will not follow V3's later edits.
  *
  * What is NOT brought over: the demo fill corner, and the click-through to
- * `ResetPasswordPageV3` (that page lives on the invite branch). Back to sign
- * in closes this modal and leaves the learner on Update Password.
+ * `ResetPasswordPageV3` (that page lives on the invite branch).
  *
- * ⚠ OPEN — "BACK TO SIGN IN" DOES NOT BELONG HERE (2026-11-20, Afsana). It is
- * kept only because V3 has it. In Atlas the learner is already signed in and
- * only wants to change their password, so there is no sign-in to go back to.
- * The button's label (or the button itself) still has to be decided for this
- * context. It currently just closes the modal.
+ * NO "BACK TO SIGN IN" (2026-11-20, Afsana). V3 has it on both steps; here the
+ * learner is already signed in to Atlas and only wants to change their
+ * password, so there is no sign-in to go back to. The ✕ (and Escape) is the
+ * way out, back to Update Password.
  *
  * It sits over the Sheet, so it takes Escape first (a window capture
  * listener) — otherwise one key would close the modal and the panel under it.
@@ -94,9 +92,6 @@ export function ForgotPasswordModal({ onClose }: { onClose: () => void }) {
                   You can resend the link in {formatCountdown(linkWait)}
                 </p>
               )}
-              <Button variant="secondary" style={CTA} onClick={onClose}>
-                Back to sign in
-              </Button>
             </div>
           </div>
         ) : (
@@ -156,9 +151,6 @@ export function ForgotPasswordModal({ onClose }: { onClose: () => void }) {
                   contact our support team.
                 </p>
               </div>
-              <Button variant="secondary" style={CTA} onClick={onClose}>
-                Back to sign in
-              </Button>
             </div>
           </form>
         )}
