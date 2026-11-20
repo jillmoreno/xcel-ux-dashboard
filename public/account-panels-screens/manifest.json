@@ -1,5 +1,5 @@
 {
-  "capturedAt": "2026-11-19",
+  "capturedAt": "2026-11-20",
   "components": [
     {
       "id": "edit-account-details",
@@ -48,6 +48,52 @@
         {
           "file": "update-password/06-new-password-shown-eye-toggled.png",
           "state": "New password shown (eye toggled)",
+          "seenIn": []
+        }
+      ]
+    },
+    {
+      "id": "reset-your-password",
+      "title": "Reset your password",
+      "kind": "panel",
+      "flows": [],
+      "states": [
+        {
+          "file": "reset-your-password/01-over-update-password.png",
+          "state": "Over Update Password",
+          "seenIn": []
+        },
+        {
+          "file": "reset-your-password/02-empty-send-reset-link-disabled.png",
+          "state": "Empty — Send reset link disabled",
+          "seenIn": []
+        },
+        {
+          "file": "reset-your-password/03-invalid-email-address.png",
+          "state": "Invalid email address",
+          "seenIn": []
+        },
+        {
+          "file": "reset-your-password/04-valid-send-reset-link-enabled.png",
+          "state": "Valid — Send reset link enabled",
+          "seenIn": []
+        }
+      ]
+    },
+    {
+      "id": "check-your-email",
+      "title": "Check your email",
+      "kind": "panel",
+      "flows": [],
+      "states": [
+        {
+          "file": "check-your-email/01-sent-resend-link-waits-with-the-countdown.png",
+          "state": "Sent — Resend link waits, with the countdown",
+          "seenIn": []
+        },
+        {
+          "file": "check-your-email/02-resend-link-available.png",
+          "state": "Resend link available",
           "seenIn": []
         }
       ]

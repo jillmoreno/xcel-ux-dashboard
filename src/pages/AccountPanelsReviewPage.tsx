@@ -46,8 +46,8 @@ export function AccountPanelsReviewPage() {
         <header style={{ display: 'grid', gap: 8 }}>
           <h1 style={TITLE}>Account settings panels</h1>
           <p style={LEAD}>
-            Edit Account Details, Update Password and Update Email Address — each panel and its states, once. Click
-            one to see it full size.
+            Edit Account Details, Update Password (with its Forgot password? modals) and Update Email Address — each
+            panel and its states, once. Click one to see it full size.
           </p>
         </header>
         <AccountPanelsScreensGallery />
