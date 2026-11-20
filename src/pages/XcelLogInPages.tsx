@@ -1,4 +1,4 @@
-import { useCallback, useId, useState, type CSSProperties, type ReactNode } from 'react'
+import { useCallback, useEffect, useId, useState, type CSSProperties, type ReactNode } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { StandaloneBrowserChrome } from '@/components/layout/BrowserChromeBar'
 import { XcelFooter } from '@/components/e2e/XcelFooter'
@@ -10,8 +10,10 @@ import {
   V3CardForgot,
   V3CardHead,
   V3CardInput,
+  V3CardSigningIn,
   V3CardSubmit,
 } from '@/components/e2e/VerifyEmailModalV3'
+import { LOADING_HANDOFF_MS } from '@/components/e2e/XcelLoadingPage'
 import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { CircleInfo } from '@/icons'
 import {
@@ -123,6 +125,18 @@ export function XcelOcdLogInPage() {
   const [step, setStep] = useState<'email' | 'password'>('email')
   const [password, setPassword] = useState('')
   const [failed, setFailed] = useState(false)
+  /* The right password: "Signing you in", as Keycloak's card holds on, then
+     OCD (2026-11-20, Afsana). Never after a failure — that is the error. */
+  const [signingIn, setSigningIn] = useState(false)
+  const standalone = params.get('standalone') === '1'
+  useEffect(() => {
+    /* Opened from `/invite-v3` the walk holds here, as Keycloak's does. */
+    if (!signingIn || standalone) return
+    const timer = window.setTimeout(() => go(LOG_IN_PATHS.ocdHome), LOADING_HANDOFF_MS)
+    return () => window.clearTimeout(timer)
+    // `go` is rebuilt every render; the hold starts once.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [signingIn, standalone])
   const [tip, setTip] = useState(false)
   const tipId = useId()
   const given = email.trim()
@@ -138,11 +152,38 @@ export function XcelOcdLogInPage() {
     /* Neither system knows the pair: an unknown account and a wrong password
        read the same. */
     if (account === 'none' || password === V3_WRONG_DEMO_PASSWORD) setFailed(true)
-    else go(LOG_IN_PATHS.ocdHome)
+    else setSigningIn(true)
+  }
+
+  if (signingIn) {
+    return (
+      <div style={OCD_PAGE}>
+        <StandaloneBrowserChrome />
+        <main style={OCD_MAIN}>
+          <section aria-label="Signing you in" style={OCD_CARD}>
+            <V3CardSigningIn />
+          </section>
+        </main>
+      </div>
+    )
   }
 
   return (
-    <OcdFrame>
+    <OcdFrame
+      back={
+        /* OCD's password step is Keycloak's: no email field, ← Back on its
+           own row above the logo to change it (2026-11-20, Afsana). */
+        step === 'password' ? (
+          <V3CardBack
+            onBack={() => {
+              setStep('email')
+              setPassword('')
+              setFailed(false)
+            }}
+          />
+        ) : null
+      }
+    >
       <form
         noValidate
         style={OCD_FORM}
@@ -156,17 +197,6 @@ export function XcelOcdLogInPage() {
             email step and the Log in it may hand over to read as one. No lead
             on either step: the field says what it wants. */}
         <V3CardHead title="Log in" />
-        {/* OCD's password step is Keycloak's: no email field, ← Back to
-            change it (2026-11-20, Afsana). */}
-        {step === 'password' ? (
-          <V3CardBack
-            onBack={() => {
-              setStep('email')
-              setPassword('')
-              setFailed(false)
-            }}
-          />
-        ) : null}
         {step === 'email' ? (
           <div style={OCD_FIELD}>
             <span style={OCD_LABEL_ROW}>
@@ -181,6 +211,7 @@ export function XcelOcdLogInPage() {
                   aria-expanded={tip}
                   onClick={() => setTip((v) => !v)}
                   onMouseEnter={() => setTip(true)}
+                  onFocus={() => setTip(true)}
                   onMouseLeave={() => setTip(false)}
                   onBlur={() => setTip(false)}
                   style={OCD_INFO}
@@ -189,7 +220,7 @@ export function XcelOcdLogInPage() {
                 </button>
                 {tip ? (
                   <span id={tipId} role="tooltip" style={OCD_TIP}>
-                    Enter the email address or username you use for your XCEL account.
+                    Enter email or username
                   </span>
                 ) : null}
               </span>
@@ -334,12 +365,13 @@ function SitePage({ children }: { children: ReactNode }) {
 }
 
 /** OCD's log-in frame: the grey ground and the white card with the logo. */
-function OcdFrame({ children }: { children: ReactNode }) {
+function OcdFrame({ children, back }: { children: ReactNode; back?: ReactNode }) {
   return (
     <div style={OCD_PAGE}>
       <StandaloneBrowserChrome />
       <main style={OCD_MAIN}>
         <section aria-label="Log in" style={OCD_CARD}>
+          {back}
           <img src="/brand/xcel-logo.webp" alt="XCEL Insurance Training by Colibri" style={OCD_LOGO} />
           {children}
         </section>
@@ -415,12 +447,14 @@ const OCD_LABEL: CSSProperties = {
   color: 'var(--color-text-primary)',
 }
 
+/* Grey, its message on hover (2026-11-20, Afsana) — and on focus or a tap,
+   so a keyboard or a phone can read it too. */
 const OCD_INFO: CSSProperties = {
   display: 'inline-flex',
   padding: 0,
   border: 'none',
   background: 'transparent',
-  color: 'var(--color-e2e-ocd-link)',
+  color: 'var(--color-text-secondary)',
   cursor: 'pointer',
 }
 
@@ -430,7 +464,8 @@ const OCD_TIP: CSSProperties = {
   top: '50%',
   transform: 'translateY(-50%)',
   zIndex: 1,
-  width: 220,
+  width: 'max-content',
+  maxWidth: 220,
   padding: '8px 10px',
   borderRadius: 4,
   background: 'var(--color-neutral-950)',

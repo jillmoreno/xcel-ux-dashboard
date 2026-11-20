@@ -45,6 +45,16 @@ describe('the stand-alone walk’s flow banner', () => {
     )
   })
 
+  it('names Log In’s account, and no cart or Atlas line (2026-11-20)', () => {
+    renderAt(
+      '/end-to-end-demo/log-in/sign-in?standalone=1',
+      `${V3},invite-v3-model:b2c,invite-v3-flow-b2c:xcel-log-in,invite-v3-log-in-account:ocd`,
+    )
+    const banner = screen.getByRole('note', { name: 'Flow' })
+    expect(banner).toHaveTextContent('B2C: Log In / OCD Account')
+    expect(banner).not.toHaveTextContent(/Targeted|Atlas/)
+  })
+
   it('stays out of the full prototype and off every other page', () => {
     const { unmount } = renderAt('/end-to-end-demo/email', `${V3},invite-v3-model:b2b`)
     expect(screen.queryByRole('note')).not.toBeInTheDocument()

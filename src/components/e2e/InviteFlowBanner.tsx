@@ -6,7 +6,9 @@ import {
   INVITE_MODELS,
   INVITE_V3_CART_FLAG,
   INVITE_V3_EMAIL_ACCOUNT_FLAG,
+  INVITE_V3_LOG_IN_ACCOUNT_FLAG,
   resolveV3EmailAccount,
+  resolveV3LogInAccount,
   useInviteFlowV3,
   useInviteModel,
 } from '@/data/inviteFlowsV3'
@@ -24,7 +26,14 @@ import {
  * B2C adds the Cart contents, the choice its card makes. The account is
  * always named, None targeted included, so the banner matches the button
  * that was clicked (2026-11-18, Afsana).
+ *
+ * ⚠ LOG IN IS NEITHER (2026-11-20, Afsana: why does it say "Targeted only"?).
+ * It buys nothing, so it has no cart, and its account is where the email is
+ * found, not whether it has Atlas — "B2C: Log In / OCD Account", the Start's
+ * own words.
  */
+
+const LOG_IN_ACCOUNTS: Record<string, string> = { atlas: 'Atlas Account', ocd: 'OCD Account', none: 'No Account' }
 
 const CARTS: Record<string, string> = { targeted: 'Targeted Only', mixed: 'Mixed', none: 'None Targeted' }
 
@@ -36,11 +45,17 @@ export function InviteFlowBanner() {
   const flow = useInviteFlowV3()
   const account = resolveV3EmailAccount(useFeatureFlag(INVITE_V3_EMAIL_ACCOUNT_FLAG).variant)
   const cart = useFeatureFlag(INVITE_V3_CART_FLAG).variant ?? 'targeted'
+  const logIn = resolveV3LogInAccount(useFeatureFlag(INVITE_V3_LOG_IN_ACCOUNT_FLAG).variant)
   if (params.get('standalone') !== '1' || version !== 'v3' || !isInviteFlowPath(pathname)) return null
 
   const modelLabel = INVITE_MODELS.find((m) => m.id === model)?.label ?? model
   const accountLabel = account === 'atlas' ? 'Has Atlas Account' : 'No Atlas Account'
-  const parts = model === 'b2c' ? [flow.label, CARTS[cart] ?? CARTS.targeted, accountLabel] : [flow.label, accountLabel]
+  const parts =
+    flow.id === 'xcel-log-in'
+      ? [flow.label, LOG_IN_ACCOUNTS[logIn]]
+      : model === 'b2c'
+        ? [flow.label, CARTS[cart] ?? CARTS.targeted, accountLabel]
+        : [flow.label, accountLabel]
   return (
     /* `data-invite-flow-banner` lets the screenshot script leave it out. */
     <div role="note" aria-label="Flow" data-invite-flow-banner style={BANNER}>

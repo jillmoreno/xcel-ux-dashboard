@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { act, render, screen } from '@testing-library/react'
+import { act, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom'
 import { AccountProvider } from '@/context/AccountContext'
@@ -119,6 +119,15 @@ describe('Invite Flow V3 — Log In', () => {
     expect(screen.getByLabelText('Email')).toHaveValue('jsmith42')
   })
 
+  it('the info icon says “Enter email or username” on hover', async () => {
+    const user = userEvent.setup()
+    renderAt('/end-to-end-demo/cart', 'ocd')
+    await toOcdPage(user)
+    expect(screen.queryByRole('tooltip')).not.toBeInTheDocument()
+    await user.hover(screen.getByRole('button', { name: 'About this field' }))
+    expect(screen.getByRole('tooltip')).toHaveTextContent('Enter email or username')
+  })
+
   it('draws no lead under Log in on either step', async () => {
     const user = userEvent.setup()
     renderAt('/end-to-end-demo/cart', 'ocd')
@@ -183,7 +192,10 @@ describe('Invite Flow V3 — Log In', () => {
     await user.clear(screen.getByLabelText('Password'))
     await user.type(screen.getByLabelText('Password'), 'Secret#2027')
     await user.click(screen.getByRole('button', { name: 'Log in' }))
-    expect(where()).toBe(LOG_IN_PATHS.ocdHome)
+    /* "Signing you in" first, as on Keycloak's card (2026-11-20). */
+    expect(screen.getByLabelText('Signing you in')).toBeInTheDocument()
+    expect(where()).toBe(LOG_IN_PATHS.ocd)
+    await waitFor(() => expect(where()).toBe(LOG_IN_PATHS.ocdHome), { timeout: 4000 })
   })
 
   it('neither: the same words as a wrong password — never “does not exist” or “create a user account”', async () => {
@@ -199,6 +211,8 @@ describe('Invite Flow V3 — Log In', () => {
     })
     expect(screen.getByRole('alert')).toHaveTextContent('The Username or Password is incorrect.')
     expect(screen.queryByText(/does not exist/i)).not.toBeInTheDocument()
+    /* No Signing you in — the error is the answer. */
+    expect(screen.queryByLabelText('Signing you in')).not.toBeInTheDocument()
     expect(screen.queryByText(/create a user account/i)).not.toBeInTheDocument()
     expect(where()).toBe(LOG_IN_PATHS.ocd)
   })
