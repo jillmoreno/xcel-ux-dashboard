@@ -1,5 +1,11 @@
 # The Admin Tool
 
+> **No Hub row since 2026-11-21.** The Explorations section went with the
+> advanced Hub (`hub-advanced` branch; `explorations-section` in
+> `archivedItems.ts`). The documents under `public/prototypes/` are still
+> served and still tested by `npm run smoke`; a link to one belongs on the
+> Hub's Design page like any other.
+
 > **Row archived 2026-10-15.** The document below is still served at its path
 > and still documented here, but it no longer has a Hub row: Jillienne removed
 > it from Explorations ("remove this"). `admin-tool-row` in `archivedItems.ts`

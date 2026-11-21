@@ -27,7 +27,7 @@ Nothing is kept in this branch "just in case"; a restore is a checkout.
 | 4 | Delete the eight hidden sections — code, functions, redirects, tests — one Archive row each naming `hub-advanced` and the re-wire. Jillienne: "that data is not used, we can just clear those pages completely and delete" | done |
 | 5 | Retire the stage-only routines — `share-to-stage`, `decide-defaults`, `retire-from-refinement`, `share-component`, `port-prototype` and three old aliases. Keep `share-my-work`, `ship`, `archive-a-feature`, `dev-handoff-notes` (trimmed to the simple flow: the file is the Development row, the Design link goes on its Links row) and `freeze-for-testing` (user tests, nothing to do with the Hub) | done |
 | 6 | One guide. Contributing rewritten as the first day plus the three sentences; Designer Workflow and About deleted (whole on `hub-advanced`); a Guide link at the rail foot beside Demo build | done |
-| 7 | Rewrite CLAUDE.md and `docs/` for the six-page Hub; replace the smoke test's pinned list | |
+| 7 | CLAUDE.md rewritten as the simple Hub's map with a dated history section at the end; README and `docs/gateway.md` rewritten; the product and prototype docs carry a dated note at the top; the smoke test's list was replaced in step 4 | done |
 
 Each step pauses for Jillienne to clarify and tweak before the next.
 
@@ -93,3 +93,19 @@ Each step pauses for Jillienne to clarify and tweak before the next.
   can reach them now. Wiping them is a separate ask.
 - Still in the repo for step 5: the stage routines; for step 6–7: the
   guides, CLAUDE.md, `docs/gateway.md`, README.md.
+
+## Step 7, what changed
+
+- `CLAUDE.md` is ~190 lines: the six pages, the three sentences, the flag
+  review, the switch rule, the protected-files table (read by
+  `FrameworkProtection.test.ts`), the stack, verifying, and a dated History
+  section saying what was stripped and why. The 547-line advanced map is
+  `git show hub-advanced:CLAUDE.md`.
+- `README.md` and `docs/gateway.md` describe the simple Hub only;
+  `docs/product-app.md`, `prototypes.md` and `admin-tool.md` are unchanged
+  but open with a dated note about what they name that is gone.
+
+## Done
+
+Seven steps, all on `feat/hub-simple-mode`. Shipping the branch to `main` is
+Jillienne's `ship` — and the first real run of that routine.

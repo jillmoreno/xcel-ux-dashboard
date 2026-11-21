@@ -37,7 +37,7 @@ that looks like a styling bug. Extend it when you add a section or change
 `sectionOf`; `EXPECTED_PLACEMENT` in that file is the list to update when a row
 moves.
 
-[`src/test/Links.test.tsx`](src/test/Links.test.tsx) covers the Links section —
+[`src/test/LinkBoard.test.tsx`](src/test/LinkBoard.test.tsx) (was `Links.test.tsx` until 2026-11-21) covers the shared link board —
 the scheme allow-list at both boundaries, the ungated placement, the live nav
 badge, and the no-endpoint state. See the Links section above for why each of
 those is pinned; the two that shipped wrong once are the badge and (in the
@@ -116,7 +116,7 @@ an asset that does not exist.
 The one suite here that guards a **research instrument** rather than a product
 surface. `?dead=home.resume,…` on a branch build makes named clickable elements
 inert for one moderated session, so a participant's reach for a control can be
-asked about instead of answered. `promote-to-testing` builds the link;
+asked about instead of answered. `freeze-for-testing` builds the link;
 `src/data/testableCtas.ts` is the catalog and `src/context/CtaTestContext.tsx`
 the interceptor.
 
