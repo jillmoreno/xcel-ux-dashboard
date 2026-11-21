@@ -77,11 +77,11 @@ const INSTEAD = {
   'src/pages/UxDashboardPage.tsx':
     'This is the project-list page itself — its sections, nav and rail. Your design work belongs in `src/components/` or `src/pages/` for the PRODUCT (the /dashboard-rebrand side), behind a feature flag.',
   'src/data/prototypeFeatures.ts':
-    'This is the list of project rows — the Prototypes rows and the documents. A dev handoff does NOT go here: say "/dev-handoff-notes" and it writes your feature its own file under `src/data/handoffs/`, which is yours to edit. If you were extending a handoff that already lives in this file, it moves to the folder first — a file named after its id. Anything else on this list is Jillienne’s.',
+    'This is the list of project rows. A dev handoff does NOT go here: say "write dev handoff notes" and it writes your feature its own file under `src/data/handoffs/`, which is yours to edit. If you were extending a handoff that already lives in this file, it moves to the folder first — a file named after its id. Anything else on this list is Jillienne’s.',
   'netlify/functions/':
-    'This is server code behind Refinement, Links and QA Notes. Adding a Refinement link does not need a code change — open Refinement on the full site and use "Add link", or say "/promote-to-refinement".',
+    'This is server code behind the Design, Research and PRDs boards. Adding a link does not need a code change — open the board on the Hub and use "Add link"; "share my work" hands you the link to paste.',
   '.claude/skills/':
-    'These are Jillienne’s skills. Run them, don’t edit them.',
+    'These are Jillienne’s routines. Run them, don’t edit them.',
   '.github/':
     'This is the CODEOWNERS file behind main’s GitHub lock — Jillienne’s. Nothing about your design work lives here.',
   'src/components/prototype/DemoControlsBar.tsx':

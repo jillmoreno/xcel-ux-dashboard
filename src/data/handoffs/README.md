@@ -6,8 +6,8 @@ Markdown export, all from one object. `handoffFeatures.ts` reads
 the folder and `prototypeFeatures.ts` merges the result into the rows list, so
 nothing else in the app knows the folder exists.
 
-Say **`/dev-handoff-notes for <feature>`** and the routine writes the file with
-you. The rules below are what it follows, for the day you edit one by hand.
+Say **"write dev handoff notes for <feature>"** (`/dev-handoff-notes`) and the
+routine writes the file with you. The rules below are what it follows, for the day you edit one by hand.
 
 ## The rules
 
@@ -26,8 +26,8 @@ you. The rules below are what it follows, for the day you edit one by hand.
    `'in-design'` · `'needs-discussion'` · `'blocked'` · `'ready-for-dev'` ·
    `'in-development'` — set it HERE, which is what the team sees (the row's ⋮
    on the Hub offers the same five, but that is a per-browser override). The
-   only things a designer does not do are ship to main (Jillienne's) and
-   promote to prototype for a surface they do not own.
+   one thing a designer does not do is ship to main — that is Jillienne's
+   "ship".
 6. **Put the component breakdown in `devHandoff.uiComponents`** and leave
    `components: []`. The decisions tab is the decisions log only.
 

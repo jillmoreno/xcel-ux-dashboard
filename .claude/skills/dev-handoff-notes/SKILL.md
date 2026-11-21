@@ -1,9 +1,9 @@
 ---
 name: dev-handoff-notes
-description: Author (or extend) a prototype feature's dev-handoff gateway — the UI Components & UX Logic breakdown, the Design & Product Decisions log, and the Live Preview routes. Covers the components-vs-uiComponents split, the Summary, the row-list-and-detail rule (and why the detail is one scroll, never sub-tabs), the user story, badgeDate and thumbnail fields, the `Label — what it shows` preview-caption shape, the one-sentence blurb, the tileBlurb budget, the authored devStatus, when a feature should split in two, and the Markdown export. Trigger on "add handoff notes", "document this for dev", "dev handoff for <feature>", "add a decisions log", "new dev-handoff tile", "hand this off to engineering".
-version: 0.3.0
+description: Author (or extend) a prototype feature's dev-handoff gateway — the UI Components & UX Logic breakdown, the Design & Product Decisions log, and the Live Preview routes. Covers the components-vs-uiComponents split, the Summary, the row-list-and-detail rule (and why the detail is one scroll, never sub-tabs), the user story, badgeDate and thumbnail fields, the `Label — what it shows` preview-caption shape, the one-sentence blurb, the tileBlurb budget, the authored devStatus, when a feature should split in two, and the Markdown export. Trimmed for the simple Hub on 2026-11-21: no Refinement row, no scope owner, no To Do card — the file on the designer's branch IS the row on Development, and the Design link goes on the handoff's Links row. Trigger on "write dev handoff notes", "add handoff notes", "document this for dev", "dev handoff for <feature>", "add a decisions log", "hand this off to engineering", "/dev-handoff-notes".
+version: 0.4.0
 author: UX Design — Colibri
-last_updated: 2026-10-26
+last_updated: 2026-11-21
 status: active
 ---
 
@@ -13,13 +13,20 @@ Everything a prototype feature needs so a developer can build from it. All of it
 is **data**, and adding or extending a handoff is a data-only change. Do not add
 rendering code unless a rule below says so.
 
-## How to run this with a designer (2026-10-26)
+## How to run this with a designer (2026-10-26, trimmed 2026-11-21)
 
 **Read this first.** Everything below it is the rulebook for what a good handoff
-contains. This is the ORDER OF OPERATIONS when a designer says
-`/dev-handoff-notes for <feature>` on their own branch (Jillienne: "I want to
-make it as easy as possible on these designers"). The aim: they answer six short
+contains. This is the ORDER OF OPERATIONS when a designer says *"write dev
+handoff notes for <feature>"* on their own branch (Jillienne: "I want to make
+it as easy as possible on these designers"). The aim: they answer six short
 questions in their own words and get a page, without ever seeing a field name.
+
+**Where the page lives, in the simple Hub (2026-11-21).** The file this
+routine writes IS the row on the Hub's **Development** page — on the
+designer's branch build straight away, on the main site once Jillienne ships
+the branch. That page is what a developer references. There is no Refinement
+row to file, no To Do card to move, no scope owner to ask: the one thing a
+designer does not do is ship (`ship`, Jillienne's).
 
 **Step 0 — read before asking.** Find the component(s) on their branch and read
 them. Draft from the code everything it can tell you: the component list, the
@@ -35,12 +42,9 @@ in (`atlas` · `invite` · `compass` · `admin` — the kind tag reads Atlas ·
 Invite Flow · Compass · Admin), no question needed. `lastUpdated` is now, in
 UTC (`date -u +%Y-%m-%dT%H:%M:%SZ`), re-stamped on EVERY write. And `owner`
 is **the person running the routine** — the designer tag names who wrote the
-handoff, never the surface's owner (Jillienne: "designer should be Jill,
-because she is the one that ran the skill to create the handoff"). **Confirm
-it before the first question**, with the git name offered as the Hub spells
-it (Jill · Anjani · Eric · Afsana · Cody): *"I'll name you as the designer, as
-Jill — right?"* Then Step 1. Never `prototypeScope`: the smoke test refuses it
-on a handoff.
+handoff (Jillienne: "designer should be Jill, because she is the one that ran
+the skill to create the handoff"). Take it from `git config user.name` as the
+Hub spells it (Jill · Anjani · Eric · Afsana); do not ask.
 
 **Step 1 — the components.** Show the list you found, one line each, and ask:
 *"This is what I think the feature is made of. Did I miss anything, or is one
@@ -66,8 +70,13 @@ REASONING. Open ones are Needs weigh-in or Blocked. If nothing was decided,
 write `decisions: { items: [] }` so the page says there are no questions rather
 than that nobody asked (2026-10-22 rule).
 
-**Step 6 — anything else.** *"Anything else engineering should know that we
-haven't covered?"* That is Designer's Notes. "No" is `designerNotes: []`.
+**Step 6 — the Design link, and anything else.** *"Is this on the Hub's
+Design page yet? If so, paste me the link and I'll put it on the handoff."*
+That link goes in `links` (the Links row on the handoff's header) — the
+thread from the page a developer reads back to the build they look at. "Not
+yet" is fine; `links` is left off and the designer can add it later. Then:
+*"Anything else engineering should know that we haven't covered?"* That is
+Designer's Notes. "No" is `designerNotes: []`.
 
 **Then, without asking:** write `src/data/handoffs/<id>.ts` from the skeleton
 in that folder's README, `devStatus: 'not-ready'`, run `npx tsc -b`, lint the
@@ -75,10 +84,10 @@ file, and run `npx vitest run`. Fix anything red yourself. Then say, in plain
 words, what was written and what is still thin (which sections have nothing in
 them), and ask ONE yes: *"Commit and push?"* After the push, give them the
 link — `https://<branch-with-dashes>--ux-design-xceldashboard.netlify.app/prototype/<id>`
-— and remind them to move their To Do Board card to **Ready for Prototype and
-Handoff**. The single yes is deliberate (Jillienne, 2026-10-26: "single yes is
-right"): a handoff is not a Refinement row, so this does not hand off to
-`share-branch`.
+— and say that it is on their branch build's Development page now, and on
+the main site's once the branch is shipped. If they want the handoff beside
+their build on Design, that same link is what they paste there. The single
+yes is deliberate (Jillienne, 2026-10-26: "single yes is right").
 
 **Running it again on the same feature** reads the existing file, compares it
 with the code, and asks only about what changed.
@@ -118,10 +127,9 @@ the file named rather than vanishing from the board:
 
 **The row is the designer's, and so is its status.** It starts at
 `devStatus: 'not-ready'` (the fail-closed default below) and the designer moves
-it from there as the work moves. When the file is pushed the designer moves
-their To Do Board card to **Ready for Prototype and
-Handoff**, whose cards are Jillienne's by the server's rule — that is how she
-learns there is a page to read. `HandoffFolder.test.ts` pins all of this.
+it from there as the work moves. Jillienne learns there is a page to read the
+way everyone does: it is on the Development page of the branch build, and the
+designer's Design link sits beside it. `HandoffFolder.test.ts` pins all of this.
 
 ## The three fixed gateway tabs
 
@@ -570,10 +578,9 @@ offers the link. None is registered here yet.
 ## Home-page fields
 
 The home page (`/`, `UxDashboardPage`) is a **left nav over a project list** —
-Prototypes · Refinement · Research · Resources · PRDs · Explorations ·
-Development · Done · Archive · QA Notes (ten since 2026-10-15 — Design is
-retired and Explorations moved up under PRDs). The tile grid it replaced is
-archived (`prototype-tile-landing`).
+Design · Research · PRDs · Development · Done · Archive (six since 2026-11-21,
+the simple Hub; the advanced Hub's fourteen are whole on the `hub-advanced`
+branch). The tile grid it replaced is archived (`prototype-tile-landing`).
 
 | Field | Rule |
 |---|---|
@@ -591,9 +598,8 @@ archived (`prototype-tile-landing`).
 **A NEW handoff is authored `not-ready`.** A page nobody has read must not tell
 engineering to start. **After that the status is the designer's** (Jillienne,
 2026-10-26: "they can change this status to anything they need to be. The only
-guardrails that the designer cannot do is promote to main or promote to
-prototype" — and, same day, "promote to prototype stays with the owners", so
-that one is the scope owner's as `PROTOTYPE_SCOPES` already says) — set it in
+guardrails that the designer cannot do is promote to main" — since 2026-11-21
+that is the one guardrail: `ship` is Jillienne's) — set it in
 the FILE when asked, which is what the team sees; the
 row's kebab (below) is a per-browser override. Until 2026-10-26 this read "never author `ready-for-dev` —
 that is her call, and only hers"; the default is the same, the lock is gone.
@@ -625,12 +631,10 @@ a silent default — but the default is what catches the miss.
 
 `sectionOf()` in `UxDashboardPage.tsx` is the only rule, and it reads:
 
-1. **`devStatus` wins.** Any authored status → **Development** (since
-   2026-10-15; `in-design` / `needs-discussion` used to go to Design, which is
-   retired — the chip still shows the stage).
-2. **Otherwise it falls back to `category`** — `prototype` / `demo` /
-   `dashboard` → Prototypes, `testing` and `dev-handoff` → Development,
-   `exploration` and everything else → Explorations.
+1. **`done` wins**, then **`devStatus`**: any authored status → **Development**
+   (the chip still shows the stage).
+2. **Otherwise everything lands in Development** (since 2026-11-21 — the
+   Prototypes and Explorations sections the fallback used to pick are gone).
 
 **Author `devStatus` on every new feature.** Step 2 is a guess, and **the page
 no longer says so**: the Design and Development sections used to render a banner
