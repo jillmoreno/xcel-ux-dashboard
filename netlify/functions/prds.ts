@@ -26,6 +26,8 @@ export default linkBoardHandler({
   segment: 'prds',
   types: ALLOWED_TYPES,
   products: false,
-  archivable: false,
+  // Archivable since 2026-11-21, like Design: archived rows list on the
+  // Hub's Archive page.
+  archivable: true,
   features: false,
 })

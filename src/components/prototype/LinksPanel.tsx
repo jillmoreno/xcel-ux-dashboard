@@ -45,7 +45,6 @@ import {
   type ReactNode,
 } from 'react'
 import {
-  ArrowLeft,
   ArrowRotateLeft,
   ArrowUpRightFromSquare,
   BrowserWindow,
@@ -506,19 +505,15 @@ const toolbarStyle: CSSProperties = {
   flexWrap: 'wrap',
 }
 
-/** The "Show archive" / "Back to board" door, top right — link-shaped, in the
- *  accent, so it reads as a place to go rather than as another action button. */
-const archiveLinkStyle: CSSProperties = {
-  ...btnStyle,
-  border: '1px solid transparent',
-  background: 'transparent',
-  color: 'var(--ux-accent)',
-}
-
-const archiveNoteStyle: CSSProperties = {
-  margin: '-6px 0 14px',
-  fontSize: 13,
-  color: 'var(--ux-text-2)',
+/** The board's heading on the Hub's Archive page — the same shape as the
+ *  page's own "Archived from the boards" title, so the groups read as one
+ *  list. */
+const archiveTitleStyle: CSSProperties = {
+  margin: '0 0 12px',
+  fontFamily: 'var(--font-heading)',
+  fontSize: 15,
+  fontWeight: 700,
+  color: 'var(--ux-text)',
 }
 
 const EMPTY_DRAFT: LinkDraft = {
@@ -1034,7 +1029,21 @@ function LinkFormModal({
 
 /* ── the panel ────────────────────────────────────────────────────────────── */
 
-export function LinkBoardPanel({ p }: { p: LinkBoardPresentation }) {
+/**
+ * `archiveView` (2026-11-21): render ONLY this board's archived rows, under
+ * the given heading, with no toolbar, no pills and no Add — the shape the
+ * Hub's ARCHIVE page draws for each board. Nothing when the board has no
+ * archived rows, so the page shows only the boards that have something.
+ * Jillienne: "the concept of hidden is not needed, just archive those
+ * things" — one word, one page, for everything taken off the Hub.
+ */
+export function LinkBoardPanel({
+  p,
+  archiveView,
+}: {
+  p: LinkBoardPresentation
+  archiveView?: { title: string }
+}) {
   const { index: rawIndex, refresh } = p.board.useLinks()
   const { createLink, saveLink, archiveLink, deleteLink, readLastAuthor, rememberLastAuthor } = p.board
   // Every row, every build (2026-10-15): the public build that filtered this
@@ -1059,16 +1068,14 @@ export function LinkBoardPanel({ p }: { p: LinkBoardPresentation }) {
   const [productFilter, setProductFilter] = useState<LinkProduct | ''>('')
   /* '' is All. Matched loosely against the typed author — see `matchesDesigner`. */
   const [designerFilter, setDesignerFilter] = useState<Designer | ''>('')
-  /* Which half of the board the list shows. The archive is the SAME store,
-     split on `archivedAt`; nothing moves anywhere when a row is archived. */
-  const [showArchive, setShowArchive] = useState(false)
-
-  /* Archived rows are HIDDEN, not deleted (2026-10-15): the board lists the
-     live ones, and "Show archive" flips the list to the others. A board without
-     the control has no archived rows, so `live` is its whole index. */
+  /* Archived rows are the SAME store, split on `archivedAt`; nothing moves
+     anywhere when a row is archived (2026-10-15). The board lists the live
+     ones; the archived ones are drawn by the Hub's Archive page, which mounts
+     this panel again in `archiveView` (2026-11-21 — until then a "Show
+     hidden" door top right flipped the board itself). */
   const live = useMemo(() => index.links.filter(isLive), [index.links])
   const archived = useMemo(() => index.links.filter((l) => !isLive(l)), [index.links])
-  const inArchive = Boolean(p.archivable) && showArchive
+  const inArchive = Boolean(p.archivable) && Boolean(archiveView)
   const source = inArchive ? archived : live
 
   const q = query.trim().toLowerCase()
@@ -1153,7 +1160,10 @@ export function LinkBoardPanel({ p }: { p: LinkBoardPresentation }) {
     setDraft((d) => {
       const next = { ...d, ...patch }
       const reconsider = 'feature' in patch || 'addedBy' in patch
-      if (p.showFeature && reconsider && !supersedesTouched && editing === 'new') {
+      // Only where the Replaces control is offered: a board that groups but
+      // does not supersede (Research) must not be handed a supersession its
+      // hidden control cannot clear — 2026-11-21, found by the test rewrite.
+      if (p.showFeature && p.showSupersedes !== false && reconsider && !supersedesTouched && editing === 'new') {
         next.supersedes =
           latestChunkFor(index.links, next.feature ?? '', next.addedBy ?? '')?.id ?? ''
       }
@@ -1393,17 +1403,16 @@ export function LinkBoardPanel({ p }: { p: LinkBoardPresentation }) {
         isLive(link)
           ? {
               id: 'archive',
-              /* HIDE, not Archive (2026-11-01, Jillienne): "Archive" is also
-                 the nav section for things removed from the project, and a
-                 row that is merely hidden from Refinement is not that. Same
-                 store, same `archived` field — only the word changed. */
-              label: 'Hide',
+              /* ARCHIVE again (2026-11-21). It was "Hide" from 2026-11-01 so
+                 that Archive meant only the nav section; now an archived row
+                 IS listed on that section, so the one word is right. */
+              label: 'Archive',
               icon: <Package size={13} aria-hidden />,
               onSelect: () => void archive(link, true),
             }
           : {
               id: 'unarchive',
-              label: 'Unhide',
+              label: 'Unarchive',
               icon: <ArrowRotateLeft size={13} aria-hidden />,
               onSelect: () => void archive(link, false),
             },
@@ -1476,7 +1485,7 @@ export function LinkBoardPanel({ p }: { p: LinkBoardPresentation }) {
         ? [
             {
               key: 'archived',
-              text: `Hidden ${formatUpdated(link.archivedAt)}${link.archivedBy.trim() ? ` · ${link.archivedBy.trim()}` : ''}`,
+              text: `Archived ${formatUpdated(link.archivedAt)}${link.archivedBy.trim() ? ` · ${link.archivedBy.trim()}` : ''}`,
             },
           ]
         : []),
@@ -1529,17 +1538,39 @@ export function LinkBoardPanel({ p }: { p: LinkBoardPresentation }) {
     )
   }
 
+  /* The Archive page's view of this board: the heading and the rows, or
+     nothing at all. */
+  if (archiveView) {
+    if (archived.length === 0) return null
+    return (
+      <section aria-labelledby={`archived-${p.board.config.event}`} style={{ marginBottom: 28 }}>
+        <h2 id={`archived-${p.board.config.event}`} style={archiveTitleStyle}>
+          {archiveView.title}
+        </h2>
+        <ul style={hubListStyle}>{archived.map((link) => renderRow(link))}</ul>
+        {/* Edit works here too, and a save carries the archive state through
+            (the draft copies it), so editing does not quietly unarchive. */}
+        <LinkFormModal
+          p={p}
+          editing={editing}
+          draft={draft}
+          errors={errors}
+          busy={busy}
+          onChange={change}
+          onChooseSupersedes={chooseSupersedes}
+          onSubmit={() => void submit()}
+          onClose={close}
+          links={index.links}
+        />
+      </section>
+    )
+  }
+
   return (
     <div>
       {/* ── toolbar ── */}
       {index.links.length > 0 && (
         <div style={toolbarStyle}>
-          {inArchive && (
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 600, color: 'var(--ux-text)' }}>
-              <Package size={13} aria-hidden />
-              Archive
-            </span>
-          )}
           {/* SEARCH FIRST, AND ALWAYS (2026-11-20, Jillienne: "make the search
               field consistent on all pages, include a standard magnifying
               glass icon").
@@ -1572,39 +1603,15 @@ export function LinkBoardPanel({ p }: { p: LinkBoardPresentation }) {
               "Copy as markdown" was removed in the same pass: a second button
               competing with this one, for an export nobody on these boards was
               using. The row kebab still copies a single link. */}
-          {canAuthor && !inArchive && (
+          {canAuthor && (
             <button type="button" onClick={beginAdd} style={{ ...primaryBtnStyle, marginLeft: 'auto' }}>
               <Plus size={12} aria-hidden />
               Add {p.noun}
             </button>
           )}
-          {/* ── the archive door ──
-              Top right, a link-shaped button rather than a pill in the filter
-              strip: the archive is not a filter over the board, it is the
-              other half of the store, and the strip's pills still apply inside
-              it. Offered only once something is archived — "Show archive · 0"
-              is a door to an empty room. */}
-          {p.archivable && !inArchive && archived.length > 0 && (
-            <button type="button" onClick={() => setShowArchive(true)} style={archiveLinkStyle}>
-              <Package size={12} aria-hidden />
-              Show hidden · {archived.length}
-            </button>
-          )}
-          {inArchive && (
-            <button type="button" onClick={() => setShowArchive(false)} style={archiveLinkStyle}>
-              <ArrowLeft size={12} aria-hidden />
-              Back to board
-            </button>
-          )}
+          {/* No archive door here since 2026-11-21: archived rows are on the
+              Hub's Archive page, beside everything else taken off the Hub. */}
         </div>
-      )}
-
-      {inArchive && (
-        <p style={archiveNoteStyle}>
-          {archived.length === 0
-            ? 'Nothing hidden.'
-            : `${archived.length} ${archived.length === 1 ? p.noun : p.nounPlural} hidden from the board. Unhide one to put it back.`}
-        </p>
       )}
 
       {/* ── designer filter ──
@@ -1715,8 +1722,10 @@ export function LinkBoardPanel({ p }: { p: LinkBoardPresentation }) {
         </div>
       ) : rows.length === 0 ? (
         <p style={{ fontSize: 13, color: 'var(--ux-text-3)' }}>
-          {inArchive && archived.length === 0
-            ? `No archived ${p.nounPlural}.`
+          {live.length === 0 && !q && !typeFilter && !designerFilter
+            ? /* Every row is archived — say where they went rather than
+                 "no links match", which reads as a filter nobody set. */
+              `Nothing here right now. ${archived.length === 1 ? '1 link is' : `${archived.length} links are`} on the Archive page.`
             : `No ${p.nounPlural} match ${
                 q && (typeFilter || designerFilter)
                   ? 'that search and filter'
@@ -1794,6 +1803,9 @@ const RESEARCH_PRESENTATION: LinkBoardPresentation = {
   board: RESEARCH_BOARD,
   noun: 'link',
   nounPlural: 'links',
+  // Archive in the kebab (2026-11-21), listed on the Hub's Archive page.
+  archivable: true,
+  showUpdated: true,
   /* NO TYPE, AND SO NO FILTER STRIP (2026-11-20, Jillienne: "I dont think we
      need filters. and I dont think we need type? This should be more of a
      simple list of documents.").
@@ -1830,8 +1842,8 @@ const RESEARCH_PRESENTATION: LinkBoardPresentation = {
     'Saved to the shared store — everyone who opens this site sees it, and it survives a cleared cache. The date is stamped for you.',
 }
 
-export function ResearchPanel() {
-  return <LinkBoardPanel p={RESEARCH_PRESENTATION} />
+export function ResearchPanel({ archiveView }: { archiveView?: { title: string } } = {}) {
+  return <LinkBoardPanel p={RESEARCH_PRESENTATION} archiveView={archiveView} />
 }
 
 /**
@@ -1846,6 +1858,11 @@ const PRD_PRESENTATION: LinkBoardPresentation = {
   noun: 'link',
   nounPlural: 'links',
   showType: true,
+  // The compact row, Archive in the kebab and the Updated stamp — the same
+  // three as Research and Design since 2026-11-21, so the boards read alike.
+  compactRows: true,
+  archivable: true,
+  showUpdated: true,
   showThumb: false,
   showProduct: false,
   showBadges: false,
@@ -1855,8 +1872,8 @@ const PRD_PRESENTATION: LinkBoardPresentation = {
     'Saved to the shared store — everyone who opens this site sees it, and it survives a cleared cache. The date is stamped for you.',
 }
 
-export function PrdsPanel() {
-  return <LinkBoardPanel p={PRD_PRESENTATION} />
+export function PrdsPanel({ archiveView }: { archiveView?: { title: string } } = {}) {
+  return <LinkBoardPanel p={PRD_PRESENTATION} archiveView={archiveView} />
 }
 
 /**
@@ -1868,31 +1885,36 @@ export function PrdsPanel() {
 export function DemoPanel({
   prefill,
   onPrefillConsumed,
+  archiveView,
 }: {
   prefill?: LinkPrefill | null
   onPrefillConsumed?: () => void
+  archiveView?: { title: string }
 } = {}) {
+  /* THE DESIGN BOARD (2026-11-21), labelled Design on the Hub and still
+     section id `demo` so the rows already on it and every `?section=demo`
+     link survive. Research's shape: a title, a link, a note, who added it and
+     when. The product tag, the feature grouping, the supersedes control and
+     the big tile all came off the same day — Jillienne: "strip down the XCEL
+     hub into a more simple version" — and each is one line to put back. */
   const p: LinkBoardPresentation = {
     board: DEMO_BOARD,
-    // "link", not "demo" — what the designer is adding IS a link (to their
-    // branch), and "Add link" is what the button on the neighbouring Other
-    // Links panel says. Two boards, one verb.
     noun: 'link',
     nounPlural: 'links',
     showType: false,
-    showThumb: true,
-    showProduct: true,
-    showBadges: true,
+    showThumb: false,
+    showProduct: false,
+    showBadges: false,
     showUpdated: true,
-    // 2026-10-15, Jillienne: pills by designer, product stays a tag; Archive
-    // in the kebab, Show archive top right. Refinement only, both.
+    // Pills by designer (2026-10-15); Added by is a pick from the roster,
+    // remembered per browser.
     showDesigners: true,
     archivable: true,
-    // Feature Refinement (2026-10-15): rows group under the feature they are a
-    // chunk of, and a chunk replaced by a later one folds under "earlier".
-    showFeature: true,
+    showFeature: false,
+    showSupersedes: false,
+    compactRows: true,
     emptyHint:
-      'Nothing here yet. Push a branch and paste its link here.',
+      'Nothing here yet. Paste a link to your work — a branch build, a Figma file, a document.',
     saveHint:
       'Saved to the shared store — the team sees it on the full site right away. The date is stamped for you.',
     // From `/?section=demo&add=1&url=…&title=…&note=…` — what
@@ -1901,5 +1923,5 @@ export function DemoPanel({
     prefill,
     onPrefillConsumed,
   }
-  return <LinkBoardPanel p={p} />
+  return <LinkBoardPanel p={p} archiveView={archiveView} />
 }

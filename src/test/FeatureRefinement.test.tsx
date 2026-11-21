@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { DemoPanel } from '@/components/prototype/LinksPanel'
+import { ResearchPanel } from '@/components/prototype/LinksPanel'
 import {
   featureKey,
   groupByFeature,
@@ -13,6 +13,15 @@ import {
 import { validateRecord, type BoardConfig } from '../../netlify/lib/linkBoard'
 
 /**
+ * 2026-11-21: the Design board (was Refinement) no longer groups, so the
+ * on-screen pins below point at RESEARCH, the one board that still does —
+ * as projects, with no Replaces control anywhere on the Hub (Research turns
+ * `showSupersedes` off; Links and PRDs offer no Feature field, which is
+ * where Replaces lives). The "earlier chunk" fold, the Replaces prefill and
+ * the supersession-on-save pins were removed; the pure helpers and the
+ * endpoint still keep the mechanism and are pinned as before. The old tests
+ * live on the `hub-advanced` branch.
+ *
  * FEATURE REFINEMENT — 2026-10-15.
  *
  * Refinement's rows are CHUNKS of work and `feature` is what they are chunks
@@ -352,120 +361,62 @@ describe('the Refinement endpoint', () => {
 
 /* ── the board on screen ──────────────────────────────────────────────────── */
 
-describe('the Refinement board', () => {
-  it('draws one header over the chunks of a feature, and folds what was replaced', async () => {
+describe('the Research board — where the grouping lives (2026-11-21)', () => {
+  it('draws one header over the links of a project, whatever the spelling, and folds nothing', async () => {
     mockEndpoint([
       row({
         id: 'demo-002',
-        title: 'Streak card v2',
-        feature: 'Study streak card',
+        title: 'Survey results',
+        feature: 'Onboarding study',
         updatedAt: '2026-10-15T12:00:00.000Z',
-        supersedes: 'demo-001',
       }),
       row({
         id: 'demo-001',
-        title: 'Streak card',
-        feature: 'study streak CARD',
+        title: 'Interviews round 1',
+        feature: 'onboarding STUDY',
         updatedAt: '2026-10-10T12:00:00.000Z',
       }),
     ])
-    render(<DemoPanel />)
+    render(<ResearchPanel />)
 
-    expect(await screen.findByText('Study streak card')).toBeInTheDocument()
-    expect(screen.getByText('Streak card v2')).toBeInTheDocument()
-    // Folded, not removed — and the count says how much history is behind it.
-    expect(screen.queryByText('Streak card')).not.toBeInTheDocument()
-    expect(screen.getByRole('button', { name: '1 earlier chunk' })).toBeInTheDocument()
+    expect(await screen.findByText('Onboarding study')).toBeInTheDocument()
+    expect(screen.getByText('Survey results')).toBeInTheDocument()
+    // Nothing replaces anything on Research, so every link stays in view.
+    expect(screen.getByText('Interviews round 1')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /earlier chunk/ })).not.toBeInTheDocument()
   })
 
-  it('opens the earlier chunks, which stay clickable — the reward for small branches', async () => {
-    const user = userEvent.setup()
-    mockEndpoint([
-      row({
-        id: 'demo-002',
-        title: 'Streak card v2',
-        feature: 'Streak',
-        updatedAt: '2026-10-15T12:00:00.000Z',
-        supersedes: 'demo-001',
-      }),
-      row({
-        id: 'demo-001',
-        title: 'Streak card',
-        feature: 'Streak',
-        updatedAt: '2026-10-10T12:00:00.000Z',
-      }),
-    ])
-    render(<DemoPanel />)
-
-    await user.click(await screen.findByRole('button', { name: '1 earlier chunk' }))
-    // A link, not a tombstone: the older branch build still opens.
-    const earlier = screen.getByText('Streak card')
-    expect(earlier.closest('a')).toHaveAttribute('href')
-    expect(screen.getByRole('button', { name: 'Hide earlier' })).toBeInTheDocument()
-  })
-
-  it('leaves a row with no feature exactly as it was — no header, no group', async () => {
+  it('leaves a row with no project exactly as it was — no header, no group', async () => {
     mockEndpoint([row({ id: 'demo-001', title: 'An older row', feature: '' })])
-    render(<DemoPanel />)
+    render(<ResearchPanel />)
 
     expect(await screen.findByText('An older row')).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /earlier chunk/ })).not.toBeInTheDocument()
   })
 
-  it('prefills Replaces with the author’s newest chunk of the feature they typed', async () => {
-    const user = userEvent.setup()
-    mockEndpoint([
-      row({
-        id: 'demo-001',
-        title: 'Streak card',
-        feature: 'Streak',
-        addedBy: 'Anjani',
-      }),
-    ])
-    render(<DemoPanel />)
-
-    await user.click(await screen.findByRole('button', { name: /Add link/ }))
-    const dialog = screen.getByRole('dialog')
-    await user.selectOptions(within(dialog).getByLabelText(/Added by/), 'Anjani')
-    await user.type(within(dialog).getByLabelText(/Feature/), 'Streak')
-
-    // The default is the thing that usually happens: this branch carries on
-    // from the last one.
-    await waitFor(() => expect(within(dialog).getByLabelText('Replaces')).toHaveValue('demo-001'))
-    // And saying they sit side by side is one click — which is a real answer,
-    // not an escape hatch: two treatments of one surface is what Refinement is
-    // for.
-    await user.selectOptions(within(dialog).getByLabelText('Replaces'), '')
-    expect(within(dialog).getByLabelText('Replaces')).toHaveValue('')
-  })
-
-  it('sends the feature and the supersession to the endpoint', async () => {
+  it('sends the project to the endpoint, and no supersession', async () => {
     const user = userEvent.setup()
     const { writes } = mockEndpoint([
       row({
         id: 'demo-001',
-        title: 'Streak card',
-        feature: 'Streak',
+        title: 'Interviews round 1',
+        feature: 'Onboarding study',
         addedBy: 'Anjani',
       }),
     ])
-    render(<DemoPanel />)
+    render(<ResearchPanel />)
 
     await user.click(await screen.findByRole('button', { name: /Add link/ }))
     const dialog = screen.getByRole('dialog')
-    await user.type(
-      within(dialog).getByLabelText(/Address/),
-      'https://feat-y--ux-design-xceldashboard.netlify.app/dashboard-rebrand?demo=1',
-    )
-    await user.type(within(dialog).getByLabelText(/Title/), 'Streak card v2')
-    await user.selectOptions(within(dialog).getByLabelText(/Added by/), 'Anjani')
-    await user.type(within(dialog).getByLabelText(/Feature/), 'Streak')
+    await user.type(within(dialog).getByLabelText(/Address/), 'https://example.com/survey')
+    await user.type(within(dialog).getByLabelText(/Title/), 'Survey results')
+    await user.type(within(dialog).getByLabelText(/Project/), 'Onboarding study')
+    // No Replaces control to find — see `Research.test.tsx`.
+    expect(within(dialog).queryByLabelText('Replaces')).toBeNull()
     await user.click(within(dialog).getByRole('button', { name: /Save|Add/ }))
 
     await waitFor(() => expect(writes.length).toBe(1))
-    expect(writes[0].body).toMatchObject({
-      feature: 'Streak',
-      supersedes: 'demo-001',
-    })
+    expect(writes[0].body).toMatchObject({ feature: 'Onboarding study' })
+    expect((writes[0].body as { supersedes?: string }).supersedes ?? '').toBe('')
   })
 })

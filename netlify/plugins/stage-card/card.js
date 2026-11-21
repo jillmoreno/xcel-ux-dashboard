@@ -13,7 +13,7 @@ export const STORE_NAME = 'todo-board'
 export const COLUMN = 'stage'
 export const STAGE_URL = 'https://stage--ux-design-xceldashboard.netlify.app'
 /** Mirrors `SEED_PEOPLE` in the function — an owner is a LABEL, not an identity. */
-const ROSTER = ['Jill', 'Anjani', 'Eric', 'Afsana', 'Cody']
+const ROSTER = ['Jill', 'Anjani', 'Eric', 'Afsana']
 
 /**
  * Paths → Prototypes scope, the same rule `share-to-stage` and

@@ -134,21 +134,22 @@ describe('the PRDs section on the gateway', () => {
       </MemoryRouter>,
     )
 
-  it('opens without a password, directly after Resources, and lists the board', async () => {
+  it('opens without a password, directly after Research, and lists the board', async () => {
     mockEndpoint([row({ title: 'Onboarding PRD' })])
     renderDashboard('/?section=prds')
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
     expect(await screen.findByRole('heading', { level: 1, name: 'PRDs' })).toBeInTheDocument()
     expect(await screen.findByRole('link', { name: /Onboarding PRD/ })).toBeInTheDocument()
 
-    // After Resources, inside the open group — the Links suite pins the four
-    // before it, so this only has to pin the one that follows.
+    // After Research, inside the Design & Research group — the smoke suite
+    // pins the whole rail, so this only has to pin the one before it. (It sat
+    // after Resources until the simple Hub of 2026-11-21 took that row off.)
     const labels = screen
       .getAllByRole('button')
       .map((b) => b.textContent?.replace(/\d+$/, '').trim())
-    const linksAt = labels.indexOf('Resources')
-    expect(linksAt).toBeGreaterThanOrEqual(0)
-    expect(labels[linksAt + 1]).toBe('PRDs')
+    const researchAt = labels.indexOf('Research')
+    expect(researchAt).toBeGreaterThanOrEqual(0)
+    expect(labels[researchAt + 1]).toBe('PRDs')
   })
 
   it('the nav badge counts the board', async () => {

@@ -77,20 +77,15 @@ function renderAt(Page: React.ComponentType, path: string) {
 
 /** The whole nav, in order — the same list `UxDashboard.smoke.test.tsx` pins
  *  for the full build. Restated here because THIS file's claim is that no
- *  value of the env var produces anything less. */
+ *  value of the env var produces anything less. Six since the simple Hub
+ *  (2026-11-21, `SIMPLE_SECTIONS`); the rest live on `hub-advanced`. */
 const ALL_SECTIONS = [
-  'Prototypes',
   'Design',
-  'Release',
-  'Refinement',
   'Research',
-  'Resources',
   'PRDs',
-  'Explorations',
   'Development',
   'Done',
   'Archive',
-  'QA Notes',
 ]
 
 beforeEach(() => {
@@ -131,7 +126,10 @@ describe('one site — a stale public value trims nothing', () => {
 
   it('puts the kebab on every row that opens', async () => {
     const Page = await loadPage('public')
-    renderAt(Page, '/')
+    // Development, not `/`: the landing section is a board since 2026-11-21,
+    // and its rows come from an endpoint this file does not mock. The handoff
+    // rows are in the repo, so they are the ones that must draw a kebab.
+    renderAt(Page, '/?section=development')
     expect(screen.getAllByRole('button', { name: /^Actions for / }).length).toBeGreaterThan(0)
   })
 

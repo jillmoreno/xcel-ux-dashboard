@@ -109,7 +109,9 @@ export const LEGACY_HUES: Readonly<Record<string, string>> = {
  *
  * `TodoBoard.test.tsx` asserts this list still matches `DESIGNERS`.
  */
-export const SEED_PEOPLE = ['Jill', 'Anjani', 'Eric', 'Afsana', 'Cody']
+// Cody came off the roster 2026-11-21 with `DESIGNERS`. The seed runs once
+// per store, so a board already seeded keeps whoever it has.
+export const SEED_PEOPLE = ['Jill', 'Anjani', 'Eric', 'Afsana']
 
 /** Set once the roster has been seeded, so a board somebody deliberately
  *  emptied stays empty instead of refilling itself on the next page load. */

@@ -16,6 +16,11 @@
  *    "Demo holds exactly the rows meant to be ungated" test.
  * 3. The panel hides its composer when there is no endpoint, rather than
  *    offering an Add button that fails on click.
+ *
+ * 2026-11-21: the Resources section is off the simple Hub's rail, so the
+ * "Links section on the gateway" block — its nav position, its badge, the
+ * `?product=` prefill — went with it; those tests live on `hub-advanced`.
+ * The panel itself is still the shared board the other three use.
  */
 
 import { readFileSync } from 'node:fs'
@@ -23,12 +28,7 @@ import path from 'node:path'
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MemoryRouter } from 'react-router-dom'
 import { LinksPanel } from '@/components/prototype/LinksPanel'
-import { UxDashboardPage } from '@/pages/UxDashboardPage'
-import { PROTOTYPE_FEATURES } from '@/data/prototypeFeatures'
-import { AccountProvider } from '@/context/AccountContext'
-import { ThemeProvider } from '@/context/ThemeContext'
 import {
   LINK_TYPES,
   draftProblems,
@@ -635,126 +635,6 @@ describe('LinksPanel', () => {
 })
 
 /* ── 2. the section is ungated ────────────────────────────────────────────── */
-
-describe('the Links section on the gateway', () => {
-  const renderDashboard = (initialPath = '/') =>
-    render(
-      <MemoryRouter initialEntries={[initialPath]}>
-        <AccountProvider>
-          <ThemeProvider>
-            <UxDashboardPage />
-          </ThemeProvider>
-        </AccountProvider>
-      </MemoryRouter>,
-    )
-
-  it('opens with NO password prompt, and sits directly under Refinement', async () => {
-    /*
-     * Both halves are the editorial decision. Links is ungated because the
-     * section's job is being the place you send someone — behind the shared
-     * Design & Development password it would be a private bookmark file. The
-     * consequence is that a link added here is reachable by a passwordless
-     * viewer, which is the same consideration the "Demo holds exactly the rows
-     * meant to be ungated" test guards for Demo's rows. Gating it later should
-     * fail here and be re-decided.
-     */
-    const user = userEvent.setup()
-    mockEndpoint([])
-    renderDashboard()
-
-    await user.click(screen.getByRole('button', { name: /^Resources/ }))
-    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
-    expect(await screen.findByRole('heading', { level: 1, name: 'Resources' })).toBeInTheDocument()
-
-    // Position: Prototypes · Design · Refinement · Research · Resources, in
-    // that order (Research moved above it 2026-09-29; it was labelled "Other
-    // Links" until 2026-10-07; Design, the derived branch list, slotted in
-    // under Prototypes 2026-11-16). What this assertion
-    // is actually FOR is unchanged by that: Resources has to sit inside the
-    // open group, above the gated pipeline sections — the argument being that
-    // it belongs with the front door, not behind the password.
-    const labels = screen
-      .getAllByRole('button')
-      .map((b) => b.textContent?.replace(/\d+$/, '').trim())
-    const protoAt = labels.indexOf('Prototypes')
-    expect(protoAt).toBeGreaterThanOrEqual(0)
-    expect(labels.slice(protoAt, protoAt + 6)).toEqual(['Prototypes', 'Design', 'Release', 'Refinement', 'Research', 'Resources'])
-  })
-
-  it('a deep link into the section opens it', async () => {
-    mockEndpoint([link({ title: 'Wireframe Brief' })])
-    renderDashboard('/?section=links')
-    expect(await screen.findByRole('link', { name: /Wireframe Brief/ })).toBeInTheDocument()
-  })
-
-  it('the nav badge follows the list, not just the first fetch', async () => {
-    /*
-     * This shipped wrong: the rail said 2 with three links on screen, because
-     * `useLinkCount` fetched once on mount and never re-read. It is the same
-     * defect the QA badge's own comment describes ("the rail said 18 while the
-     * page said 19") and it is invisible until someone adds a link — which is
-     * the first thing anyone does on this page.
-     *
-     * Asserted through the REAL nav button rather than by calling the hook, so
-     * what is pinned is what a reviewer sees.
-     */
-    const user = userEvent.setup()
-    // Held by reference: `mockEndpoint` closes over this array and answers GET
-    // from it, so pushing to it stands in for the server having the record.
-    const stored: StoredLink[] = []
-    const { writes } = mockEndpoint(stored)
-    renderDashboard('/?section=links')
-
-    const badge = () =>
-      screen.getByRole('button', { name: /^Resources/ }).textContent?.replace(/\D/g, '')
-    await waitFor(() => expect(badge()).toBe('0'))
-
-    await openComposer(user)
-    await user.type(screen.getByLabelText('Address'), 'https://a.example/one')
-    await user.type(screen.getByLabelText('Title'), 'One')
-    stored.push(link({ id: 'link-001', title: 'One', url: 'https://a.example/one' }))
-    await user.click(screen.getByRole('button', { name: 'Add link' }))
-
-    await waitFor(() => expect(writes).toHaveLength(1))
-    await waitFor(() => expect(badge()).toBe('1'))
-  })
-
-  it('does not add a row to the Prototypes section', async () => {
-    // Links is a nav SECTION, not a `PROTOTYPE_FEATURES` row, so Prototypes'
-    // own set is untouched — which is what keeps its two-directional smoke
-    // test meaningful rather than needing an edit for every new section.
-    mockEndpoint([])
-    renderDashboard()
-    const rows = screen
-      .getAllByRole('button', { name: /^Actions for / })
-      .map((b) => b.getAttribute('aria-label')?.replace(/^Actions for /, ''))
-    // Read from the data rather than written out: this test's claim is that
-    // Links added nothing, not what Prototypes holds — the smoke test owns that.
-    // The kebabs are the rows that OPEN; a coming-soon placeholder (2026-10-14,
-    // the Admin row) is drawn without one.
-    expect(rows).toEqual(
-      PROTOTYPE_FEATURES.filter((f) => f.category === 'prototype' && f.status !== 'coming-soon').map((f) => f.title),
-    )
-  })
-
-  it('reads ?product= off the promote-to-refinement hand-off and opens the form on it', async () => {
-    // 2026-10-14. The page owns the five params (`demoPrefill`); the panel
-    // test covers what the panel does with a product, this covers that the
-    // page actually parses it and strips it with the others. `compass` is
-    // not the form's default, so a pass here cannot be the default matching.
-    mockEndpoint([])
-    renderDashboard('/?section=demo&add=1&url=https%3A%2F%2Ffeat-x--site.netlify.app%2F&title=X&note=&product=compass')
-    const dialog = await screen.findByRole('dialog')
-    expect(within(dialog).getByRole('radio', { name: 'Compass' })).toBeChecked()
-  })
-
-  it('ignores a ?product= it does not recognise', async () => {
-    mockEndpoint([])
-    renderDashboard('/?section=demo&add=1&url=https%3A%2F%2Ffeat-x--site.netlify.app%2F&title=X&note=&product=marketing')
-    const dialog = await screen.findByRole('dialog')
-    expect(within(dialog).getByRole('radio', { name: 'Both' })).toBeChecked()
-  })
-})
 
 describe('Resources — no Updated stamp on the row (2026-10-14)', () => {
   it('keeps the meta line as it was even when the record carries updatedAt', async () => {

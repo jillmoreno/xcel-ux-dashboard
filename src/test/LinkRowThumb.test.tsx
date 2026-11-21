@@ -11,6 +11,13 @@ import { DEFAULT_PRODUCT, LINK_PRODUCTS, matchesProduct, type StoredLink } from 
 const here = dirname(fileURLToPath(import.meta.url))
 
 /**
+ * 2026-11-21: Refinement became the DESIGN board and took Research's shape —
+ * a compact 48px icon tile, no product tag or control. The pins for the big
+ * tile per Refinement row, the product tag, the Both default and the three
+ * product colours were removed; the old tests live on the `hub-advanced`
+ * branch. The hue test stays on Design (the icon still carries it) and the
+ * 160x110 tile is pinned where it is still drawn, Resources.
+ *
  * The Refinement row's generated tile (2026-09-29).
  *
  * The tile stands in for a picture Refinement cannot have: its rows point at
@@ -75,12 +82,15 @@ function mockEndpoint(rows: StoredLink[]) {
  *  generated tile: a glyph for the destination, a hue for the branch. */
 const TILE_W = '160px'
 const TILE_H = '110px'
+/** The icon form (2026-11-20, `THUMB_ICON`) — what a compact row draws. */
+const ICON = '48px'
 
-function tiles(): HTMLElement[] {
+function tiles(w = TILE_W, h = TILE_H): HTMLElement[] {
   return Array.from(document.querySelectorAll<HTMLElement>('li span[aria-hidden]')).filter(
-    (n) => n.style.width === TILE_W && n.style.height === TILE_H,
+    (n) => n.style.width === w && n.style.height === h,
   )
 }
+const icons = () => tiles(ICON, ICON)
 
 beforeEach(() => localStorage.clear())
 afterEach(() => {
@@ -91,11 +101,12 @@ afterEach(() => {
 /* ── which board gets a picture ───────────────────────────────────────────── */
 
 describe('every board draws the tile (2026-11-01)', () => {
-  it('draws one tile per Refinement row', async () => {
+  it('draws one icon-sized tile per Design row — the compact form, not the panel (2026-11-21)', async () => {
     mockEndpoint([row(), row({ id: 'demo-002', title: 'Learner Home' })])
     render(<DemoPanel />)
     await screen.findByText('Xcel Home')
-    expect(tiles()).toHaveLength(2)
+    expect(icons()).toHaveLength(2)
+    expect(tiles()).toHaveLength(0)
   })
 
   it('draws one on Resources too', async () => {
@@ -156,15 +167,18 @@ describe('the hue groups by host', () => {
       row({ id: 'demo-003', title: 'Three', url: A2 }),
     ])
     render(<DemoPanel />)
-    await waitFor(() => expect(tiles()).toHaveLength(3))
-    const [one, two, three] = tiles().map((t) => t.style.background)
+    await waitFor(() => expect(icons()).toHaveLength(3))
+    const [one, two, three] = icons().map((t) => t.style.background)
     expect(one).toBe(three)
     expect(one).not.toBe(two)
   })
 })
 
-/* ── the product tag ──────────────────────────────────────────────────────── */
+/* ── the product field ────────────────────────────────────────────────────── */
 
+/* The FIELD outlives the tag (2026-11-21): the Design endpoint still stores a
+   product and a legacy row still normalises to Both, so the two copies of the
+   list must still agree — but no board draws the tag or offers the control. */
 describe('product tagging', () => {
   it('the endpoint and the client agree on the product list', () => {
     // Same reasoning as `ALLOWED_TYPES` in `Links.test.tsx`: the endpoint
@@ -192,89 +206,20 @@ describe('product tagging', () => {
     expect(matchesProduct(DEFAULT_PRODUCT, 'compass')).toBe(true)
     expect(matchesProduct(DEFAULT_PRODUCT, '')).toBe(true)
   })
-
-  it('the product is a TAG on the row, not a pill over the list (2026-10-15)', async () => {
-    /* This test used to click Atlas / Compass pills and watch the list narrow.
-       Jillienne replaced those pills with the designers' names ("stay as the
-       tag" for the product), so the pills are gone and the rule they drove —
-       `matchesProduct`, pinned just above — now serves the tag and nothing
-       filters on it. What remains to pin is the half she kept. */
-    mockEndpoint([
-      row({ id: 'demo-003', title: 'Only XCEL', product: 'xcel' }),
-      row({ id: 'demo-002', title: 'Only Compass', product: 'compass' }),
-      row({ id: 'demo-001', title: 'Shared work', product: 'both' }),
-    ])
-    const { container } = render(<DemoPanel />)
-    await screen.findByText('Only XCEL')
-
-    expect(screen.queryByRole('group', { name: 'Filter by product' })).toBeNull()
-    expect(screen.getByRole('group', { name: 'Filter by designer' })).toBeInTheDocument()
-    const tags = [...container.querySelectorAll('ul span')].map((el) => el.textContent?.trim())
-    expect(tags).toContain('Atlas')
-    expect(tags).toContain('Compass')
-    expect(tags).toContain('Both')
-  })
-
-  it('defaults a new row to Both, and saves what was picked', async () => {
-    const user = userEvent.setup()
-    const { writes } = mockEndpoint([])
-    render(<DemoPanel />)
-    await user.click(await screen.findByRole('button', { name: /Add the first|Add link/ }))
-
-    expect(screen.getByRole('radio', { name: 'Both' })).toBeChecked()
-    await user.click(screen.getByRole('radio', { name: 'Atlas' }))
-    await user.type(screen.getByLabelText('Address'), 'https://feat-x--y.netlify.app/dashboard-rebrand')
-    await user.type(screen.getByLabelText('Title'), 'A branch')
-    await user.click(screen.getByRole('button', { name: 'Add link' }))
-
-    await waitFor(() => expect(writes).toHaveLength(1))
-    expect(writes[0].body).toMatchObject({ product: 'xcel' })
-  })
 })
 
 /* ── the badges ───────────────────────────────────────────────────────────── */
 
 describe('badges sit under the title', () => {
-  it('renders product and author as tags', async () => {
+  it('renders the author as a tag, and no product (2026-11-21)', async () => {
     mockEndpoint([row({ title: 'A branch', addedBy: 'Anjani', product: 'compass' })])
     render(<DemoPanel />)
     const title = await screen.findByText('A branch')
-    // The row's own container, so this asserts the ORDER on screen and not just
-    // that the three strings exist somewhere on the page.
+    // The row's own container, so this asserts what THIS row carries and not
+    // just that the strings exist somewhere on the page.
     const li = title.closest('li')!
-    const text = li.textContent ?? ''
-    expect(text.indexOf('A branch')).toBeLessThan(text.indexOf('Compass'))
-    expect(text).toContain('Compass')
-    expect(text).toContain('Anjani')
-  })
-
-  it('gives XCEL, Compass and Both three different colours', async () => {
-    mockEndpoint([
-      row({ id: 'demo-003', title: 'One', product: 'xcel' }),
-      row({ id: 'demo-002', title: 'Two', product: 'compass' }),
-      row({ id: 'demo-001', title: 'Three', product: 'both' }),
-    ])
-    render(<DemoPanel />)
-    await screen.findByText('One')
-    // Scoped to each ROW: the filter pills above the list carry the same words,
-    // and an unscoped query finds those instead.
-    const badge = (title: string, label: string) =>
-      within(screen.getByText(title).closest('li')!).getByText(label)
-    const pairs: [string, string][] = [
-      ['One', 'Atlas'],
-      ['Two', 'Compass'],
-      ['Three', 'Both'],
-    ]
-    const fills = pairs.map(([t, l]) => badge(t, l).style.background)
-    const borders = pairs.map(([t, l]) => badge(t, l).style.border)
-    const inks = pairs.map(([t, l]) => badge(t, l).style.color)
-    // Three distinct hues, not one tag three times. Outlined since 2026-10-15,
-    // so the hue lives in the border and the text, and the fill is none — the
-    // old concern (a pale fill that still clears 4.5:1 in both themes) is gone
-    // with the fill; the text is each hue's own foreground token.
-    expect(new Set(fills)).toEqual(new Set(['transparent']))
-    expect(new Set(borders).size).toBe(3)
-    expect(new Set(inks).size).toBe(3)
+    expect(within(li).getByText('Anjani')).toBeInTheDocument()
+    expect(within(li).queryByText('Compass')).toBeNull()
   })
 
   it('renders no author badge when nobody signed it', async () => {
@@ -286,10 +231,10 @@ describe('badges sit under the title', () => {
     expect(within(li).queryByText('by')).not.toBeInTheDocument()
   })
 
-  it('gives Resources the same tags, with the Type where Refinement has the product', async () => {
+  it('gives Resources the same tags, with the Type as its "what"', async () => {
     // One row shape for every board (2026-11-01): who, when, what. On
-    // Resources "what" is the link's Type, and there is still no product
-    // control — the product is a Refinement fact.
+    // Resources "what" is the link's Type, and there is no product control
+    // (nor, since 2026-11-21, on Design).
     mockEndpoint([row({ id: 'link-001', title: 'A brief', type: 'brief', addedBy: 'Jill', addedDate: '2026-09-10' })])
     render(<LinksPanel />)
     const li = (await screen.findByText('A brief')).closest('li')!
@@ -351,11 +296,12 @@ describe('the row menu', () => {
     expect(name.style.borderRadius).toBe('4px')
     expect(name.style.background).toBe('transparent')
     expect(name.querySelector('svg')).not.toBeNull()
-    // Order in the stack: who, when, what.
+    // Order in the stack: who, when — and no "what" since 2026-11-21, when
+    // the product tag came off the Design row.
     const stack = name.parentElement!
     const texts = [...stack.children].map((c) => c.textContent)
     expect(texts[0]).toContain('Anjani')
     expect(texts[1]).toMatch(/^Updated /)
-    expect(texts[2]).toBe('Compass')
+    expect(texts).toHaveLength(2)
   })
 })

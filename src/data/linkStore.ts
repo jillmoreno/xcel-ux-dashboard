@@ -155,7 +155,10 @@ export function matchesProduct(row: LinkProduct, filter: LinkProduct | ''): bool
  * rows. `PROTOTYPE_SCOPES` still says "Jillienne" — that is design authority
  * on a surface, a different list for a different job.
  */
-export const DESIGNERS = ['Jill', 'Anjani', 'Eric', 'Afsana', 'Cody'] as const
+/* Cody came off the roster on 2026-11-21 (Jillienne: "Remove Cody from the
+   filters"). Rows he added keep his name — the pills match the typed author,
+   so they simply no longer have a pill of their own. */
+export const DESIGNERS = ['Jill', 'Anjani', 'Eric', 'Afsana'] as const
 
 export type Designer = (typeof DESIGNERS)[number]
 

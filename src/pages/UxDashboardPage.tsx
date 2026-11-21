@@ -33,11 +33,11 @@ import { ArchiveTable } from '@/components/prototype/ArchiveTable'
 import { QaNotesPanel } from '@/components/prototype/QaNotesPanel'
 import { DemoPanel, LinksPanel, PrdsPanel, ResearchPanel } from '@/components/prototype/LinksPanel'
 import { TodoBoardPanel } from '@/components/prototype/TodoBoardPanel'
-import { LINK_PRODUCTS, readLastAuthor, useLinkCount, type LinkProduct } from '@/data/linkStore'
+import { LINK_PRODUCTS, isLive, readLastAuthor, useLinkCount, type LinkProduct } from '@/data/linkStore'
 import { formatStamp, formatUpdated } from '@/components/prototype/formatUpdated'
-import { useDemoCount } from '@/data/demoStore'
-import { useResearchCount } from '@/data/researchStore'
-import { usePrdCount } from '@/data/prdStore'
+import { DEMO_BOARD, useDemoCount } from '@/data/demoStore'
+import { RESEARCH_BOARD, useResearchCount } from '@/data/researchStore'
+import { PRD_BOARD, usePrdCount } from '@/data/prdStore'
 import { isPrototypeScope, isTodoColumn, useStagedScopes, useTodoBoardCount } from '@/data/todoBoardStore'
 import { useQaNoteCount } from '@/data/qaNoteStore'
 import { UX_TOKEN_BRIDGE, mirrorPaletteToRoot } from '@/components/prototype/uxPaletteBridge'
@@ -233,11 +233,12 @@ const SECTIONS: SectionDef[] = [
     // 2026-09-18 this section (then labelled Demo) held the product build; that
     // row is in Prototypes now.
     id: 'demo',
-    label: 'Refinement',
-    /* The counterweight to Prototypes' single row: as many as you like, because
-       nothing here claims to be settled. */
-    blurb:
-      'Work the team is still discussing.',
+    /* DESIGN since 2026-11-21 — the simple Hub's first page: the board where
+       a designer pastes a link to their work, from inside the repo (a branch
+       build) or outside it (Figma, a document). It was Refinement from
+       2026-09-18; the id, the store and the endpoint did not change. */
+    label: 'Design',
+    blurb: 'Links to the work — branch builds, Figma files, documents.',
   },
   {
     // A BOARD since 2026-10-07, authored on the page like Resources — before
@@ -422,16 +423,29 @@ const SECTIONS: SectionDef[] = [
  * `SECTIONS` above stays the authored full set; everything that renders or
  * resolves a section reads THIS list. A new gated section needs no change here.
  */
-// Every section, on every build that renders the gateway (2026-10-15: the
-// public build that filtered out the gated ones is retired; the testing build
-// never renders this page). `gate` on a section is now a note about who it is
-// for, not a filter anything reads.
-const VISIBLE_SECTIONS: SectionDef[] = SECTIONS
+/**
+ * THE SIMPLE HUB (2026-11-21). Jillienne: "completely kill all the
+ * over-complicated features for this hub … the whole hub needs to be stripped
+ * down to the most simplistic version." Six sections: three boards of links
+ * (Design, Research, PRDs), the dev handoffs (Development, Done) and the
+ * Archive. Everything else in `SECTIONS` — Prototypes and the Main · Stage
+ * switch, the derived Design list, Release, Resources, Explorations, QA
+ * Notes, the To Do Board, Hub Resources — is OFF the rail: not drawn, and
+ * `sectionFromParam` cannot resolve a `?section=` pointing at one, so a deep
+ * link lands on Design. The whole advanced Hub is kept, built and viewable,
+ * on the `hub-advanced` branch (tag `hub-advanced-2026-11-21`).
+ *
+ * This list is the first step; unwiring the hidden sections' code, with an
+ * Archive row each, is a later one. Until then their entries in `SECTIONS`
+ * stand, and this filter is the one place that decides.
+ */
+const SIMPLE_SECTIONS: readonly UxSection[] = ['demo', 'research', 'prds', 'development', 'done', 'archive']
+const VISIBLE_SECTIONS: SectionDef[] = SIMPLE_SECTIONS.map((id) => SECTIONS.find((s) => s.id === id)!)
 
-/** The section a bare `/` opens — the first in the nav, and the one a
- *  stakeholder should see first: the product itself. `?section=` is dropped
- *  from the URL when this is selected, so the landing address stays clean. */
-const DEFAULT_SECTION: UxSection = 'prototypes'
+/** The section a bare `/` opens — the first in the nav. Design since
+ *  2026-11-21 (Prototypes until then). `?section=` is dropped from the URL
+ *  when this is selected, so the landing address stays clean. */
+const DEFAULT_SECTION: UxSection = 'demo'
 
 /**
  * Eyebrow labels drawn above specific ungated rows in the nav rail, added
@@ -448,22 +462,15 @@ const DEFAULT_SECTION: UxSection = 'prototypes'
  * stood above them went with the section gate.
  */
 const NAV_EYEBROWS: Partial<Record<UxSection, string>> = {
-  prototypes: 'Demo',
-  // Design is the group's first row since 2026-11-16; the eyebrow moved up
-  // with it (one entry per group, on its first section — see Team below).
-  design: 'Design & Research',
-  development: 'Dev Handoff',
-  // TEAM — 2026-10-15. The fourth group, and the first that is about how the
-  // team works rather than about the product: the board (who is on what) and
-  // the shelf of the Hub's own guides. Neither is dev handoff and neither is a
-  // prototype, and filing either under an existing group would have made that
-  // eyebrow wrong for it.
+  // Two groups since the simple Hub (2026-11-21): the boards, and the dev
+  // handoffs. The Demo eyebrow over Prototypes and the Team eyebrow over the
+  // To Do Board went with their sections (see `SIMPLE_SECTIONS`).
   //
   // ⚠ ONE ENTRY FOR THE WHOLE GROUP, on its FIRST section. An eyebrow is drawn
-  // directly above the row it is keyed to, so a second entry for
-  // `hub-resources` would print "Team" twice, once over each row. Reorder the
-  // two in `SECTIONS` and this key moves with them.
-  'todo-board': 'Team',
+  // directly above the row it is keyed to, so a second entry would print the
+  // label twice. Reorder `SIMPLE_SECTIONS` and the key moves with it.
+  demo: 'Design & Research',
+  development: 'Dev Handoff',
 }
 
 /** `?section=` values the OLD tile landing wrote, mapped onto the new sections.
@@ -1554,6 +1561,12 @@ export function UxDashboardPage() {
    *  shown, so the badge counts only those — a badge over a shorter list reads
    *  as a load failure. Same mechanism as `useLinkCount`; see `demoStore.ts`. */
   const demoCount = useDemoCount()
+  /* The three boards' archived rows, for the Archive nav count — the rows
+     themselves are drawn by the panels in `archiveView`. */
+  const archivedLinkCount =
+    DEMO_BOARD.useLinkCount((l) => !isLive(l)) +
+    RESEARCH_BOARD.useLinkCount((l) => !isLive(l)) +
+    PRD_BOARD.useLinkCount((l) => !isLive(l))
   /** Live research-link count. Same mechanism as `useLinkCount`; see
    *  `researchStore.ts`. */
   const researchCount = useResearchCount()
@@ -1772,7 +1785,7 @@ export function UxDashboardPage() {
                         : s.id === 'todo-board'
                           ? todoBoardCount
                           : s.id === 'archive'
-                            ? ARCHIVED_ITEMS.length + archivedRows.length
+                            ? ARCHIVED_ITEMS.length + archivedRows.length + archivedLinkCount
                             : (s.count ?? bySection[s.id].length)
             return (
               <div key={s.id}>
@@ -1952,6 +1965,14 @@ export function UxDashboardPage() {
           <TodoBoardPanel prefill={todoPrefill} onPrefillConsumed={consumeTodoPrefill} />
         ) : section === 'archive' ? (
           <>
+            {/* THE LINKS ARCHIVED FROM THE THREE BOARDS — 2026-11-21 — first,
+                each board under its own heading, drawn as the rows they were
+                with Unarchive in the kebab. A board with nothing archived
+                draws nothing. Jillienne: "the concept of hidden is not
+                needed, just archive those things." */}
+            <DemoPanel archiveView={{ title: 'Design' }} />
+            <ResearchPanel archiveView={{ title: 'Research' }} />
+            <PrdsPanel archiveView={{ title: 'PRDs' }} />
             {/* THE ROWS ARCHIVED FROM THE BOARDS — 2026-10-27 — above the
                 components table, drawn as the rows they were so a reviewer
                 recognises them, each stamped who and when. Unarchive is in

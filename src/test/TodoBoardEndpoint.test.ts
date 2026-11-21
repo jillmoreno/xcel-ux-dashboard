@@ -69,7 +69,8 @@ describe('GET /api/todo-board', () => {
 
   it('gives every seeded person their own colour, cycling through the six', async () => {
     const { body } = await board()
-    expect((body.people as Json[]).map((p) => p.hue)).toEqual(['slate', 'teal', 'green', 'gold', 'brick'])
+    // Four seeded since 2026-11-21 (Cody came off the roster), so four hues.
+    expect((body.people as Json[]).map((p) => p.hue)).toEqual(['slate', 'teal', 'green', 'gold'])
   })
 })
 
@@ -188,11 +189,11 @@ describe('people', () => {
     await board()
     const { status, body } = await call('POST', '/api/todo-board/people', { name: 'Joe' })
     expect(status).toBe(201)
-    expect((body.person as Json).id).toBe('person-006')
-    // Five seeded, so the sixth person takes the sixth colour. A seventh
+    expect((body.person as Json).id).toBe('person-005')
+    // Four seeded, so the fifth person takes the fifth colour. A seventh
     // would wrap to the first — the name beside the avatar is what keeps that
     // readable.
-    expect((body.person as Json).hue).toBe('taupe')
+    expect((body.person as Json).hue).toBe('brick')
   })
 
   it('reassigns a removed person’s cards instead of deleting them', async () => {
@@ -226,9 +227,9 @@ describe('people', () => {
 
   it('changes one person’s colour, and nothing else about them', async () => {
     await board()
-    const { status, body } = await call('PUT', '/api/todo-board/people/person-005', { hue: 'plum' })
+    const { status, body } = await call('PUT', '/api/todo-board/people/person-004', { hue: 'plum' })
     expect(status).toBe(200)
-    expect(body.person).toMatchObject({ id: 'person-005', name: SEED_PEOPLE[4], hue: 'plum' })
+    expect(body.person).toMatchObject({ id: 'person-004', name: SEED_PEOPLE[3], hue: 'plum' })
   })
 
   it('refuses a colour it cannot draw', async () => {

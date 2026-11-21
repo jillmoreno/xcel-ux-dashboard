@@ -5,11 +5,7 @@ import { fireEvent } from '@testing-library/dom'
 import { readFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { MemoryRouter } from 'react-router-dom'
 import { TodoBoardPanel } from '@/components/prototype/TodoBoardPanel'
-import { UxDashboardPage } from '@/pages/UxDashboardPage'
-import { AccountProvider } from '@/context/AccountContext'
-import { ThemeProvider } from '@/context/ThemeContext'
 import {
   cardsInColumn,
   positionForDrop,
@@ -210,7 +206,7 @@ describe('the todo-board endpoint', () => {
     expect(fnOwner).toBe(clientOwner)
   })
 
-  it('seeds the roster from DESIGNERS — the five names Refinement filters by', () => {
+  it('seeds the roster from DESIGNERS — the names the Design board filters by', () => {
     /* Re-declared in the function for the same trust-boundary reason, so the
        two are compared rather than shared. A seed that drifts from the roster
        would quietly introduce a sixth designer, or lose one. */
@@ -696,41 +692,11 @@ describe('the promote-to-refinement hand-off', () => {
     expect(screen.queryByRole('dialog')).toBeNull()
   })
 
-  /* The page half: the panel tests above are handed a prefill object, and
-     these two are the only proof that the PAGE builds one out of an address
-     and then takes the params back off it. The second is the one that bites —
-     params left on the address reopen the sheet on every reload. */
-  const renderDashboard = (initialPath: string) =>
-    render(
-      <MemoryRouter initialEntries={[initialPath]}>
-        <AccountProvider>
-          <ThemeProvider>
-            <UxDashboardPage />
-          </ThemeProvider>
-        </AccountProvider>
-      </MemoryRouter>,
-    )
-
-  it('is built by the page out of the address', async () => {
-    mockBoard([])
-    renderDashboard(
-      '/?section=todo-board&add=1&column=refine&title=Study%20streak%20card&note=Home%2C%20under%20Current%20Progress.&owner=Eric',
-    )
-    const dialog = await screen.findByRole('dialog')
-    expect((within(dialog).getByLabelText('Card name') as HTMLInputElement).value).toBe('Study streak card')
-    expect((within(dialog).getByLabelText('Quick note') as HTMLTextAreaElement).value).toBe(
-      'Home, under Current Progress.',
-    )
-    expect((within(dialog).getByLabelText('Column') as HTMLSelectElement).value).toBe('refine')
-    expect((within(dialog).getByLabelText('Owner') as HTMLSelectElement).value).toBe('Eric')
-  })
-
-  it('falls back to To Do when the column is not one of the five', async () => {
-    mockBoard([])
-    renderDashboard('/?section=todo-board&add=1&column=backlog&title=X')
-    const dialog = await screen.findByRole('dialog')
-    expect((within(dialog).getByLabelText('Column') as HTMLSelectElement).value).toBe('todo')
-  })
+  /* Two tests stood here — the page building the sheet out of the address,
+     and the column fallback — and were removed 2026-11-21: the To Do Board is
+     off the Hub's rail (`SIMPLE_SECTIONS` in UxDashboardPage.tsx), so a
+     `?section=todo-board` link lands on Design and opens nothing. They live
+     on the `hub-advanced` branch. */
 })
 
 /** The avatar disc, not the drag grip — both are `aria-hidden` spans. */

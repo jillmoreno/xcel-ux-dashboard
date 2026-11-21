@@ -8,6 +8,12 @@ import { DemoPanel, LinksPanel } from '@/components/prototype/LinksPanel'
 import type { StoredLink } from '@/data/linkStore'
 
 /**
+ * 2026-11-21: the board is DESIGN now (still section id `demo`) and matches
+ * Research — no product tag or control, no feature grouping, no "Show hidden"
+ * door (archived rows are on the Hub's Archive page), Cody off the roster.
+ * The pins for the product tag, the Both default and the in-board archive
+ * view were removed; the old tests live on the `hub-advanced` branch.
+ *
  * Demo — the review inbox (2026-09-18).
  *
  * The same panel and endpoint code as Links, so the Links suite already covers
@@ -167,22 +173,12 @@ describe('DemoPanel on the full site', () => {
     )
     expect(within(dialog).getByLabelText('Title')).toHaveValue('Study streak card — feat/streak')
     expect(within(dialog).getByLabelText(/^Note/)).toHaveValue('Home, under Current Progress.')
-    // The product tag rides in since 2026-10-14 — the skill reads it off the
-    // branch, so Anjani's Compass work opens already tagged.
-    expect(within(dialog).getByRole('radio', { name: 'Compass' })).toBeChecked()
+    // A hand-off still carries a product (the skill reads it off the branch);
+    // the form has no product control since 2026-11-21, so it rides in
+    // harmlessly and nothing is drawn for it.
+    expect(within(dialog).queryByRole('radio', { name: 'Compass' })).toBeNull()
     expect(consumed).toHaveBeenCalledTimes(1)
     expect(writes).toHaveLength(0)
-  })
-
-  it('a prefill with no product opens on the form’s own default', async () => {
-    // A hand-off from before the field existed, or one that could not tell,
-    // must not change what the form would have done on its own.
-    mockEndpoint([])
-    render(
-      <DemoPanel prefill={{ url: 'https://x.netlify.app/dashboard-rebrand?demo=1', title: 'X', note: '' }} />,
-    )
-    const dialog = await screen.findByRole('dialog')
-    expect(within(dialog).getByRole('radio', { name: 'Both' })).toBeChecked()
   })
 })
 
@@ -236,11 +232,12 @@ describe('Refinement — the Updated stamp (2026-10-14)', () => {
  * these quick filter pills to be based on the Designers name. I also want the
  * refinement ellipsis to have an archive option. This will simply hide them
  * from the main view, there will be a separate link button top right to Show
- * Archive." Eight follow-up calls, pinned here: the roster (not the names on
- * the board) is the pill set and the Added by choices; the product stays as the
- * tag; Refinement only; Archive sits beside Remove; the archive is stamped
- * with who and when; anyone can unarchive; the branch strip hides an archived
- * build; the nav count excludes archived rows.
+ * Archive." The follow-up calls still pinned here: the roster (not the names
+ * on the board) is the pill set and the Added by choices; Archive sits beside
+ * Remove; the archive is stamped with who and when; anyone can unarchive; the
+ * nav count excludes archived rows. Since 2026-11-21 the "separate link button
+ * top right" is the Hub's Archive page, which mounts this panel in
+ * `archiveView`; the product tag is gone.
  */
 describe('Refinement — designer pills and the archive (2026-10-15)', () => {
   /** A store whose PUT actually flips the archive state, so the re-read after
@@ -287,7 +284,7 @@ describe('Refinement — designer pills and the archive (2026-10-15)', () => {
     mockEndpoint([demo()])
     render(<DemoPanel />)
     await waitFor(() => expect(screen.getByText('1 link')).toBeInTheDocument())
-    expect(pills()).toEqual(['All', 'Jill', 'Anjani', 'Eric', 'Afsana', 'Cody'])
+    expect(pills()).toEqual(['All', 'Jill', 'Anjani', 'Eric', 'Afsana'])
     expect(screen.queryByRole('group', { name: 'Filter by product' })).toBeNull()
   })
 
@@ -317,14 +314,6 @@ describe('Refinement — designer pills and the archive (2026-10-15)', () => {
     expect(screen.getByText('3 links')).toBeInTheDocument()
   })
 
-  it('keeps the product as the tag on the row', async () => {
-    mockEndpoint([demo({ product: 'compass' })])
-    const { container } = render(<DemoPanel />)
-    await waitFor(() => expect(screen.getByText('1 link')).toBeInTheDocument())
-    const tags = [...container.querySelectorAll('ul span')].map((el) => el.textContent?.trim())
-    expect(tags).toContain('Compass')
-  })
-
   it('Added by is a choice from the roster, with a legacy name kept as its own option', async () => {
     const user = userEvent.setup()
     mockEndpoint([demo({ addedBy: 'Sam' })])
@@ -335,7 +324,7 @@ describe('Refinement — designer pills and the archive (2026-10-15)', () => {
     const field = await screen.findByLabelText(/Added by/)
     expect(field.tagName).toBe('SELECT')
     const options = [...(field as HTMLSelectElement).options].map((o) => o.value)
-    expect(options).toEqual(['', 'Jill', 'Anjani', 'Eric', 'Afsana', 'Cody'])
+    expect(options).toEqual(['', 'Jill', 'Anjani', 'Eric', 'Afsana'])
     await user.keyboard('{Escape}')
 
     // Editing Sam's row does not silently reassign it: Sam is an option there.
@@ -355,24 +344,24 @@ describe('Refinement — designer pills and the archive (2026-10-15)', () => {
     expect(screen.queryByRole('group', { name: 'Filter by designer' })).toBeNull()
   })
 
-  it('Hide hides the row, Show hidden lists it with who and when, Unhide puts it back', async () => {
+  it('Archive takes the row off the board, the Archive page lists it with who and when, Unarchive puts it back', async () => {
     const user = userEvent.setup()
     localStorage.setItem('cgp.links.lastAuthor', 'Jill')
     const { writes } = liveEndpoint([
       demo({ id: 'demo-001', title: 'Keep me' }),
-      demo({ id: 'demo-002', title: 'Hide me' }),
+      demo({ id: 'demo-002', title: 'Archive me' }),
     ])
-    render(<DemoPanel />)
+    const board = render(<DemoPanel />)
     await waitFor(() => expect(screen.getByText('2 links')).toBeInTheDocument())
-    // No door until something is archived.
-    expect(screen.queryByRole('button', { name: /Show hidden/ })).toBeNull()
+    // No door on the board (2026-11-21): the archive is a page, not a view.
+    expect(screen.queryByRole('button', { name: /Show hidden|Show archive/ })).toBeNull()
 
-    await user.click(screen.getByRole('button', { name: 'Actions for Hide me' }))
+    await user.click(screen.getByRole('button', { name: 'Actions for Archive me' }))
     const menu = await screen.findByRole('menu')
     // Archive sits beside Remove, not instead of it.
-    expect(within(menu).getByRole('menuitem', { name: 'Hide' })).toBeInTheDocument()
+    expect(within(menu).getByRole('menuitem', { name: 'Archive' })).toBeInTheDocument()
     expect(within(menu).getByRole('menuitem', { name: 'Remove' })).toBeInTheDocument()
-    await user.click(within(menu).getByRole('menuitem', { name: 'Hide' }))
+    await user.click(within(menu).getByRole('menuitem', { name: 'Archive' }))
 
     // A SAVE with the intent and the label; the stamp is the server's.
     await waitFor(() => expect(writes).toHaveLength(1))
@@ -382,33 +371,34 @@ describe('Refinement — designer pills and the archive (2026-10-15)', () => {
     expect(writes[0].body.archivedBy).toBe('Jill')
     expect(writes[0].body).not.toHaveProperty('archivedAt', expect.stringMatching(/\d/))
 
-    // Hidden from the board, counted in the door.
+    // Off the board.
     await waitFor(() => expect(screen.getByText('1 link')).toBeInTheDocument())
-    expect(screen.queryByText('Hide me')).not.toBeInTheDocument()
+    expect(screen.queryByText('Archive me')).not.toBeInTheDocument()
     expect(screen.getByText('Keep me')).toBeInTheDocument()
-    const door = screen.getByRole('button', { name: 'Show hidden · 1' })
+    board.unmount()
 
-    // The archive view: the hidden row, its stamp, no Add button, a way back.
-    await user.click(door)
-    expect(screen.getByText('Hide me')).toBeInTheDocument()
+    // The Archive page's view of this board: the heading, the archived row
+    // with its stamp (worded the way the kebab is), no live row, no Add.
+    const page = render(<DemoPanel archiveView={{ title: 'Design' }} />)
+    expect(await screen.findByRole('heading', { name: 'Design' })).toBeInTheDocument()
+    expect(screen.getByText('Archive me')).toBeInTheDocument()
     expect(screen.queryByText('Keep me')).not.toBeInTheDocument()
-    // The stamp is a tag on the row, worded the way the kebab is (Hide, 2026-11-01).
-    expect(screen.getByText(/^Hidden .*· Jill$/)).toBeInTheDocument()
-    expect(screen.getByText('1 link hidden from the board. Unhide one to put it back.')).toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: 'Add link' })).toBeNull()
-    expect(screen.getByRole('button', { name: 'Back to board' })).toBeInTheDocument()
+    expect(screen.getByText(/^Archived .*· Jill$/)).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /^Add/ })).toBeNull()
 
     // Anyone can unarchive — no owner check, the same kebab.
-    await user.click(screen.getByRole('button', { name: 'Actions for Hide me' }))
-    await user.click(await screen.findByRole('menuitem', { name: 'Unhide' }))
+    await user.click(screen.getByRole('button', { name: 'Actions for Archive me' }))
+    await user.click(await screen.findByRole('menuitem', { name: 'Unarchive' }))
     await waitFor(() => expect(writes).toHaveLength(2))
     expect(writes[1].body.archived).toBe(false)
     expect(writes[1].body.archivedBy).toBe('')
-    await waitFor(() => expect(screen.getByText('No archived links.')).toBeInTheDocument())
+    // Nothing archived → the page draws nothing for this board.
+    await waitFor(() => expect(screen.queryByRole('heading', { name: 'Design' })).toBeNull())
+    page.unmount()
 
-    await user.click(screen.getByRole('button', { name: 'Back to board' }))
+    render(<DemoPanel />)
     await waitFor(() => expect(screen.getByText('2 links')).toBeInTheDocument())
-    expect(screen.getByText('Hide me')).toBeInTheDocument()
+    expect(screen.getByText('Archive me')).toBeInTheDocument()
   })
 
   it('editing an archived row carries its archive state through, so a save does not un-archive it', async () => {
@@ -417,10 +407,9 @@ describe('Refinement — designer pills and the archive (2026-10-15)', () => {
       demo({ id: 'demo-001', title: 'Live one' }),
       demo({ id: 'demo-002', title: 'Old one', archivedAt: '2026-10-10T09:00:00.000Z', archivedBy: 'Eric' }),
     ])
-    render(<DemoPanel />)
-    await waitFor(() => expect(screen.getByText('1 link')).toBeInTheDocument())
-    await user.click(screen.getByRole('button', { name: 'Show hidden · 1' }))
-    await user.click(screen.getByRole('button', { name: 'Actions for Old one' }))
+    // An archived row is reached through the Archive page's view (2026-11-21).
+    render(<DemoPanel archiveView={{ title: 'Design' }} />)
+    await user.click(await screen.findByRole('button', { name: 'Actions for Old one' }))
     await user.click(await screen.findByRole('menuitem', { name: 'Edit' }))
     await user.click(await screen.findByRole('button', { name: 'Save changes' }))
     await waitFor(() => expect(writes).toHaveLength(1))
@@ -451,12 +440,12 @@ describe('Refinement — designer pills and the archive (2026-10-15)', () => {
     expect(panel).toMatch(/THE AUTOMATIC BRANCH STRIP LIVED HERE/)
   })
 
-  it('the endpoint stamps archivedAt itself, keeps the one it is handed, and only on Refinement', () => {
+  it('the endpoint stamps archivedAt itself, keeps the one it is handed, on Design, Research and PRDs — not Links', () => {
     const board = readFileSync(resolve(here, '../../netlify/lib/linkBoard.ts'), 'utf8')
     expect(board).toMatch(/if \(cfg\.archivable\)/)
     expect(board).toMatch(/out\.archivedAt = archived \? \(ISO_STAMP\.test\(prior\) \? prior : new Date\(\)\.toISOString\(\)\) : ''/)
     const fn = (name: string) => readFileSync(resolve(here, `../../netlify/functions/${name}.ts`), 'utf8')
-    expect(fn('demos')).toMatch(/archivable: true/)
-    for (const other of ['links', 'research', 'prds']) expect(fn(other)).toMatch(/archivable: false/)
+    for (const board of ['demos', 'research', 'prds']) expect(fn(board)).toMatch(/archivable: true/)
+    expect(fn('links')).toMatch(/archivable: false/)
   })
 })

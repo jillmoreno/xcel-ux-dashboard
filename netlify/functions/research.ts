@@ -34,7 +34,9 @@ export default linkBoardHandler({
   segment: 'research',
   types: ALLOWED_TYPES,
   products: false,
-  archivable: false,
+  // Archivable since 2026-11-21, like Design: archived rows list on the
+  // Hub's Archive page.
+  archivable: true,
   /* PROJECTS (2026-11-20, Jillienne: "I want to be able to add a project").
      `features` is the record's grouping axis — `feature` plus `supersedes` —
      and Research presents it as the PROJECT a link belongs to. The field is
