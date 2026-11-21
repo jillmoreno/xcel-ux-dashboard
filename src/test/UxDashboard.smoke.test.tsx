@@ -776,3 +776,28 @@ describe('component detail — COMPONENT_SECTIONS matches the render order', () 
     expect(src).toContain("useState<ComponentSectionId>('variants')")
   })
 })
+
+/* ── The demo build link — 2026-11-21 ──────────────────────────────────────
+ * Prototypes is off the rail in the simple Hub, so the product on `main` is
+ * reached from one quiet link at the foot of the rail. Jillienne: a main link
+ * "for demo purposes eventually, but I don't want it to be the main thing
+ * when users come to the UX hub." One link, new tab, the end-to-end door. */
+describe('the Demo build link', () => {
+  it('sits at the foot of the rail, once, and opens the product on main in a new tab', () => {
+    renderDashboard()
+    const links = screen.getAllByRole('link', { name: /Demo build/ })
+    expect(links).toHaveLength(1)
+    const link = links[0]
+    expect(link.getAttribute('href')).toBe('/dashboard-rebrand?demo=1&journey=full')
+    expect(link.getAttribute('target')).toBe('_blank')
+    expect(link.getAttribute('rel')).toContain('noopener')
+    // Inside the rail, not the content pane — the aside holds the nav.
+    expect(screen.getByRole('navigation').parentElement).toContainElement(link)
+  })
+
+  it('is not a nav section — the rail still reads the six pages', () => {
+    renderDashboard()
+    const nav = screen.getByRole('navigation')
+    expect(within(nav).queryByText('Demo build')).toBeNull()
+  })
+})

@@ -85,7 +85,9 @@ import {
   Sliders,
   Sun,
   User,
-  X, HourglassClock} from '@/icons'
+  X, HourglassClock,
+  ArrowUpRightFromSquare,
+} from '@/icons'
 import { Toast } from '@/components/ui/Toast'
 
 /**
@@ -1828,6 +1830,21 @@ export function UxDashboardPage() {
           })}
         </nav>
         <div ref={themeRef} style={themeWrapStyle}>
+          {/* THE DEMO BUILD — 2026-11-21. One quiet link at the foot of the
+              rail, not a section and not a row: the product on `main`, which
+              is what `ship` puts there and what Jillienne hands out as the
+              demo link. Quiet on purpose — "I don't want it to be the main
+              thing when users come to the UX hub." New tab, the same door the
+              end-to-end Prototypes row used (`?demo=1&journey=full`). */}
+          <a
+            href="/dashboard-rebrand?demo=1&journey=full"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ ...themeBtnStyle, color: nav.muted, borderColor: nav.border, marginBottom: 6, textDecoration: 'none' }}
+          >
+            <ArrowUpRightFromSquare size={14} aria-hidden style={{ flex: 'none' }} />
+            <span style={themeBtnLabelStyle}>Demo build</span>
+          </a>
           <button
             type="button"
             onClick={() => setThemeOpen((o) => !o)}

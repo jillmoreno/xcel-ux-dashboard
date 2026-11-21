@@ -31,9 +31,9 @@ import { fileURLToPath } from 'node:url'
 import { isOwner } from './protect-framework.mjs'
 
 const INSTEAD =
-  'Releasing to main is Jillienne’s step — see "Release" in the day-to-day guide. ' +
-  'Your work reaches the team from YOUR BRANCH: say "/share-branch" to put it on Refinement, ' +
-  'and "/share-to-stage" when your surface is decided; Jill releases stage to main. ' +
+  'Shipping to main is Jillienne’s step. ' +
+  'Your work reaches the team from YOUR BRANCH: say "share my work" (/share-my-work, the old /share-branch) ' +
+  'and paste the link it gives you on the Hub’s Design page; Jill ships to main. ' +
   'If you are standing on main by accident, say ' +
   '"switch back to my feature branch".'
 
