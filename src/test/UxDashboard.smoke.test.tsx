@@ -529,5 +529,17 @@ describe('the Demo build link', () => {
     renderDashboard()
     const nav = screen.getByRole('navigation')
     expect(within(nav).queryByText('Demo build')).toBeNull()
+    expect(within(nav).queryByText('Guide')).toBeNull()
+  })
+
+  /* THE GUIDE LINK — 2026-11-21, the same day Hub Resources went. One guide
+     now (`/contributing/`), one quiet link beside Demo build. */
+  it('the Guide link sits beside it, opening the one guide in a new tab', () => {
+    renderDashboard()
+    const links = screen.getAllByRole('link', { name: /^Guide$/ })
+    expect(links).toHaveLength(1)
+    expect(links[0].getAttribute('href')).toBe('/contributing/')
+    expect(links[0].getAttribute('target')).toBe('_blank')
+    expect(screen.getByRole('navigation').parentElement).toContainElement(links[0])
   })
 })

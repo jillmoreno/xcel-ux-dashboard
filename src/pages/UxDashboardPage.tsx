@@ -74,6 +74,7 @@ import {
   User,
   X, HourglassClock,
   ArrowUpRightFromSquare,
+  BookOpen,
 } from '@/icons'
 import { Toast } from '@/components/ui/Toast'
 
@@ -1480,6 +1481,18 @@ export function UxDashboardPage() {
               demo link. Quiet on purpose — "I don't want it to be the main
               thing when users come to the UX hub." New tab, the same door the
               end-to-end Prototypes row used (`?demo=1&journey=full`). */}
+          {/* THE GUIDE — 2026-11-21. The one guide (`/contributing/`), where
+              Hub Resources used to be the way back to three. Same quiet shape
+              as the Demo build link below it. */}
+          <a
+            href="/contributing/"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ ...themeBtnStyle, color: nav.muted, borderColor: nav.border, marginBottom: 6, textDecoration: 'none' }}
+          >
+            <BookOpen size={14} aria-hidden style={{ flex: 'none' }} />
+            <span style={themeBtnLabelStyle}>Guide</span>
+          </a>
           <a
             href="/dashboard-rebrand?demo=1&journey=full"
             target="_blank"

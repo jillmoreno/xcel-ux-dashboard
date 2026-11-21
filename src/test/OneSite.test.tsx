@@ -189,68 +189,51 @@ describe('the edge rules', () => {
     expect(readdirSync(resolve(here, '../../public/recaps')).length).toBeGreaterThan(0)
   })
 
-  it('leaves the contributing guide, the stakeholder guide and their stylesheet reachable on the one site', () => {
-    // The contributing guide is the designers' process manual; with one site,
-    // hiding it from stakeholders would hide it from the people it is for.
+  it('leaves the guide and its stylesheet reachable on the one site', () => {
+    // The guide is the designers' first-day manual; with one site, hiding it
+    // from stakeholders would hide it from the people it is for.
     expect(list('PRODUCTION_ONLY').some((b) => b.startsWith('/contributing'))).toBe(false)
     for (const name of ['PRODUCTION_ONLY', 'BLOCKED']) {
-      expect(list(name).some((b) => b.startsWith('/about'))).toBe(false)
       expect(list(name).some((b) => b.startsWith('/guides'))).toBe(false)
     }
   })
 })
 
-describe('the three guides', () => {
+/* ONE GUIDE since 2026-11-21 — the simple Hub. Designer Workflow and About
+ * went with the advanced Hub (`hub-advanced` branch); Contributing is the
+ * whole first day and the three sentences after it, reached from the Guide
+ * link at the foot of the rail. */
+describe('the guide', () => {
   const pub = resolve(here, '../../public')
 
-  it('each is a self-contained page with its PDF beside it', () => {
-    for (const [folder, pdf] of [
-      ['contributing', 'contributing.pdf'],
-      ['about', 'about.pdf'],
-      // The third, 2026-10-15 — the working guide for the five people on the
-      // team now, reached from a Resources row rather than from the nav. Its
-      // draft is the Claude doc "Designer Workflow on the Hub"; this is what
-      // the Hub serves.
-      ['designer-workflow', 'designer-workflow.pdf'],
-    ] as const) {
-      const html = readFileSync(resolve(pub, folder, 'index.html'), 'utf8')
-      expect(html).toContain(`href="${pdf}" download`)
-      // Nothing from the app — the page has to render on its own and in print.
-      expect(html).not.toMatch(/src="\/assets\//)
-      expect(readFileSync(resolve(pub, folder, pdf)).subarray(0, 5).toString()).toBe('%PDF-')
-    }
+  it('is a self-contained page with its PDF beside it', () => {
+    const html = readFileSync(resolve(pub, 'contributing', 'index.html'), 'utf8')
+    expect(html).toContain('href="contributing.pdf" download')
+    // Nothing from the app — the page has to render on its own and in print.
+    expect(html).not.toMatch(/src="\/assets\//)
+    expect(readFileSync(resolve(pub, 'contributing', 'contributing.pdf')).subarray(0, 5).toString()).toBe('%PDF-')
   })
 
-  it('the two guides on the shared stylesheet still use it', () => {
-    // `designer-workflow` deliberately does NOT. It was authored as a
-    // published Artifact with its own design — the rail, the speech bubbles,
-    // Bricolage Grotesque — and that design is the reason it reads the way it
-    // does, so it came over whole rather than being restyled onto this sheet.
-    // Its fonts are the one external request any guide makes, which is why the
-    // check below is scoped to the other two rather than dropped.
-    for (const folder of ['contributing', 'about'] as const) {
-      const html = readFileSync(resolve(pub, folder, 'index.html'), 'utf8')
-      expect(html).toContain('href="../guides/guide.css"')
-      expect(html).not.toMatch(/fonts\.googleapis\.com/)
-    }
+  it('uses the shared stylesheet and no web font', () => {
+    const html = readFileSync(resolve(pub, 'contributing', 'index.html'), 'utf8')
+    expect(html).toContain('href="../guides/guide.css"')
+    expect(html).not.toMatch(/fonts\.googleapis\.com/)
     expect(() => readFileSync(resolve(pub, 'guides/guide.css'))).not.toThrow()
-
-    // `designer-workflow` carries its own stylesheet, so nothing stops its
-    // colours drifting off the Hub's. This is what says they should not: it
-    // arrived from the Artifact in a deep green of its own, which read as a
-    // different product sitting beside the other two guides (2026-10-15).
-    const dw = readFileSync(resolve(pub, 'designer-workflow/index.html'), 'utf8')
-    expect(dw).toContain('--accent: #1f4e88')
   })
 
-  it('the stakeholder guide says nothing about the team’s working process', () => {
-    // Still the orientation page a stakeholder is sent to. The designer
-    // vocabulary belongs in /contributing/, which they can now also open —
-    // but /about/ should still read as a page about the product, not the
-    // process.
-    const about = readFileSync(resolve(pub, 'about/index.html'), 'utf8').replace(/<!--[\s\S]*?-->/g, '')
-    for (const word of ['git ', 'git clone', 'Netlify', 'pull request', 'FEATURE_FLAGS', 'promote-to-prototype', 'full site']) {
-      expect(about, `about/index.html mentions "${word}"`).not.toContain(word)
+  it('the other two guides are gone, not stale', () => {
+    for (const folder of ['designer-workflow', 'about']) {
+      expect(() => readFileSync(resolve(pub, folder, 'index.html'))).toThrow()
+    }
+  })
+
+  it('speaks the simple Hub\u2019s words and none of the advanced Hub\u2019s', () => {
+    const html = readFileSync(resolve(pub, 'contributing', 'index.html'), 'utf8').replace(/<!--[\s\S]*?-->/g, '')
+    for (const word of ['Share my work', 'Demo build', 'Write dev handoff notes']) {
+      expect(html, `contributing/index.html lacks "${word}"`).toContain(word)
+    }
+    for (const word of ['Refinement', 'share-to-stage', 'Prototypes', 'To Do Board', '/designer-workflow/', '/about/']) {
+      expect(html, `contributing/index.html still says "${word}"`).not.toContain(word)
     }
   })
 })

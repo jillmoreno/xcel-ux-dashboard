@@ -26,7 +26,7 @@ Nothing is kept in this branch "just in case"; a restore is a checkout.
 | 3 | Two routines. **"Share my work"** (anyone): branch if needed, checks, commit, push, one link to paste on Design, zero questions. **"Ship"** (Jillienne): a branch, a name or a Design link; the flag review, grouped by component and calling out any with more than one flag; per-flag yes/no; per decided flag, retire it by the archive convention; build, tests, fast-forward merge, push. A quiet **Demo build** link at the rail foot opens the product on main | done |
 | 4 | Delete the eight hidden sections — code, functions, redirects, tests — one Archive row each naming `hub-advanced` and the re-wire. Jillienne: "that data is not used, we can just clear those pages completely and delete" | done |
 | 5 | Retire the stage-only routines — `share-to-stage`, `decide-defaults`, `retire-from-refinement`, `share-component`, `port-prototype` and three old aliases. Keep `share-my-work`, `ship`, `archive-a-feature`, `dev-handoff-notes` (trimmed to the simple flow: the file is the Development row, the Design link goes on its Links row) and `freeze-for-testing` (user tests, nothing to do with the Hub) | done |
-| 6 | One guide: Contributing as the intern's first day; the other two go with the advanced Hub | |
+| 6 | One guide. Contributing rewritten as the first day plus the three sentences; Designer Workflow and About deleted (whole on `hub-advanced`); a Guide link at the rail foot beside Demo build | done |
 | 7 | Rewrite CLAUDE.md and `docs/` for the six-page Hub; replace the smoke test's pinned list | |
 
 Each step pauses for Jillienne to clarify and tweak before the next.

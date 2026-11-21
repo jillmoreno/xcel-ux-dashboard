@@ -59,7 +59,8 @@ const context = (process.env.CONTEXT ?? '').trim().toLowerCase()
  * `/demos/`: that folder exists to be REACHABLE on the public build, so a
  * designer's branch deploy can put HTML in front of stakeholders (see
  * `public/demos/README.md`). `/contributing/` IS blocked — it is the designer
- * guide, the team's working process — while its stakeholder twin `/about/`
+ * guide, the team's working process — (its stakeholder twin `/about/` went
+ * with the advanced Hub on 2026-11-21) while `/about/`
  * and the stylesheet both share under `/guides/` are not.
  *
  * `/recaps/*` (added 2026-09-22) is blocked for the same reason as
