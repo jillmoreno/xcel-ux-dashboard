@@ -1,11 +1,11 @@
 /**
- * Links — the browser side of the authoring endpoint.
+ * The link boards — the browser side of the authoring endpoint.
  *
- * Deliberately UNLIKE `qaNoteStore.ts` in one respect: there is no committed
- * seed and therefore no merge. The QA section ships an array in
- * `src/data/qaNotes.ts` that stored records override; the Links section ships
- * nothing, because its whole reason for existing is that a link can be added
- * without touching the repo. So the store is the list, full stop.
+ * There is no committed seed and therefore no merge: a board ships nothing,
+ * because its whole reason for existing is that a link can be added without
+ * touching the repo. So the store is the list, full stop. (The QA Notes
+ * store, which merged a committed array with stored records, was the
+ * contrast until it went with the advanced Hub on 2026-11-21.)
  *
  * The cost of that is real and worth stating plainly: Netlify Blobs is not
  * backed up, so this list lives in exactly one place. `toMarkdown` is the
@@ -20,10 +20,11 @@ import { useCallback, useEffect, useState } from 'react'
 
 /**
  * SHARED with the Demo board since 2026-09-18. Everything below the type
- * declarations is `createLinkBoard(config)`, and this module's named exports
- * are the LINKS instance of it — so every existing import keeps working, and
- * `demoStore.ts` is a second instance with a different endpoint, event and
- * label rather than a second copy of this file.
+ * declarations is `createLinkBoard(config)`; `demoStore.ts`, `researchStore.ts`
+ * and `prdStore.ts` are the instances, each with its own endpoint, event and
+ * label rather than a copy of this file. (This module was the LINKS instance
+ * too — `LINKS_BOARD` and its re-exports — until Resources went with the
+ * advanced Hub on 2026-11-21.)
  */
 export type LinkBoardConfig = {
   /** `/api/links` — the collection; `${base}/:id` is one record. */
@@ -787,21 +788,9 @@ export function createLinkBoard(cfg: LinkBoardConfig) {
   }
 }
 
-/* ── the Links instance ───────────────────────────────────────────────────── */
-
-export const LINKS_BOARD = createLinkBoard({
-  base: '/api/links',
-  event: 'cgp.links',
-  lastAuthorKey: 'cgp.links.lastAuthor',
-})
-
-export const {
-  listLinks,
-  createLink,
-  saveLink,
-  deleteLink,
-  useLinks,
-  useLinkCount,
-  readLastAuthor,
-  rememberLastAuthor,
-} = LINKS_BOARD
+/* THE LINKS INSTANCE — `LINKS_BOARD` (`/api/links`, `cgp.links`) and its
+   bare re-exports (`listLinks`, `createLink`, `saveLink`, `deleteLink`,
+   `useLinks`, `useLinkCount`, `readLastAuthor`, `rememberLastAuthor`) — stood
+   here until 2026-11-21. `resources-section` in `archivedItems.ts`; on
+   `hub-advanced`. The three boards still share `cgp.links.lastAuthor` as
+   their `lastAuthorKey`, so the name a browser last signed with survives. */

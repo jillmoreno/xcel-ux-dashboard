@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event'
 import { readFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { DemoPanel, LinksPanel } from '@/components/prototype/LinksPanel'
+import { DemoPanel } from '@/components/prototype/LinksPanel'
 import type { StoredLink } from '@/data/linkStore'
 
 /**
@@ -150,54 +150,15 @@ describe('DemoPanel on the full site', () => {
     expect(writes[0].body as object).not.toHaveProperty('isPublic')
   })
 
-  it('opens the Add form prefilled from the promote-to-refinement hand-off, once, and reports it', async () => {
-    // The page reads `?add=1&url=…&title=…&note=…` and passes them down; the
-    // panel opens the form with them the moment the endpoint answers, then
-    // tells the page so the params come off the address. Nothing is saved.
-    const { writes } = mockEndpoint([])
-    const consumed = vi.fn()
-    render(
-      <DemoPanel
-        prefill={{
-          url: 'https://feat-streak--ux-demo-xceldashboard.netlify.app/dashboard-rebrand?demo=1',
-          title: 'Study streak card — feat/streak',
-          note: 'Home, under Current Progress.',
-          product: 'compass',
-        }}
-        onPrefillConsumed={consumed}
-      />,
-    )
-    const dialog = await screen.findByRole('dialog')
-    expect(within(dialog).getByLabelText('Address')).toHaveValue(
-      'https://feat-streak--ux-demo-xceldashboard.netlify.app/dashboard-rebrand?demo=1',
-    )
-    expect(within(dialog).getByLabelText('Title')).toHaveValue('Study streak card — feat/streak')
-    expect(within(dialog).getByLabelText(/^Note/)).toHaveValue('Home, under Current Progress.')
-    // A hand-off still carries a product (the skill reads it off the branch);
-    // the form has no product control since 2026-11-21, so it rides in
-    // harmlessly and nothing is drawn for it.
-    expect(within(dialog).queryByRole('radio', { name: 'Compass' })).toBeNull()
-    expect(consumed).toHaveBeenCalledTimes(1)
-    expect(writes).toHaveLength(0)
-  })
+  /* The `prefill` case — the Add form opened from the `promote-to-refinement`
+     hand-off (`?section=demo&add=1&url=…`) — stood here until 2026-11-21. The
+     hand-off is gone with the advanced Hub; `share-my-work` hands back a link
+     to paste. On `hub-advanced`. */
 })
 
-/* ── Links is unchanged by all this ───────────────────────────────────────── */
-
-describe('LinksPanel keeps its own shape', () => {
-  // Both boards say "Add link" — the Refinement noun is deliberately the
-  // same verb, since what a designer adds there IS a link. What tells them
-  // apart now is the Type field alone (the public toggle is gone from both).
-  it('has no public toggle and still has the Type field', async () => {
-    const user = userEvent.setup()
-    mockEndpoint([])
-    render(<LinksPanel />)
-    await user.click(await screen.findByRole('button', { name: 'Add the first link' }))
-    const dialog = await screen.findByRole('dialog')
-    expect(within(dialog).queryByLabelText('Show on public site')).not.toBeInTheDocument()
-    expect(within(dialog).getByLabelText(/^Type/)).toBeInTheDocument()
-  })
-})
+/* The "LinksPanel keeps its own shape" block stood here — Resources went with
+   the advanced Hub on 2026-11-21 (`resources-section`). The shared panel's
+   own cases are in `LinkBoard.test.tsx`. */
 
 describe('Refinement — the Updated stamp (2026-10-14)', () => {
   it('shows "Updated <date, time>" on a row the server has stamped, in the viewer\u2019s zone', async () => {
@@ -335,14 +296,8 @@ describe('Refinement — designer pills and the archive (2026-10-15)', () => {
     expect([...edit.options].map((o) => o.value)).toContain('Sam')
   })
 
-  it('Resources keeps the free-text field and no designer pills', async () => {
-    const user = userEvent.setup()
-    mockEndpoint([])
-    render(<LinksPanel />)
-    await user.click(await screen.findByRole('button', { name: 'Add the first link' }))
-    expect((await screen.findByLabelText(/Added by/)).tagName).toBe('INPUT')
-    expect(screen.queryByRole('group', { name: 'Filter by designer' })).toBeNull()
-  })
+  // ("Resources keeps the free-text field and no designer pills" stood here;
+  // Research and PRDs keep that shape, pinned in `LinkBoard.test.tsx`.)
 
   it('Archive takes the row off the board, the Archive page lists it with who and when, Unarchive puts it back', async () => {
     const user = userEvent.setup()
@@ -428,24 +383,15 @@ describe('Refinement — designer pills and the archive (2026-10-15)', () => {
     await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent('1'))
   })
 
-  it('the branch strip is gone from Refinement — it is the Design section now (2026-11-16)', () => {
-    // Source-level, the inverse of what this pinned until today: the strip
-    // (and `boardUrls`, which existed to keep an archived branch from being
-    // offered straight back) no longer lives in this panel. The list is
-    // `DesignPanel.tsx`, which offers nothing to add and so has nothing to
-    // hide — see `Branches.test.tsx`.
-    const panel = readFileSync(resolve(here, '../../src/components/prototype/LinksPanel.tsx'), 'utf8')
-    expect(panel).not.toMatch(/function BranchStrip/)
-    expect(panel).not.toMatch(/const boardUrls/)
-    expect(panel).toMatch(/THE AUTOMATIC BRANCH STRIP LIVED HERE/)
-  })
+  // (The "branch strip is gone" source check stood here. The strip became
+  // the derived Design section on 2026-11-16, and that went with the
+  // advanced Hub on 2026-11-21 — `derived-design-section`.)
 
-  it('the endpoint stamps archivedAt itself, keeps the one it is handed, on Design, Research and PRDs — not Links', () => {
+  it('the endpoint stamps archivedAt itself, keeps the one it is handed, on Design, Research and PRDs', () => {
     const board = readFileSync(resolve(here, '../../netlify/lib/linkBoard.ts'), 'utf8')
     expect(board).toMatch(/if \(cfg\.archivable\)/)
     expect(board).toMatch(/out\.archivedAt = archived \? \(ISO_STAMP\.test\(prior\) \? prior : new Date\(\)\.toISOString\(\)\) : ''/)
     const fn = (name: string) => readFileSync(resolve(here, `../../netlify/functions/${name}.ts`), 'utf8')
     for (const board of ['demos', 'research', 'prds']) expect(fn(board)).toMatch(/archivable: true/)
-    expect(fn('links')).toMatch(/archivable: false/)
   })
 })

@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event'
 import { readFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { DemoPanel, LinksPanel } from '@/components/prototype/LinksPanel'
+import { DemoPanel, PrdsPanel } from '@/components/prototype/LinksPanel'
 import { accentsByHost, hostKey, linkThumbKind } from '@/components/prototype/linkRowThumb'
 import { DEFAULT_PRODUCT, LINK_PRODUCTS, matchesProduct, type StoredLink } from '@/data/linkStore'
 
@@ -109,16 +109,18 @@ describe('every board draws the tile (2026-11-01)', () => {
     expect(tiles()).toHaveLength(0)
   })
 
-  it('draws one on Resources too', async () => {
-    // Until 2026-11-01 Resources drew none: a kind-glyph on a Figma link
-    // whose kind this code cannot read said nothing. It draws the row's tile
-    // now because every section's row does (Jillienne: "I want ALL of the
-    // pages to follow this similar UI"), and an unreadable destination falls
-    // to the `other` glyph rather than to an empty column.
-    mockEndpoint([row({ id: 'link-001', type: 'brief', url: 'https://figma.com/file/x' })])
-    render(<LinksPanel />)
+  it('draws one on PRDs too — the compact form', async () => {
+    // Until 2026-11-01 the typed boards drew none: a kind-glyph on a Figma
+    // link whose kind this code cannot read said nothing. Every section's row
+    // draws its tile now (Jillienne: "I want ALL of the pages to follow this
+    // similar UI"), and an unreadable destination falls to the `other` glyph
+    // rather than to an empty column. (Resources was the board this pinned
+    // until it went with the advanced Hub on 2026-11-21; PRDs keeps its
+    // shape, in the icon-sized form every board has since the simple Hub.)
+    mockEndpoint([row({ id: 'prd-001', type: 'brief', url: 'https://figma.com/file/x' })])
+    render(<PrdsPanel />)
     await screen.findByText('Xcel Home')
-    expect(tiles()).toHaveLength(1)
+    expect(icons()).toHaveLength(1)
   })
 })
 
@@ -187,14 +189,17 @@ describe('product tagging', () => {
     const fn = readFileSync(resolve(here, '../../netlify/lib/linkBoard.ts'), 'utf8')
     const declared = /const ALLOWED_PRODUCTS = \[([^\]]*)\]/.exec(fn)
     expect(declared, 'linkBoard.ts must declare ALLOWED_PRODUCTS').toBeTruthy()
-    // …and the Refinement endpoint actually turns the field on, while Links
-    // leaves it off — a Links record must not quietly acquire a product tag.
+    // …and the Design endpoint actually turns the field on, while Research
+    // and PRDs leave it off — their records must not quietly acquire a
+    // product tag.
     expect(readFileSync(resolve(here, '../../netlify/functions/demos.ts'), 'utf8')).toMatch(
       /products: true/,
     )
-    expect(readFileSync(resolve(here, '../../netlify/functions/links.ts'), 'utf8')).toMatch(
-      /products: false/,
-    )
+    for (const board of ['research', 'prds']) {
+      expect(readFileSync(resolve(here, `../../netlify/functions/${board}.ts`), 'utf8')).toMatch(
+        /products: false/,
+      )
+    }
     const serverside = [...declared![1].matchAll(/'([^']+)'/g)].map((m) => m[1])
     expect(serverside).toEqual(LINK_PRODUCTS.map((x) => x.id))
   })
@@ -231,12 +236,13 @@ describe('badges sit under the title', () => {
     expect(within(li).queryByText('by')).not.toBeInTheDocument()
   })
 
-  it('gives Resources the same tags, with the Type as its "what"', async () => {
-    // One row shape for every board (2026-11-01): who, when, what. On
-    // Resources "what" is the link's Type, and there is no product control
-    // (nor, since 2026-11-21, on Design).
-    mockEndpoint([row({ id: 'link-001', title: 'A brief', type: 'brief', addedBy: 'Jill', addedDate: '2026-09-10' })])
-    render(<LinksPanel />)
+  it('gives PRDs the same tags, with the Type as its "what"', async () => {
+    // One row shape for every board (2026-11-01): who, when, what. On a typed
+    // board "what" is the link's Type, and there is no product control (nor,
+    // since 2026-11-21, on Design). Resources was the board this pinned until
+    // it went with the advanced Hub; PRDs keeps the Type field.
+    mockEndpoint([row({ id: 'prd-001', title: 'A brief', type: 'brief', addedBy: 'Jill', addedDate: '2026-09-10' })])
+    render(<PrdsPanel />)
     const li = (await screen.findByText('A brief')).closest('li')!
     expect(within(li).getByText('Jill').textContent).toBe('Added by Jill')
     expect(within(li).getByText('Added 2026-09-10')).toBeInTheDocument()

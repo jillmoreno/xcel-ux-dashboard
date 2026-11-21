@@ -24,7 +24,7 @@ Nothing is kept in this branch "just in case"; a restore is a checkout.
 | 1 | Save the advanced Hub whole: branch + tag, pushed | done |
 | 2 | Six pages — Design (the Refinement board renamed) · Research · PRDs · Development · Done · Archive. Design rows match Research's compact shape; Cody off the roster; Hide → Archive, archived rows listed on the Archive page | done |
 | 3 | Two routines. **"Share my work"** (anyone): branch if needed, checks, commit, push, one link to paste on Design, zero questions. **"Ship"** (Jillienne): a branch, a name or a Design link; the flag review, grouped by component and calling out any with more than one flag; per-flag yes/no; per decided flag, retire it by the archive convention; build, tests, fast-forward merge, push. A quiet **Demo build** link at the rail foot opens the product on main | done |
-| 4 | Unwire the eight hidden sections by the archive convention, one Archive row each naming `hub-advanced` | |
+| 4 | Delete the eight hidden sections — code, functions, redirects, tests — one Archive row each naming `hub-advanced` and the re-wire. Jillienne: "that data is not used, we can just clear those pages completely and delete" | done |
 | 5 | Retire the stage-only routines; keep `share-branch`, `archive-a-feature`, `dev-handoff-notes` | |
 | 6 | One guide: Contributing as the intern's first day; the other two go with the advanced Hub | |
 | 7 | Rewrite CLAUDE.md and `docs/` for the six-page Hub; replace the smoke test's pinned list | |
@@ -70,3 +70,26 @@ Each step pauses for Jillienne to clarify and tweak before the next.
   `/dashboard-rebrand?demo=1&journey=full` in a new tab. Not a section.
 - No Prototypes page: a demo link a designer wants to share is something
   they stitch together and put on Design.
+
+## Step 4, what changed
+
+- Deleted outright rather than kept unreferenced — the advanced Hub is whole
+  on `hub-advanced`, so an orphan file in this branch would be a second copy.
+  Client: the Prototypes rows and the Main · Stage switch, `stageBuild.ts`,
+  the retired-link screen and its routes, the derived Design and Release
+  panels with `branchStore`, `branchName`, `designBranches`, `releaseQueue`,
+  the Resources board instance, the fourteen Explorations rows (the HTML
+  documents under `public/prototypes/` stay), QA Notes end to end including
+  the product-side capture and `public/qa/`, the To Do Board, Hub Resources
+  and `hubDocs.ts`, both `?add=1` prefills. Server: `qa-notes`, `qa-captures`,
+  `links`, `todo-board`, `branches` functions, `branchDeploys` and
+  `branchGit`, the stage-card plugin, `.hub/decided/`, their redirects.
+- `UxDashboardPage.tsx` went from 3,073 lines to 2,463. `UxSection` is the
+  six; `SECTIONS` is the rail; `?section=links` lands on Design.
+- Eight Archive rows at the head of `ARCHIVED_ITEMS`, each naming
+  `hub-advanced`, the files, the call sites, the function and redirects, and
+  what is deliberately not restored.
+- The Blobs stores behind the deleted functions were left untouched; nothing
+  can reach them now. Wiping them is a separate ask.
+- Still in the repo for step 5: the stage routines; for step 6–7: the
+  guides, CLAUDE.md, `docs/gateway.md`, README.md.

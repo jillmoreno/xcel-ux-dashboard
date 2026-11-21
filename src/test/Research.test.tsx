@@ -277,11 +277,12 @@ describe('Research projects', () => {
   })
 
   it('the other boards keep their type control', async () => {
-    // The taxonomy is not gone, only unasked here. Resources still has it.
+    // The taxonomy is not gone, only unasked here. PRDs still has it (and
+    // Resources did, until it went with the advanced Hub on 2026-11-21).
     const user = userEvent.setup()
-    const { LinksPanel } = await import('@/components/prototype/LinksPanel')
+    const { PrdsPanel } = await import('@/components/prototype/LinksPanel')
     mockEndpoint([row({ title: 'A resource' })])
-    render(<LinksPanel />)
+    render(<PrdsPanel />)
     await screen.findByText('A resource')
     await user.click(screen.getByRole('button', { name: /Add link/i }))
     const opts = [...screen.getByLabelText(/Type/).querySelectorAll('option')].map((o) => o.textContent)
@@ -388,14 +389,10 @@ describe('the Research row is compact', () => {
     expect((tag as HTMLElement).style.justifySelf).toBe('end')
   })
 
-  it('leaves the other boards alone', async () => {
-    // compactRows is Research's flag. Refinement rows keep the full tile and
-    // the full tag column — nothing about those boards changed.
-    const { LinksPanel } = await import('@/components/prototype/LinksPanel')
-    mockEndpoint([row({ title: 'A resource' })])
-    render(<LinksPanel />)
-    await screen.findByText('A resource')
-    const tile = document.querySelector('.cre-uxlinks-row a span[aria-hidden]') as HTMLElement
-    expect(tile.style.width).toBe('160px')
-  })
+  /* "leaves the other boards alone" stood here — it rendered Resources, the
+     one board still on the 160px tile, to show `compactRows` was Research's
+     flag. Every surviving board is compact since the simple Hub (2026-11-21)
+     and Resources went with the advanced Hub, so there is no full-tile board
+     left to assert on. The flag is still a flag; `LinkRowThumb.test.tsx`
+     pins the compact form on Design and PRDs. */
 })

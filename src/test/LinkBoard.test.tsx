@@ -1,5 +1,14 @@
 /**
- * Links — the section that is authored on the page, not in the repo.
+ * The shared link board — `LinkBoardPanel`, the panel behind Design, Research
+ * and PRDs — authored on the page, not in the repo.
+ *
+ * ⚠ THIS WAS `Links.test.tsx` until 2026-11-21: Resources (section id
+ * `links`) went with the advanced Hub (`resources-section` in
+ * `archivedItems.ts`), and these cases are the ones that were really about the
+ * SHARED panel rather than that board. They render `ResearchPanel` — the
+ * board whose shape is closest to what Resources was (free-text Added by, no
+ * designer pills) — and `PrdsPanel` where the case is about the Type
+ * taxonomy, which Research switched off on 2026-11-20 and PRDs still asks.
  *
  * Three groups of assertions, and the FIRST is the one that matters most:
  *
@@ -10,17 +19,9 @@
  *    not quietly become a blocklist. Following `smoke-desktop.mjs`, the check
  *    parses the real declared value out of the file rather than a copy of it
  *    that can drift.
- * 2. The section is UNGATED, beside Demo. That is an editorial decision about
- *    what a passwordless viewer can reach, so it should fail a test if it
- *    changes rather than change by accident — the same reasoning as the
- *    "Demo holds exactly the rows meant to be ungated" test.
+ * 2. The draft check and the display helpers in `linkStore.ts`.
  * 3. The panel hides its composer when there is no endpoint, rather than
  *    offering an Add button that fails on click.
- *
- * 2026-11-21: the Resources section is off the simple Hub's rail, so the
- * "Links section on the gateway" block — its nav position, its badge, the
- * `?product=` prefill — went with it; those tests live on `hub-advanced`.
- * The panel itself is still the shared board the other three use.
  */
 
 import { readFileSync } from 'node:fs'
@@ -28,16 +29,16 @@ import path from 'node:path'
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { LinksPanel } from '@/components/prototype/LinksPanel'
+import { PrdsPanel, ResearchPanel } from '@/components/prototype/LinksPanel'
 import {
   LINK_TYPES,
   draftProblems,
-  listLinks,
   hostOf,
   safeHref,
   toMarkdown,
   type StoredLink,
 } from '@/data/linkStore'
+import { listPrds } from '@/data/prdStore'
 
 /* ── helpers ──────────────────────────────────────────────────────────────── */
 
@@ -66,7 +67,8 @@ async function openComposer(user: ReturnType<typeof userEvent.setup>, name = /Ad
   await waitFor(() => expect(screen.getByLabelText('Address')).toBeInTheDocument())
 }
 
-/** A fetch that answers the collection endpoint and records writes. */
+/** A fetch that answers the collection endpoint — whichever board asks — and
+ *  records writes. */
 function mockEndpoint(links: StoredLink[]) {
   const writes: { method: string; url: string; body: unknown }[] = []
   const fetchMock = vi.fn(async (input: unknown, init?: RequestInit) => {
@@ -146,7 +148,7 @@ describe('a stored URL cannot become script', () => {
     // must still not link — and it must still be VISIBLE, so it can be found
     // and fixed rather than silently disappearing from the list.
     mockEndpoint([link({ url: 'javascript:alert(1)', title: 'Sketchy' })])
-    render(<LinksPanel />)
+    render(<ResearchPanel />)
 
     await waitFor(() => expect(screen.getByText('Sketchy')).toBeInTheDocument())
     expect(screen.queryByRole('link', { name: /Sketchy/ })).not.toBeInTheDocument()
@@ -159,9 +161,9 @@ describe('a stored URL cannot become script', () => {
     // naive "does it mention javascript" check while being one novel scheme
     // away from wrong, so what is asserted is the SHAPE: an allow-list naming
     // exactly the two protocols `safeHref` accepts.
-    // The handler is shared with the Demo board since 2026-09-18, so the
-    // declaration lives in `netlify/lib/linkBoard.ts`; `links.ts` is a
-    // config. Asserting on the shared file is what guards BOTH boards.
+    // The handler is shared by every board since 2026-09-18, so the
+    // declaration lives in `netlify/lib/linkBoard.ts`; each board's function
+    // is a config. Asserting on the shared file is what guards all of them.
     const src = readFileSync(path.resolve(__dirname, '../../netlify/lib/linkBoard.ts'), 'utf8')
     const declared = /const ALLOWED_PROTOCOLS = \[([^\]]*)\]/.exec(src)
     expect(declared, 'linkBoard.ts must declare ALLOWED_PROTOCOLS').toBeTruthy()
@@ -213,13 +215,13 @@ describe('display helpers', () => {
 
 /* ── 3. the panel ─────────────────────────────────────────────────────────── */
 
-describe('LinksPanel', () => {
+describe('LinkBoardPanel', () => {
   it('lists stored links, and each one opens in a new tab', async () => {
     mockEndpoint([
       link({ id: 'link-001', title: 'Wireframe Brief', url: 'https://a.example/brief' }),
       link({ id: 'link-002', title: 'Figma — Alerts', url: 'https://b.example/file', note: 'Node 4:287' }),
     ])
-    render(<LinksPanel />)
+    render(<ResearchPanel />)
 
     const first = await screen.findByRole('link', { name: /Wireframe Brief/ })
     expect(first).toHaveAttribute('href', 'https://a.example/brief')
@@ -233,7 +235,7 @@ describe('LinksPanel', () => {
   it('posts a new link to the endpoint', async () => {
     const user = userEvent.setup()
     const { writes } = mockEndpoint([])
-    render(<LinksPanel />)
+    render(<ResearchPanel />)
 
     await openComposer(user)
     await user.type(screen.getByLabelText('Address'), 'https://xcelsolutions.com/resources')
@@ -243,7 +245,7 @@ describe('LinksPanel', () => {
 
     await waitFor(() => expect(writes).toHaveLength(1))
     expect(writes[0].method).toBe('POST')
-    expect(writes[0].url).toBe('/api/links')
+    expect(writes[0].url).toBe('/api/research')
     expect(writes[0].body).toMatchObject({
       title: 'Resource Center',
       url: 'https://xcelsolutions.com/resources',
@@ -254,7 +256,7 @@ describe('LinksPanel', () => {
   it('reports a bad address WITHOUT a round trip', async () => {
     const user = userEvent.setup()
     const { writes } = mockEndpoint([])
-    render(<LinksPanel />)
+    render(<ResearchPanel />)
 
     await openComposer(user)
     await user.type(screen.getByLabelText('Address'), 'example.com')
@@ -273,7 +275,7 @@ describe('LinksPanel', () => {
     // asserts against. `available` and `loading` are separate flags so this
     // message is not claimed for the tick before the fetch settles.
     mockNoEndpoint()
-    render(<LinksPanel />)
+    render(<ResearchPanel />)
 
     expect(await screen.findByText(/authoring endpoint is not reachable/)).toBeInTheDocument()
     expect(screen.queryByLabelText('Address')).not.toBeInTheDocument()
@@ -285,7 +287,7 @@ describe('LinksPanel', () => {
     // misrouted request looks like a success. Parsing it throws, which reads as
     // a broken page instead of a missing backend.
     mockSpaFallback()
-    render(<LinksPanel />)
+    render(<ResearchPanel />)
 
     expect(await screen.findByText(/authoring endpoint is not reachable/)).toBeInTheDocument()
   })
@@ -296,7 +298,7 @@ describe('LinksPanel', () => {
     // link is the occasional act here; reading the list is the constant one.
     const user = userEvent.setup()
     mockEndpoint([link()])
-    render(<LinksPanel />)
+    render(<ResearchPanel />)
 
     await waitFor(() => expect(screen.getByText('1 link')).toBeInTheDocument())
     expect(screen.queryByLabelText('Address')).not.toBeInTheDocument()
@@ -322,7 +324,7 @@ describe('LinksPanel', () => {
      */
     const user = userEvent.setup()
     mockEndpoint([])
-    render(<LinksPanel />)
+    render(<ResearchPanel />)
 
     await openComposer(user)
     await user.type(screen.getByLabelText('Address'), 'https://example.com/a/long/path')
@@ -334,7 +336,7 @@ describe('LinksPanel', () => {
       link({ id: 'link-002', title: 'With author', addedBy: 'Jill', addedDate: '2026-09-10' }),
       link({ id: 'link-001', title: 'Without author', addedBy: '', addedDate: '2026-09-09' }),
     ])
-    render(<LinksPanel />)
+    render(<ResearchPanel />)
 
     // THE ROW'S TAGS (2026-11-01) — who added it and when, as the outlined
     // tags every section's row wears, rather than a meta line under the title.
@@ -354,7 +356,7 @@ describe('LinksPanel', () => {
       link({ id: 'link-001', title: 'Someone elses', addedBy: 'Dana' }),
     ])
     localStorage.setItem('cgp.links.lastAuthor', 'Jill')
-    render(<LinksPanel />)
+    render(<ResearchPanel />)
 
     // Adding: this browser's last author, so a name is typed once not per link.
     await openComposer(user, /^Add link$/)
@@ -384,7 +386,7 @@ describe('LinksPanel', () => {
       link({ id: 'link-003', title: 'Newest — same day', addedDate: '2026-09-10' }),
       link({ id: 'link-002', title: 'Middle — same day', addedDate: '2026-09-10' }),
     ])
-    render(<LinksPanel />)
+    render(<ResearchPanel />)
 
     await waitFor(() => expect(screen.getByText('3 links')).toBeInTheDocument())
     // Strip only the visually-hidden affordance text, not every em dash — the
@@ -403,7 +405,7 @@ describe('LinksPanel', () => {
       link({ id: 'link-002', title: 'Added later, never edited', addedDate: '2026-10-10', updatedAt: '' }),
       link({ id: 'link-003', title: 'Added later, saved once', addedDate: '2026-10-12', updatedAt: '2026-10-12T09:00:00Z' }),
     ])
-    render(<LinksPanel />)
+    render(<ResearchPanel />)
     await waitFor(() => expect(screen.getByText('3 links')).toBeInTheDocument())
     const titles = [...document.querySelectorAll('.cre-uxlinks-title')]
       .map((a) => a.textContent?.replace(/\s*— opens in a new tab$/, '').trim())
@@ -423,7 +425,7 @@ describe('LinksPanel', () => {
      * A test that merely asserted the class was present would have passed.
      */
     mockEndpoint([link()])
-    const { container } = render(<LinksPanel />)
+    const { container } = render(<ResearchPanel />)
     await waitFor(() => expect(screen.getByText('1 link')).toBeInTheDocument())
 
     expect(container.querySelectorAll('.cre-uxlinks-row')).toHaveLength(1)
@@ -476,7 +478,7 @@ describe('LinksPanel', () => {
       link({ id: 'link-002', title: 'The Figma', type: 'design' }),
       link({ id: 'link-001', title: 'Untyped thing', type: '' }),
     ])
-    const { container } = render(<LinksPanel />)
+    const { container } = render(<PrdsPanel />)
 
     await waitFor(() => expect(screen.getByText('3 links')).toBeInTheDocument())
     // The chips, scoped to the list — the labels also appear as filter pills,
@@ -517,13 +519,13 @@ describe('LinksPanel', () => {
     // A single pill filters nothing, and "All" beside one option is chrome —
     // the same rule the project sections' status pills follow.
     mockEndpoint([link({ id: 'link-001', type: 'brief' }), link({ id: 'link-002', type: 'brief' })])
-    render(<LinksPanel />)
+    render(<PrdsPanel />)
     await waitFor(() => expect(screen.getByText('2 links')).toBeInTheDocument())
     expect(screen.queryByRole('group', { name: 'Filter by type' })).not.toBeInTheDocument()
 
     vi.unstubAllGlobals()
     mockEndpoint([link({ id: 'link-001', type: 'brief' }), link({ id: 'link-002', type: 'design' })])
-    render(<LinksPanel />)
+    render(<PrdsPanel />)
     await waitFor(() =>
       expect(screen.getAllByRole('group', { name: 'Filter by type' })[0]).toBeInTheDocument(),
     )
@@ -543,10 +545,10 @@ describe('LinksPanel', () => {
     // queryByText('wat') passes whether or not the degrade works, which is
     // how the first version of this test passed against a broken `normalise`.
     // The layer where the degrade happens is the layer to test.
-    const index = await listLinks()
+    const index = await listPrds()
     expect(index.links.map((l) => l.type)).toEqual(['', ''])
 
-    render(<LinksPanel />)
+    render(<PrdsPanel />)
     await waitFor(() => expect(screen.getByText('2 links')).toBeInTheDocument())
     // Both rows still render — an unrecognised value must not drop the link.
     expect(screen.getByText('Legacy row')).toBeInTheDocument()
@@ -563,10 +565,13 @@ describe('LinksPanel', () => {
     const fn = readFileSync(path.resolve(__dirname, '../../netlify/lib/linkBoard.ts'), 'utf8')
     const declared = /const ALLOWED_TYPES = \[([^\]]*)\]/.exec(fn)
     expect(declared, 'linkBoard.ts must declare ALLOWED_TYPES').toBeTruthy()
-    // …and links.ts actually passes it, so the config cannot quietly drop the
-    // taxonomy and let any string through.
-    const cfg = readFileSync(path.resolve(__dirname, '../../netlify/functions/links.ts'), 'utf8')
-    expect(cfg).toMatch(/types: ALLOWED_TYPES/)
+    // …and the boards with a taxonomy actually pass it, so a config cannot
+    // quietly drop it and let any string through. (Links' own function went
+    // with the advanced Hub, 2026-11-21; Research and PRDs carry its shape.)
+    for (const board of ['research', 'prds']) {
+      const cfg = readFileSync(path.resolve(__dirname, `../../netlify/functions/${board}.ts`), 'utf8')
+      expect(cfg, `${board}.ts must pass ALLOWED_TYPES`).toMatch(/types: ALLOWED_TYPES/)
+    }
     const serverside = [...declared![1].matchAll(/'([^']+)'/g)].map((m) => m[1])
     expect(serverside).toEqual(LINK_TYPES.map((t) => t.id))
   })
@@ -579,7 +584,7 @@ describe('LinksPanel', () => {
        toolbar the moment someone added a sixth row. A control that comes and
        goes is harder to learn than one that is sometimes unnecessary. */
     mockEndpoint([link()])
-    render(<LinksPanel />)
+    render(<ResearchPanel />)
     await waitFor(() => expect(screen.getByText('1 link')).toBeInTheDocument())
     expect(screen.getByLabelText('Search links')).toBeInTheDocument()
   })
@@ -588,7 +593,7 @@ describe('LinksPanel', () => {
     // 2026-11-20. Add led the toolbar, which put the page's one WRITE action
     // where the eye starts, before anyone had read the board.
     mockEndpoint([link()])
-    render(<LinksPanel />)
+    render(<ResearchPanel />)
     const add = await screen.findByRole('button', { name: /Add link/i })
     expect(add.style.marginLeft).toBe('auto')
     const search = screen.getByLabelText('Search links')
@@ -608,7 +613,7 @@ describe('LinksPanel', () => {
       value: { writeText: async (t: string) => void writes.push(t) },
     })
     mockEndpoint([link({ title: 'A study' })])
-    render(<LinksPanel />)
+    render(<ResearchPanel />)
     await screen.findByText('A study')
 
     await user.click(screen.getByRole('button', { name: /Actions for A study/i }))
@@ -628,21 +633,11 @@ describe('LinksPanel', () => {
        still tested above: it is the only way out of a store nothing backs up,
        and deleting the button is not a reason to lose the function. */
     mockEndpoint([link()])
-    render(<LinksPanel />)
+    render(<ResearchPanel />)
     await waitFor(() => expect(screen.getByText('1 link')).toBeInTheDocument())
     expect(screen.queryByRole('button', { name: /Copy as markdown/i })).not.toBeInTheDocument()
   })
 })
 
-/* ── 2. the section is ungated ────────────────────────────────────────────── */
-
-describe('Resources — no Updated stamp on the row (2026-10-14)', () => {
-  it('keeps the meta line as it was even when the record carries updatedAt', async () => {
-    // The server stamps every board's records; only Refinement SHOWS it. A
-    // brief on Resources does not move, and `showUpdated` is off here.
-    mockEndpoint([link({ updatedAt: '2026-10-14T15:51:11Z' })])
-    render(<LinksPanel />)
-    await screen.findByText('FinServ Learner Brief')
-    expect(screen.queryByText(/^Updated /)).toBeNull()
-  })
-})
+/* "Resources — no Updated stamp on the row" stood here: a Resources-only
+   fact (every surviving board shows the stamp), gone with the section. */

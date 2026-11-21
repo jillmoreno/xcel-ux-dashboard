@@ -136,13 +136,8 @@ describe('on the way out — the rows already in Blobs', () => {
 })
 
 describe('the sources that handed the dead host out', () => {
-  it('the branch strip falls back to the Hub', () => {
-    const src = readFileSync(resolve(root, 'netlify/functions/branches.ts'), 'utf8')
-    const declared = /const DEFAULT_SITE_HOST = '([^']+)'/.exec(src)?.[1]
-    expect(declared, 'branches.ts must declare DEFAULT_SITE_HOST').toBeTruthy()
-    expect(declared).toBe(LIVE)
-  })
-
+  // The branch strip's fallback (`netlify/functions/branches.ts`) was the
+  // other one; it went with the advanced Hub on 2026-11-21.
   it('the prototype bar’s hub item opens the Hub', () => {
     const src = readFileSync(resolve(root, 'src/components/layout/PrototypeBar.tsx'), 'utf8')
     const declared = /const HUB_URL = '([^']+)'/.exec(src)?.[1]

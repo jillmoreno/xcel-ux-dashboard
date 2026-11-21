@@ -4,7 +4,7 @@
  * Netlify Blobs are PER SITE. This repo deploys to TWO Netlify projects as of
  * 2026-09-18 (see `src/data/gatewayMode.ts`): the PUBLIC one stakeholders get,
  * and the FULL one that shows everything. Left to the default, each would get
- * its own empty `links`, `qa-notes` and `qa-captures` stores — a link added on
+ * its own empty `demos`, `research` and `prds` stores — a link added on
  * one site invisible on the other, and every QA finding stranded on whichever
  * site it was typed into.
  *

@@ -6,8 +6,10 @@
  * have, `isPublic`, and minus one it does (`type`). Research (2026-10-07) is
  * the third, and it is Links' shape exactly, under a different store. Two
  * hand-copied functions is how a validation rule gets fixed in one and not the
- * other, so all three are this factory with a config; `netlify/functions/
- * links.ts`, `demos.ts` and `research.ts` are each a few lines.
+ * other, so every board is this factory with a config; `netlify/functions/
+ * demos.ts` (the Design board), `research.ts` and `prds.ts` are each a few
+ * lines. Links' own function went with the advanced Hub (branch
+ * `hub-advanced`, 2026-11-21); the board shape it started is unchanged.
  *
  * SECURITY — the one thing this file exists to hold. Every stored `url` is
  * rendered as an `<a href>` by the client, and `javascript:` in an href
@@ -152,26 +154,28 @@ const MAX_TYPE_OTHER = 40
 const ISO_STAMP = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?Z$/
 
 export type BoardConfig = {
-  /** Netlify Blobs store name — `links`, `demos`. */
+  /** Netlify Blobs store name — `demos`, `research`, `prds`. */
   storeName: string
   /** Key prefix: `link` → `link-007`. Same three-digit shape as the QA keys. */
   idPrefix: string
-  /** The path segment the id follows: `links` → `/api/links/:id`. */
+  /** The path segment the id follows: `demos` → `/api/demos/:id`. */
   segment: string
   /** The allowed `type` values, or null when the board has no type field
    *  (the field is then dropped from the stored record). */
   types: readonly string[] | null
   /** Whether records carry `product`. Demo only: dropped on the way in
-   *  elsewhere, so a Links record cannot quietly acquire one. */
+   *  elsewhere, so a Research or PRD record cannot quietly acquire one. */
   products: boolean
   /** Whether records can be ARCHIVED — `archivedAt` / `archivedBy`, hidden
-   *  from the board rather than deleted (2026-10-15). Demo only, same rule
-   *  as `products`: dropped on the way in everywhere else. */
+   *  from the board rather than deleted (2026-10-15). Demo only until
+   *  2026-11-21; since the simple Hub every board — Design, Research, PRDs —
+   *  sets it, and the Archive page lists what each hid. Same rule as
+   *  `products` on any board that leaves it off: dropped on the way in. */
   archivable: boolean
   /** Whether records carry `feature` and `supersedes` — the Feature Refinement
-   *  grouping (2026-10-15). Demo only, same rule as `products`: dropped on the
-   *  way in everywhere else, so a Links record cannot acquire a grouping the
-   *  Links board has no control for and no way to show. */
+   *  grouping (2026-10-15), on Design and Research. Same rule as `products`
+   *  where it is off (PRDs): dropped on the way in, so a record cannot acquire
+   *  a grouping its board has no control for and no way to show. */
   features: boolean
 }
 
@@ -282,8 +286,8 @@ export function validateRecord(
   // archived, carried through later saves while it stays archived (the client
   // echoes `archivedAt` back when editing an archived row), and cleared the
   // moment it is unarchived. `archivedBy` is a typed label, like `addedBy`.
-  // Boards without the control drop all of it, so a Links record cannot
-  // quietly acquire an archive state it has no way to show or undo.
+  // A board without the control drops all of it, so a record cannot quietly
+  // acquire an archive state its board has no way to show or undo.
   if (cfg.archivable) {
     const archived = b.archived === true
     const prior = str(b.archivedAt) ?? ''

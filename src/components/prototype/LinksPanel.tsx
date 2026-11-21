@@ -1,8 +1,12 @@
 /**
- * Links — the panel.
+ * The link boards — the panel.
  *
- * The section's one requirement is that a link can be added without a code
- * change. Nothing here is authored in the repo.
+ * One `LinkBoardPanel`, three instances: Design (`DemoPanel`), Research and
+ * PRDs. It was Links' panel first (2026-09-10) and Resources' until the
+ * simple Hub took that section off the rail (2026-11-21, `resources-section`
+ * in `archivedItems.ts`); the shape is unchanged. The one requirement is that
+ * a link can be added without a code change. Nothing here is authored in the
+ * repo.
  *
  * ── The form is behind a CTA, not on the page ────────────────────────────────
  * It started as an always-visible composer above the list, and that was the
@@ -36,7 +40,6 @@
 
 import {
   useCallback,
-  useEffect,
   useLayoutEffect,
   useMemo,
   useRef,
@@ -67,7 +70,6 @@ import { Modal } from '@/components/ui/Modal'
 import {
   DEFAULT_PRODUCT,
   DESIGNERS,
-  LINKS_BOARD,
   MAX_FEATURE,
   MAX_NOTE,
   MAX_TYPE_OTHER,
@@ -104,10 +106,10 @@ import { accentsByHost, hostKey, linkThumbKind } from './linkRowThumb'
 import { formatUpdated } from './formatUpdated'
 
 /**
- * What one board CALLS things and SHOWS. `LinksPanel` and `DemoPanel` below
- * are the two instances; the panel itself is `LinkBoardPanel`, shared since
- * 2026-09-18 so the two authoring surfaces cannot drift — the same reason the
- * Jump Back In card's rows became the Study Plan's real `TaskRow`.
+ * What one board CALLS things and SHOWS. `DemoPanel`, `ResearchPanel` and
+ * `PrdsPanel` below are the instances; the panel itself is `LinkBoardPanel`,
+ * shared since 2026-09-18 so the authoring surfaces cannot drift — the same
+ * reason the Jump Back In card's rows became the Study Plan's real `TaskRow`.
  */
 export type LinkBoardPresentation = {
   board: LinkBoard
@@ -199,37 +201,11 @@ export type LinkBoardPresentation = {
   emptyHint: string
   /** The sentence under the form's fields. */
   saveHint: string
-  /**
-   * Fields to open the Add form WITH, once, as soon as the panel can author.
-   * This is the hand-off the `promote-to-refinement` skill uses: it derives
-   * the branch URL and the title in Claude Code and opens the full site at
-   * `/?section=demo&add=1&url=…&title=…&note=…`; the PAGE reads those params
-   * (it owns the router state) and passes them here. Nothing is saved without
-   * the designer's click — the form's own validation and the endpoint's both
-   * still run. Ignored whenever the panel cannot author (public build,
-   * endpoint down), so a prefill link opened on the public site does nothing.
-   */
-  prefill?: LinkPrefill | null
-  /** Called once the prefill has been consumed, so the owner can take the
-   *  params off the address and a reload does not reopen the form. */
-  onPrefillConsumed?: () => void
-}
-
-/** What `promote-to-refinement` hands the page. `product` arrived 2026-10-14:
- *  the skill reads it off the branch (Compass files → `compass`), so a row
- *  for Anjani's work opens already tagged and the Compass filter — and the
- *  Compass Prototypes row it will one day be promoted into — can find it.
- *  Absent or unreadable means the form's own default, exactly as before. */
-export type LinkPrefill = {
-  url: string
-  title: string
-  note: string
-  product?: LinkProduct
-  /** The feature this chunk is part of — `promote-to-refinement` passes the
-   *  one the branch's previous chunk used, so a designer cutting the next
-   *  branch lands in the same group without retyping it (2026-10-15).
-   *  Absent leaves the field empty and the row ungrouped, as before. */
-  feature?: string
+  /* `prefill` / `onPrefillConsumed` STOOD HERE (2026-09-21 → 2026-11-21):
+     the fields `promote-to-refinement` opened the Add form with, from
+     `/?section=demo&add=1&url=…`. The simple Hub's `share-my-work` hands back
+     a link to paste instead; nothing builds that address any more. On
+     `hub-advanced`. */
 }
 
 /** One glyph per `LinkThumbKind`. Kept HERE rather than in `linkRowThumb.ts`
@@ -532,11 +508,10 @@ const EMPTY_DRAFT: LinkDraft = {
  *  validate — the same shape `QaNotesPanel` uses for its editor. */
 type Editing = null | 'new' | StoredLink
 
-/* THE AUTOMATIC BRANCH STRIP LIVED HERE from 2026-09-21 to 2026-11-16. It
-   is the Design section now (`DesignPanel.tsx`): the same branch list, grouped
-   by feature and saying where each branch is, as a section of its own rather
-   than a strip under a board it kept being confused with. Its "Add" is the
-   row's "Discuss in Refinement", which opens this panel's form prefilled. */
+/* THE AUTOMATIC BRANCH STRIP LIVED HERE from 2026-09-21 to 2026-11-16, and
+   became the derived Design section (`DesignPanel.tsx`) until 2026-11-21,
+   when that went with the advanced Hub too (`derived-design-section` in
+   `archivedItems.ts`). */
 
 /* ── a feature group ──────────────────────────────────────────────────────── */
 
@@ -1195,49 +1170,6 @@ export function LinkBoardPanel({
     setEditing('new')
   }
 
-  /**
-   * The prefill — see `LinkBoardPresentation.prefill`. Waits until the
-   * endpoint has answered (before that `canAuthor` is false for the wrong
-   * reason), fires once, and tells the owner so the params come off the
-   * address. The owner is the page, which holds the router state: stripping
-   * them here with `history.replaceState` would leave the router believing
-   * they were still there, and the next section change would write them back.
-   */
-  const [prefillConsumed, setPrefillConsumed] = useState(false)
-  const { prefill, onPrefillConsumed } = p
-  useEffect(() => {
-    if (prefillConsumed || !prefill || !canAuthor) return
-    // Intentional, the `FeatureFlagPanel` precedent: the draft is SEEDED once
-    // an external fact arrives (the endpoint answered) and the designer then
-    // edits it, so it cannot be derived during render.
-    /* eslint-disable react-hooks/set-state-in-effect */
-    setPrefillConsumed(true)
-    setDraft({
-      ...EMPTY_DRAFT,
-      addedBy: readLastAuthor(),
-      url: prefill.url,
-      title: prefill.title,
-      note: prefill.note,
-      product: prefill.product ?? DEFAULT_PRODUCT,
-      // The feature the branch's previous chunk used, when the skill could work
-      // one out — so cutting the next branch lands in the same group without
-      // retyping it. "Replaces" is derived from it the moment the form opens,
-      // exactly as it would be if it had been typed.
-      feature: prefill.feature ?? '',
-      supersedes: prefill.feature
-        ? (latestChunkFor(index.links, prefill.feature, readLastAuthor())?.id ?? '')
-        : '',
-    })
-    setErrors([])
-    setEditing('new')
-    /* eslint-enable react-hooks/set-state-in-effect */
-    onPrefillConsumed?.()
-    // `index.links` is in here because the prefill's feature derives its
-    // "Replaces" default from the board. Re-running is harmless and never
-    // reopens the form: `prefillConsumed` is set on the first pass and is the
-    // effect's own guard.
-  }, [prefillConsumed, prefill, canAuthor, readLastAuthor, onPrefillConsumed, index.links])
-
   const beginEdit = (link: StoredLink) => {
     // The record's OWN author, not this browser's last one — editing someone
     // else's link must not quietly reassign it.
@@ -1770,26 +1702,11 @@ export function LinkBoardPanel({
   )
 }
 
-/* ── the two instances ────────────────────────────────────────────────────── */
+/* ── the three instances ──────────────────────────────────────────────────── */
 
-const LINKS_PRESENTATION: LinkBoardPresentation = {
-  board: LINKS_BOARD,
-  noun: 'link',
-  nounPlural: 'links',
-  showType: true,
-  showThumb: false,
-  showProduct: false,
-  showBadges: false,
-  emptyHint: 'Nothing here yet. Add a link.',
-  saveHint:
-    'Saved to the shared store — everyone who opens this site sees it, and it survives a cleared cache. The date is stamped for you.',
-}
-
-/** Links: authorable on BOTH sites, an editorial decision recorded in CLAUDE.md
- *  ("it is the place you send someone"). */
-export function LinksPanel() {
-  return <LinkBoardPanel p={LINKS_PRESENTATION} />
-}
+/* `LINKS_PRESENTATION` / `LinksPanel` — the Resources board, with the Type
+   taxonomy and nothing else — stood here until 2026-11-21. `resources-section`
+   in `archivedItems.ts`; on `hub-advanced`. */
 
 /**
  * Research (2026-10-07): the evidence behind the decisions — studies, findings,
@@ -1882,15 +1799,7 @@ export function PrdsPanel({ archiveView }: { archiveView?: { title: string } } =
  * rows someone has flipped public. That asymmetry IS the review gate — see
  * `demoStore.ts`.
  */
-export function DemoPanel({
-  prefill,
-  onPrefillConsumed,
-  archiveView,
-}: {
-  prefill?: LinkPrefill | null
-  onPrefillConsumed?: () => void
-  archiveView?: { title: string }
-} = {}) {
+export function DemoPanel({ archiveView }: { archiveView?: { title: string } } = {}) {
   /* THE DESIGN BOARD (2026-11-21), labelled Design on the Hub and still
      section id `demo` so the rows already on it and every `?section=demo`
      link survive. Research's shape: a title, a link, a note, who added it and
@@ -1917,11 +1826,6 @@ export function DemoPanel({
       'Nothing here yet. Paste a link to your work — a branch build, a Figma file, a document.',
     saveHint:
       'Saved to the shared store — the team sees it on the full site right away. The date is stamped for you.',
-    // From `/?section=demo&add=1&url=…&title=…&note=…` — what
-    // `promote-to-refinement` opens. Refinement only: Resources is authored
-    // by hand, so `LinksPanel` passes nothing.
-    prefill,
-    onPrefillConsumed,
   }
   return <LinkBoardPanel p={p} archiveView={archiveView} />
 }

@@ -7,11 +7,9 @@ import { ThemeProvider } from '@/context/ThemeContext'
 import { existsSync, readFileSync, statSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { PROTOTYPE_FEATURES, PROTOTYPE_SCOPES, componentPreviewUrl } from '@/data/prototypeFeatures'
+import { PROTOTYPE_FEATURES, componentPreviewUrl } from '@/data/prototypeFeatures'
 import { ARCHIVED_ITEMS } from '@/data/archivedItems'
-import { HUB_DOCS } from '@/data/hubDocs'
 import { HANDOFF_IDS } from '@/data/handoffFeatures'
-import { HUB_HOST, STAGE_BRANCH, STAGE_ORIGIN, prototypeHref } from '@/data/stageBuild'
 
 /**
  * Smoke test for the XCEL dashboard.
@@ -29,9 +27,11 @@ import { HUB_HOST, STAGE_BRANCH, STAGE_ORIGIN, prototypeHref } from '@/data/stag
  *
  * 2026-11-21: the simple Hub took Prototypes (and its Main · Stage switch),
  * the derived Design list, Release, Resources, Explorations, QA Notes, the To
- * Do Board and Hub Resources off the rail, and the tests that rendered them
- * went with them — they live on the `hub-advanced` branch. What stays here is
- * the six-section rail and the pure data checks over `PROTOTYPE_FEATURES`.
+ * Do Board and Hub Resources off the rail — and, the same day, their code out
+ * of the repo (one `archivedItems.ts` row each; the whole advanced Hub is on
+ * the `hub-advanced` branch). The tests that rendered them went with them.
+ * What stays here is the six-section rail and the pure data checks over
+ * `PROTOTYPE_FEATURES`, which holds the dev handoffs alone now.
  */
 
 function renderDashboard(initialPath = '/') {
@@ -93,18 +93,10 @@ describe('XCEL dashboard — mount and nav', () => {
     expect(positions).toEqual([...positions].sort((a, b) => a - b))
   })
 
-  it('every Hub Resources row points at a document this repo actually ships', () => {
-    // The section is off the rail (2026-11-21), but `HUB_DOCS` is still code
-    // in the repo and the guides are still served, so this stays.
-    // The one failure this list can have that nothing else would catch: a
-    // path typed by hand that no longer exists, which renders as a perfectly
-    // ordinary row and 404s on click.
-    for (const doc of HUB_DOCS) {
-      const pub = resolve(dirname(fileURLToPath(import.meta.url)), '../../public')
-      expect(existsSync(resolve(pub, doc.href.replace(/^\//, ''), 'index.html'))).toBe(true)
-      if (doc.pdf) expect(existsSync(resolve(pub, doc.pdf.replace(/^\//, '')))).toBe(true)
-    }
-  })
+  /* "every Hub Resources row points at a document this repo actually ships"
+     stood here until 2026-11-21 — `HUB_DOCS` went with its section
+     (`hub-resources-section`). The guides under `public/` are still served;
+     `OneSite.test.tsx` checks they exist. */
 
   it('the archived Contributing section no longer resolves, and its guide is untouched', () => {
     // ARCHIVED 2026-09-29. This test used to assert the section rendered the
@@ -143,50 +135,12 @@ describe('section routing (sectionOf)', () => {
    * Sandbox, which is that category's documented behaviour rather than a bug.
    */
   const EXPECTED_PLACEMENT: Record<string, string> = {
-    // The in-app rows — the only feature rows on the ungated front door. One
-    // per `prototypeScope`; see "Prototypes holds exactly the rows" below.
-    'xcel-invite': 'prototypes',
-    'xcel-atlas-learning': 'prototypes',
-    'xcel-dashboard': 'prototypes',
-    'xcel-compass': 'prototypes',
-    // The seven documents — Explorations, directly under PRDs since 2026-10-15.
-    // `xcel-lms` and `xcel-admin-tool` stood here until 2026-10-15 — archived
-    // (`archivedFeatureRows.ts`; `desktop-platform-row`, `admin-tool-row`).
-    'xcel-walkthrough': 'exploration',
-    'xcel-wireframes': 'exploration',
-    'xcel-admin': 'exploration',
-    // The Admin placeholder (2026-10-14) — a coming-soon row that opens nothing.
-    'xcel-admin-coming-soon': 'prototypes',
-    'xcel-exam-spec': 'exploration',
-    // `atlas-home-course-card` (the first handoff row, 2026-09-24) stood here
-    // until 2026-10-15 — archived, `home-course-card-handoff`.
-    // Added 2026-09-22 — see the row's own note in `prototypeFeatures.ts` for
-    // why this page stopped being masthead-only and took a tile.
-    'xcel-pace-presets': 'exploration',
-    // The Atlas vs. Compass typography and color audit (2026-10-27) — an
-    // exploration with no document; its gateway page carries the findings.
-    'xcel-design-system-audit': 'exploration',
-    /* The two Compass Readiness states (2026-11-06). ⚠ ONLY TWO ROWS for a
-       sixteen-state prototype: the rest live in a Design-canvas export that
-       cannot be served (its runtime re-fetches its own page and mis-slices
-       it), so the states are in the PRODUCT behind the Design bar instead,
-       and these two self-contained exports stand for the design here. */
-    'xcel-compass-readiness-58': 'exploration',
-    'xcel-compass-readiness-86': 'exploration',
-    'xcel-compass-mvp': 'exploration',
-    /* THE THREE VERSION ROWS (2026-11-10) — one per arm of
-       `compass-mvp-version`. ⚠ EXPLORATIONS, NOT PROTOTYPES: the block below
-       refuses a second row for the `compass` scope and refuses `?ff=` on any
-       Prototypes row, which is exactly what three pinned versions would be.
-       See the rows' own note in `prototypeFeatures.ts`. */
-    /* The first page audit of Refined (2026-11-12) — an exploration, not a
-       handoff: its eight findings are open design decisions. */
-    'xcel-compass-refined-course-audit': 'exploration',
-    'xcel-compass-v-anjani': 'exploration',
-    'xcel-compass-v-jeff': 'exploration',
-    'xcel-compass-v-refined': 'exploration',
-    // The compare page (2026-11-16) — V1 beside Refined, widget by widget.
-    'xcel-compass-compare-readiness': 'exploration',
+    /* THE FIVE PROTOTYPES ROWS AND THE FOURTEEN EXPLORATIONS ROWS WERE LISTED
+       HERE until 2026-11-21 (`'prototypes'` and `'exploration'`). Both
+       sections and their rows went with the advanced Hub — see
+       `prototypes-section` and `explorations-section` in `archivedItems.ts`;
+       the list is verbatim on `hub-advanced`. What is left is the four
+       hand-authored Atlas Home handoffs of 2026-10-19. */
     // `xcel-course-entry` (the repo's first authored dev handoff, 2026-09-24)
     // stood here until 2026-10-15 — archived, `course-entry-handoff`. Both
     // handoffs were removed as "not ready"; Development lists nothing now.
@@ -222,21 +176,8 @@ describe('section routing (sectionOf)', () => {
     expect(ids).toEqual(Object.keys(EXPECTED_PLACEMENT).sort())
   })
 
-  it('no Explorations row carries a devStatus', () => {
-    // The inverse of the rule below, and the one that actually bites in this
-    // repo. `sectionOf` checks devStatus BEFORE category, so a status added to
-    // one of these rows silently pulls it out of Explorations and onto the
-    // Development board — no error, and it reads as the row simply vanishing
-    // from the section.
-    for (const f of PROTOTYPE_FEATURES) {
-      const placed = EXPECTED_PLACEMENT[f.id]
-      if (placed !== 'exploration') continue
-      expect(
-        f.devStatus,
-        `${f.id} is in ${placed}, so it must NOT carry a devStatus`,
-      ).toBeUndefined()
-    }
-  })
+  /* "no Explorations row carries a devStatus" stood here — the inverse of
+     the rule below, for a section that is gone (2026-11-21). */
 
   it('every Development row carries an authored devStatus', () => {
     for (const f of PROTOTYPE_FEATURES) {
@@ -379,13 +320,16 @@ describe('prototype URLs — served from this repo', () => {
         `${f.id} needs exactly one of to / externalUrl`,
       ).toBe(true)
     }
-    // Documents and routes exist, so neither filter above is vacuously empty.
-    // ⚠ No GATEWAY row exists since 2026-10-15 — both handoffs were archived
-    // ("not ready") — so `gatewayRows` IS empty and the guided-row guard below
-    // is vacuous until the next `/dev-handoff-notes` row lands. It stays in
-    // place for that day rather than being deleted with the rows.
-    expect(documentRows.length).toBeGreaterThan(0)
-    expect(routeRows.length).toBeGreaterThan(0)
+    /* ⚠ SINCE 2026-11-21 BOTH `documentRows` AND `routeRows` ARE EMPTY: the
+       document rows were Explorations and the route rows were Prototypes,
+       and both sections went with the advanced Hub. Every hand-authored row
+       left is a guided handoff, so the guided-row guard below is the live
+       one and the document / route checks are vacuous until a row of either
+       shape comes back (the two archive rows say how). They stay in place
+       for that day rather than being deleted with the rows. */
+    expect(gatewayRows.length).toBeGreaterThan(0)
+    expect(documentRows).toEqual([])
+    expect(routeRows).toEqual([])
   })
 
   it('a guided row opens its own gateway, not somewhere else', () => {
@@ -436,9 +380,12 @@ describe('prototype URLs — served from this repo', () => {
   })
 
   it('all document rows share one base, so a move stays one constant', () => {
+    // Vacuous while there are no document rows (see above) — `bases` is
+    // empty rather than `['/prototypes']` — and live again the day one comes
+    // back.
     const bases = new Set(documentRows.map((f) => f.externalUrl!.replace(/\/[^/]+$/, '')))
-    expect(bases.size).toBe(1)
-    expect([...bases][0]).toBe('/prototypes')
+    expect(bases.size).toBeLessThanOrEqual(1)
+    for (const base of bases) expect(base).toBe('/prototypes')
   })
 
   /*
@@ -505,231 +452,14 @@ describe('archive', () => {
   })
 })
 
-describe('the Prototypes row opens the committed configuration', () => {
-  it('carries `?demo=1`, not the bare route', () => {
-    // Demo mode swaps the working flag map for the committed baseline before
-    // first paint. Without the param, a returning reviewer's own persisted
-    // toggles ARE the demo — silently, and the nav is where that shows first.
-    //
-    // Asserted on the row rather than by rendering, because the failure is a
-    // missing query param on a link that still works perfectly.
-    //
-    // 2026-10-16: the end-to-end row moved to the OTHER product door when it
-    // was released — it opens at the invite flow's first page, not the
-    // dashboard, because the row's claim is the whole journey. What this
-    // case is actually guarding is `?demo=1`, so it asserts the param on
-    // whichever door the row carries rather than re-pinning the pathname.
-    //
-    // 2026-10-19: and it moved again, one page EARLIER — the invitation email
-    // ("clicking on end to end should start with the email first"). Same
-    // door, same two params; the pathname is checked by the door case below,
-    // which is why this one asserts the params rather than the address.
-    //
-    // 2026-10-20: and BACK to the dashboard — "lets set the Atlas to be the
-    // default view the user comes in on", taken with the Start control
-    // collapsing the flow's four screens into one entry, so the invite is a
-    // pick away rather than the front door. The pathname has now moved three
-    // times in five days and the params have not moved once, which is the
-    // case for this assertion being about `?demo=1` and `?journey=full`
-    // rather than the address — `journey=full` is what keeps this the FULL
-    // walk when the Start control jumps into it.
-    const row = PROTOTYPE_FEATURES.find((f) => f.id === 'xcel-dashboard')!
-    const e2e = new URL(row.to!, 'https://same.origin')
-    expect(e2e.pathname).toBe('/dashboard-rebrand')
-    expect(e2e.searchParams.get('demo')).toBe('1')
-    expect(e2e.searchParams.get('journey')).toBe('full')
-  })
-
-  it('holds the route rows and nothing else', () => {
-    // The document-shape guards are scoped to rows WITHOUT `to`; a document row
-    // that accidentally grows one would slip past every one of them.
-    //
-    // ⚠ BACK TO ONE. `xcel-course-entry` was briefly added here when it shipped
-    // with a `to` — which was the bug: a guided row must carry neither field or
-    // it never reaches its gateway. See `a guided row opens its own gateway`.
-    // The assertion stays the whole SET in both directions, which is what
-    // catches an accidental conversion; loosening it to a count would give up
-    // the guard entirely.
-    //
-    // ⚠ TWO SINCE 2026-10-14, both Prototypes rows. The guided-row trap above
-    // is unchanged.
-    //
-    // ⚠ AND THREE EXPLORATION ROWS SINCE 2026-11-10 — the Compass version
-    // rows. A `to` was only ever a Prototypes row's until then, and the line
-    // that said so is retired rather than quietly dropped: the three versions
-    // live in the PRODUCT behind one flag, so a row per version is a route
-    // with an `?ff=` pin or it is a second copy of the surface to keep in
-    // step. They are `explore` rows, so the guided-row trap above does not
-    // reach them. What this assertion still catches is the thing it was
-    // written for: any OTHER row growing a `to` by accident.
-    //
-    // ⚠ AND THE COMPARE ROW SINCE 2026-11-16 — `/compare/compass-readiness`,
-    // a route of this build that draws two versions' widgets side by side.
-    // An exploration for the same reason as the three above it.
-    expect(PROTOTYPE_FEATURES.filter((f) => f.to).map((f) => f.id).sort()).toEqual([
-      'xcel-atlas-learning',
-      'xcel-compass',
-      'xcel-compass-compare-readiness',
-      'xcel-compass-v-anjani',
-      'xcel-compass-v-jeff',
-      'xcel-compass-v-refined',
-      'xcel-dashboard',
-      'xcel-invite',
-    ])
-  })
-})
-
-/* ── Prototypes — one row per scope, every row the same build ────────────────
- *
- * 2026-10-14. Prototypes held ONE row from 2026-09-28, because two rows
- * pointing at two builds of the same thing make everyone ask which one is
- * real. The section now holds one row PER SCOPE (`PROTOTYPE_SCOPES`), and this
- * block is the stricter mechanical form of what the one-row rule guaranteed:
- * every row is `main`'s build at the committed baseline, so there is nothing
- * to ask "which one is real?" about. The thing to notice is what is NOT
- * allowed — a branch URL, an `?ff=` pin, a pinned `version=`, a document the
- * public build cannot serve — because each of those is a row that would stop
- * tracking the product, or stop opening, the moment `main` moved under it.
- *
- * Two shapes since 2026-10-14: a row that OPENS enters the product app through
- * one of its doors; a PLACEHOLDER (`coming-soon`, nothing to open) is drawn
- * disabled and says the door exists before the room does. A document row is
- * not admitted: the public build 404s `/prototypes/*`. */
-describe('Prototypes — one row per scope, every row the same build', () => {
-  const prototypeRows = PROTOTYPE_FEATURES.filter((f) => f.category === 'prototype')
-
-  it('every Prototypes row carries a scope, and no scope has two rows', () => {
-    const seen = new Map<string, string>()
-    for (const f of prototypeRows) {
-      expect(f.prototypeScope, `${f.id} is a Prototypes row and needs a prototypeScope`).toBeTruthy()
-      expect(
-        PROTOTYPE_SCOPES.some((s) => s.id === f.prototypeScope),
-        `${f.id} names a scope that is not in PROTOTYPE_SCOPES`,
-      ).toBe(true)
-      const prior = seen.get(f.prototypeScope!)
-      expect(
-        prior,
-        `${f.id} and ${prior} are both ${f.prototypeScope} — a second row for a scope is a Refinement job`,
-      ).toBeUndefined()
-      seen.set(f.prototypeScope!, f.id)
-    }
-  })
-
-  it('every scope names who decides what the surface should be', () => {
-    // 2026-10-14: design authority per scope — Anjani owns Compass and runs
-    // the promotion for it on her branch; the merge stays Jillienne's. See the
-    // note on PROTOTYPE_SCOPES. The skill reads this to know whose group is
-    // whose.
-    for (const s of PROTOTYPE_SCOPES) expect(s.owner, `${s.id} needs an owner`).toBeTruthy()
-    expect(PROTOTYPE_SCOPES.find((s) => s.id === 'compass')?.owner).toBe('Anjani')
-  })
-
-  it('no row outside Prototypes carries a scope', () => {
-    // The field means "which door of the product is this the source of truth
-    // for". On an Exploration or handoff row it would be a claim the section
-    // does not make.
-    for (const f of PROTOTYPE_FEATURES) {
-      if (f.category === 'prototype') continue
-      expect(f.prototypeScope, `${f.id} is not a Prototypes row and must not carry a scope`).toBeUndefined()
-    }
-  })
-
-  /** The product app's doors — the pathnames a row may enter at.
-   *
-   *  ⚠ A DOOR, NOT AN EXACT PATHNAME (2026-10-19). The end-to-end row opens
-   *  at `/end-to-end-demo/email`, a page UNDER the invite door rather than a
-   *  third entrance — the guarantee this case exists for is "same origin,
-   *  main's build, no pins", and which page of a flow a row starts on is the
-   *  owner's call. An unrelated route still fails: `/my-learning` matches no
-   *  door, and `/end-to-end-demos` is not under one either. */
-  const PRODUCT_DOORS = ['/dashboard-rebrand', '/end-to-end-demo']
-  const entersThroughADoor = (pathname: string) =>
-    PRODUCT_DOORS.some((d) => pathname === d || pathname.startsWith(`${d}/`))
-  const isPlaceholder = (f: (typeof prototypeRows)[number]) => f.status === 'coming-soon'
-
-  it('every Prototypes row with a route enters the product on main at the committed baseline', () => {
-    // Held-back rows keep their route on record, so it is checked too: when
-    // the word flips back to `ready`, the door it opens must already be right.
-    for (const f of prototypeRows.filter((f) => !isPlaceholder(f) || f.to)) {
-      expect(f.externalUrl, `${f.id}: a Prototypes row is a route, never a document`).toBeUndefined()
-      expect(f.to, `${f.id} needs a \`to\``).toBeTruthy()
-      const url = new URL(f.to!, 'https://same.origin')
-      expect(url.origin, `${f.id} must be same-origin — a branch URL is a second build`).toBe('https://same.origin')
-      expect(
-        entersThroughADoor(url.pathname),
-        `${f.id} must enter the product app through one of its doors (got ${url.pathname})`,
-      ).toBe(true)
-      expect(url.searchParams.get('demo'), `${f.id} must open the committed baseline`).toBe('1')
-      expect(url.searchParams.has('ff'), `${f.id} must not pin flags — it would stop tracking main`).toBe(false)
-      expect(url.searchParams.has('version'), `${f.id} must not pin a version — the baseline chooses it`).toBe(false)
-    }
-  })
-
-  it('every Prototypes row that opens carries a valid lastUpdated stamp', () => {
-    // 2026-10-14. The "Updated" tag reads it; `ship-to-main` maintains it. An
-    // ISO timestamp with a zone, so the viewer's clock can render it.
-    for (const f of prototypeRows.filter((f) => !isPlaceholder(f))) {
-      expect(f.lastUpdated, `${f.id} needs a lastUpdated`).toBeTruthy()
-      expect(Number.isNaN(Date.parse(f.lastUpdated!)), `${f.id}: lastUpdated must parse`).toBe(false)
-      expect(f.lastUpdated, `${f.id}: lastUpdated must carry a zone (Z or offset)`).toMatch(/(Z|[+-]\d{2}:\d{2})$/)
-    }
-    for (const f of prototypeRows.filter((f) => isPlaceholder(f) && !f.to)) {
-      expect(f.lastUpdated, `${f.id}: nothing built, nothing to have updated`).toBeUndefined()
-    }
-  })
-
-  it('the placeholders are written out, and a row never becomes one by accident', () => {
-    // 2026-10-14. Written out so a new placeholder is a deliberate edit here.
-    //
-    // 2026-10-16: the end-to-end row was RELEASED (Jillienne, "I want to turn
-    // on the end-to-end flow and work through it"), so only the Admin row is
-    // left — the one kind of placeholder with nothing built behind it. The
-    // held-back kind now has no instance, which is why the rule it stood for
-    // is restated below rather than deleted with it.
-    expect(prototypeRows.filter(isPlaceholder).map((f) => f.id)).toEqual(['xcel-admin-coming-soon'])
-    for (const f of prototypeRows.filter(isPlaceholder)) {
-      expect(f.kind, `${f.id}: a guided placeholder would try to open a gateway`).toBe('explore')
-    }
-    // The released row opens, and opens at a product door — the thing being
-    // held back was ever only its `status`.
-    const e2e = PROTOTYPE_FEATURES.find((f) => f.id === 'xcel-dashboard')!
-    expect(e2e.status, 'released 2026-10-16').toBe('ready')
-    expect(PRODUCT_DOORS.some((d) => e2e.to!.startsWith(d))).toBe(true)
-    // A row with no `to` and no `externalUrl` that is NOT coming-soon would be
-    // a dead link; the shape test above refuses it, this names the rule.
-    for (const f of prototypeRows.filter((f) => !f.to && !f.externalUrl)) {
-      expect(f.status, `${f.id} opens nothing, so it must say Coming soon`).toBe('coming-soon')
-    }
-  })
-
-  it('the rows read in the order PROTOTYPE_SCOPES declares — the product first', () => {
-    expect(PROTOTYPE_SCOPES[0].id, 'the end-to-end row is always first').toBe('end-to-end')
-    const order = PROTOTYPE_SCOPES.map((s) => s.id)
-    const got = prototypeRows.map((f) => order.indexOf(f.prototypeScope!))
-    expect(got, 'reorder the rows in prototypeFeatures.ts to match PROTOTYPE_SCOPES').toEqual([...got].sort((a, b) => a - b))
-  })
-
-  /* ── Main · Stage (2026-11-01) ─────────────────────────────────────────────
-   *
-   * Jillienne: "I want the prototype page to have both Main and Stage options
-   * there, not a new page in the rail." The switch, the `?build=stage`
-   * address, the deactivated-link hrefs (2026-11-17) and the Staged tag
-   * (2026-11-04) are all rendered by the Prototypes section, which is off the
-   * simple Hub's rail since 2026-11-21 — their cases are on `hub-advanced`.
-   * What stays is the one that reads `stageBuild.ts` rather than the page. */
-  it('the stage origin is the Netlify branch-deploy address of the `stage` branch on the Hub’s own site', () => {
-    // `HUB_URL` in PrototypeBar.tsx and `HUB_HOST` here are the same host:
-    // the stage address is derived from it, so a site rename moves both.
-    const bar = readFileSync(resolve(dirname(fileURLToPath(import.meta.url)), '../components/layout/PrototypeBar.tsx'), 'utf8')
-    expect(bar).toContain(`const HUB_URL = 'https://${HUB_HOST}/'`)
-    expect(STAGE_BRANCH).toBe('stage')
-    expect(STAGE_ORIGIN).toBe(`https://stage--${HUB_HOST}`)
-    // Same path, different origin — nothing about the route may change.
-    expect(prototypeHref('/dashboard-rebrand?demo=1', 'main')).toBe('/dashboard-rebrand?demo=1')
-    expect(prototypeHref('/dashboard-rebrand?demo=1', 'stage')).toBe(`${STAGE_ORIGIN}/dashboard-rebrand?demo=1`)
-  })
-
-})
+/* "the Prototypes row opens the committed configuration" and "Prototypes —
+   one row per scope, every row the same build" stood here — the `?demo=1`
+   check, the route-row set, the one-row-per-scope rule, the scope owners, the
+   product doors, the `lastUpdated` stamps, the placeholders, the row order and
+   the `stageBuild.ts` origin. The section, `PROTOTYPE_SCOPES` and
+   `stageBuild.ts` all went with the advanced Hub on 2026-11-21
+   (`prototypes-section` in `archivedItems.ts`); the cases are verbatim on
+   `hub-advanced`. */
 
 /* ── The component detail's jump nav ─────────────────────────────────────────
  *

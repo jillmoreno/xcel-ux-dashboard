@@ -5,9 +5,6 @@ import { UxDashboardPage } from '@/pages/UxDashboardPage'
 import { PrototypeFeaturePage } from '@/pages/PrototypeFeaturePage'
 import { PrototypeHandoffDetailPage } from '@/pages/PrototypeHandoffDetailPage'
 import { ResearchRationalePage } from '@/pages/ResearchRationalePage'
-import { QaNotesPage } from '@/pages/QaNotesPage'
-import { LinksPage } from '@/pages/LinksPage'
-import { PrototypeLinkRetiredPage } from '@/pages/PrototypeLinkRetiredPage'
 import { PrdsPage } from '@/pages/PrdsPage'
 import { ComponentReviewPage } from '@/pages/ComponentReviewPage'
 import { VariantDeckPage } from '@/pages/VariantDeckPage'
@@ -72,8 +69,7 @@ import { isTestingGateway } from '@/data/gatewayMode'
  * reaches. Wraps `/prototype/:featureId` and its handoff detail: a row that is
  * not in Demo redirects home. On the full build it renders the page unchanged.
  *
- * `/qa-notes` is closed the same way below. `/links` and `/research-rationale`
- * stay open (their sections are ungated), and the product app's own routes
+ * `/research-rationale` and `/prds` redirect into the gateway shell, and the product app's own routes
  * (`/dashboard-rebrand` and the ~28 under `AppLayout`) are untouched — the Demo
  * row opens the product, and the product links between its own routes.
  */
@@ -196,30 +192,13 @@ export default function App() {
             It renders the same page as "/". */}
         <Route path="/ux-dashboard" element={<TestingGate><UxDashboardPage /></TestingGate>} />
         <Route path="/research-rationale" element={<TestingGate><ResearchRationalePage /></TestingGate>} />
-      {/* QA Notes is a section of the UX Dashboard shell, not a standalone page —
-          this route just redirects to its canonical URL. */}
-      <Route
-        path="/qa-notes"
-        element={
-          <TestingGate>
-            <QaNotesPage />
-          </TestingGate>
-        }
-      />
-      {/* Both redirect into the gateway shell, which owns the section chrome —
-          see the note at the top of each page. */}
-      <Route path="/links" element={<TestingGate><LinksPage /></TestingGate>} />
-      {/* THE RETIRED-LINK SCREEN (2026-11-17) — where a deactivated Prototypes
-          row lands. A Hub route rather than a product one, because the product
-          app is untouched: only the row's rendered href is re-pointed, and the
-          row's real `to` stays on record. `:featureId` names the row so the
-          screen can say which surface and whose it is; `?build=` says whether
-          the reader was reaching for Main or Stage. The bare path is the
-          fallback for a link pasted without an id. See
-          `PrototypeLinkRetiredPage.tsx` and `linkRetired` in
-          `prototypeFeatures.ts`. */}
-      <Route path="/prototype-unavailable" element={<TestingGate><PrototypeLinkRetiredPage /></TestingGate>} />
-      <Route path="/prototype-unavailable/:featureId" element={<TestingGate><PrototypeLinkRetiredPage /></TestingGate>} />
+      {/* `/qa-notes` (→ `?section=qa-notes`), `/links` (→ `?section=links`) and
+          the retired-link screen `/prototype-unavailable[/:featureId]`
+          (2026-11-17) stood here until 2026-11-21 — their sections went with
+          the advanced Hub (`qa-notes-section`, `resources-section`,
+          `prototypes-section` in `archivedItems.ts`; the pages are on
+          `hub-advanced`). `/prds` redirects into the gateway shell, which owns
+          the section chrome — see the note at the top of the page. */}
       <Route path="/prds" element={<TestingGate><PrdsPage /></TestingGate>} />
       {/* One component, every variant, stacked — the page a Refinement row
           points at when a designer wants the team to review ONE widget rather

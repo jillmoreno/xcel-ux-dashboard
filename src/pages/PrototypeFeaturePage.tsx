@@ -46,17 +46,14 @@ import {
  */
 
 /** The home-page section a feature lands in, as a URL. Kept in step with
- *  `sectionOf` in UxDashboardPage — same order of precedence, same fallbacks. */
-function backSectionHref(feature: PrototypeFeature): string {
-  // Any authored status is a position on the Development board (Design is
-  // retired, 2026-10-15); everything else without a product category is a
-  // document, which is Explorations.
-  if (feature.devStatus) return '/?section=development'
-  if (feature.category === 'prototype' || feature.category === 'demo' || feature.category === 'dashboard')
-    return '/?section=prototypes'
-  if (feature.category === 'testing') return '/?section=development'
-  return '/?section=exploration'
-}
+ *  `sectionOf` in UxDashboardPage, which since the simple Hub (2026-11-21)
+ *  puts every feature row on the Development board — Prototypes and
+ *  Explorations, where the product and document categories used to land, are
+ *  unwired (`prototypes-section`, `explorations-section` in
+ *  `archivedItems.ts`). Done is a kebab override the gateway cannot see, so
+ *  it is not resolved here, as before. (A `backSectionHref(feature)` with the
+ *  category branches stood here until then.) */
+const BACK_SECTION_HREF = '/?section=development'
 
 export function PrototypeFeaturePage({
   featureId: featureIdProp,
@@ -147,7 +144,7 @@ export function PrototypeFeaturePage({
       // A mismatch would land the reviewer on a list their feature is not in.
       // Embedded, the host's own back control is right above this and the
       // prototype bar isn't rendered at all, so there is nowhere to put it.
-      back={embedded ? undefined : { to: backSectionHref(feature), label: 'Back', title: 'Back to the UX dashboard' }}
+      back={embedded ? undefined : { to: BACK_SECTION_HREF, label: 'Back', title: 'Back to the UX dashboard' }}
       maxWidth={shellMaxWidth}
       embedded={embedded}
     >

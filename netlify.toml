@@ -1,8 +1,9 @@
 [build]
   command = "npm run build"
   publish = "dist"
-  # Declared explicitly rather than relying on the default. The QA capture
-  # upload endpoint lives here; it is the only server-side code in the project.
+  # Declared explicitly rather than relying on the default. The link-board
+  # endpoints (Design, Research, PRDs), the row archive and the compare-page
+  # notes live here; it is the only server-side code in the project.
   functions = "netlify/functions"
 
 [build.environment]
@@ -23,54 +24,11 @@
 [context.deploy-preview.environment]
   VITE_DEPLOY_CONTEXT = "branch-deploy"
 
-# THE ON STAGE CARD, FILED BY THE DEPLOY (2026-11-05). The To Do Board's On
-# Stage column is the only record of what is waiting on a release — the Hub
-# runs on main and cannot read the stage build — and until now that record was
-# a prefilled form someone had to remember to click. The plugin writes it when
-# the STAGE deploy goes green, and does nothing on every other branch.
-#
-# ⚠ It can never fail a build: everything it does is inside a try/catch that
-# reports and returns. See the file for why it writes Blobs directly rather
-# than calling /api/todo-board (the site password is enforced at the edge, so
-# an automated caller never reaches the function).
-[[plugins]]
-  package = "./netlify/plugins/stage-card"
-
-# The QA capture endpoint, ahead of the SPA fallback. Netlify matches a v2
+# The board endpoints, ahead of the SPA fallback. Netlify matches a v2
 # function's own `config.path` before redirects, so this is belt-and-braces —
 # but the catch-all below returns 200 for EVERYTHING, so if that precedence ever
 # changed the failure would be the API silently serving index.html to fetch(),
 # which reads as a parse error rather than a routing bug. Cheap to pin.
-[[redirects]]
-  from = "/api/qa-captures/*"
-  to = "/.netlify/functions/qa-captures/:splat"
-  status = 200
-
-[[redirects]]
-  from = "/api/qa-captures"
-  to = "/.netlify/functions/qa-captures"
-  status = 200
-
-[[redirects]]
-  from = "/api/qa-notes/*"
-  to = "/.netlify/functions/qa-notes/:splat"
-  status = 200
-
-[[redirects]]
-  from = "/api/qa-notes"
-  to = "/.netlify/functions/qa-notes"
-  status = 200
-
-[[redirects]]
-  from = "/api/links/*"
-  to = "/.netlify/functions/links/:splat"
-  status = 200
-
-[[redirects]]
-  from = "/api/links"
-  to = "/.netlify/functions/links"
-  status = 200
-
 [[redirects]]
   from = "/api/demos/*"
   to = "/.netlify/functions/demos/:splat"
@@ -101,20 +59,6 @@
   to = "/.netlify/functions/prds"
   status = 200
 
-# The To Do Board — cards and the people roster, on one function. Two
-# redirects like the boards above, and the `/*` one carries the sub-collection
-# as well as the id (`/api/todo-board/cards/card-007`), which is why the
-# function routes on the tail rather than on a single `:id`.
-[[redirects]]
-  from = "/api/todo-board/*"
-  to = "/.netlify/functions/todo-board/:splat"
-  status = 200
-
-[[redirects]]
-  from = "/api/todo-board"
-  to = "/.netlify/functions/todo-board"
-  status = 200
-
 # The row archive — which project-list rows are hidden, and by whom
 # (2026-10-27, netlify/functions/row-archive.ts). One id per row.
 [[redirects]]
@@ -132,13 +76,6 @@
 [[redirects]]
   from = "/api/compare-notes/*"
   to = "/.netlify/functions/compare-notes/:splat"
-  status = 200
-
-# The automatic branch list behind the Refinement strip. Read-only, and it
-# refuses outright on the public build (see netlify/functions/branches.ts).
-[[redirects]]
-  from = "/api/branches"
-  to = "/.netlify/functions/branches"
   status = 200
 
 # SPA fallback — every unknown path returns index.html so react-router handles it.

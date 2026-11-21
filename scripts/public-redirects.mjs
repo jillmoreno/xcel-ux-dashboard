@@ -52,8 +52,8 @@ const context = (process.env.CONTEXT ?? '').trim().toLowerCase()
  * the only one that trims anything now).
  * `/prototypes/` is the six documents plus the row-less companions; `/testing/`
  * and `/ngat-admin/` are static explorations that came over with the LMS
- * product app; `/archive/` and `/qa/` are the Archive and QA Notes sections'
- * own assets. `/prototype-thumbs/` is NOT blocked: a row thumbnail is a
+ * product app; `/archive/` is the Archive section's own assets (`/qa/` was QA
+ * Notes' and went with it, 2026-11-21). `/prototype-thumbs/` is NOT blocked: a row thumbnail is a
  * screenshot of a list row, and the Demo row may grow one. `/api/*` is not
  * here either — Links is ungated and needs its endpoint, and neither is
  * `/demos/`: that folder exists to be REACHABLE on the public build, so a
@@ -70,7 +70,7 @@ const context = (process.env.CONTEXT ?? '').trim().toLowerCase()
  * deploy can serve it to the team — the full site — which is the same job
  * `/contributing/` does.
  */
-const BLOCKED = ['/prototypes/*', '/testing/*', '/ngat-admin/*', '/archive/*', '/qa/*', '/contributing/*', '/recaps/*']
+const BLOCKED = ['/prototypes/*', '/testing/*', '/ngat-admin/*', '/archive/*', '/contributing/*', '/recaps/*']
 
 /**
  * What the ONE SITE still 404s, on its PRODUCTION deploy only — 2026-10-15,

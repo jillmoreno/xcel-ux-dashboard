@@ -12,34 +12,22 @@ import {
   type PrototypeScope,
   PROTOTYPE_FEATURES,
   prototypeFeatureById,
-  prototypeScopeLabel,
-  prototypeScopeOwner,
   type PrototypeFeature,
 } from '@/data/prototypeFeatures'
 import { ARCHIVED_ITEMS } from '@/data/archivedItems'
-import { HUB_DOCS } from '@/data/hubDocs'
-import { HubResourcesPanel } from '@/components/prototype/HubResourcesPanel'
 import { PrototypeFeaturePage } from './PrototypeFeaturePage'
 import { ComponentPreviewThumb } from '@/components/prototype/ComponentPreviewThumb'
 import { GeneratedThumb, THUMB_W, THUMB_H } from '@/components/prototype/GeneratedThumb'
 import { HubRow, type HubRowTag } from '@/components/prototype/HubRow'
-import { stagedScopesFromBranches, useBranches, type StagedFact } from '@/data/branchStore'
-import { DesignPanel } from '@/components/prototype/DesignPanel'
-import { ReleasePanel } from '@/components/prototype/ReleasePanel'
-import { waitingCount } from '@/data/releaseQueue'
-import { hubListStyle, hubMetaChipStyle, hubTagStyle } from '@/components/prototype/hubRowStyles'
+import { hubListStyle, hubMetaChipStyle } from '@/components/prototype/hubRowStyles'
 import { primaryPreviewSrc } from '@/components/prototype/featurePreviewSrc'
 import { ArchiveTable } from '@/components/prototype/ArchiveTable'
-import { QaNotesPanel } from '@/components/prototype/QaNotesPanel'
-import { DemoPanel, LinksPanel, PrdsPanel, ResearchPanel } from '@/components/prototype/LinksPanel'
-import { TodoBoardPanel } from '@/components/prototype/TodoBoardPanel'
-import { LINK_PRODUCTS, isLive, readLastAuthor, useLinkCount, type LinkProduct } from '@/data/linkStore'
-import { formatStamp, formatUpdated } from '@/components/prototype/formatUpdated'
+import { DemoPanel, PrdsPanel, ResearchPanel } from '@/components/prototype/LinksPanel'
+import { isLive } from '@/data/linkStore'
+import { formatUpdated } from '@/components/prototype/formatUpdated'
 import { DEMO_BOARD, useDemoCount } from '@/data/demoStore'
 import { RESEARCH_BOARD, useResearchCount } from '@/data/researchStore'
 import { PRD_BOARD, usePrdCount } from '@/data/prdStore'
-import { isPrototypeScope, isTodoColumn, useStagedScopes, useTodoBoardCount } from '@/data/todoBoardStore'
-import { useQaNoteCount } from '@/data/qaNoteStore'
 import { UX_TOKEN_BRIDGE, mirrorPaletteToRoot } from '@/components/prototype/uxPaletteBridge'
 import {
   DEV_STATUS_LABEL,
@@ -60,7 +48,6 @@ import {
   setFeatureInDesign,
 } from '@/components/prototype/prototypeDoneUtil'
 import { setRowArchived, useRowArchive, type ArchivedRow } from '@/data/rowArchiveStore'
-import { PROTOTYPE_BUILDS, parsePrototypeBuild, prototypeHref, type PrototypeBuild } from '@/data/stageBuild'
 import {
   ArrowLeft,
   ArrowRotateLeft,
@@ -128,21 +115,18 @@ import { Toast } from '@/components/ui/Toast'
 
 /* ── The taxonomy ─────────────────────────────────────────────────────────── */
 
+/* SIX SINCE THE SIMPLE HUB (2026-11-21). The eight that stood in this union
+   beside them — `prototypes`, the derived `design`, `release`, `links`
+   (Resources), `exploration`, `qa-notes`, `todo-board`, `hub-resources` —
+   are unwired, one `archivedItems.ts` row each, and whole on the
+   `hub-advanced` branch. */
 type UxSection =
-  | 'design'
-  | 'release'
   | 'demo'
-  | 'links'
   | 'prds'
-  | 'prototypes'
   | 'research'
-  | 'exploration'
   | 'development'
   | 'done'
   | 'archive'
-  | 'qa-notes'
-  | 'todo-board'
-  | 'hub-resources'
 
 /*
  * THERE IS NO SECTION GATE (2026-10-15). Until then Design, Exploration,
@@ -167,61 +151,10 @@ type SectionDef = {
 /** The order here IS the nav order. Every section is open — see the note on
  *  the retired gate above. */
 const SECTIONS: SectionDef[] = [
-  {
-    // FIRST, and the landing section: the product as it stands — the live
-    // React build at its committed flag baseline. ONE ROW PER SCOPE
-    // (`PROTOTYPE_SCOPES` in prototypeFeatures.ts), and promoting a feature
-    // here means flipping its flag default on `main` —
-    // `.claude/skills/promote-to-prototype` — never adding a row for a scope
-    // that already has one. Ungated, because this is the thing stakeholders
-    // are sent to see. `UxDashboard.smoke.test.tsx` compares the whole section
-    // against an expected set, in both directions.
-    id: 'prototypes',
-    label: 'Prototypes',
-    /* ⚠ ONE ROW PER SCOPE, AND THAT IS THE FEATURE (2026-09-28, restated
-       2026-10-14). Prototypes is the SOURCE OF TRUTH for developers and
-       stakeholders: what the product currently is. It held exactly one row
-       until 2026-10-14, when the product grew three doors on one journey —
-       how a learner gets in, what they land in, where they study — and each
-       became a row. What the one-row rule actually guaranteed is kept in a
-       stricter form: every row is the SAME build (`main`, at `?demo=1`), so
-       there is still nothing to ask "which one is real?" about. Two things to
-       look at for the SAME scope belong in REFINEMENT, which takes any number
-       of rows, is authored in the browser, and is visible to stakeholders too
-       (it carries no `gate`). `UxDashboard.smoke.test.tsx` compares this
-       section in both directions and pins the shape of every row's route. */
-    // NO BLURB — 2026-10-14, Jillienne on the preview: "remove this". The
-    // rows carry the explanation now (scope, owner, Updated, Coming soon),
-    // and a sentence over them repeated it. Empty draws no lede at all; see
-    // the render site, which skips the <p> rather than drawing a blank one.
-    blurb: 'The product as it is right now.',
-  },
-  {
-    /* DESIGN IS BACK (2026-11-16), and it is a different thing from the Design
-       retired on 2026-10-15. That one was a list of feature rows with a
-       status, and it listed nothing. This one is DERIVED: every branch
-       Netlify has built lately, grouped by the feature its name says it is
-       for, each row saying where the work is — building, open to look at, on
-       stage, released — read from Netlify and git, authored by nobody. It sits
-       between Prototypes (what the product is) and Refinement (what is being
-       discussed), because it answers the question in between: what is being
-       worked on. The whole designer flow is now "name the branch, push"; see
-       `DesignPanel.tsx` and `src/data/branchName.ts`. */
-    id: 'design',
-    label: 'Design',
-    blurb: 'Every branch being worked on, where it is, and who is on it.',
-  },
-  {
-    /* RELEASE (2026-11-16) — Jillienne's inbox: what is on stage that main
-       does not have, by surface, with whether each branch's defaults are
-       decided. Jillienne, the same day: "right now I cannot tell what branch
-       is ready on stage to be pushed to main." Derived like Design;
-       `ReleasePanel.tsx` says why it is a row of its own and not a mode of
-       Prototypes. The nav count is the branches waiting, live. */
-    id: 'release',
-    label: 'Release',
-    blurb: 'What is on stage and not yet on main.',
-  },
+  /* PROTOTYPES, the derived DESIGN list and RELEASE stood here, in that
+     order, until 2026-11-21 — the first three rows of the rail. See the
+     `prototypes-section`, `derived-design-section` and `release-section`
+     rows in `src/data/archivedItems.ts`. */
   {
     // The REVIEW INBOX, authored on the page (2026-09-18) — labelled
     // "Refinement" because that is what happens here: a designer's branch,
@@ -253,32 +186,8 @@ const SECTIONS: SectionDef[] = [
     blurb:
       'The studies and findings behind the designs.',
   },
-  {
-    // UNGATED, which is the decision in this entry. (It sat directly under
-    // Refinement until 2026-09-29; Research is between them now. The ordering
-    // was never the point — being ungated is.)
-    // Prototypes is the passwordless front door and this sits beside it, so a
-    // link added here is a link a stakeholder can reach unaccompanied — the
-    // same consideration `UxDashboard.smoke.test.tsx` guards for Prototypes'
-    // rows. It is open rather than gated because the section's whole job is
-    // being the place you send someone; behind the shared password it would be
-    // a bookmark file.
-    //
-    // Labelled "Other Links" (2026-09-18) so it read as the catch-all beside
-    // Refinement, whose rows are ALSO links — briefs, boards, Figma files,
-    // anything that is not a branch under review. RENAMED "Resources"
-    // 2026-10-07, the day Research and PRDs became boards: with three
-    // sibling boards "Other" no longer said which one this was. The id stays
-    // `links` so `?section=links`, the `links` store and `/api/links` do not
-    // churn — the same call as Refinement keeping id `demo`.
-    //
-    // No `count` field: links are authored on the page, so a static number is
-    // wrong the moment one is added. Supplied live below, like To Do's and QA
-    // Notes'.
-    id: 'links',
-    label: 'Resources',
-    blurb: 'Links to things that live somewhere else.',
-  },
+  /* RESOURCES (id `links`) stood here, between Research and PRDs, until
+     2026-11-21 — see `resources-section` in `src/data/archivedItems.ts`. */
   {
     // The fourth board (2026-10-07), Research's twin: the product requirements
     // documents the designs answer. A section rather than a Type on Other
@@ -289,20 +198,8 @@ const SECTIONS: SectionDef[] = [
     blurb:
       'The requirements documents the designs answer.',
   },
-  {
-    // The hand-authored documents — outside products and ideas rebuilt on our
-    // tokens and conventions. Seven `PROTOTYPE_FEATURES` rows with
-    // `category: exploration` and no `devStatus`. MOVED HERE 2026-10-15, from
-    // the retired Designers group at the foot of the rail to directly under
-    // PRDs — the briefs and the documents answering them, side by side in the
-    // nav — and renamed from "Exploration". Jillienne on the preview, after a
-    // card-under-the-board version: "explorations should be its own page
-    // below the PRDs option in the left nav." The id stays `exploration` so
-    // `?section=exploration` links and `category: exploration` need no alias.
-    id: 'exploration',
-    label: 'Explorations',
-    blurb: 'Design explorations, kept as documents.',
-  },
+  /* EXPLORATIONS stood here, directly under PRDs, until 2026-11-21 — see
+     `explorations-section` in `src/data/archivedItems.ts`. */
   // ARCHIVED 2026-10-15 — Design stood here, first in the old restricted
   // group, with Exploration beneath it (moved up under PRDs, above). Design
   // listed nothing (no row carries an in-design status) and the team no
@@ -344,71 +241,9 @@ const SECTIONS: SectionDef[] = [
       'Things removed from the project, and how to bring them back.',
     count: ARCHIVED_ITEMS.length,
   },
-  {
-    // Ungated since 2026-10-15, like Archive — the site password is the lock.
-    //
-    // It briefly carried a feature flag on top of the old group gate, defaulting
-    // off. That was
-    // a second lock on an already-locked door, and it put the key on the wrong
-    // side of it: the Feature Flag panel only mounts inside `AppLayout`, which
-    // this page sits outside, so there was no way to switch the section on from
-    // the page it lives on.
-    id: 'qa-notes',
-    label: 'QA Notes',
-    blurb:
-      'A place to capture where the build does not match the design.',
-    // No `count` here: findings can be authored on the page, so a static number
-    // is wrong as soon as one is added. Supplied live below, like To Do's.
-  },
-  {
-    // THE TEAM'S OWN BOARD (2026-10-15) — who is working on what, as four
-    // columns a card moves across. Authored on the page like the four link
-    // boards, on its own Netlify Blobs store (`netlify/functions/
-    // todo-board.ts`); nothing in `PROTOTYPE_FEATURES` routes here, so
-    // `bySection['todo-board']` is empty by design and the count is live from
-    // `useTodoBoardCount`.
-    //
-    // FIRST of the two Team sections, because it is the one people come back
-    // to in a week: the board is live work, the shelf below it is reference.
-    // The order here IS the nav order, so moving it is one line — but the
-    // "Team" eyebrow is keyed on THIS id (`NAV_EYEBROWS`), so swapping the two
-    // means moving the eyebrow with them.
-    //
-    // ⚠ NOT the archived To Do section (`todo-section` in `archivedItems.ts`,
-    // 2026-09-29, id `todo`). That was a per-browser checklist in
-    // `localStorage`; `TodoPanel.tsx` and `todoStore.ts` are untouched by this
-    // and its restore note still describes a real, separate restore. The id
-    // here is `todo-board` precisely so the two cannot be confused — and so
-    // an old `?section=todo` link does not silently land on a different thing
-    // than the one it was written for.
-    id: 'todo-board',
-    label: 'To Do Board',
-    blurb:
-      'Internal checklist of items for the UX team to review and discuss.',
-  },
-  {
-    // HUB RESOURCES — 2026-10-15, Jillienne: "add a Hub Resources in the new
-    // team section where this new document will live."
-    //
-    // The Hub's own documents, read-only, over `HUB_DOCS` in
-    // `src/data/hubDocs.ts`. LAST in the nav, second of the two Team sections.
-    //
-    // ⚠ NOT a board and not a feature list. The rows are files in this
-    // repository, so the list changes with a commit — which is why the panel
-    // has no Add button and why `count` can be a static number here, unlike
-    // the To Do Board's live one or Refinement's.
-    //
-    // It is also the first way back to the guides since 2026-09-29, when the
-    // Contributing section was archived and the "How to read this dashboard"
-    // link came off the rail foot. Both of those are still gone and still
-    // pinned gone; this replaces neither — it is a shelf holding all three,
-    // not either of them restored.
-    id: 'hub-resources',
-    label: 'Hub Resources',
-    blurb:
-      'The guides for using the Hub.',
-    count: HUB_DOCS.length,
-  },
+  /* QA NOTES, the TO DO BOARD and HUB RESOURCES stood here, after Archive,
+     until 2026-11-21 — see `qa-notes-section`, `todo-board-section` and
+     `hub-resources-section` in `src/data/archivedItems.ts`. */
   // ARCHIVED 2026-09-29 — the To Do and Contributing sections stood here, last
   // in the restricted group. Both are unwired, not deleted: see the `todo-section`
   // and `contributing-section` rows in `src/data/archivedItems.ts` for the
@@ -416,33 +251,16 @@ const SECTIONS: SectionDef[] = [
 ]
 
 /**
- * The sections THIS BUILD shows. On the public Netlify project
- * (`VITE_GATEWAY_MODE=public`, see `gatewayMode.ts`) every gated section is
- * dropped from the list — not locked, ABSENT: no nav row, no divider, no
- * password modal, and `sectionFromParam` below cannot resolve a `?section=`
- * pointing at one, so a deep link lands on Demo with nothing to unlock.
- *
- * `SECTIONS` above stays the authored full set; everything that renders or
- * resolves a section reads THIS list. A new gated section needs no change here.
- */
-/**
  * THE SIMPLE HUB (2026-11-21). Jillienne: "completely kill all the
  * over-complicated features for this hub … the whole hub needs to be stripped
  * down to the most simplistic version." Six sections: three boards of links
  * (Design, Research, PRDs), the dev handoffs (Development, Done) and the
- * Archive. Everything else in `SECTIONS` — Prototypes and the Main · Stage
- * switch, the derived Design list, Release, Resources, Explorations, QA
- * Notes, the To Do Board, Hub Resources — is OFF the rail: not drawn, and
- * `sectionFromParam` cannot resolve a `?section=` pointing at one, so a deep
- * link lands on Design. The whole advanced Hub is kept, built and viewable,
- * on the `hub-advanced` branch (tag `hub-advanced-2026-11-21`).
- *
- * This list is the first step; unwiring the hidden sections' code, with an
- * Archive row each, is a later one. Until then their entries in `SECTIONS`
- * stand, and this filter is the one place that decides.
+ * Archive. `SECTIONS` above IS the rail — there is no filter between the
+ * authored list and what renders any more (a `SIMPLE_SECTIONS` list stood
+ * here for the day between hiding the other eight and unwiring them). The
+ * whole advanced Hub is kept, built and viewable, on the `hub-advanced`
+ * branch (tag `hub-advanced-2026-11-21`).
  */
-const SIMPLE_SECTIONS: readonly UxSection[] = ['demo', 'research', 'prds', 'development', 'done', 'archive']
-const VISIBLE_SECTIONS: SectionDef[] = SIMPLE_SECTIONS.map((id) => SECTIONS.find((s) => s.id === id)!)
 
 /** The section a bare `/` opens — the first in the nav. Design since
  *  2026-11-21 (Prototypes until then). `?section=` is dropped from the URL
@@ -466,11 +284,11 @@ const DEFAULT_SECTION: UxSection = 'demo'
 const NAV_EYEBROWS: Partial<Record<UxSection, string>> = {
   // Two groups since the simple Hub (2026-11-21): the boards, and the dev
   // handoffs. The Demo eyebrow over Prototypes and the Team eyebrow over the
-  // To Do Board went with their sections (see `SIMPLE_SECTIONS`).
+  // To Do Board went with their sections.
   //
   // ⚠ ONE ENTRY FOR THE WHOLE GROUP, on its FIRST section. An eyebrow is drawn
   // directly above the row it is keyed to, so a second entry would print the
-  // label twice. Reorder `SIMPLE_SECTIONS` and the key moves with it.
+  // label twice. Reorder `SECTIONS` and the key moves with it.
   demo: 'Design & Research',
   development: 'Dev Handoff',
 }
@@ -481,19 +299,24 @@ const NAV_EYEBROWS: Partial<Record<UxSection, string>> = {
  *  than silently dropping the reviewer on Demo. */
 const LEGACY_SECTIONS: Record<string, UxSection> = {
   demo: 'demo',
-  // The old tile landing's name for the product-build section, which is
-  // Prototypes now rather than Demo.
-  dashboard: 'prototypes',
+  // The old tile landing's name for the product-build section. That became
+  // Prototypes, and Prototypes went with the simple Hub (2026-11-21); the
+  // product is one click away on the Design board, so land there.
+  dashboard: 'demo',
   dev: 'development',
-  // `design` is a real section again since 2026-11-16 (it resolved to
-  // Development between 2026-10-15 and then). No alias needed: the value
-  // matches a visible section and resolves on its own.
+  // Resources (2026-10-07 → 2026-11-21): links that live somewhere else,
+  // which is what the Design board holds now. Explicit rather than left to
+  // the fallback, because `/links` was an address people said out loud.
+  links: 'demo',
+  // `design` — the derived branch list of 2026-11-16 — is off the rail too,
+  // and falls through to the default like any other unknown value, which is
+  // the Design board. No alias needed.
 }
 
 function sectionFromParam(value: string | null, tab: string | null): UxSection | null {
   // The archive used to be a TAB inside the dev section (`?section=dev&tab=archive`),
   // so that pairing has to resolve to the archive section, not to Development.
-  const isVisible = (id: string) => VISIBLE_SECTIONS.some((s) => s.id === id)
+  const isVisible = (id: string) => SECTIONS.some((s) => s.id === id)
   const resolved: UxSection | null =
     tab === 'archive'
       ? 'archive'
@@ -503,8 +326,9 @@ function sectionFromParam(value: string | null, tab: string | null): UxSection |
           ? (value as UxSection)
           : (LEGACY_SECTIONS[value] ?? null)
   // Checked AFTER resolving, so a legacy alias (`dev` → Development) or the
-  // archive-tab pairing cannot name a section this build does not show — on
-  // the public build those land on Demo like any other unknown value.
+  // archive-tab pairing cannot name a section the rail does not show — a
+  // `?section=` for one of the eight unwired sections lands on Design like
+  // any other unknown value.
   return resolved && isVisible(resolved) ? resolved : null
 }
 
@@ -1173,31 +997,23 @@ function sectionOf(
   // devHandoffStatusUtil still names the development-side half, for the chip
   // colours and the filter order.
   if (status) return 'development'
-  // The product build. `demo` / `dashboard` are the LMS's names for the same
-  // thing and route here too; nothing routes to the Demo SECTION, which is a
-  // panel authored on the page rather than a list of rows (2026-09-18).
-  if (f.category === 'prototype' || f.category === 'demo' || f.category === 'dashboard') return 'prototypes'
+  /* EVERYTHING ELSE IS DEVELOPMENT TOO, since the simple Hub (2026-11-21).
+     Until then `prototype` / `demo` / `dashboard` went to Prototypes and
+     `exploration` / `sandbox` / the fall-through went to Explorations; both
+     sections are unwired (`prototypes-section`, `explorations-section` in
+     `archivedItems.ts`). The branches below are kept EXPLICIT rather than
+     collapsed into the return, for the reason the `sandbox` one was on
+     2026-09-29: a row that lands here on purpose and a row that lands here
+     because the branch that caught it is gone must not look the same.
+     Development is the honest place for a feature row with nowhere else to
+     be — paired with the `not-ready` default in `featureStatusKeyOf`, it is
+     in front of engineering marked "don't start" rather than hidden. */
+  if (f.category === 'demo' || f.category === 'dashboard') return 'development'
   if (f.category === 'testing') return 'development'
-  /* A dev handoff belongs on the Development board even with no authored
-     status — paired with the `not-ready` default in `featureStatusKeyOf`, that
-     means forgetting to author one puts the row in front of engineering marked
-     "don't start", rather than hiding it among the documents where they never
-     look. */
   if (f.category === 'dev-handoff') return 'development'
-  // Ported outside products and hand-authored documents get their own section
-  // — they are a different kind of thing from a feature row.
-  if (f.category === 'exploration') return 'exploration'
-  // ARCHIVED 2026-09-29 — the Sandbox SECTION is gone, but `'sandbox'` stays in
-  // `FeatureCategory` because that union is verbatim from the LMS (CLAUDE.md,
-  // "Data files"), so a row ported carrying it must still compile.
-  //
-  // THIS BRANCH IS DELIBERATELY EXPLICIT RATHER THAN DELETED. Delete it and the
-  // category falls through to the `return 'exploration'` below, reaching the same
-  // place — which is the silent failure `archive-a-feature` warns about: it
-  // type-checks, it passes, and nobody can tell "routed here on purpose" from
-  // "routed here because the branch that caught it is gone". One line to say so.
-  if (f.category === 'sandbox') return 'exploration'
-  return 'exploration'
+  if (f.category === 'exploration') return 'development'
+  if (f.category === 'sandbox') return 'development'
+  return 'development'
 }
 
 /* ── Page ─────────────────────────────────────────────────────────────────── */
@@ -1273,93 +1089,13 @@ export function UxDashboardPage() {
     setParams(p, { replace: true })
   }
 
-  /**
-   * `?section=demo&add=1&url=…&title=…&note=…&product=…&feature=…` — the
-   * `share` skill's hand-off (2026-09-21, when it was `promote-to-refinement`;
-   * `product` added 2026-10-14 so a Compass branch opens tagged Compass, and
-   * `feature` 2026-10-15 so the next chunk of a feature lands in the group the
-   * last one is already in). The page owns the router state, so it is
-   * the page that reads the params and takes them off the address once
-   * `DemoPanel` has opened its form with them; the panel stripping them itself
-   * via `history.replaceState` would leave the router believing they were
-   * still there, and the next `setSection` would write them straight back.
-   * Read once, into state, so the object identity is stable across renders.
-   */
-  const [demoPrefill] = useState(() => {
-    // Gated on the SECTION as well as `add`, since 2026-10-15: the To Do Board
-    // takes the same `add=1` hand-off, and without this one address would arm
-    // both prefills — the board's would open its sheet and the demo's would
-    // sit un-consumed, keeping the params on the address for a reload to
-    // reopen. An `add` with no section never reached a form anyway: the page
-    // lands on Prototypes, which has no Add.
-    if (urlSection !== 'demo' || !params.has('add')) return null
-    // Validated against the catalog, not trusted: an unknown tag falls back to
-    // the form's own default rather than reaching the draft as a string.
-    const product = params.get('product')
-    return {
-      url: params.get('url') ?? '',
-      title: params.get('title') ?? '',
-      note: params.get('note') ?? '',
-      product: LINK_PRODUCTS.some((x) => x.id === product) ? (product as LinkProduct) : undefined,
-      // Free text, so there is nothing to validate it against — the form caps
-      // its length and the board groups case-insensitively, which is the whole
-      // of the contract. Absent leaves the field empty and the row ungrouped.
-      feature: params.get('feature') ?? '',
-    }
-  })
-  const consumeDemoPrefill = useCallback(() => {
-    setParams(
-      (prev) => {
-        const p = new URLSearchParams(prev)
-        for (const k of ['add', 'url', 'title', 'note', 'product', 'feature']) p.delete(k)
-        return p
-      },
-      { replace: true },
-    )
-  }, [setParams])
-
-  /**
-   * `?section=todo-board&add=1&column=refine&title=…&note=…&owner=…` — the
-   * second half of `promote-to-refinement` (2026-10-15). Sharing a branch now
-   * files the card that says somebody has to look at it, in Ready For
-   * Refinement, beside the row it just added to the board above.
-   *
-   * Read, validated and stripped here for the same three reasons the demo
-   * prefill is: the page owns the router state, a param is a request rather
-   * than a fact, and the object identity has to be stable across renders or
-   * the panel's effect re-fires.
-   */
-  const [todoPrefill] = useState(() => {
-    if (urlSection !== 'todo-board' || !params.has('add')) return null
-    // Validated against the four columns, not cast: an unknown id would reach
-    // the form as a `<select>` with no matching option. `owner` cannot be
-    // validated here — the roster is the board's, and `resolveOwner` answers
-    // for it once the endpoint has.
-    const column = params.get('column')
-    const scope = params.get('scope')
-    return {
-      title: params.get('title') ?? '',
-      note: params.get('note') ?? '',
-      owner: params.get('owner') ?? '',
-      column: isTodoColumn(column) ? column : undefined,
-      /* `/share-to-stage` names the surface it just staged, so the card it
-         files can be matched to a Prototypes row (2026-11-04). Validated
-         against the catalog for the same reason `column` is — a scope nobody
-         has heard of should land as a card with no tag, not as a card
-         claiming a row that does not exist. */
-      scope: isPrototypeScope(scope) ? scope : undefined,
-    }
-  })
-  const consumeTodoPrefill = useCallback(() => {
-    setParams(
-      (prev) => {
-        const p = new URLSearchParams(prev)
-        for (const k of ['add', 'title', 'note', 'owner', 'column', 'scope']) p.delete(k)
-        return p
-      },
-      { replace: true },
-    )
-  }, [setParams])
+  /* TWO `?add=1` HAND-OFFS STOOD HERE until 2026-11-21 — the Refinement
+     prefill (`?section=demo&add=1&url=…&title=…&note=…&product=…&feature=…`,
+     what `promote-to-refinement` opened) and the To Do Board's
+     (`?section=todo-board&add=1&column=…`). The page read the params, passed
+     them to the panel and took them off the address once consumed. The simple
+     Hub's `share-my-work` hands back a link to paste instead; nothing builds
+     either address any more. Both are on `hub-advanced`. */
 
   // Per-browser overrides, held in state so a kebab change re-renders — and, via
   // sectionOf, can move a row into another section immediately.
@@ -1374,10 +1110,10 @@ export function UxDashboardPage() {
      is a row that is in two places. See `rowArchiveStore.ts`. */
   const rowArchive = useRowArchive()
   const setArchived = useCallback((f: PrototypeFeature, archived: boolean) => {
-    /* `readLastAuthor` is the browser's last Refinement author — the same
-       label the link boards stamp with. Nobody has set one on a fresh
-       browser, and an empty stamp is honest. */
-    void setRowArchived(f.id, archived, readLastAuthor()).catch(() => {})
+    /* The browser's last Design-board author — the same label the link
+       boards stamp with (every board shares the one `lastAuthorKey`). Nobody
+       has set one on a fresh browser, and an empty stamp is honest. */
+    void setRowArchived(f.id, archived, DEMO_BOARD.readLastAuthor()).catch(() => {})
   }, [])
   const archivedRows = useMemo(
     () => PROTOTYPE_FEATURES.filter((f) => rowArchive.rows[f.id]),
@@ -1450,37 +1186,10 @@ export function UxDashboardPage() {
        a stale link should open the board, not an empty one. */
     return v && (STATUS_ORDER as readonly string[]).includes(v) ? (v as FeatureStatusKey) : 'all'
   })
-  /* WHICH BUILD THE PROTOTYPES ROWS OPEN — Main or Stage (2026-11-01). In the
-     address as `?build=stage` so a link to "look at what is on stage" is a
-     link, and absent for Main so every existing Hub link means what it meant.
-     See `stageBuild.ts` for why this is a switch on Prototypes and not a
-     section of its own. */
-  const [build, setBuild] = useState<PrototypeBuild>(() => parsePrototypeBuild(params.get('build')))
-  /* WHAT IS WAITING ON STAGE, by surface — the On Stage column's cards, read
-     from the Hub's own store (2026-11-04). This is what lets a Prototypes row
-     SAY that its owner staged something, which until now it could not: the
-     Main · Stage switch changed a row's href and nothing else, so a designer
-     who ran `/share-to-stage` flipped to Stage and saw a card identical to
-     the one under Main. See `useStagedScopes` for why reading a card is
-     allowed where reading the stage build is not. */
-  const stagedCards = useStagedScopes()
-  /* SINCE 2026-11-16 THE FACT COMES FROM GIT FIRST — `share-to-stage` files no
-     card any more; a branch every commit of which is on `stage` IS staged,
-     and `stagedScopesFromBranches` says which surface from its name. The
-     cards are the fallback for what was filed before today, and for a
-     deploy with no GITHUB_TOKEN. Same three fields either way. */
-  /* ONE read of `/api/branches` for the page — the Staged tags, the Release
-     count, and the Design and Release panels all draw from it. Each GitHub-
-     backed answer costs seconds, so the panels take it as a prop rather than
-     fetching their own. */
-  const { index: branchIndex } = useBranches()
-  const stagedBranches = useMemo(() => stagedScopesFromBranches(branchIndex.branches), [branchIndex.branches])
-  /* The Release row's count — branches on stage and not on main. Read here
-     rather than inside the panel because the rail draws it on every section.
-     ⚠ The same trap the archived To Do restore note names: drop this and the
-     row still draws, showing a permanent 0. */
-  const releaseWaiting = waitingCount(branchIndex)
-  const staged = useMemo(() => ({ ...stagedCards, ...stagedBranches }), [stagedCards, stagedBranches])
+  /* THE MAIN · STAGE SWITCH (`?build=`), the Staged tags and the one read of
+     `/api/branches` that fed the Staged tags, the Release count and the Design
+     and Release panels all stood here until 2026-11-21 — `prototypes-section`,
+     `derived-design-section` and `release-section` in `archivedItems.ts`. */
 
   /* The other half of the share link: whatever the board is filtered to is in
      the address, so copying it copies the view. `replace` so a filter does not
@@ -1493,21 +1202,17 @@ export function UxDashboardPage() {
         else next.delete('q')
         if (status !== 'all') next.set('status', status)
         else next.delete('status')
-        if (build !== 'main') next.set('build', build)
-        else next.delete('build')
         return next
       },
       { replace: true },
     )
-  }, [query, status, build, setParams])
+  }, [query, status, setParams])
 
 
-  // Demo shows no dev-cycle status. Everything in it is presentation-ready by
-  // definition — that is what the section IS — so a status tag there either
-  // says "Ready" (no information) or contradicts the section's own promise.
-  // The filter pills go with it: a control that filters an attribute the rows
-  // do not show is a dead control.
-  const showStatus = section !== 'prototypes'
+  /* `showStatus` STOOD HERE — false in Prototypes, the one section that drew
+     no dev-cycle status and no filter pills. Every section that lists feature
+     rows shows status now; `ProjectRow` keeps the prop for the archived rows
+     under Archive, which are drawn without it. */
 
 
   // A feature gateway opened INSIDE this frame (`?open=<featureId>`). Demo rows
@@ -1521,10 +1226,10 @@ export function UxDashboardPage() {
   const openId = params.get('open')
   const openCandidate = openId ? prototypeFeatureById(openId) : undefined
   const openDef = openCandidate
-    ? VISIBLE_SECTIONS.find((d) => d.id === sectionOf(openCandidate, rollupOf(openCandidate)))
+    ? SECTIONS.find((d) => d.id === sectionOf(openCandidate, rollupOf(openCandidate)))
     : undefined
   const openFeature = openCandidate && openDef ? openCandidate : undefined
-  const opensInFrame = (f: PrototypeFeature) => section !== 'prototypes' && !f.externalUrl && !f.to
+  const opensInFrame = (f: PrototypeFeature) => !f.externalUrl && !f.to
   const setOpen = (id: string | null) => {
     const p = new URLSearchParams(params)
     if (id) p.set('open', id)
@@ -1551,17 +1256,10 @@ export function UxDashboardPage() {
     setStatusTick((n) => n + 1)
   }
 
-  /** Live open-item count for the To Do nav badge. Kept out of this component's
-   *  state so the page does not have to own the list. */
-  /** Live finding count for the QA Notes badge — the committed set plus whatever
-   *  has been authored on the page. */
-  const qaCount = useQaNoteCount()
-  /** Live link count for the Links badge. There is no committed set to seed
-   *  from, so this starts at 0 and settles on the first fetch. */
-  const linkCount = useLinkCount()
-  /** Live demo count. On the public build only the rows flipped public are
-   *  shown, so the badge counts only those — a badge over a shorter list reads
-   *  as a load failure. Same mechanism as `useLinkCount`; see `demoStore.ts`. */
+  /** Live Design-board count — the live (un-archived) rows. There is no
+   *  committed set to seed from, so this starts at 0 and settles on the first
+   *  fetch; see `demoStore.ts`. The QA Notes, Resources and To Do Board counts
+   *  that stood beside it went with their sections (2026-11-21). */
   const demoCount = useDemoCount()
   /* The three boards' archived rows, for the Archive nav count — the rows
      themselves are drawn by the panels in `archiveView`. */
@@ -1569,47 +1267,22 @@ export function UxDashboardPage() {
     DEMO_BOARD.useLinkCount((l) => !isLive(l)) +
     RESEARCH_BOARD.useLinkCount((l) => !isLive(l)) +
     PRD_BOARD.useLinkCount((l) => !isLive(l))
-  /** Live research-link count. Same mechanism as `useLinkCount`; see
-   *  `researchStore.ts`. */
+  /** Live research-link count. Same mechanism; see `researchStore.ts`. */
   const researchCount = useResearchCount()
   /** Live PRD-link count. Same mechanism again; see `prdStore.ts`. */
   const prdCount = usePrdCount()
-  /** Live card count for the To Do Board badge. Same mechanism again; see
-   *  `todoBoardStore.ts`. ⚠ The trap the archived To Do section's restore note
-   *  names applies here too: everything compiles and the row still draws
-   *  without this, showing a permanent 0. */
-  const todoBoardCount = useTodoBoardCount()
 
   const bySection = useMemo(() => {
     const out: Record<UxSection, PrototypeFeature[]> = {
-      // Not a list of features — derived from the branch list, see
-      // `DesignPanel`. No nav count: the number changes as Netlify builds.
-      design: [],
-      // Same — derived from the branch list, see `ReleasePanel`.
-      release: [],
-      // Not a list of features — the Demo panel owns its own data, so this
+      // Not a list of features — the Design panel owns its own data, so this
       // stays empty by design and the nav count comes from `useDemoCount`.
       demo: [],
-      prototypes: [],
-      // Not a list of features — the Links panel owns its own data, so this
-      // stays empty by design and the nav count comes from `useLinkCount`.
-      links: [],
       // Same again: boards, counted by `useResearchCount` / `usePrdCount`.
       research: [],
       prds: [],
-      exploration: [],
       development: [],
       done: [],
       archive: [],
-      // Not a list of features either — the panel reads `HUB_DOCS`, and the
-      // nav count is the static `count` on the SectionDef.
-      'hub-resources': [],
-      // Not a list of features — the QA panel owns its own data, so this stays
-      // empty by design and the nav count comes from the `count` field.
-      'qa-notes': [],
-      // Same again: the board owns its own store, counted by
-      // `useTodoBoardCount`.
-      'todo-board': [],
     }
     for (const f of PROTOTYPE_FEATURES) {
       /* An archived row is off the board — it is listed under Archive, with
@@ -1659,25 +1332,20 @@ export function UxDashboardPage() {
        written in, which is itself information. Two buckets, each internally
        untouched.
 
-       ⚠ NOT IN PROTOTYPES, which is why this is gated on `showStatus` rather
-       than on the section name: that section's order is a decision
-       (`PROTOTYPE_SCOPES`, end-to-end always first, pinned by
-       `UxDashboard.smoke.test.tsx`) and it is the one section that draws no
-       status chip at all — so there is nothing visible for a reader to tie the
-       reordering to. The two facts travel together, so one flag covers both.
+       (It was gated on `showStatus` while Prototypes existed — the one
+       section that drew no status chip, so nothing visible to tie a
+       reordering to. Every section that lists feature rows shows status now.)
 
        Keys are computed ONCE into a map rather than inside the comparator:
        `statusKeyOf` reads the roll-up out of localStorage, and a comparator
        runs O(n log n) times. */
-    const ordered = showStatus
-      ? (() => {
-          const keys = new Map(out.map((f) => [f.id, statusKeyOf(f, done, inDesign)]))
-          const ready = out.filter((f) => keys.get(f.id) === 'ready-for-dev')
-          return ready.length && ready.length < out.length
-            ? [...ready, ...out.filter((f) => keys.get(f.id) !== 'ready-for-dev')]
-            : out
-        })()
-      : out
+    const ordered = (() => {
+      const keys = new Map(out.map((f) => [f.id, statusKeyOf(f, done, inDesign)]))
+      const ready = out.filter((f) => keys.get(f.id) === 'ready-for-dev')
+      return ready.length && ready.length < out.length
+        ? [...ready, ...out.filter((f) => keys.get(f.id) !== 'ready-for-dev')]
+        : out
+    })()
     // Authored order, with pinned rows leading. Applied AFTER the filters, so
     // a pin cannot smuggle a row past a search or a status filter — it only
     // decides where a row that already matched sits. It is also applied after
@@ -1686,7 +1354,7 @@ export function UxDashboardPage() {
     const pinned = ordered.filter((f) => f.pinned)
     return pinned.length ? [...pinned, ...ordered.filter((f) => !f.pinned)] : ordered
     // eslint-disable-next-line react-hooks/exhaustive-deps -- statusTick invalidates an impure localStorage read
-  }, [inSection, q, status, done, inDesign, statusTick, showStatus])
+  }, [inSection, q, status, done, inDesign, statusTick])
 
   // The palette, resolved once so the shell and the root mirror below cannot
   // disagree about which scheme is active.
@@ -1698,47 +1366,31 @@ export function UxDashboardPage() {
   // colours. Cleaned up on unmount so the palette never outlives the page.
   useEffect(() => mirrorPaletteToRoot(paletteVars as Record<string, string>), [paletteVars])
 
-  /* The grouped row list — one card per group, rows inside.
-
-     PROTOTYPES IS TWO LISTS — 2026-10-14, Jillienne on the preview: "this is
-     the same as the main branch, so can we have it separated from the rest to
-     better indicate that it's the Final Prototype, Source of Truth". The
-     end-to-end row stands in its own card under its own heading; the doors
-     around it — the work in progress — sit in a second card beneath. Every
-     other section is the one unlabelled list it always was. */
-  const rowGroups = groupRows(section, rows, build).map((g) => (
-    <div key={g.id} data-group={g.id}>
-      {g.label && (
-        <div style={groupHeadStyle}>
-          <p style={groupLabelStyle}>{g.label}</p>
-          {g.note && <p style={groupNoteStyle}>{g.note}</p>}
-        </div>
-      )}
-      <div style={hubListStyle}>
-        {g.rows.map((f) => (
-          <ProjectRow
-            key={f.id}
-            feature={f}
-            statusKey={statusKeyOf(f, done, inDesign)}
-            isDone={done[f.id] ?? !!f.done}
-            isInDesign={inDesign[f.id] ?? !!f.inProgress}
-            onToggleDone={toggleDone}
-            onToggleInDesign={toggleInDesign}
-            onSetRollup={setRollup}
-            dark={dark}
-            onOpen={opensInFrame(f) ? setOpen : undefined}
-            showStatus={showStatus}
-            /* Archive is offered where the store can take it and the row is
-               not the product (Prototypes rows show no status and take no
-               dev-cycle action, archive included). */
-            archive={rowArchive.available && showStatus ? { state: 'can', onSet: setArchived } : undefined}
-            build={section === 'prototypes' ? build : undefined}
-            staged={section === 'prototypes' && f.prototypeScope ? staged[f.prototypeScope] : undefined}
-          />
-        ))}
-      </div>
+  /* The row list. One unlabelled list, which is what every section always
+     was except Prototypes — that one drew two cards ("Final prototype —
+     source of truth" over the end-to-end row, "Work in progress" over the
+     doors around it) via a `groupRows` that stood here until 2026-11-21. */
+  const rowList = (
+    <div style={hubListStyle}>
+      {rows.map((f) => (
+        <ProjectRow
+          key={f.id}
+          feature={f}
+          statusKey={statusKeyOf(f, done, inDesign)}
+          isDone={done[f.id] ?? !!f.done}
+          isInDesign={inDesign[f.id] ?? !!f.inProgress}
+          onToggleDone={toggleDone}
+          onToggleInDesign={toggleInDesign}
+          onSetRollup={setRollup}
+          dark={dark}
+          onOpen={opensInFrame(f) ? setOpen : undefined}
+          showStatus
+          /* Archive is offered wherever the store can take it. */
+          archive={rowArchive.available ? { state: 'can', onSet: setArchived } : undefined}
+        />
+      ))}
     </div>
-  ))
+  )
 
   return (
     // The palette is applied here as custom properties rather than in
@@ -1769,32 +1421,24 @@ export function UxDashboardPage() {
             one system of separators rather than two. */}
         <hr style={{ ...brandDividerStyle, borderTopColor: nav.border }} />
         <nav style={navListStyle}>
-          {VISIBLE_SECTIONS.map((s, i) => {
+          {SECTIONS.map((s, i) => {
             const active = s.id === section
             const count =
-              s.id === 'qa-notes'
-                ? qaCount
-                : s.id === 'release'
-                  ? releaseWaiting
-                : s.id === 'links'
-                  ? linkCount
-                  : s.id === 'demo'
-                    ? demoCount
-                    : s.id === 'research'
-                      ? researchCount
-                      : s.id === 'prds'
-                        ? prdCount
-                        : s.id === 'todo-board'
-                          ? todoBoardCount
-                          : s.id === 'archive'
-                            ? ARCHIVED_ITEMS.length + archivedRows.length + archivedLinkCount
-                            : (s.count ?? bySection[s.id].length)
+              s.id === 'demo'
+                ? demoCount
+                : s.id === 'research'
+                  ? researchCount
+                  : s.id === 'prds'
+                    ? prdCount
+                    : s.id === 'archive'
+                      ? ARCHIVED_ITEMS.length + archivedRows.length + archivedLinkCount
+                      : (s.count ?? bySection[s.id].length)
             return (
               <div key={s.id}>
                 {/* NAV_EYEBROWS rows first — authored, by id, above specific
-                    ungated sections (Demo, Design & Research, Dev Handoff).
-                    The very first row (Prototypes) skips the rule: the brand
-                    divider above the <nav> already separates it. */}
+                    sections (Design & Research, Dev Handoff). The very first
+                    row skips the divider: the brand divider above the <nav>
+                    already separates it. */}
                 {NAV_EYEBROWS[s.id] && (
                   <>
                     {i > 0 && <hr style={{ ...dividerStyle, borderTopColor: nav.border }} />}
@@ -1920,7 +1564,7 @@ export function UxDashboardPage() {
       </aside>
 
       {/* ── Projects ── */}
-      <main style={section === 'todo-board' ? mainWideStyle : mainStyle}>
+      <main style={mainStyle}>
         {openFeature ? (
           <>
             <button type="button" onClick={() => setOpen(null)} style={backLinkStyle}>
@@ -1929,7 +1573,7 @@ export function UxDashboardPage() {
                 aria-hidden
                 style={{ transform: 'rotate(180deg)', flex: 'none' }}
               />
-              All {VISIBLE_SECTIONS.find((s) => s.id === section)!.label.toLowerCase()} projects
+              All {SECTIONS.find((s) => s.id === section)!.label.toLowerCase()} projects
             </button>
             <PrototypeFeaturePage featureId={openFeature.id} embedded />
           </>
@@ -1939,47 +1583,25 @@ export function UxDashboardPage() {
           {/* No eyebrow over the section title — 2026-10-14, Jillienne on the
               preview: "remove the eyebrow from all the pages". Every section
               shares this header, so this is every page. */}
-          <h1 style={h1Style}>{VISIBLE_SECTIONS.find((s) => s.id === section)!.label}</h1>
-          {VISIBLE_SECTIONS.find((s) => s.id === section)!.blurb && (
-            <p style={ledeStyle}>{VISIBLE_SECTIONS.find((s) => s.id === section)!.blurb}</p>
+          <h1 style={h1Style}>{SECTIONS.find((s) => s.id === section)!.label}</h1>
+          {SECTIONS.find((s) => s.id === section)!.blurb && (
+            <p style={ledeStyle}>{SECTIONS.find((s) => s.id === section)!.blurb}</p>
           )}
         </header>
 
         {section === 'research' ? (
-          // The Links panel over the research board — see `ResearchPanel` in
-          // `LinksPanel.tsx`. No bridge wrapper, same reason as Links below.
+          // The link-board panel over the research board — see `ResearchPanel`
+          // in `LinksPanel.tsx`. No `ARCHIVE_BRIDGE` wrapper: the panel is
+          // styled on this page's own `--ux-*` palette rather than the brand
+          // tokens, so it already re-skins with the four schemes and four
+          // appearances.
           <ResearchPanel />
-        ) : section === 'qa-notes' ? (
-          // Same bridge the archive table uses: the panel is styled on brand
-          // tokens, and these six re-point them at this page's palette so it
-          // re-skins with the four schemes and four appearances.
-          <div style={ARCHIVE_BRIDGE}>
-            <QaNotesPanel />
-          </div>
-        ) : section === 'links' ? (
-          // No `ARCHIVE_BRIDGE` wrapper: the panel is styled on this page's own
-          // `--ux-*` palette rather than the brand tokens, like `TodoPanel`, so
-          // it already re-skins with the four schemes and four appearances.
-          <LinksPanel />
         ) : section === 'prds' ? (
           <PrdsPanel />
-        ) : section === 'design' ? (
-          // Derived from the branch list — nothing to author. See the
-          // `SectionDef` and `DesignPanel.tsx`.
-          <DesignPanel index={branchIndex} />
-        ) : section === 'release' ? (
-          <ReleasePanel index={branchIndex} />
         ) : section === 'demo' ? (
-          // The same panel as Links with a different board behind it — see
-          // `LinkBoardPanel`. Read-only and filtered to public rows on the
-          // public build; that asymmetry is the review gate.
-          <DemoPanel prefill={demoPrefill} onPrefillConsumed={consumeDemoPrefill} />
-        ) : section === 'todo-board' ? (
-          // No `ARCHIVE_BRIDGE` wrapper, same as Links: the panel is styled on
-          // this page's own `--ux-*` palette rather than the brand tokens. Its
-          // two SHEETS do need the bridge, because they portal out of this
-          // shell — they carry it themselves, see `TodoBoardSheets.tsx`.
-          <TodoBoardPanel prefill={todoPrefill} onPrefillConsumed={consumeTodoPrefill} />
+          // The same panel with the Design board behind it — see
+          // `LinkBoardPanel` and `DemoPanel`.
+          <DemoPanel />
         ) : section === 'archive' ? (
           <>
             {/* THE LINKS ARCHIVED FROM THE THREE BOARDS — 2026-11-21 — first,
@@ -2025,10 +1647,6 @@ export function UxDashboardPage() {
               <ArchiveTable />
             </div>
           </>
-        ) : section === 'hub-resources' ? (
-          // No `ARCHIVE_BRIDGE`: styled on this page's own `--ux-*` palette,
-          // the same call `LinksPanel` makes.
-          <HubResourcesPanel />
         ) : (
           <>
             <div style={toolbarStyle}>
@@ -2048,40 +1666,11 @@ export function UxDashboardPage() {
               <ShareLinkButton />
             </div>
 
-            {/* MAIN · STAGE (2026-11-01). Prototypes shows no status pills —
-                the section IS the product — so this strip takes their place
-                there. It does not filter the rows; it decides which BUILD the
-                same five rows open. The active build's note sits beside it so
-                "Stage" is never a bare word to a stakeholder who has not read
-                the guide. */}
-            {section === 'prototypes' && (
-              <div style={buildRowStyle}>
-                <div style={pillRowStyle} role="radiogroup" aria-label="Which build the rows open">
-                  {PROTOTYPE_BUILDS.map((b) => (
-                    <button
-                      key={b.id}
-                      type="button"
-                      role="radio"
-                      aria-checked={build === b.id}
-                      data-build={b.id}
-                      onClick={() => setBuild(b.id)}
-                      style={{ ...pillStyle, ...(build === b.id ? pillActiveStyle : null) }}
-                    >
-                      {b.label}
-                    </button>
-                  ))}
-                </div>
-                <p style={buildNoteStyle} data-build-note>
-                  {PROTOTYPE_BUILDS.find((b) => b.id === build)!.note}
-                </p>
-              </div>
-            )}
-
             {/* Status pills. Counts are of the SECTION, not of the current
                 selection, so a pill says how many it would show rather than how
                 many survive the pick you already made. Only statuses actually
                 present render — an empty pill is a dead control. */}
-            {showStatus && statusCounts.length > 1 && (
+            {statusCounts.length > 1 && (
               <div style={pillRowStyle} role="group" aria-label="Filter by status">
                 <StatusPill
                   label="All"
@@ -2107,7 +1696,7 @@ export function UxDashboardPage() {
                 {q ? `Nothing matches “${query}”.` : 'Nothing in this section yet.'}
               </p>
             ) : (
-              rowGroups
+              rowList
             )}
           </>
         )}
@@ -2174,7 +1763,9 @@ type ProjectRowProps = {
    *  row stays a real `<a href>` either way, so cmd/middle-click still opens
    *  the standalone `/prototype/:id` page in a new tab. */
   onOpen?: (id: string) => void
-  /** False in Demo, where a dev-cycle status says nothing. */
+  /** False for the archived rows listed under Archive, which are drawn
+   *  without their dev-cycle status. (It was false in Prototypes too, the
+   *  section that was the product, until 2026-11-21.) */
   showStatus: boolean
   onToggleDone: (f: PrototypeFeature) => void
   onToggleInDesign: (f: PrototypeFeature) => void
@@ -2183,15 +1774,8 @@ type ProjectRowProps = {
    *  `archived` — the rows listed under Archive — offers Unarchive and
    *  nothing else but Copy link. Absent where the store is unreachable. */
   archive?: { state: 'can' | 'archived'; onSet: (f: PrototypeFeature, archived: boolean) => void }
-  /** Which build a PROTOTYPES row opens (2026-11-01) — `main` unless the
-   *  section's Main · Stage switch says otherwise. Rows outside Prototypes
-   *  ignore it: nothing else on the Hub opens a build of the product. */
-  build?: PrototypeBuild
-  /** The live On Stage card naming this row's surface, when there is one
-   *  (2026-11-04) — the Hub's record that the owner has staged this surface
-   *  and it is waiting on a release. Absent on every row outside Prototypes,
-   *  and on a Prototypes row whose surface has nothing staged. */
-  staged?: StagedFact
+  /* `build` (Main · Stage) and `staged` (the On Stage fact) stood here —
+     Prototypes-only props, gone with the section on 2026-11-21. */
 }
 
 function ProjectRow({
@@ -2206,8 +1790,6 @@ function ProjectRow({
   onToggleInDesign,
   onSetRollup,
   archive,
-  build = 'main',
-  staged,
 }: ProjectRowProps) {
   const [copied, setCopied] = useState(false)
   const Icon = ICONS[feature.icon] ?? Grid
@@ -2218,123 +1800,27 @@ function ProjectRow({
      no `<a>`, no hover, no chevron, no kebab (every action in it is about a
      row that goes somewhere), and the status tag is shown even where the
      section hides status — "Coming soon" is the one thing the row has to say.
-     Two kinds: nothing built yet (the Admin row, no `to`), and a surface HELD
-     BACK with its `to` kept on record (the end-to-end row, the same evening:
-     "don't remove the work, just hide users from clicking on it"). Either
-     kind draws the generated mark, not a live frame — see `hasPreview`. */
+     It draws the generated mark, not a live frame — see `hasPreview`. (The
+     Admin placeholder on Prototypes was the instance; no row carries it
+     since 2026-11-21, and the rule stays for the next one.) */
   const placeholder = feature.status === 'coming-soon'
-  const isPrototypeRow = feature.category === 'prototype'
-  /* ⚠ THE PICTURE DOES NOT FOLLOW THE BUILD, and that was TRIED and reverted
-     on 2026-11-04 — do not re-add it without reading this.
-
-     The idea is obvious: under Stage, frame the stage build so the thumbnail
-     shows the staged work instead of main's. `primaryPreviewSrc` still takes
-     an `origin` for it. What it actually renders is a BLACK BOX. The stage
-     build is a separate Netlify origin behind its own copy of the site
-     password, an iframe to it carries no credentials from this origin, and
-     the frame loads Netlify's password page — which paints dark and says
-     nothing. Measured on the local netlify dev server with a staged Compass
-     card: the row's picture went from a screenshot of the product to an empty
-     dark rectangle, i.e. the card looked WORSE under Stage, which is the
-     opposite of what the Stage tag is there to do.
-
-     So the TAG carries the stage news and the picture stays main's. The row
-     is honest either way: under Stage it says "Staged Nov 4 · Anjani" and
-     opens the stage build in a new tab, where the viewer authenticates once
-     and sees the real thing. A thumbnail that can only work after the viewer
-     has already been where the thumbnail is sending them is not a
-     thumbnail. */
   const preview = primaryPreviewSrc(feature)
   // A placeholder shows the GENERATED mark whatever it has on record — Jillienne
   // on the preview, 2026-10-14: "make that image a default icon image like the
   // admin tool to show it's disabled". A live frame of the surface behind a
   // held-back row read as an invitation; the abstract mark reads as closed.
   const hasPreview = !placeholder && Boolean(feature.thumbnail || preview)
-  /* A DEACTIVATED LINK — 2026-11-17, Jillienne: "deactivate the links to the
-     main prototypes and stage prototypes so that the users get an error
-     screen … on the error screen shown to the user is where the message
-     should be."
-
-     The row is drawn exactly as it was — it has to still look clickable, or
-     there is no click to put the message behind. What changes is only where
-     the click GOES: the retired-link screen on this origin, which names the
-     surface and the build the reader was reaching for, and says to check with
-     UX Team/Product Owner for the new link (no individual is named —
-     2026-11-17).
-
-     ⚠ UNDER BOTH BUILDS, and same-origin under both. Pointing Stage at a
-     retired screen on the stage origin would put Netlify's password page in
-     front of the message, which is the one thing this must not do. `?build=`
-     carries which switch position the reader was on instead.
-
-     ⚠ `feature.to` IS NOT CONSULTED HERE, on purpose — it stays the real
-     route so the smoke test keeps holding it to the one-build rule, and
-     reactivating a row is deleting its `linkRetired` line. */
-  const linkRetired = isPrototypeRow && feature.linkRetired === true
-  /* A Prototypes row's `to` is a same-origin path on main's build; under the
-     section's Stage switch the same path opens on the stage origin instead
-     (`stageBuild.ts`). Every other row is what it always was. */
-  const href = linkRetired
-    ? `/prototype-unavailable/${feature.id}${build === 'stage' ? '?build=stage' : ''}`
-    : (feature.externalUrl ??
-      (feature.to ? (isPrototypeRow ? prototypeHref(feature.to, build) : feature.to) : `/prototype/${feature.id}`))
+  /* The deactivated-link screen (`linkRetired`, 2026-11-17) and the
+     Main · Stage re-origin (`prototypeHref`, 2026-11-01) both rewrote this
+     href for Prototypes rows; both went with the section on 2026-11-21. */
+  const href = feature.externalUrl ?? feature.to ?? `/prototype/${feature.id}`
   // An absolute href is one the copy-link button must not prefix with this
-  // origin — a document's, or a Prototypes row's under Stage.
+  // origin — a document's.
   const external = Boolean(feature.externalUrl) || /^https?:\/\//.test(href)
-  /* The three facts a Prototypes row carries beside its title (2026-10-14):
-     which door it is (an empty scope label means none — the product row),
-     whose surface it is, and when that surface last changed on `main`. */
-  const owner = prototypeScopeOwner(feature.prototypeScope)
-  /* The owner tag is a user ICON and the name, not the word "Owner" — Jillienne
-     on the preview, 2026-10-14. The word stays for a screen reader, visually
-     hidden, so the tag still reads "Owner: Anjani" where it is read aloud. */
-  // Owner, then Updated, then the scope LAST — 2026-10-15, Jillienne on the
-  // live site: "move these top ones to the bottom". Who and when lead; what
-  // door it is closes the stack.
-  /* THE STAGED TAG (2026-11-04) — the row's answer to "my share worked, why
-     does this card look the same?".
-
-     Two spellings of one fact, because the two builds are asking different
-     questions of it:
-
-       • Under STAGE, the row IS the staged thing, so the tag says WHEN and by
-         WHOM — "Staged Nov 4 · Anjani" — drawn in the accent so it reads as
-         the one thing on the card that changed. That is the confirmation the
-         switch owed the designer who ran `/share-to-stage`.
-       • Under MAIN, the row is the RELEASED surface and the staged work is
-         not in it. A tag that said "Staged" there would be a lie about what
-         the row opens. It says "Waiting on stage" instead — quiet, muted, and
-         really a signpost: there is a reason to flip the switch, and without
-         it nobody would know to.
-
-     Nothing is drawn when the surface has nothing staged, which is the normal
-     state of four rows out of five. Archiving the On Stage card is how a
-     release clears this — see `useStagedScopes`. */
-  const stagedTag: HubRowTag | null = !staged
-    ? null
-    : build === 'stage'
-      ? {
-          key: 'staged',
-          text: `Staged ${formatStamp(staged.addedDate)}${staged.owner ? ` · ${staged.owner}` : ''}`,
-          style: { borderColor: 'var(--ux-accent)', color: 'var(--ux-accent)' },
-          // The card's own title, so hovering says WHAT was staged — the row
-          // has no room for a chunk name and the board is where it lives.
-          title: staged.title,
-        }
-      : {
-          key: 'staged',
-          text: 'Waiting on stage',
-          style: { color: 'var(--ux-text-3)' },
-          title: `${staged.title} — staged ${formatStamp(staged.addedDate)}${staged.owner ? ` by ${staged.owner}` : ''}. Switch to Stage to open it.`,
-        }
-  const prototypeTags: HubRowTag[] = [
-    { key: 'owner', text: owner ?? '', icon: <User size={11} aria-hidden style={{ flex: 'none' }} />, srPrefix: 'Owner: ' },
-    { key: 'updated', text: feature.lastUpdated ? `Updated ${formatUpdated(feature.lastUpdated)}` : '' },
-    // Above the scope, below Updated: the stack reads who · when · what is
-    // pending · which door, and the pending line belongs with the dates.
-    ...(stagedTag ? [stagedTag] : []),
-    { key: 'scope', text: prototypeScopeLabel(feature.prototypeScope) || '' },
-  ].filter((t) => t.text)
+  /* THE PROTOTYPES ROW'S OWN TAGS stood here until 2026-11-21 — the scope
+     owner (`prototypeScopeOwner`), the "Updated" stamp and the scope label,
+     plus the Staged / "Waiting on stage" tag of 2026-11-04. The handoff row's
+     stack below is the same shape, which is what every row wears now. */
   // Three labels, answering "how much of the product is this?":
   //   Standalone HTML — leaves the app entirely (the route column used to be
   //     the only thing that said so; with it gone the kind tag carries it)
@@ -2342,33 +1828,21 @@ function ProjectRow({
   //   Feature         — one feature. Every `guided` tile is one, and so are the
   //     `explore` tiles that open a single page rather than the platform, which
   //     say so via `kindLabel`.
-  //   A PROTOTYPES row says which DOOR it is instead (2026-10-14): three rows
-  //     in that section all open the same build, so "Full platform" three
-  //     times would say nothing, and the scope label is the one thing that
-  //     tells them apart at a glance.
-  //   An EMPTY scope label means no kind tag at all (the end-to-end row,
-  //     2026-10-14) — the column stays so the other rows' tags still line up.
-  const scopeLabel = prototypeScopeLabel(feature.prototypeScope)
-  const meta =
-    scopeLabel === ''
-      ? []
-      : [
-          scopeLabel ??
-            (feature.surface && SURFACE_TAG[feature.surface]) ??
-            feature.kindLabel ??
-            (external ? 'Standalone HTML' : feature.kind === 'explore' ? 'Full platform' : 'Feature'),
-        ]
-  /* A handoff row's designer and Updated tags, same shape as `prototypeTags`.
-     The designer is the row's own `owner` and nothing else: a fallback to the
-     surface's scope owner named Eric on four handoffs Jill wrote
-     (2026-10-27), so a row with no owner simply has no designer tag. */
+  //   A handoff about a SURFACE says which one (`surface`, 2026-10-27).
+  const meta = [
+    (feature.surface && SURFACE_TAG[feature.surface]) ??
+      feature.kindLabel ??
+      (external ? 'Standalone HTML' : feature.kind === 'explore' ? 'Full platform' : 'Feature'),
+  ]
+  /* A handoff row's designer and Updated tags. The designer is the row's own
+     `owner` and nothing else: a fallback to the surface's scope owner named
+     Eric on four handoffs Jill wrote (2026-10-27), so a row with no owner
+     simply has no designer tag. */
   const handoffOwner = feature.owner
-  const handoffTags: HubRowTag[] = isPrototypeRow
-    ? []
-    : [
-        { key: 'owner', text: handoffOwner ?? '', icon: <User size={11} aria-hidden style={{ flex: 'none' }} />, srPrefix: 'Designer: ' },
-        { key: 'updated', text: feature.lastUpdated ? `Updated ${formatUpdated(feature.lastUpdated)}` : '' },
-      ].filter((t) => t.text)
+  const handoffTags: HubRowTag[] = [
+    { key: 'owner', text: handoffOwner ?? '', icon: <User size={11} aria-hidden style={{ flex: 'none' }} />, srPrefix: 'Designer: ' },
+    { key: 'updated', text: feature.lastUpdated ? `Updated ${formatUpdated(feature.lastUpdated)}` : '' },
+  ].filter((t) => t.text)
   // The row's status chip and the pill that filters it are the same resolver,
   // so a pill can never disagree with the rows it produces.
   const chip = featureStatusChipFor(statusKey, dark)
@@ -2387,13 +1861,10 @@ function ProjectRow({
     setCopied(true)
   }
 
-  /* A PROTOTYPES ROW'S KEBAB IS "COPY LINK" AND NOTHING ELSE — 2026-10-14,
-     Jillienne on the preview. `showStatus` is false exactly in Prototypes (see
-     the note on it), and every other item here is a dev-cycle action — Mark
-     in design, Mark done, the six roll-up statuses — which says nothing about
-     a row that IS the product. Keyed off `showStatus` rather than a new prop
-     because the two are one fact: a section that shows no status has no
-     status to set. */
+  /* A ROW DRAWN WITHOUT STATUS HAS A "COPY LINK" KEBAB AND NOTHING ELSE —
+     2026-10-14, for the Prototypes rows; every other item here is a dev-cycle
+     action, which says nothing about a row whose status is not shown. Keyed
+     off `showStatus` rather than a new prop because the two are one fact. */
   const copyOnly = !showStatus
   const copyItem = {
     id: 'copy-link',
@@ -2484,31 +1955,17 @@ function ProjectRow({
     </GeneratedThumb>
   )
 
-  /* A PROTOTYPES ROW'S TAGS — 2026-10-14, Jillienne on the preview: the
-     owner, when the surface last changed on main, and which door it is,
-     in that order (2026-10-15: "move these top ones to the bottom").
-     EVERY OTHER ROW wears the same stack (2026-10-27, on the Development
-     board: "have this feature tag match the UI from the prototypes page"):
-     who wrote it, when it last changed, then WHICH SURFACE it is about. */
-  const tags: HubRowTag[] = isPrototypeRow
-    ? prototypeTags
-    : [...handoffTags, ...meta.map((m) => ({ key: `meta-${m}`, text: m }))]
+  /* THE ROW'S TAGS — the stack the Prototypes rows wore first (2026-10-14:
+     owner, Updated, which door) and every other row took on 2026-10-27 ("have
+     this feature tag match the UI from the prototypes page"): who wrote it,
+     when it last changed, then WHICH SURFACE it is about. */
+  const tags: HubRowTag[] = [...handoffTags, ...meta.map((m) => ({ key: `meta-${m}`, text: m }))]
 
-  /* The status column. A Prototypes row's holds "Coming soon" on a
-     placeholder and nothing otherwise — the column is there on every row so
-     the stacks and the chevrons stay aligned (2026-10-15). A handoff row's
-     holds the tinted status tag, wide enough for "Ready for Dev", and goes
-     away entirely in a section that shows no status. */
-  const statusWidth = isPrototypeRow ? 84 : showStatus ? 112 : undefined
-  const status = isPrototypeRow ? (
-    placeholder && (
-      /* The whole `border` shorthand, not `borderColor` over it: React writes
-         the longhand after the shorthand and the browser drops the widths. */
-      <span style={{ ...hubTagStyle, color: chip.color, border: `1px solid ${chip.color}` }}>{chip.label}</span>
-    )
-  ) : (
+  /* The status column: the tinted status tag, wide enough for "Ready for
+     Dev", and gone entirely where the row shows no status. */
+  const statusWidth = showStatus ? 112 : undefined
+  const status =
     showStatus && <span style={{ ...hubMetaChipStyle, ...statusTagStyle(chip.color, statusKey) }}>{chip.label}</span>
-  )
 
   /* READY FOR DEV WEARS A GREEN LEFT STROKE (2026-10-21, Jillienne: "when
      ready for dev, also include a green left stroke on this component to help
@@ -2533,7 +1990,7 @@ function ProjectRow({
       onOpen={onOpen ? () => onOpen(feature.id) : undefined}
       /* THE ROW KEBAB — every item behind it is a DESIGN action (the dev-cycle
          statuses, Mark done, Archive) or Copy link; the items are decided
-         above, and a Prototypes row's is Copy link alone. */
+         above. */
       actions={items}
       menuLabel={`Actions for ${feature.title}`}
       stroke={readyStroke ? devStatusStrokeFor('ready-for-dev', dark) : undefined}
@@ -2853,21 +2310,8 @@ const swatchDotStyle: CSSProperties = {
 // under a deep band of nothing.
 const mainStyle: CSSProperties = { padding: '24px 32px 72px', maxWidth: 1080 }
 
-/**
- * The To Do Board's main is WIDER than every other section's.
- *
- * 1080 is a reading measure — right for a list of rows with a title and a
- * note, which is what every other section is. The board is four columns side
- * by side, and at 1080 (826 of it after the padding) the fourth sat off the
- * edge behind a horizontal scrollbar. Scrolling sideways to see a column is
- * the one thing a board must not make you do: "what is in Ready for Handoff?"
- * is the question it exists to answer at a glance.
- *
- * `none` rather than a bigger number, because the columns share whatever
- * width there is (see `boardStyle`) — so the board grows with the window
- * instead of being capped at somebody's guess about a monitor.
- */
-const mainWideStyle: CSSProperties = { ...mainStyle, maxWidth: 'none' }
+/* `mainWideStyle` — the To Do Board's wider main, `maxWidth: 'none'` so four
+   columns fit — stood here until 2026-11-21. */
 const headerStyle: CSSProperties = { marginBottom: 22 }
 
 
@@ -2914,21 +2358,8 @@ const searchInputStyle: CSSProperties = {
 
 const pillRowStyle: CSSProperties = { display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 14 }
 
-/* The Main · Stage strip and its one-line note, side by side on a wide pane
-   and stacked on a narrow one. The note takes the row's bottom margin so the
-   two read as one control. */
-const buildRowStyle: CSSProperties = {
-  display: 'flex',
-  flexWrap: 'wrap',
-  alignItems: 'baseline',
-  columnGap: 14,
-  marginBottom: 14,
-}
-const buildNoteStyle: CSSProperties = {
-  margin: '0 0 14px',
-  fontSize: 12.5,
-  color: 'var(--ux-text-2)',
-}
+/* `buildRowStyle` / `buildNoteStyle` — the Main · Stage strip — stood here
+   until 2026-11-21. */
 
 const pillStyle: CSSProperties = {
   display: 'inline-flex',
@@ -2971,57 +2402,16 @@ const statusDotStyle: CSSProperties = { width: 7, height: 7, borderRadius: '50%'
 
 const countStyle: CSSProperties = { marginLeft: 'auto', fontSize: 12.5, color: 'var(--ux-text-2)' }
 
-/** How a section's rows are grouped into cards. Only Prototypes splits (see
- *  the render site); an empty group is dropped so a filtered search never
- *  shows a heading over nothing. */
-function groupRows(
-  section: UxSection,
-  rows: PrototypeFeature[],
-  build: PrototypeBuild = 'main',
-): { id: string; label?: string; note?: string; rows: PrototypeFeature[] }[] {
-  if (section !== 'prototypes') return [{ id: 'all', rows }]
-  const truth = rows.filter((f) => f.prototypeScope === 'end-to-end')
-  const rest = rows.filter((f) => f.prototypeScope !== 'end-to-end')
-  // The same two cards under either build; only the notes change, because
-  // "main, at the committed baseline" is a false statement about stage.
-  const stage = build === 'stage'
-  return [
-    {
-      id: 'source-of-truth',
-      label: 'Final prototype — source of truth',
-      note: stage
-        ? 'What the product will be at the next release.'
-        : 'What the product is right now.',
-      rows: truth,
-    },
-    {
-      id: 'in-progress',
-      label: 'Work in progress',
-      note: stage
-        ? 'The pieces around it, as they stand on stage.'
-        : 'The pieces around it, each owned by one designer.',
-      rows: rest,
-    },
-  ].filter((g) => g.rows.length > 0)
-}
-
-const groupHeadStyle: CSSProperties = { margin: '22px 0 10px' }
-const groupLabelStyle: CSSProperties = {
-  margin: 0,
-  fontFamily: 'var(--font-heading)',
-  fontSize: 15,
-  fontWeight: 700,
-  color: 'var(--ux-text)',
-}
-const groupNoteStyle: CSSProperties = { margin: '3px 0 0', fontSize: 12.5, color: 'var(--ux-text-2)' }
+/* `groupRows` and the group heading styles — Prototypes' two cards, "Final
+   prototype — source of truth" and "Work in progress" — stood here until
+   2026-11-21. */
 
 /* The row's own styles — `listStyle`, `rowWrapStyle`, `nameStyle`, the
    tag stack and the outlined tag — moved to `hubRowStyles.ts` on 2026-11-01
    when every section took the row. `SURFACE_TAG` and `statusTagStyle` are
    what a FEATURE row says, so they stay. */
 
-/** The kind tag's word for a handoff about a surface (2026-10-27) — shorter
- *  than the Prototypes rows' scope labels, which name a door. */
+/** The kind tag's word for a handoff about a surface (2026-10-27). */
 const SURFACE_TAG: Record<PrototypeScope, string> = {
   'end-to-end': 'End-to-End',
   invite: 'Invite Flow',

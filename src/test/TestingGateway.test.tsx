@@ -82,11 +82,14 @@ afterEach(() => {
 })
 
 describe('VITE_GATEWAY_MODE=testing — every gateway route lands in the product', () => {
-  /* The five doors into the UX Dashboard. A participant handed one link must
-     not find a project list behind any of them — not even the trimmed one the
-     public build serves, which still says "this is a prototype gallery
-     belonging to a design team" and reframes everything they then say. */
-  for (const path of ['/', '/ux-dashboard', '/research-rationale', '/links', '/prds']) {
+  /* The four doors into the UX Dashboard (`/links` was the fifth until
+     Resources went with the advanced Hub on 2026-11-21 — it 404s into the
+     product's own Not Found now, which is not a project list either). A
+     participant handed one link must not find a project list behind any of
+     them — not even the trimmed one the public build serves, which still says
+     "this is a prototype gallery belonging to a design team" and reframes
+     everything they then say. */
+  for (const path of ['/', '/ux-dashboard', '/research-rationale', '/prds']) {
     /* 10s, down from 20s. Each case re-imports `App` through a reset registry,
        which is ~120ms once the transform cache is warm — and `beforeAll` above
        is what makes sure it is. The budget is headroom for a loaded machine,

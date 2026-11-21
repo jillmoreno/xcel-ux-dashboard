@@ -257,12 +257,12 @@ describe('the three guides', () => {
 
 describe('shared Blobs store', () => {
   it('every endpoint opens its store through the one helper, and the vars are all-or-nothing', () => {
-    for (const fn of ['qa-notes', 'qa-captures']) {
+    for (const fn of ['row-archive', 'compare-notes']) {
       const src = readFileSync(resolve(here, `../../netlify/functions/${fn}.ts`), 'utf8')
       expect(src).toContain("from '../lib/store'")
       expect(src).not.toMatch(/\bgetStore\(/)
     }
-    for (const fn of ['links', 'demos', 'research', 'prds']) {
+    for (const fn of ['demos', 'research', 'prds']) {
       const src = readFileSync(resolve(here, `../../netlify/functions/${fn}.ts`), 'utf8')
       expect(src).toContain("from '../lib/linkBoard'")
       expect(src).not.toMatch(/\bgetStore\(/)
