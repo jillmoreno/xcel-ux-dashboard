@@ -352,7 +352,7 @@ describe('Invite Flow V3 — the email check', () => {
     expect(screen.queryByText('Please enter a valid email address')).not.toBeInTheDocument()
   })
 
-  it('carries an address changed on the email step into Direct Email’s locked log-in field, and offers the help center', async () => {
+  it('carries an address changed on the email step into Direct Email’s locked log-in field, with no help-center line', async () => {
     renderAt(CHECKOUT, 'invite-flow-version:v3,invite-v3-model:b2b,invite-v3-flow-b2b:direct-email,invite-v3-email-account:atlas')
     const ask = screen.getByRole('dialog', { name: 'Enter your email to continue' })
     const given = within(ask).getByLabelText(/^Email\s*\*?$/)
@@ -363,8 +363,8 @@ describe('Invite Flow V3 — the email check', () => {
     const field = within(dialog).getByLabelText(/^Email\s*\*?$/)
     expect(field).toHaveValue('jordan@example.com')
     expect(field).toBeDisabled()
-    expect(dialog).toHaveTextContent('Can’t log in? Visit our help center')
-    expect(within(dialog).getByRole('button', { name: 'Visit our help center' })).toBeInTheDocument()
+    /* "Can't log in? Visit our help center" went on 2026-11-23. */
+    expect(dialog).not.toHaveTextContent('Can’t log in?')
   })
 
   it('shows the one-time code step with the logo, and unlocks Resend after 10 minutes', async () => {
@@ -533,18 +533,17 @@ describe('Invite Flow V3 — the email check', () => {
     const dialog = screen.getByRole('dialog', { name: 'Reset your password' })
     expect(within(dialog).getByAltText('XCEL Insurance Training by Colibri')).toBeInTheDocument()
     expect(dialog).toHaveTextContent('Enter your email and we’ll send you a link to reset your password.')
-    /* Under Send reset link: "Can't log in? Contact us", then Back to sign
-       in — Forgot Email? went on 2026-11-23. */
+    /* ← Back first, then Send reset link and "Can't log in? Contact us" —
+       Forgot Email? and Back to sign in went on 2026-11-23. */
     expect(within(dialog).queryByText('Forgot Email?')).not.toBeInTheDocument()
+    expect(within(dialog).queryByRole('button', { name: 'Back to sign in' })).not.toBeInTheDocument()
     const contact = within(dialog).getByRole('link', { name: /Contact us/ })
     expect(contact).toHaveAttribute('href', 'https://www.xcelsolutions.com/contact-us')
     expect(contact).toHaveAttribute('target', '_blank')
-    const order = [...dialog.querySelectorAll('button, a')].map((e) => e.textContent?.replace(' (opens in a new tab)', ''))
-    expect(order.slice(order.indexOf('Send reset link'), order.indexOf('Back to sign in') + 1)).toEqual([
-      'Send reset link',
-      'Contact us',
-      'Back to sign in',
-    ])
+    const order = [...dialog.querySelectorAll('button:not([aria-label]), a')].map((e) =>
+      e.textContent?.replace(' (opens in a new tab)', ''),
+    )
+    expect(order).toEqual(['Back', 'Send reset link', 'Contact us'])
     const field = within(dialog).getByLabelText(/^Email\s*\*?$/)
     expect(field).toHaveValue('')
     expect(field).toBeEnabled()
@@ -554,11 +553,11 @@ describe('Invite Flow V3 — the email check', () => {
     expect(within(dialog).getByRole('alert')).toHaveTextContent('Please enter a valid email address')
     expect(send).toBeDisabled()
 
-    await userEvent.click(within(dialog).getByRole('button', { name: 'Back to sign in' }))
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Back' }))
     expect(screen.getByRole('heading', { name: 'Log in to continue' })).toBeInTheDocument()
   })
 
-  it('Send reset link says a reset link went to the address; Resend link waits; Back to sign in returns', async () => {
+  it('Send reset link says a reset link went to the address; Resend link waits; ← Back returns', async () => {
     vi.useFakeTimers({ shouldAdvanceTime: true })
     try {
       renderAt(CHECKOUT, `${V3_B2B},invite-v3-email-account:atlas`)
@@ -591,7 +590,8 @@ describe('Invite Flow V3 — the email check', () => {
       expect(within(dialog).getByRole('timer')).toHaveTextContent('You can resend the link in 0:30')
       expect(within(dialog).queryByRole('status')).not.toBeInTheDocument()
 
-      await userEvent.click(within(dialog).getByRole('button', { name: 'Back to sign in' }))
+      expect(within(dialog).queryByRole('button', { name: 'Back to sign in' })).not.toBeInTheDocument()
+      await userEvent.click(within(dialog).getByRole('button', { name: 'Back' }))
       expect(screen.getByRole('heading', { name: 'Log in to continue' })).toBeInTheDocument()
     } finally {
       vi.useRealTimers()
@@ -606,8 +606,8 @@ describe('Invite Flow V3 — the email check', () => {
       await userEvent.click(screen.getByRole('button', { name: 'Continue' }))
       await requestReset('pat@example.com')
 
-      /* Its two buttons keep their jobs: Back to sign in still goes back. */
-      await userEvent.click(screen.getByRole('button', { name: 'Back to sign in' }))
+      /* Its buttons keep their jobs: ← Back still goes back. */
+      await userEvent.click(screen.getByRole('button', { name: 'Back' }))
       expect(screen.getByRole('heading', { name: 'Log in to continue' })).toBeInTheDocument()
       await requestReset('pat@example.com')
       expect(open).not.toHaveBeenCalled()
@@ -625,7 +625,7 @@ describe('Invite Flow V3 — the email check', () => {
       /* This tab stays on Check your email; no reset here, and no banner on
          Log in afterwards (2026-11-19). */
       expect(screen.getByRole('dialog', { name: 'Check your email' })).toBeInTheDocument()
-      await userEvent.click(screen.getByRole('button', { name: 'Back to sign in' }))
+      await userEvent.click(screen.getByRole('button', { name: 'Back' }))
       expect(within(screen.getByRole('dialog', { name: 'Log in to continue' })).queryByRole('status')).not.toBeInTheDocument()
     } finally {
       open.mockRestore()

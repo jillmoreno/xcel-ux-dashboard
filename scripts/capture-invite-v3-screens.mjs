@@ -34,8 +34,8 @@
  *
  *         node scripts/capture-invite-v3-screens.mjs --only=xcel-log-in [baseUrl]
  *
- * ⚠ AND ONE COMPONENT, WHEREVER IT IS — `--title=<component title>` keeps
- * only that component's shots and merges them the same way (2026-11-23,
+ * ⚠ AND ONE COMPONENT, WHEREVER IT IS — `--title=<component title>` (or
+ * several, "|"-separated) keeps only those components' shots and merges them the same way (2026-11-23,
  * Afsana: the state and line of authority screens still had the old "i").
  * Pair it with `--only=<flow ids, comma-separated>` to walk just the flows
  * that reach it; the component's flows and seen-in lists come out the same,
@@ -91,9 +91,10 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const OUT = path.join(ROOT, 'public/invite-v3-screens')
 const ARGS = process.argv.slice(2)
 const ONLY = ARGS.find((a) => a.startsWith('--only='))?.slice('--only='.length).split(',') ?? null
-const TITLE = ARGS.find((a) => a.startsWith('--title='))?.slice('--title='.length) ?? null
+/* One title, or several separated by "|". */
+const TITLES = ARGS.find((a) => a.startsWith('--title='))?.slice('--title='.length).split('|') ?? null
 /* Either one means a partial run, merged into the last full run's manifest. */
-const PARTIAL = Boolean(ONLY || TITLE)
+const PARTIAL = Boolean(ONLY || TITLES)
 const BASE = (ARGS.find((a) => !a.startsWith('--')) ?? 'http://localhost:5210').replace(/\/$/, '')
 /* 1440 wide, not 1280 (2026-11-18, Afsana: the product pages "appear to not
    capture the full original width"). Eric's product page footer runs to
@@ -389,7 +390,8 @@ async function loginCheck(w, { fromEmailAsk = false, prefilled = false, email = 
     await rw.click('Reset password', { scope: r })
     await rw.shot('Reset your password (page)', 'Password reset')
     await tab.close()
-    await w.click('Back to sign in', { scope: w.dialog('Check your email') })
+    /* ← Back, top left, since 2026-11-23 (was Back to sign in). */
+    await w.click('Back', { scope: w.dialog('Check your email') })
     await w.waitDialog('Log in to continue')
   }
   await w.dialog('Log in to continue').getByLabel(/^Password/).fill('Navarro#2027')
@@ -850,9 +852,9 @@ async function main() {
      keeps the folder and clears just the components it re-captures. */
   const previous = PARTIAL && fs.existsSync(manifestPath) ? JSON.parse(fs.readFileSync(manifestPath, 'utf8')) : null
   if (!PARTIAL && fs.existsSync(OUT)) fs.rmSync(OUT, { recursive: true })
-  const shots = TITLE ? ALL_SHOTS.filter((s) => s.title === TITLE) : ALL_SHOTS
-  if (TITLE && !shots.length) {
-    console.error(`capture-invite-v3-screens: no shots of "${TITLE}" — nothing written.`)
+  const shots = TITLES ? ALL_SHOTS.filter((s) => TITLES.includes(s.title)) : ALL_SHOTS
+  if (TITLES && !shots.length) {
+    console.error(`capture-invite-v3-screens: no shots of "${TITLES.join('", "')}" — nothing written.`)
     process.exit(1)
   }
   const captured = group(shots).map((c) => {

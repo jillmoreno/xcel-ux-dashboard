@@ -645,9 +645,10 @@ function LoginStep({
         }}
         noValidate
       >
-        {/* On the Log In flow, ← Back in the top left returns to Log in, in
-            place of Back to sign in (2026-11-20, Afsana). */}
-        {onBack ? <V3CardBack onBack={() => setRequesting(false)} /> : null}
+        {/* ← Back in the top left returns to Log in, in place of Back to
+            sign in — the Log In flow's since 2026-11-20, every flow's since
+            2026-11-23 (Afsana). */}
+        <V3CardBack onBack={() => setRequesting(false)} />
         <img src="/brand/xcel-logo.webp" alt="XCEL Insurance Training by Colibri" style={CODE_LOGO} />
         <div style={HEAD}>
           <h2 id="verify-email-title" style={TITLE}>
@@ -679,23 +680,16 @@ function LoginStep({
           </label>
           {badResetEmail ? <EmailInvalid id="reset-request-invalid" /> : null}
         </div>
-        {/* Send reset link, primary; then "Can't log in? Contact us" — and on
-            the checkout, Back to sign in under it. Forgot Email? and its
-            sentence went on 2026-11-23 (Afsana), on both, for Contact us. */}
+        {/* Send reset link, primary; then "Can't log in? Contact us", the
+            card's last line. Forgot Email? and its sentence went on
+            2026-11-23 (Afsana) for Contact us, and Back to sign in for ←
+            Back. */}
         <div style={ACTIONS}>
           <button type="submit" className="cre-e2e-cta" disabled={!valid} aria-disabled={!valid} style={valid ? CTA : CTA_OFF}>
             Send reset link
           </button>
-          {onBack ? null : <ContactUsLine />}
-          {onBack ? null : (
-            <button type="button" style={CTA_SECONDARY} onClick={() => setRequesting(false)}>
-              Back to sign in
-            </button>
-          )}
         </div>
-        {/* On the Log In flow, with no Back to sign in, it is the card's last
-            line (2026-11-23, Afsana). */}
-        {onBack ? <ContactUsLine /> : null}
+        <ContactUsLine />
         {/* The demo fill — the same invisible, labelled corner as the email
             step's. */}
         <button
@@ -717,6 +711,8 @@ function LoginStep({
           if (!(e.target as HTMLElement).closest('button')) openResetLink()
         }}
       >
+        {/* ← Back in place of Back to sign in (2026-11-23, Afsana). */}
+        <V3CardBack onBack={() => setResetSent(false)} />
         <img src="/brand/xcel-logo.webp" alt="XCEL Insurance Training by Colibri" style={CODE_LOGO} />
         <div style={HEAD}>
           <h2 id="verify-email-title" style={TITLE}>
@@ -730,8 +726,8 @@ function LoginStep({
         </div>
         {/* No Email field — the lead already names the address (2026-11-19,
             Afsana). From 2026-11-13 it sat here, grey and locked. */}
-        {/* Resend link, primary, over Back to sign in, secondary (2026-11-05,
-            Afsana). Back is the way out — the modal has no ✕. */}
+        {/* Resend link, primary. ← Back above is the way out — the modal has
+            no ✕ (Back to sign in, under Resend link, until 2026-11-23). */}
         <div style={ACTIONS}>
           <button
             type="button"
@@ -749,13 +745,6 @@ function LoginStep({
               You can resend the link in {formatCountdown(linkWait)}
             </p>
           )}
-          <button
-            type="button"
-            style={CTA_SECONDARY}
-            onClick={() => setResetSent(false)}
-          >
-            Back to sign in
-          </button>
         </div>
         {/* Demo only — the email's link, so a reviewer can find the reset
             page without knowing the whole modal is clickable.
@@ -883,18 +872,9 @@ function LoginStep({
           Log in
         </button>
       </div>
-      {/* The way out for a learner who cannot get in at all (2026-11-13,
-          Afsana). Drawn only — the help center's address is not settled. On
-          the Log In flow it moved to Reset your password as Contact us
-          (2026-11-23, Afsana). */}
-      {onBack ? null : (
-        <p style={{ ...NOTE, textAlign: 'center' }}>
-          Can’t log in?{' '}
-          <button type="button" className="cre-e2e-textlink" style={{ ...TEXT_LINK, color: 'var(--color-xcel-brick)' }}>
-            Visit our help center
-          </button>
-        </p>
-      )}
+      {/* "Can't log in? Visit our help center" was here from 2026-11-13; it
+          went on 2026-11-23 (Afsana) — Reset your password's Contact us is
+          the way out now. */}
     </form>
   )
 }
@@ -1327,8 +1307,7 @@ function EmailInvalid({ id }: { id: string }) {
   )
 }
 
-/* The card's buttons, stacked — on Reset your password, Send reset link,
-   Contact us, Back to sign in. */
+/* The card's buttons, stacked. */
 const ACTIONS: CSSProperties = {
   display: 'flex',
   flexDirection: 'column',
@@ -1351,15 +1330,6 @@ const CTA: CSSProperties = {
   alignSelf: 'stretch',
   width: '100%',
   boxSizing: 'border-box',
-}
-
-/* The secondary — the primary's size and shape, outlined in the brick
-   (2026-11-05, Afsana: Check your email's Back to sign in). */
-const CTA_SECONDARY: CSSProperties = {
-  ...CTA,
-  border: '1px solid var(--color-xcel-brick-600)',
-  background: 'var(--color-fixed-light)',
-  color: 'var(--color-xcel-brick-600)',
 }
 
 const CTA_OFF: CSSProperties = {

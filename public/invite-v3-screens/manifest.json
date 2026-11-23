@@ -577,7 +577,8 @@
             "Signed into XCEL (OCD) · Mixed · Has Atlas account"
           ]
         }
-      ]
+      ],
+      "capturedAt": "2026-11-23"
     },
     {
       "id": "modal-reset-your-password-enter-email",
@@ -653,6 +654,7 @@
           ]
         }
       ],
+      "capturedAt": "2026-11-23",
       "tag": "Keycloak (Atlas) account only"
     },
     {
