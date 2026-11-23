@@ -2779,7 +2779,9 @@ function MyCoursesSection() {
   const cardStyle = useFeatureFlag('atlas-courses-card-style').variant
   /* WHICH ATLAS CARD (2026-11-23): the PRD-fields copy (`AtlasCourseCardFigmaV2`) or Eric's 2026-11-18 card, untouched.
      Read unconditionally, like the rest — see the note above. */
-  const prdFields = useFeatureFlag('atlas-courses-card-prd-fields').enabled
+  const prdFieldsFlag = useFeatureFlag('atlas-courses-card-prd-fields')
+  // The design bar's "Old card / New card" (2026-11-23); `:off` in a link is the old card too.
+  const prdFields = prdFieldsFlag.enabled && (prdFieldsFlag.variant ?? 'new') !== 'old'
   /* VIEW CERTIFICATE STAYS IN THE SHELL (2026-11-23). The card's `certificateHref` is the product route,
      /my-learning/certificates — and `AppLayout`'s guard blocks exactly that from inside the rebrand with a toast ("the two
      are kept apart"), which would make the PRD's one working button a dead end. So this page re-points it to the shell's

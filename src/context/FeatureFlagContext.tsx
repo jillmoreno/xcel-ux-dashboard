@@ -4848,11 +4848,20 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        Atlas arm — the shared card is unaffected. The CE package card
        (`demo-ny-pclh-refresher-ce`) is out of scope for the Jan 12 release and
        is drawn from its unchanged data. */
+    /* ON THE DESIGN BAR AS "Old card / New card" (2026-11-23, Jillienne: "add a design toggle that shows old card / new
+       card"). Two named arms rather than a bare on/off switch so the bar says what each side IS. `?ff=…:off` still
+       reaches the old card — the call site reads enabled AND the arm. */
+    surface: 'design',
     group: 'Widgets',
     label: 'My Courses card — PRD fields',
     description:
       'The Atlas My Courses card with everything section 3 of the My Courses PRD (2026-11-16) confirms: the description under the title ("Description coming soon" when there is none), State \u00b7 Category \u00b7 Line of authority back on the card, a date line per status \u2014 "Access ends [date] \u00b7 N days left", "Expired: [date]", "Completed: [date] \u00b7 Score" \u2014 the failed score and the expired course\u2019s last progress, and a WORKING "View Certificate" button on a completed course in place of the disabled "Completed". Off: the card as of 2026-11-18, facts in the Course Details sheet and no date line.',
     defaultEnabled: true,
+    defaultVariant: 'new',
+    variants: [
+      { value: 'new', label: 'New card' },
+      { value: 'old', label: 'Old card' },
+    ],
     page: 'dashboard-rebrand',
   },
   {

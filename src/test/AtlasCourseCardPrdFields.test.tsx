@@ -62,6 +62,13 @@ describe('the flag', () => {
     expect(flag.page).toBe('dashboard-rebrand')
     expect(flag.description).toMatch(/2026-11-16/)
   })
+
+  it('is on the design bar as Old card / New card (2026-11-23)', () => {
+    const flag = FEATURE_FLAGS.find((f) => f.key === 'atlas-courses-card-prd-fields')!
+    expect(flag.surface).toBe('design')
+    expect(flag.defaultVariant).toBe('new')
+    expect(flag.variants!.map((v) => v.label)).toEqual(['New card', 'Old card'])
+  })
 })
 
 describe('the Completed card', () => {
@@ -270,6 +277,12 @@ describe('the flag off', () => {
     expect(screen.queryByRole('link', { name: 'View Certificate' })).toBeNull()
     expect(screen.queryByTestId('atlas-card-date')).toBeNull()
     expect(screen.queryByText('Description coming soon')).toBeNull()
+  })
+
+  it('is also reached by the bar’s Old card arm, not only by :off', () => {
+    renderShell(`section=courses&version=${BASELINE}&ff=atlas-courses-from-library:off,atlas-courses-card-prd-fields:old`)
+    expect(screen.getByRole('button', { name: 'Completed' }).hasAttribute('disabled')).toBe(true)
+    expect(screen.queryByTestId('atlas-card-date')).toBeNull()
   })
 
   it('keeps Course Details under the title', () => {
