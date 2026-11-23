@@ -1,25 +1,15 @@
-import { useCallback, useEffect, useId, useState, type CSSProperties, type ReactNode } from 'react'
+import { useCallback, useId, useState, type CSSProperties, type ReactNode } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { StandaloneBrowserChrome } from '@/components/layout/BrowserChromeBar'
 import { XcelFooter } from '@/components/e2e/XcelFooter'
 import { XcelSiteHeader } from '@/components/e2e/XcelSiteHeader'
 import { PartnerCodeAskPage, XcelAccountAskPage } from '@/components/e2e/PartnerCodeAsk'
-import {
-  KeycloakLogInCardV3,
-  V3CardBack,
-  V3CardForgot,
-  V3CardHead,
-  V3CardInput,
-  V3CardSigningIn,
-  V3CardSubmit,
-} from '@/components/e2e/VerifyEmailModalV3'
-import { LOADING_HANDOFF_MS } from '@/components/e2e/XcelLoadingPage'
+import { KeycloakLogInCardV3, V3CardHead, V3CardInput, V3CardSubmit } from '@/components/e2e/VerifyEmailModalV3'
 import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { CircleInfo } from '@/icons'
 import {
   INVITE_V3_LOG_IN_ACCOUNT_FLAG,
   LOG_IN_PATHS,
-  V3_WRONG_DEMO_PASSWORD,
   resolveV3LogInAccount,
 } from '@/data/inviteFlowsV3'
 import {
@@ -44,11 +34,13 @@ import './inviteFlow.css'
  *   Log In                      the site header (`XcelSiteHeader`)
  *   Do you have a Partner Code? the live page; Yes does nothing for now
  *   Do you have an XCEL account? the live page; No is not mocked
- *   OCD's log-in page            the email, looked up in Keycloak first —
+ *   OCD's log-in page, repurposed the email alone, looked up in Keycloak first —
  *     in Keycloak                Keycloak's log-in widget, then Atlas Home
- *     not in Keycloak            assumed OCD's: OCD's password, then OCD;
- *                                "The Username or Password is incorrect." for
- *                                a wrong password and for no account alike
+ *     not in Keycloak            OCD's own log-in page, unchanged, the
+ *                                Username filled and locked (2026-11-23);
+ *                                LOG IN does nothing for an OCD account, and
+ *                                says "The Username or Password is incorrect"
+ *                                for none
  *
  * ⚠ NOTHING SAYS AN ACCOUNT DOES NOT EXIST. OCD has no service that answers
  * whether a username exists (Swati, 2026-11-18), and an identity screen should
@@ -59,7 +51,7 @@ import './inviteFlow.css'
  * is gone. Where the account is, the demo cannot look up: Account found in
  * (`invite-v3-log-in-account`) says.
  *
- * Four pages, one file: they are one short walk and share the frame.
+ * Five pages, one file: they are one short walk and share the frame.
  */
 
 /** "Do you have a Partner Code?" — the live site's `/customer/account/option`,
@@ -95,24 +87,21 @@ export function XcelLogInAccountPage() {
 }
 
 /**
- * OCD'S LOG-IN PAGE, REPURPOSED — the page being redesigned. The live page's
- * grey; everything else is Keycloak's card, since this card hands over to it
- * (2026-11-20, Afsana): 460 wide, its Avenir, its Log in title and grey rule,
- * its labels (no colon), its rounded fields and its full-width button
- * (`V3CardHead`, `V3CardInput`, `V3CardSubmit`).
+ * OCD'S LOG-IN PAGE, REPURPOSED — the email step, the page being redesigned.
+ * The live page's grey; everything else is Keycloak's card, since this card
+ * hands over to it (2026-11-20, Afsana): 460 wide, its Avenir, its Log in
+ * title and grey rule, its labels (no colon), its rounded fields and its
+ * full-width button (`V3CardHead`, `V3CardInput`, `V3CardSubmit`).
  *
  * What changed, and why:
  *   - Email, not Username — with an info icon saying a username works too.
  *     OCD asks for a username and most are emails (99% of B2C, 78% of B2B,
  *     Swati), so ⚠ THE FIELD DOES NOT CHECK FOR AN EMAIL: a username has to
- *     get through to OCD's password.
- *   - The email alone first, CONTINUE; the password only once Keycloak has
- *     said no. Keycloak's yes leaves this page for Keycloak's own.
- *   - Under the password: "The Username or Password is incorrect." — the same
- *     words for a wrong password and for no account (2026-11-20, Afsana).
- *   - Forgot password? only with the password, under its field as on
- *     Keycloak's card: before the email is in, nobody knows which system's
- *     password it is.
+ *     get through to OCD's page.
+ *   - The email alone, Continue. Keycloak's yes opens Keycloak's Log in;
+ *     its no opens OCD's own log-in page, unchanged, with the Username filled
+ *     (`XcelOcdExistingLogInPage`, 2026-11-23). Until that day OCD's password
+ *     was a second step of this card.
  */
 export function XcelOcdLogInPage() {
   useEndToEndDemoParams()
@@ -122,172 +111,164 @@ export function XcelOcdLogInPage() {
   const [params] = useSearchParams()
   /* Filled when Keycloak's ← Back brings the learner here to change it. */
   const [email, setEmail] = useState(() => params.get('email') ?? '')
-  const [step, setStep] = useState<'email' | 'password'>('email')
-  const [password, setPassword] = useState('')
-  const [failed, setFailed] = useState(false)
-  /* The right password: "Signing you in", as Keycloak's card holds on, then
-     OCD (2026-11-20, Afsana). Never after a failure — that is the error. */
-  const [signingIn, setSigningIn] = useState(false)
-  const standalone = params.get('standalone') === '1'
-  useEffect(() => {
-    /* Opened from `/invite-v3` the walk holds here, as Keycloak's does. */
-    if (!signingIn || standalone) return
-    const timer = window.setTimeout(() => go(LOG_IN_PATHS.ocdHome), LOADING_HANDOFF_MS)
-    return () => window.clearTimeout(timer)
-    // `go` is rebuilt every render; the hold starts once.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [signingIn, standalone])
   const [tip, setTip] = useState(false)
   const tipId = useId()
   const given = email.trim()
 
-  const submitEmail = () => {
-    if (!given) return
-    /* Keycloak first (PRD 5.7): found there, Keycloak's own page. */
-    if (account === 'atlas') go(LOG_IN_PATHS.keycloak, { email: given })
-    else setStep('password')
-  }
-  const submitPassword = () => {
-    if (!password) return
-    /* Neither system knows the pair: an unknown account and a wrong password
-       read the same. */
-    if (account === 'none' || password === V3_WRONG_DEMO_PASSWORD) setFailed(true)
-    else setSigningIn(true)
-  }
-
-  if (signingIn) {
-    return (
-      <div style={OCD_PAGE}>
-        <StandaloneBrowserChrome />
-        <main style={OCD_MAIN}>
-          <section aria-label="Signing you in" style={OCD_CARD}>
-            <V3CardSigningIn />
-          </section>
-        </main>
-      </div>
-    )
-  }
-
   return (
-    <OcdFrame
-      back={
-        /* OCD's password step is Keycloak's: no email field, ← Back on its
-           own row above the logo to change it (2026-11-20, Afsana). */
-        step === 'password' ? (
-          <V3CardBack
-            onBack={() => {
-              setStep('email')
-              setPassword('')
-              setFailed(false)
-            }}
-          />
-        ) : null
-      }
-    >
+    <OcdFrame>
       <form
         noValidate
         style={OCD_FORM}
         onSubmit={(e) => {
           e.preventDefault()
-          if (step === 'email') submitEmail()
-          else submitPassword()
+          if (!given) return
+          /* Keycloak first (PRD 5.7): found there, Keycloak's own page; not
+             found, OCD's own (2026-11-23, Afsana). */
+          go(account === 'atlas' ? LOG_IN_PATHS.keycloak : LOG_IN_PATHS.ocdExisting, { email: given })
         }}
       >
-        {/* Keycloak's card's title and rule (2026-11-20, Afsana), so the
-            email step and the Log in it may hand over to read as one. No lead
-            on either step: the field says what it wants. */}
+        {/* Keycloak's card's title and rule (2026-11-20, Afsana). No lead: the
+            field says what it wants. */}
         <V3CardHead title="Log in" />
-        {step === 'email' ? (
-          <div style={OCD_FIELD}>
-            <span style={OCD_LABEL_ROW}>
-              <label htmlFor="ocd-email" style={OCD_LABEL}>
-                Email
-              </label>
-              <span style={{ position: 'relative', display: 'inline-flex' }}>
-                <button
-                  type="button"
-                  aria-label="About this field"
-                  aria-describedby={tip ? tipId : undefined}
-                  aria-expanded={tip}
-                  onClick={() => setTip((v) => !v)}
-                  onMouseEnter={() => setTip(true)}
-                  onFocus={() => setTip(true)}
-                  onMouseLeave={() => setTip(false)}
-                  onBlur={() => setTip(false)}
-                  className="cre-xcel-help"
-                >
-                  <CircleInfo size={16} aria-hidden />
-                </button>
-                {/* The live site's tooltip, above the icon (2026-11-23,
-                    Afsana) — `.cre-xcel-tip` in inviteFlow.css. */}
-                {tip ? (
-                  <span id={tipId} role="tooltip" className="cre-xcel-tip">
-                    Enter email or username
-                  </span>
-                ) : null}
-              </span>
-            </span>
-            {/* ⚠ type="text", not "email" — a username must get through. */}
-            {/* Keycloak's field (2026-11-20, Afsana): rounded, the light fill. */}
-            <V3CardInput
-              id="ocd-email"
-              type="text"
-              autoComplete="username"
-              spellCheck={false}
-              autoFocus
-              placeholder="Enter your email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-          </div>
-        ) : (
-          <div style={OCD_FIELD}>
-            <label htmlFor="ocd-password" style={OCD_LABEL}>
-              Password
+        <div style={OCD_FIELD}>
+          <span style={OCD_LABEL_ROW}>
+            <label htmlFor="ocd-email" style={OCD_LABEL}>
+              Email
             </label>
-            <V3CardInput
-              id="ocd-password"
+            <span style={{ position: 'relative', display: 'inline-flex' }}>
+              <button
+                type="button"
+                aria-label="About this field"
+                aria-describedby={tip ? tipId : undefined}
+                aria-expanded={tip}
+                onClick={() => setTip((v) => !v)}
+                onMouseEnter={() => setTip(true)}
+                onFocus={() => setTip(true)}
+                onMouseLeave={() => setTip(false)}
+                onBlur={() => setTip(false)}
+                className="cre-xcel-help"
+              >
+                <CircleInfo size={16} aria-hidden />
+              </button>
+              {/* The shared V3 tooltip, above the icon (2026-11-23, Afsana) —
+                  `.cre-xcel-tip` in inviteFlow.css. */}
+              {tip ? (
+                <span id={tipId} role="tooltip" className="cre-xcel-tip">
+                  Enter email or username
+                </span>
+              ) : null}
+            </span>
+          </span>
+          {/* ⚠ type="text", not "email" — a username must get through. */}
+          {/* Keycloak's field (2026-11-20, Afsana): rounded, the light fill. */}
+          <V3CardInput
+            id="ocd-email"
+            type="text"
+            autoComplete="username"
+            spellCheck={false}
+            autoFocus
+            placeholder="Enter your email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+        </div>
+        {/* Keycloak's Log in button (2026-11-20, Afsana): full width, the
+            brick, off until the field has something in it. */}
+        <V3CardSubmit ready={given !== ''}>Continue</V3CardSubmit>
+      </form>
+      {/* The demo fill — the invisible, labelled corner V3's modals carry. */}
+      <button
+        type="button"
+        aria-label="Fill in the demo learner’s email"
+        title="Demo shortcut: fill in the demo learner’s email"
+        style={DEMO_FILL}
+        onClick={() => setEmail(E2E_LEARNER_EMAIL)}
+      />
+    </OcdFrame>
+  )
+}
+
+/**
+ * OCD'S OWN LOG-IN PAGE, AS IT IS — 2026-11-23, Afsana: for an OCD account or
+ * none, Continue opens my.xcelsolutions.com/login.aspx, and "the design as
+ * shown must be preserved". Measured off the live page: the grey form, the
+ * 500 white card, the logo, Arial labels with colons, square 41-high fields,
+ * the brick LOG IN and Forgot your password? under the card.
+ *
+ * What the flow adds, and only that:
+ *   - the Username is the address given on the email step, and locked;
+ *   - LOG IN with no password: "All fields are required" over the Username
+ *     and the Password outlined red — the live page's own validation;
+ *   - LOG IN with a password: nothing happens for an OCD account (the demo
+ *     stops where OCD takes over); "The Username or Password is incorrect"
+ *     over the Username for no account — the same place and red.
+ */
+export function XcelOcdExistingLogInPage() {
+  useEndToEndDemoParams()
+  useEndToEndPageChrome('OnCourse Direct Login')
+  const account = resolveV3LogInAccount(useFeatureFlag(INVITE_V3_LOG_IN_ACCOUNT_FLAG).variant)
+  const [params] = useSearchParams()
+  const username = params.get('email')?.trim() || E2E_LEARNER_EMAIL
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState<null | 'required' | 'incorrect'>(null)
+
+  return (
+    <div style={LIVE_PAGE}>
+      <StandaloneBrowserChrome />
+      <form
+        noValidate
+        style={LIVE_FORM}
+        onSubmit={(e) => {
+          e.preventDefault()
+          if (!password) setError('required')
+          else setError(account === 'none' ? 'incorrect' : null)
+        }}
+      >
+        <section aria-label="OnCourse Direct log in" style={LIVE_CARD}>
+          <img src="/brand/xcel-logo.webp" alt="XCEL Insurance Training by Colibri" style={LIVE_LOGO} />
+          <div style={LIVE_FIELDS}>
+            {error ? (
+              <p id="live-error" role="alert" style={LIVE_ERROR}>
+                {error === 'required' ? 'All fields are required' : 'The Username or Password is incorrect'}
+              </p>
+            ) : null}
+            <label htmlFor="live-username" style={LIVE_LABEL}>
+              Username:
+            </label>
+            <input
+              id="live-username"
+              type="text"
+              value={username}
+              readOnly
+              aria-readonly="true"
+              style={LIVE_INPUT}
+            />
+            <label htmlFor="live-password" style={{ ...LIVE_LABEL, marginTop: 22 }}>
+              Password:
+            </label>
+            <input
+              id="live-password"
               type="password"
               autoComplete="current-password"
               autoFocus
-              placeholder="Enter your password"
               value={password}
-              onChange={(e) => {
-                setPassword(e.target.value)
-                setFailed(false)
-              }}
-              aria-invalid={failed}
-              aria-describedby={failed ? 'ocd-incorrect' : undefined}
+              onChange={(e) => setPassword(e.target.value)}
+              aria-invalid={error === 'required'}
+              aria-describedby={error ? 'live-error' : undefined}
+              style={error === 'required' ? { ...LIVE_INPUT, borderColor: 'var(--color-error-600)' } : LIVE_INPUT}
             />
-            {failed ? (
-              <p id="ocd-incorrect" role="alert" style={OCD_ERROR}>
-                The Username or Password is incorrect.
-              </p>
-            ) : null}
-            {/* Keycloak's place for it, under the field (2026-11-20, Afsana) —
-                not OCD's, under the card. Drawn only: OCD's reset is OCD's. */}
-            <V3CardForgot />
           </div>
-        )}
-        {/* Keycloak's Log in button (2026-11-20, Afsana): full width, the
-            brick, off until the field has something in it. */}
-        {step === 'email' ? (
-          <V3CardSubmit ready={given !== ''}>Continue</V3CardSubmit>
-        ) : (
-          <V3CardSubmit ready={password !== ''}>Log in</V3CardSubmit>
-        )}
+          <button type="submit" style={LIVE_BUTTON}>
+            Log In
+          </button>
+        </section>
+        {/* Inert, as on every flow: OCD's reset is OCD's. */}
+        <p style={LIVE_BELOW}>
+          <span style={LIVE_FORGOT}>Forgot your password?</span>
+        </p>
       </form>
-      {/* The demo fill — the invisible, labelled corner V3's modals carry. */}
-      {step === 'email' ? (
-        <button
-          type="button"
-          aria-label="Fill in the demo learner’s email"
-          title="Demo shortcut: fill in the demo learner’s email"
-          style={DEMO_FILL}
-          onClick={() => setEmail(E2E_LEARNER_EMAIL)}
-        />
-      ) : null}
-    </OcdFrame>
+    </div>
   )
 }
 
@@ -334,23 +315,6 @@ export function XcelKeycloakLogInPage() {
   )
 }
 
-/** Where OCD's LOG IN leads: OCD itself, which this prototype does not mock —
- *  a stand-in that says so, in OCD's frame. */
-export function XcelOcdHomeStandIn() {
-  useEndToEndDemoParams()
-  useEndToEndPageChrome('OnCourse Direct')
-  return (
-    <OcdFrame>
-      <div style={{ ...OCD_FORM, textAlign: 'center', gap: 12 }}>
-        <h1 style={{ ...OCD_LABEL, fontSize: 16, margin: 0 }}>Logged in to OCD</h1>
-        <p style={{ ...OCD_LABEL, fontWeight: 400, margin: 0 }}>
-          The learner is now in OCD, which this prototype does not mock.
-        </p>
-      </div>
-    </OcdFrame>
-  )
-}
-
 /* ── Frames ─────────────────────────────────────────────────────────────── */
 
 /** The public site's page: header with the partner-code bar, the live pages
@@ -367,13 +331,12 @@ function SitePage({ children }: { children: ReactNode }) {
 }
 
 /** OCD's log-in frame: the grey ground and the white card with the logo. */
-function OcdFrame({ children, back }: { children: ReactNode; back?: ReactNode }) {
+function OcdFrame({ children }: { children: ReactNode }) {
   return (
     <div style={OCD_PAGE}>
       <StandaloneBrowserChrome />
       <main style={OCD_MAIN}>
         <section aria-label="Log in" style={OCD_CARD}>
-          {back}
           <img src="/brand/xcel-logo.webp" alt="XCEL Insurance Training by Colibri" style={OCD_LOGO} />
           {children}
         </section>
@@ -449,15 +412,6 @@ const OCD_LABEL: CSSProperties = {
   color: 'var(--color-text-primary)',
 }
 
-/* Keycloak's wrong-password line (`VerifyEmailModalV3`'s INVALID). */
-const OCD_ERROR: CSSProperties = {
-  margin: 0,
-  fontFamily: 'var(--font-e2e-avenir)',
-  fontSize: 12,
-  lineHeight: '16px',
-  color: 'var(--color-error-600)',
-}
-
 const DEMO_FILL: CSSProperties = {
   position: 'absolute',
   top: 0,
@@ -468,4 +422,100 @@ const DEMO_FILL: CSSProperties = {
   border: 'none',
   background: 'transparent',
   cursor: 'default',
+}
+
+/* OCD's own page, measured off my.xcelsolutions.com/login.aspx (2026-11-20
+   and 2026-11-23): a white page, the form a grey block 540 wide 62 from the
+   top, the card 500 wide inside it. */
+const LIVE_PAGE: CSSProperties = { minHeight: '100vh', background: 'var(--color-fixed-light)', paddingTop: 62 }
+
+const LIVE_FORM: CSSProperties = {
+  boxSizing: 'border-box',
+  width: 540,
+  maxWidth: '100%',
+  margin: '0 auto',
+  padding: '20px 20px 50px',
+  background: 'var(--color-e2e-ocd-ground)',
+}
+
+const LIVE_CARD: CSSProperties = {
+  boxSizing: 'border-box',
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  padding: '94px 15px 78px',
+  background: 'var(--color-fixed-light)',
+}
+
+const LIVE_LOGO: CSSProperties = { display: 'block', width: 150, height: 56, objectFit: 'contain' }
+
+/* The fields' column: 371 wide, the labels and fields flush left in it. */
+const LIVE_FIELDS: CSSProperties = {
+  width: 371,
+  maxWidth: '100%',
+  marginTop: 75,
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 5,
+}
+
+const LIVE_LABEL: CSSProperties = {
+  fontFamily: 'var(--font-e2e-ocd)',
+  fontSize: 14,
+  fontWeight: 700,
+  lineHeight: '16px',
+  color: 'var(--color-e2e-ocd-ink)',
+}
+
+const LIVE_INPUT: CSSProperties = {
+  boxSizing: 'border-box',
+  width: '100%',
+  height: 41,
+  padding: 10,
+  border: '1px solid var(--color-e2e-partner-divider)',
+  borderRadius: 0,
+  background: 'var(--color-fixed-light)',
+  fontFamily: 'var(--font-e2e-ocd)',
+  fontSize: 16,
+  color: 'var(--color-e2e-ocd-field-text)',
+  outline: 'none',
+}
+
+/* The live page's message over the Username: its red, a size above the
+   labels. */
+const LIVE_ERROR: CSSProperties = {
+  margin: '0 0 8px',
+  fontFamily: 'var(--font-e2e-ocd)',
+  fontSize: 16,
+  lineHeight: '20px',
+  color: 'var(--color-error-600)',
+}
+
+/* The live LOG IN: 145 × 50, the brick, 5 radius, Arial 14 bold, uppercase,
+   1.6 tracking. */
+const LIVE_BUTTON: CSSProperties = {
+  marginTop: 53,
+  minWidth: 145,
+  height: 50,
+  padding: '15px 20px',
+  border: '2px solid var(--color-xcel-brick)',
+  borderRadius: 5,
+  background: 'var(--color-xcel-brick)',
+  color: 'var(--color-fixed-light)',
+  fontFamily: 'var(--font-e2e-ocd)',
+  fontSize: 14,
+  fontWeight: 700,
+  letterSpacing: '1.6px',
+  textTransform: 'uppercase',
+  cursor: 'pointer',
+}
+
+/* Forgot your password? sits under the card, on the grey. */
+const LIVE_BELOW: CSSProperties = { margin: '21px 0 0', textAlign: 'center' }
+
+const LIVE_FORGOT: CSSProperties = {
+  fontFamily: 'var(--font-e2e-ocd)',
+  fontSize: 14,
+  fontWeight: 300,
+  color: 'var(--color-e2e-ocd-link)',
 }

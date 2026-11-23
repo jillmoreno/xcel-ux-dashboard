@@ -136,9 +136,10 @@ export const INVITE_FLOWS_V3: InviteFlowV3[] = [
        Code? (Yes does nothing for now) → No → Do you have an XCEL account?
        (No is not mocked) → Yes → the OCD log-in page, repurposed: the email
        alone, looked up in Keycloak first. Found: Keycloak's log-in widget,
-       then Atlas Home. Not found: assumed to be OCD's, so OCD's password —
-       then "The Username or Password is incorrect." for a wrong one and when
-       OCD has no account either — the same words. Which it is, the demo
+       then Atlas Home. Not found: assumed to be OCD's, so OCD's own log-in
+       page, unchanged, the Username filled and locked (2026-11-23) — LOG IN
+       does nothing for an OCD account and says "The Username or Password is
+       incorrect" when OCD has none either. Which it is, the demo
        cannot look up: Account found in (`invite-v3-log-in-account`) says.
        It starts on the cart, as every B2C flow does — the live site's
        Partner Code page is opened from there too (`referer` is the cart). */
@@ -374,11 +375,13 @@ export const LOG_IN_PATHS = {
   account: '/end-to-end-demo/log-in/account',
   ocd: '/end-to-end-demo/log-in/sign-in',
   keycloak: '/end-to-end-demo/log-in/keycloak',
-  ocdHome: '/end-to-end-demo/log-in/ocd-home',
+  /* OCD's own log-in page, as it is (2026-11-23). */
+  ocdExisting: '/end-to-end-demo/log-in/ocd',
 } as const
 
 /** Log In's walk for where the account is. Every walk sees the email step;
- *  only Atlas leaves OCD's page. */
+ *  Atlas goes on to Keycloak's Log in, the others to OCD's own log-in page
+ *  (2026-11-23), where LOG IN does nothing for OCD and fails for none. */
 export function logInFlowV3(flow: InviteFlowV3, account: V3LogInAccount): InviteFlowV3 {
   const start = ['cart', 'log-in-partner-code', 'log-in-account', 'log-in-email']
   return {
@@ -387,8 +390,8 @@ export function logInFlowV3(flow: InviteFlowV3, account: V3LogInAccount): Invite
       account === 'atlas'
         ? [...start, 'log-in-keycloak', 'signing-in']
         : account === 'ocd'
-          ? [...start, 'log-in-ocd-password', 'log-in-ocd-home']
-          : [...start, 'log-in-ocd-password', 'log-in-incorrect'],
+          ? [...start, 'log-in-ocd-existing']
+          : [...start, 'log-in-ocd-existing', 'log-in-incorrect'],
   }
 }
 

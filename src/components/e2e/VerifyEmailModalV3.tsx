@@ -1534,18 +1534,6 @@ export function V3CardSubmit({ ready, children }: { ready: boolean; children: Re
   )
 }
 
-/** Forgot password?, under a card's password field — Keycloak's link, for
- *  OCD's password step on the Log In flow (2026-11-20, Afsana: it "should
- *  match the existing keycloak design where 'Forgot password?' is shown below
- *  the password field"). Drawn only there: OCD's reset is OCD's. */
-export function V3CardForgot({ onClick }: { onClick?: () => void }) {
-  return (
-    <button type="button" style={FORGOT} onClick={onClick}>
-      Forgot password?
-    </button>
-  )
-}
-
 /** "Signing you in" — the logo over the spinner, as the checkout modal holds
  *  on — for a card drawn outside this file: OCD's, after the right password
  *  on the Log In flow (2026-11-20, Afsana), and Keycloak's above. */

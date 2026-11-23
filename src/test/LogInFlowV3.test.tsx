@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { act, render, screen, waitFor } from '@testing-library/react'
+import { act, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom'
 import { AccountProvider } from '@/context/AccountContext'
@@ -10,7 +10,7 @@ import {
   XcelKeycloakLogInPage,
   XcelLogInAccountPage,
   XcelLogInPartnerCodePage,
-  XcelOcdHomeStandIn,
+  XcelOcdExistingLogInPage,
   XcelOcdLogInPage,
 } from '@/pages/XcelLogInPages'
 import { INVITE_FLOWS_V3, inviteV3Surface, logInFlowV3, v3ScreensFor, LOG_IN_PATHS } from '@/data/inviteFlowsV3'
@@ -41,7 +41,7 @@ function renderAt(path: string, account: 'atlas' | 'ocd' | 'none') {
             <Route path={LOG_IN_PATHS.account} element={<XcelLogInAccountPage />} />
             <Route path={LOG_IN_PATHS.ocd} element={<XcelOcdLogInPage />} />
             <Route path={LOG_IN_PATHS.keycloak} element={<XcelKeycloakLogInPage />} />
-            <Route path={LOG_IN_PATHS.ocdHome} element={<XcelOcdHomeStandIn />} />
+            <Route path={LOG_IN_PATHS.ocdExisting} element={<XcelOcdExistingLogInPage />} />
           </Routes>
           <Where />
         </FeatureFlagProvider>
@@ -75,6 +75,7 @@ describe('Invite Flow V3 — Log In', () => {
     for (const path of Object.values(LOG_IN_PATHS)) expect(v3ScreensFor('b2c')).toContain(path)
     expect(logInFlowV3(flow, 'atlas').screens).toContain('log-in-keycloak')
     expect(logInFlowV3(flow, 'none').screens).toContain('log-in-incorrect')
+    expect(logInFlowV3(flow, 'ocd').screens).toContain('log-in-ocd-existing')
   })
 
   it('Log In opens the Partner Code question; Yes does nothing', async () => {
@@ -109,14 +110,9 @@ describe('Invite Flow V3 — Log In', () => {
     expect(screen.queryByRole('button', { name: 'Forgot password?' })).not.toBeInTheDocument()
     await user.type(email, 'jsmith42')
     await user.click(screen.getByRole('button', { name: 'Continue' }))
-    expect(screen.getByLabelText('Password')).toBeInTheDocument()
-    /* Keycloak's Forgot password?, under the field — not OCD's under the card. */
-    expect(screen.getByRole('button', { name: 'Forgot password?' })).toBeInTheDocument()
-    expect(screen.queryByText('Forgot your password?')).not.toBeInTheDocument()
-    /* Keycloak's shape: no email field, ← Back to change it. */
-    expect(screen.queryByLabelText('Email')).not.toBeInTheDocument()
-    await user.click(screen.getByRole('button', { name: 'Back' }))
-    expect(screen.getByLabelText('Email')).toHaveValue('jsmith42')
+    /* Not found in Keycloak: OCD's own page, the username carried over. */
+    expect(where()).toBe(LOG_IN_PATHS.ocdExisting)
+    expect(screen.getByLabelText('Username:')).toHaveValue('jsmith42')
   })
 
   it('the info icon says “Enter email or username” on hover', async () => {
@@ -128,15 +124,12 @@ describe('Invite Flow V3 — Log In', () => {
     expect(screen.getByRole('tooltip')).toHaveTextContent('Enter email or username')
   })
 
-  it('draws no lead under Log in on either step', async () => {
+  it('draws no lead under Log in', async () => {
     const user = userEvent.setup()
     renderAt('/end-to-end-demo/cart', 'ocd')
     await toOcdPage(user)
     expect(screen.getByRole('heading', { name: 'Log in' })).toBeInTheDocument()
     expect(screen.queryByText('Enter your email')).not.toBeInTheDocument()
-    await user.type(screen.getByLabelText('Email'), 'jsmith42')
-    await user.click(screen.getByRole('button', { name: 'Continue' }))
-    expect(screen.queryByText('Enter your password')).not.toBeInTheDocument()
   })
 
   it('in Keycloak: Keycloak’s log-in with no lead or email field, then Signing you in', async () => {
@@ -179,42 +172,62 @@ describe('Invite Flow V3 — Log In', () => {
     expect(screen.getByLabelText('Email')).toHaveValue('learner@example.com')
   })
 
-  it('OCD only: the right password goes into OCD; “wrong” is incorrect, under the password', async () => {
+  /** Email step → Continue → OCD's own page, for an account Keycloak does
+   *  not know (2026-11-23). */
+  async function toOcdExisting(user: ReturnType<typeof userEvent.setup>, email: string) {
+    await toOcdPage(user)
+    await user.type(screen.getByLabelText('Email'), email)
+    await user.click(screen.getByRole('button', { name: 'Continue' }))
+    expect(where()).toBe(LOG_IN_PATHS.ocdExisting)
+  }
+
+  it('OCD’s own page keeps its design: Username: and Password:, LOG IN, Forgot your password? under it', async () => {
     const user = userEvent.setup()
     renderAt('/end-to-end-demo/cart', 'ocd')
-    await toOcdPage(user)
-    await user.type(screen.getByLabelText('Email'), 'learner@example.com')
-    await user.click(screen.getByRole('button', { name: 'Continue' }))
-    await user.type(screen.getByLabelText('Password'), 'wrong')
-    await user.click(screen.getByRole('button', { name: 'Log in' }))
-    expect(screen.getByRole('alert')).toHaveTextContent('The Username or Password is incorrect.')
-    expect(screen.getByLabelText('Password')).toHaveAttribute('aria-describedby', 'ocd-incorrect')
-    await user.clear(screen.getByLabelText('Password'))
-    await user.type(screen.getByLabelText('Password'), 'Secret#2027')
-    await user.click(screen.getByRole('button', { name: 'Log in' }))
-    /* "Signing you in" first, as on Keycloak's card (2026-11-20). */
-    expect(screen.getByLabelText('Signing you in')).toBeInTheDocument()
-    expect(where()).toBe(LOG_IN_PATHS.ocd)
-    await waitFor(() => expect(where()).toBe(LOG_IN_PATHS.ocdHome), { timeout: 4000 })
+    await toOcdExisting(user, 'learner@example.com')
+    const username = screen.getByLabelText('Username:')
+    expect(username).toHaveValue('learner@example.com')
+    expect(username).toHaveAttribute('readonly')
+    expect(screen.getByLabelText('Password:')).toHaveValue('')
+    expect(screen.getByRole('button', { name: 'Log In' })).toBeInTheDocument()
+    expect(screen.getByText('Forgot your password?')).toBeInTheDocument()
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
   })
 
-  it('neither: the same words as a wrong password — never “does not exist” or “create a user account”', async () => {
+  it('an empty password says “All fields are required”, on either account', async () => {
+    for (const account of ['ocd', 'none'] as const) {
+      const user = userEvent.setup()
+      const { unmount } = renderAt('/end-to-end-demo/cart', account)
+      await toOcdExisting(user, 'learner@example.com')
+      await user.click(screen.getByRole('button', { name: 'Log In' }))
+      expect(screen.getByRole('alert')).toHaveTextContent('All fields are required')
+      expect(screen.getByLabelText('Password:')).toHaveAttribute('aria-invalid', 'true')
+      unmount()
+    }
+  })
+
+  it('OCD only: LOG IN with a password does nothing', async () => {
+    const user = userEvent.setup()
+    renderAt('/end-to-end-demo/cart', 'ocd')
+    await toOcdExisting(user, 'learner@example.com')
+    await user.type(screen.getByLabelText('Password:'), 'Secret#2027')
+    await user.click(screen.getByRole('button', { name: 'Log In' }))
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+    expect(screen.queryByLabelText('Signing you in')).not.toBeInTheDocument()
+    expect(where()).toBe(LOG_IN_PATHS.ocdExisting)
+  })
+
+  it('neither: LOG IN with a password says the Username or Password is incorrect — never “does not exist”', async () => {
     const user = userEvent.setup()
     renderAt('/end-to-end-demo/cart', 'none')
-    await toOcdPage(user)
-    await user.type(screen.getByLabelText('Email'), 'nobody@example.com')
-    await user.click(screen.getByRole('button', { name: 'Continue' }))
-    expect(screen.getByLabelText('Password')).toBeInTheDocument()
-    await user.type(screen.getByLabelText('Password'), 'Secret#2027')
+    await toOcdExisting(user, 'nobody@example.com')
+    await user.type(screen.getByLabelText('Password:'), 'Secret#2027')
     await act(async () => {
-      await user.click(screen.getByRole('button', { name: 'Log in' }))
+      await user.click(screen.getByRole('button', { name: 'Log In' }))
     })
-    expect(screen.getByRole('alert')).toHaveTextContent('The Username or Password is incorrect.')
-    expect(screen.queryByText(/does not exist/i)).not.toBeInTheDocument()
-    /* No Signing you in — the error is the answer. */
-    expect(screen.queryByLabelText('Signing you in')).not.toBeInTheDocument()
-    expect(screen.queryByText(/create a user account/i)).not.toBeInTheDocument()
-    expect(where()).toBe(LOG_IN_PATHS.ocd)
+    expect(screen.getByRole('alert')).toHaveTextContent('The Username or Password is incorrect')
+    expect(screen.queryByText(/does not exist|create a user account/i)).not.toBeInTheDocument()
+    expect(where()).toBe(LOG_IN_PATHS.ocdExisting)
   })
 
   it('/invite-v3 starts Log In three ways, by where the account is', () => {

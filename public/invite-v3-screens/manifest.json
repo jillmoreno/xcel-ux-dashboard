@@ -1061,37 +1061,6 @@
             "Log In · OCD account",
             "Log In · No account"
           ]
-        },
-        {
-          "file": "cards/ocd-log-in/04-password-empty-log-in-disabled-back.png",
-          "state": "Password, empty — Log in disabled, ← Back",
-          "seenIn": [
-            "Log In · OCD account",
-            "Log In · No account"
-          ]
-        },
-        {
-          "file": "cards/ocd-log-in/05-password-filled-log-in-enabled.png",
-          "state": "Password, filled — Log in enabled",
-          "seenIn": [
-            "Log In · OCD account",
-            "Log In · No account"
-          ]
-        },
-        {
-          "file": "cards/ocd-log-in/06-username-or-password-incorrect.png",
-          "state": "Username or password incorrect",
-          "seenIn": [
-            "Log In · OCD account",
-            "Log In · No account"
-          ]
-        },
-        {
-          "file": "cards/ocd-log-in/07-signing-you-in.png",
-          "state": "Signing you in",
-          "seenIn": [
-            "Log In · OCD account"
-          ]
         }
       ],
       "capturedAt": "2026-11-23"
@@ -1128,6 +1097,48 @@
       ],
       "capturedAt": "2026-11-23",
       "tag": "Keycloak (Atlas) account only"
+    },
+    {
+      "id": "page-ocd-log-in-page-existing-design",
+      "title": "OCD log-in page (existing design)",
+      "kind": "page",
+      "flows": [
+        "Log In"
+      ],
+      "states": [
+        {
+          "file": "pages/ocd-log-in-page-existing-design/01-username-filled-and-locked.png",
+          "state": "Username filled and locked",
+          "seenIn": [
+            "Log In · OCD account",
+            "Log In · No account"
+          ]
+        },
+        {
+          "file": "pages/ocd-log-in-page-existing-design/02-log-in-with-no-password-all-fields-are-required.png",
+          "state": "LOG IN with no password — All fields are required",
+          "seenIn": [
+            "Log In · OCD account",
+            "Log In · No account"
+          ]
+        },
+        {
+          "file": "pages/ocd-log-in-page-existing-design/03-password-entered.png",
+          "state": "Password entered",
+          "seenIn": [
+            "Log In · OCD account",
+            "Log In · No account"
+          ]
+        },
+        {
+          "file": "pages/ocd-log-in-page-existing-design/04-no-account-the-username-or-password-is-incorrect.png",
+          "state": "No account — The Username or Password is incorrect",
+          "seenIn": [
+            "Log In · No account"
+          ]
+        }
+      ],
+      "capturedAt": "2026-11-23"
     }
   ]
 }

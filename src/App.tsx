@@ -15,7 +15,7 @@ import {
   XcelKeycloakLogInPage,
   XcelLogInAccountPage,
   XcelLogInPartnerCodePage,
-  XcelOcdHomeStandIn,
+  XcelOcdExistingLogInPage,
   XcelOcdLogInPage,
 } from '@/pages/XcelLogInPages'
 import { ResetPasswordPageV3 } from '@/pages/ResetPasswordPageV3'
@@ -280,7 +280,7 @@ export default function App() {
         <Route path="/end-to-end-demo/log-in/account" element={<TestingGate><XcelLogInAccountPage /></TestingGate>} />
         <Route path="/end-to-end-demo/log-in/sign-in" element={<TestingGate><XcelOcdLogInPage /></TestingGate>} />
         <Route path="/end-to-end-demo/log-in/keycloak" element={<TestingGate><XcelKeycloakLogInPage /></TestingGate>} />
-        <Route path="/end-to-end-demo/log-in/ocd-home" element={<TestingGate><XcelOcdHomeStandIn /></TestingGate>} />
+        <Route path="/end-to-end-demo/log-in/ocd" element={<TestingGate><XcelOcdExistingLogInPage /></TestingGate>} />
       </Route>
       <Route
         path="/prototype/:featureId/handoff/:componentId"

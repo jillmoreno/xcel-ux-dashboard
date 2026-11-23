@@ -674,9 +674,10 @@ async function keycloakReset(w) {
 }
 
 /** Log In (2026-11-20): the header's Log In, No to the Partner Code, Yes to
- *  the XCEL account, then OCD's log-in card, its states by where the account
- *  is. Atlas leaves the card at Continue for Keycloak's, where only its Reset
- *  your password is captured (`keycloakReset`). */
+ *  the XCEL account, then the email card. Atlas goes on to Keycloak's, where
+ *  only its Reset your password is captured (`keycloakReset`); an OCD account
+ *  or none to OCD's own log-in page, kept as it is (2026-11-23), captured
+ *  whole — the page is the point. */
 async function logIn(page, account) {
   const w = new Walk(page)
   await go(page, startUrl('xcel-log-in', { logIn: account }))
@@ -694,20 +695,20 @@ async function logIn(page, account) {
   await email.fill('jordan@example.com')
   await w.shot(TITLE, 'Email, filled — Continue enabled', { card: CARD })
   await w.click('Continue', { wait: 500 })
-  /* Keycloak knows the address: its own page, not OCD's password. */
+  /* Keycloak knows the address: its own page. */
   if (account === 'atlas') return keycloakReset(w)
-  const pw = page.getByLabel('Password', { exact: true })
-  await w.shot(TITLE, 'Password, empty — Log in disabled, ← Back', { card: CARD })
-  await pw.fill(account === 'ocd' ? 'wrong' : 'Secret#2027')
-  await w.shot(TITLE, 'Password, filled — Log in enabled', { card: CARD })
-  await w.click('Log in', { wait: 500 })
-  /* A wrong password and no account read the same (2026-11-20). */
-  await w.shot(TITLE, 'Username or password incorrect', { card: CARD })
-  if (account === 'ocd') {
-    await pw.fill('Secret#2027')
-    await w.click('Log in', { wait: 400 })
-    /* Opened stand-alone, it holds here rather than going on into OCD. */
-    await w.shot(TITLE, 'Signing you in', { card: 'section[aria-label="Signing you in"]', settle: 150 })
+  await page.waitForURL(/\/log-in\/ocd\b/, { timeout: 10000 })
+  const OCD = 'OCD log-in page (existing design)'
+  await w.shot(OCD, 'Username filled and locked')
+  await w.click('Log In', { wait: 400 })
+  await w.shot(OCD, 'LOG IN with no password — All fields are required')
+  await page.getByLabel('Password:', { exact: true }).fill('Secret#2027')
+  await w.shot(OCD, 'Password entered')
+  /* An OCD account: LOG IN does nothing, so there is nothing to show. No
+     account: the error over the Username. */
+  if (account === 'none') {
+    await w.click('Log In', { wait: 400 })
+    await w.shot(OCD, 'No account — The Username or Password is incorrect')
   }
   return w
 }
