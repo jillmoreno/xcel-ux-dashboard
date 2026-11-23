@@ -187,10 +187,12 @@ describe('the labels, the status and the progress', () => {
       // The leaf spans only — each value sits inside a `display: contents` wrapper that carries the same text.
       const values = [...row.querySelectorAll('span:not([aria-hidden])')].filter((s) => s.children.length === 0).map((s) => s.textContent)
       expect(values).toHaveLength(3)
-      expect(values[0]).toBe('Florida')
+      // Abbreviated (2026-11-23, Jillienne: "to help with wrapping issues") — the design cards say "Florida"; the row says FL.
+      expect(values[0]).toBe('FL')
       expect(row.querySelectorAll('[aria-hidden]')).toHaveLength(2)
     }
     expect(screen.queryByText(/^State:/)).toBeNull()
+    expect(screen.queryByText('Florida', { selector: '[data-testid="atlas-card-facts"] span' })).toBeNull()
     expect(screen.getAllByText('Licensing').length).toBeGreaterThan(0)
     expect(screen.getAllByText('Life and Health').length).toBeGreaterThan(0)
   })
@@ -219,6 +221,12 @@ describe('the three label layouts — the design bar’s atlas-courses-card-meta
     expect(flag.variants!.map((v) => v.value)).toEqual(['ruled-row', 'stacked', 'labelled'])
   })
 
+  it('ruled row: a library record that already carries the code stays "FL"', () => {
+    renderShell(LIBRARY)
+    const row = screen.getAllByTestId('atlas-card-facts')[0]
+    expect([...row.querySelectorAll('span:not([aria-hidden])')].filter((s) => s.children.length === 0)[0].textContent).toBe('FL')
+  })
+
   it('stacked: the state leads with its icon, category | line of authority under it', () => {
     renderShell(`${DESIGN_CARDS},atlas-courses-card-meta:stacked`)
     const row = screen.getAllByTestId('atlas-card-facts')[0]
@@ -236,6 +244,25 @@ describe('the three label layouts — the design bar’s atlas-courses-card-meta
     expect(row.getAttribute('data-meta')).toBe('labelled')
     expect(within(row).getByText(/^State:/)).toBeTruthy()
     expect(within(row).getByText(/^Line of authority:/)).toBeTruthy()
+  })
+})
+
+describe('the status pill on the image', () => {
+  /* 2026-11-23, Jillienne: "have the status badge be in the top left of the image area" — the shared card's badges. */
+  it('sits inside the image frame, before the title', () => {
+    renderShell(DESIGN_CARDS)
+    const card = screen.getByRole('article', { name: 'Florida Life and Health Pre-licensing' })
+    const frame = within(card).getByTestId('atlas-card-image')
+    expect(frame.querySelector('img')).toBeTruthy()
+    expect(within(frame).getByText('Due Soon')).toBeTruthy()
+    expect(frame.compareDocumentPosition(within(card).getByRole('heading')) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+  })
+
+  it('draws a light grey track under the fill', () => {
+    renderShell(DESIGN_CARDS)
+    const bar = screen.getAllByRole('progressbar')[0]
+    expect(bar.style.background).toContain('--color-neutral-200')
+    expect(bar.style.backgroundImage).toBe('')
   })
 })
 

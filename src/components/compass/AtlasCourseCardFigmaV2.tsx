@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import { Link } from 'react-router-dom'
 import { AngleRightSolid, EllipsisVerticalSolid, LocationDotRegular } from '@/icons'
 import { useFeatureFlag } from '@/context/FeatureFlagContext'
+import { STATE_ABBR } from '@/data/catalogFixtures'
 import { AtlasStatusPill, statusStrongFill, type AtlasCourseStatus } from './AtlasStatusPill'
 import type { AtlasCourseCardData } from './AtlasCourseCard'
 import { AtlasCourseDetailsSheet } from './AtlasCourseDetailsSheet'
@@ -76,7 +77,12 @@ export function AtlasCourseCardFigmaV2({
   /* HOW THE THREE LABELS ARE DRAWN — the design bar's `atlas-courses-card-meta` (2026-11-23, Jillienne: "lets explore some ui
      variations"). See the flag for the three arms. */
   const metaLayout = useFeatureFlag('atlas-courses-card-meta').variant ?? 'ruled-row'
-  const facts = [data.state, data.category, data.lineOfAuthority].filter((v): v is string => Boolean(v))
+  /* THE RULED ROW ABBREVIATES THE STATE — "FL", not "Florida" (2026-11-23, Jillienne: "use the ruled row, have the state be
+     abbreviated to help with wrapping issues"). `STATE_ABBR` is the catalog's map; a name it does not know, or a record
+     that already carries the code (the library's `state: 'FL'`), passes through. The sheet keeps the full name. */
+  const facts = [data.state ? (STATE_ABBR[data.state] ?? data.state) : undefined, data.category, data.lineOfAuthority].filter(
+    (v): v is string => Boolean(v),
+  )
   /* The ⋮ menu: open on click, shut on a click anywhere else, on Escape, or on picking a row. */
   const [menuOpen, setMenuOpen] = useState(false)
   /* Course Details — the facts' sheet (2026-11-18, Eric). */
@@ -119,7 +125,17 @@ export function AtlasCourseCardFigmaV2({
       className={onOpen ? 'cre-atlas-card-v2' : undefined}
       style={{ ...CARD, ...(steppedBack ? CARD_DONE : null), ...(onOpen ? { cursor: 'pointer' } : null) }}
     >
-      <img src={data.imageUrl} alt="" aria-hidden style={IMAGE} />
+      {/* The image, with the status pill over its top-left corner (2026-11-23, Jillienne — the shared card's badges sit the
+          same way). One pill, the most pressing: the clock before the course's own state. Expired is charcoal here. */}
+      <div style={IMAGE_WRAP} data-testid="atlas-card-image">
+        <img src={data.imageUrl} alt="" aria-hidden style={IMAGE} />
+        <span style={PILL_ON_IMAGE}>
+          <AtlasStatusPill
+            status={statusFor(data, progress)}
+            {...(statusFor(data, progress) === 'expired' ? { fill: 'var(--color-neutral-800)', ink: 'var(--color-neutral-50)' } : null)}
+          />
+        </span>
+      </div>
       {/* The title, then its pill under it — 10 apart, 4 above and below (Figma 710:2526). */}
       <div style={TITLE_BLOCK}>
         {/* The title, then "Course Details ›" under it, then the rule (2026-11-18, Eric) — the link in Review Course's style,
@@ -134,31 +150,25 @@ export function AtlasCourseCardFigmaV2({
             then 8 lower, then 4 back up: 12 over it (2026-11-12, Eric). Flex, so no stray line box under the pill. */}
         {/* …and "Review Course" across from it, at the card's right edge (2026-11-17, Eric: "a text link adjusted far right next
             to the status pills … with an angle right icon at the end of it"). It does what the card does — Home in this course. */}
-        <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, alignSelf: 'stretch', marginTop: 'auto', paddingTop: 4, /* 4 more over the pills (2026-11-18, Eric) */ marginBottom: 0 /* and 4 more under them — the −4 went (same day) */ }}>
-          {/* EXPIRED IN CHARCOAL (2026-11-23, Jillienne: "Expired badge should be a dark charcoal color") — Neutral 800 with
-              Neutral 50 ink, both on the ramp so the pair inverts together in the dark theme. The other five pills keep
-              the catalog's fills; the card before this one keeps Error 100 for Expired. */}
-          <AtlasStatusPill
-            status={statusFor(data, progress)}
-            {...(statusFor(data, progress) === 'expired' ? { fill: 'var(--color-neutral-800)', ink: 'var(--color-neutral-50)' } : null)}
-          />
-          {/* Only on a finished card — completed, expired or failed. A course in progress or not started has none
-              (2026-11-18, Eric). */}
-          {steppedBack ? (
-          <button
-            type="button"
-            className="cre-atlas-card-review"
-            onClick={(e) => {
-              e.stopPropagation()
-              onOpen?.()
-            }}
-            style={REVIEW_LINK}
-          >
-            Review Course
-            <AngleRightSolid size={11} aria-hidden style={{ width: 6 }} />
-          </button>
-          ) : null}
-        </span>
+        {/* THE STATUS PILL IS ON THE IMAGE NOW (2026-11-23, Jillienne: "have the status badge be in the top left of the image
+            area" — the shared card's badges). What is left of this row is "Review Course ›", on a finished card only, at the
+            card's right edge (2026-11-17, Eric). */}
+        {steppedBack ? (
+          <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 8, alignSelf: 'stretch', marginTop: 'auto', paddingTop: 4 }}>
+            <button
+              type="button"
+              className="cre-atlas-card-review"
+              onClick={(e) => {
+                e.stopPropagation()
+                onOpen?.()
+              }}
+              style={REVIEW_LINK}
+            >
+              Review Course
+              <AngleRightSolid size={11} aria-hidden style={{ width: 6 }} />
+            </button>
+          </span>
+        ) : null}
       </div>
       {/* The description (PRD section 3) — or its fallback. The sentence lives HERE, once, rather than on every record. */}
       <p style={DESCRIPTION}>{data.description || 'Description coming soon'}</p>
@@ -374,6 +384,9 @@ const CARD: CSSProperties = {
 // Its fill Secondary 100 (same day, Eric; white, then half Primary 100).
 const CARD_DONE: CSSProperties = { background: 'var(--color-secondary-100)', boxShadow: 'inset 0 0 0 1px var(--color-primary-100)' }
 const IMAGE: CSSProperties = { display: 'block', width: '100%', height: 120, objectFit: 'cover', borderRadius: 6 }
+/* The image's frame, so the pill can sit over it — 8 in from the top-left, the shared card's inset (2026-11-23). */
+const IMAGE_WRAP: CSSProperties = { position: 'relative' }
+const PILL_ON_IMAGE: CSSProperties = { position: 'absolute', top: 8, left: 8, display: 'inline-flex', boxShadow: '0 1px 2px rgb(0 0 0 / 0.12)', borderRadius: 14 }
 const TITLE_BLOCK: CSSProperties = { display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 14 /* 4 more over the pill (2026-11-12, Eric; the design's 10) */, paddingTop: 4, paddingBottom: 4 }
 /* The title and its Course Details link (2026-11-18, Eric; a rule under them that day, then removed). The pair stretches to the foot of its share of the row, which is
    what holds the pills at one height across the row. */
@@ -453,13 +466,14 @@ const PROGRESS_ROW: CSSProperties = {
 }
 /* A 1-tall Primary 400 rule, the 5-tall Primary 500 fill centred on it (2026-11-12, Eric). The box is the fill's height; the
    rule is drawn through its middle. */
+/* A 5-tall LIGHT GREY TRACK with the fill over it (2026-11-23, Jillienne: "the unfinished on the right is a light gray") —
+   Neutral 200, 2.5 corners. The 2026-11-12 card drew a 1px Primary 400 rule through the middle instead; that stays on it. */
 const BAR_TRACK: CSSProperties = {
   position: 'relative',
   height: 5,
-  backgroundImage: 'linear-gradient(var(--color-primary-400), var(--color-primary-400))', // Primary 400 (same day, Eric; 200, then 300)
-  backgroundSize: '100% 1px',
-  backgroundPosition: 'center',
-  backgroundRepeat: 'no-repeat',
+  borderRadius: 2.5,
+  background: 'var(--color-neutral-200)',
+  overflow: 'hidden',
 }
 const BAR_FILL: CSSProperties = { position: 'absolute', top: 0, bottom: 0, left: 0, borderRadius: 2.5, background: 'var(--color-primary-500)' }
 /* The ⋮ and the main button, 6 apart, 35 tall, 9 corners — at the foot of their subgrid row so the row's buttons line up. */
