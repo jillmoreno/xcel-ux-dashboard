@@ -459,70 +459,47 @@
       ],
       "states": [
         {
-          "file": "pages/reset-your-password-page/01-empty-reset-password-disabled-b2b2c.png",
-          "state": "Empty, Reset password disabled — B2B2C",
+          "file": "pages/reset-your-password-page/01-empty-reset-password-disabled.png",
+          "state": "Empty, Reset password disabled",
           "seenIn": [
             "Direct Email · Has Atlas account",
-            "QR Code · Has Atlas account"
-          ]
-        },
-        {
-          "file": "pages/reset-your-password-page/02-passwords-do-not-match-b2b2c.png",
-          "state": "Passwords do not match — B2B2C",
-          "seenIn": [
-            "Direct Email · Has Atlas account",
-            "QR Code · Has Atlas account"
-          ]
-        },
-        {
-          "file": "pages/reset-your-password-page/03-filled-reset-password-enabled-b2b2c.png",
-          "state": "Filled, Reset password enabled — B2B2C",
-          "seenIn": [
-            "Direct Email · Has Atlas account",
-            "QR Code · Has Atlas account"
-          ]
-        },
-        {
-          "file": "pages/reset-your-password-page/04-password-reset-b2b2c.png",
-          "state": "Password reset — B2B2C",
-          "seenIn": [
-            "Direct Email · Has Atlas account",
-            "QR Code · Has Atlas account"
-          ]
-        },
-        {
-          "file": "pages/reset-your-password-page/05-empty-reset-password-disabled-b2c.png",
-          "state": "Empty, Reset password disabled — B2C",
-          "seenIn": [
+            "QR Code · Has Atlas account",
             "Not signed into XCEL (OCD) · Targeted only · Has Atlas account",
             "Signed into XCEL (OCD) · Targeted only · Has Atlas account"
           ]
         },
         {
-          "file": "pages/reset-your-password-page/06-passwords-do-not-match-b2c.png",
-          "state": "Passwords do not match — B2C",
+          "file": "pages/reset-your-password-page/02-passwords-do-not-match.png",
+          "state": "Passwords do not match",
           "seenIn": [
+            "Direct Email · Has Atlas account",
+            "QR Code · Has Atlas account",
             "Not signed into XCEL (OCD) · Targeted only · Has Atlas account",
             "Signed into XCEL (OCD) · Targeted only · Has Atlas account"
           ]
         },
         {
-          "file": "pages/reset-your-password-page/07-filled-reset-password-enabled-b2c.png",
-          "state": "Filled, Reset password enabled — B2C",
+          "file": "pages/reset-your-password-page/03-filled-reset-password-enabled.png",
+          "state": "Filled, Reset password enabled",
           "seenIn": [
+            "Direct Email · Has Atlas account",
+            "QR Code · Has Atlas account",
             "Not signed into XCEL (OCD) · Targeted only · Has Atlas account",
             "Signed into XCEL (OCD) · Targeted only · Has Atlas account"
           ]
         },
         {
-          "file": "pages/reset-your-password-page/08-password-reset-b2c.png",
-          "state": "Password reset — B2C",
+          "file": "pages/reset-your-password-page/04-password-reset.png",
+          "state": "Password reset",
           "seenIn": [
+            "Direct Email · Has Atlas account",
+            "QR Code · Has Atlas account",
             "Not signed into XCEL (OCD) · Targeted only · Has Atlas account",
             "Signed into XCEL (OCD) · Targeted only · Has Atlas account"
           ]
         }
       ],
+      "capturedAt": "2026-11-23",
       "tag": "Keycloak (Atlas) account only"
     },
     {
@@ -562,24 +539,19 @@
       ],
       "states": [
         {
-          "file": "pages/start-learning/01-ready-to-start-the-course-b2b2c.png",
-          "state": "Ready to start the course — B2B2C",
+          "file": "pages/start-learning/01-ready-to-start-the-course.png",
+          "state": "Ready to start the course",
           "seenIn": [
             "Direct Email · Has Atlas account",
-            "QR Code · Has Atlas account"
-          ]
-        },
-        {
-          "file": "pages/start-learning/02-ready-to-start-the-course-b2c.png",
-          "state": "Ready to start the course — B2C",
-          "seenIn": [
+            "QR Code · Has Atlas account",
             "Not signed into XCEL (OCD) · Targeted only · Has Atlas account",
             "Not signed into XCEL (OCD) · Mixed · Has Atlas account",
             "Signed into XCEL (OCD) · Targeted only · Has Atlas account",
             "Signed into XCEL (OCD) · Mixed · Has Atlas account"
           ]
         }
-      ]
+      ],
+      "capturedAt": "2026-11-23"
     },
     {
       "id": "modal-select-your-state-and-line-of-authority",

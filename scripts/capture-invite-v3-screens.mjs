@@ -161,6 +161,12 @@ const EXCLUDED = new Set([
 ])
 const kept = (c) => !EXCLUDED.has(c.title)
 
+/* PAGES THAT LOOK THE SAME FOR B2B2C AND B2C — kept once, not once per model
+   (2026-11-23, Afsana: their two sets were the same pictures, and two
+   identical sets labelled for two models would confuse the developers into
+   looking for a difference). */
+const SAME_FOR_BOTH_MODELS = new Set(['Reset your password (page)', 'Start learning'])
+
 /* Cards drawn on a page rather than in a dialog, cropped to the card. */
 const CARD_TITLES = ['Select your state and line of authority', 'Finish setting up your account']
 
@@ -816,7 +822,7 @@ function group(shots) {
     const c = components.get(key)
     if (!c.flows.includes(s.flow)) c.flows.push(s.flow)
     const where = `${s.flow} · ${s.variant}`
-    const model = s.kind === 'page' ? s.model : ''
+    const model = s.kind === 'page' && !SAME_FOR_BOTH_MODELS.has(s.title) ? s.model : ''
     const same = c.states.find((st) => st.state === s.state && st.model === model)
     if (same) {
       if (!same.seenIn.includes(where)) same.seenIn.push(where)
