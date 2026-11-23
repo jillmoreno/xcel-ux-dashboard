@@ -700,6 +700,24 @@ function LoginStep({
             </button>
           )}
         </div>
+        {/* The Log In flow's way out, at the foot of Reset your password —
+            moved from its Log in and renamed (2026-11-23, Afsana: "Can't log
+            in? Contact us", to XCEL's contact page in a new tab). */}
+        {onBack ? (
+          <p style={{ ...NOTE, textAlign: 'center' }}>
+            Can’t log in?{' '}
+            <a
+              href={XCEL_CONTACT_US}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="cre-e2e-textlink"
+              style={{ ...TEXT_LINK, color: 'var(--color-xcel-brick)', textDecoration: 'none' }}
+            >
+              Contact us
+              <span style={VISUALLY_HIDDEN}> (opens in a new tab)</span>
+            </a>
+          </p>
+        ) : null}
         {/* The demo fill — the same invisible, labelled corner as the email
             step's. */}
         <button
@@ -888,13 +906,17 @@ function LoginStep({
         </button>
       </div>
       {/* The way out for a learner who cannot get in at all (2026-11-13,
-          Afsana). Drawn only — the help center's address is not settled. */}
-      <p style={{ ...NOTE, textAlign: 'center' }}>
-        Can’t log in?{' '}
-        <button type="button" className="cre-e2e-textlink" style={{ ...TEXT_LINK, color: 'var(--color-xcel-brick)' }}>
-          Visit our help center
-        </button>
-      </p>
+          Afsana). Drawn only — the help center's address is not settled. On
+          the Log In flow it moved to Reset your password as Contact us
+          (2026-11-23, Afsana). */}
+      {onBack ? null : (
+        <p style={{ ...NOTE, textAlign: 'center' }}>
+          Can’t log in?{' '}
+          <button type="button" className="cre-e2e-textlink" style={{ ...TEXT_LINK, color: 'var(--color-xcel-brick)' }}>
+            Visit our help center
+          </button>
+        </p>
+      )}
     </form>
   )
 }
@@ -903,8 +925,9 @@ function LoginStep({
  *  flow's Atlas arm. Swati (2026-11-18): it "needs to match the keycloak
  *  widget", so it IS the checkout modal's Log in step — the same form, eye,
  *  wrong password and Forgot password? — on a card of its own, then the
- *  modal's "Signing you in". The address is the one given on OCD's page,
- *  locked. No name in the lead: nobody has signed in yet to be greeted. */
+ *  modal's "Signing you in". Like the checkout's, it greets the learner by
+ *  name and shows the address given on OCD's page, locked; unlike it, ← Back
+ *  in the corner (2026-11-23, Afsana). */
 export function KeycloakLogInCardV3({
   email,
   onSignedIn,
@@ -929,14 +952,14 @@ export function KeycloakLogInCardV3({
       {signingIn ? (
         <V3CardSigningIn />
       ) : (
-        /* No lead and no email field — the email step is the page before,
-           and ← Back returns to it to change the address (2026-11-20,
-           Afsana). */
+        /* The checkout's Log in to continue, as Afsana asked on 2026-11-23: a
+           welcome line and the address locked in its field — with ← Back
+           kept, to change it on the email step. (2026-11-20 to 11-23 it had
+           neither.) */
         <LoginStep
           email={email}
           title="Log in"
-          lead={null}
-          showEmail={false}
+          lead={`Welcome back, ${E2E_LEARNER_FIRST}! Enter your password.`}
           onBack={onBack}
           onLoggedIn={() => setSigningIn(true)}
         />
@@ -1101,6 +1124,18 @@ function ResetPasswordStep({ email, onReset }: { email: string; onReset: () => v
 
 /* A valid new password for the demo fill — every rule met. */
 const RESET_DEMO_PASSWORD = 'Navarro#2027'
+
+/** XCEL's contact page — the Log In flow's "Can't log in? Contact us". */
+const XCEL_CONTACT_US = 'https://www.xcelsolutions.com/contact-us'
+
+const VISUALLY_HIDDEN: CSSProperties = {
+  position: 'absolute',
+  width: 1,
+  height: 1,
+  overflow: 'hidden',
+  clip: 'rect(0 0 0 0)',
+  whiteSpace: 'nowrap',
+}
 
 /* ── Styles — the file's ────────────────────────────────────────────────── */
 

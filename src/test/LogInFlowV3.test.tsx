@@ -132,7 +132,7 @@ describe('Invite Flow V3 — Log In', () => {
     expect(screen.queryByText('Enter your email')).not.toBeInTheDocument()
   })
 
-  it('in Keycloak: Keycloak’s log-in with no lead or email field, then Signing you in', async () => {
+  it('in Keycloak: Keycloak’s log-in greets them and locks the address, then Signing you in', async () => {
     const user = userEvent.setup()
     renderAt('/end-to-end-demo/cart', 'atlas')
     await toOcdPage(user)
@@ -140,8 +140,11 @@ describe('Invite Flow V3 — Log In', () => {
     await user.click(screen.getByRole('button', { name: 'Continue' }))
     expect(where()).toBe(LOG_IN_PATHS.keycloak)
     expect(screen.getByRole('heading', { name: 'Log in' })).toBeInTheDocument()
-    expect(screen.queryByLabelText(/^Email/)).not.toBeInTheDocument()
-    expect(screen.queryByText(/Enter your password to/)).not.toBeInTheDocument()
+    expect(screen.getByText('Welcome back, Jordan! Enter your password.')).toBeInTheDocument()
+    expect(screen.getByLabelText(/^Email/)).toHaveValue('learner@example.com')
+    expect(screen.getByLabelText(/^Email/)).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Back' })).toBeInTheDocument()
+    expect(screen.queryByText(/Can’t log in\?/)).not.toBeInTheDocument()
     await user.type(screen.getByLabelText(/^Password/), 'Secret#2027')
     await user.click(screen.getByRole('button', { name: 'Log in' }))
     expect(screen.getByLabelText('Signing you in')).toBeInTheDocument()
@@ -156,6 +159,11 @@ describe('Invite Flow V3 — Log In', () => {
     await user.click(screen.getByRole('button', { name: 'Forgot password?' }))
     expect(screen.getByRole('heading', { name: 'Reset your password' })).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Back to sign in' })).not.toBeInTheDocument()
+    /* Can't log in? moved here from Log in, as Contact us (2026-11-23). */
+    const contact = screen.getByRole('link', { name: /Contact us/ })
+    expect(contact).toHaveAttribute('href', 'https://www.xcelsolutions.com/contact-us')
+    expect(contact).toHaveAttribute('target', '_blank')
+    expect(contact).toHaveAttribute('rel', 'noopener noreferrer')
     await user.click(screen.getByRole('button', { name: 'Back' }))
     expect(screen.getByRole('heading', { name: 'Log in' })).toBeInTheDocument()
     expect(where()).toBe(LOG_IN_PATHS.keycloak)
