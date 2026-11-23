@@ -22,6 +22,7 @@ import { MyCoursesPage } from '@/pages/MyCoursesPage'
 import { AtlasAccountLinksCard, AtlasJourneyLinksCard, QUICK_LINKS_W } from '@/components/compass/AtlasJourneyLinksCard'
 import { useAtlasAccountPages } from '@/components/account/useAtlasAccountPages'
 import { AtlasCourseCardFigma } from '@/components/compass/AtlasCourseCardFigma'
+import { AtlasCourseCardFigmaV2 } from '@/components/compass/AtlasCourseCardFigmaV2'
 import {
   ATLAS_COURSE_CARD_W,
   ATLAS_MY_COURSES,
@@ -29,6 +30,7 @@ import {
   ATLAS_MY_COURSES_WIDTH,
   ATLAS_HOME_COURSE_PARAM,
   atlasCoursesFor,
+  CERTIFICATES_PAGE,
   atlasHomeStateFor,
 } from '@/data/atlasCourseCards'
 import type { AtlasCourseCardData } from '@/components/compass/AtlasCourseCard'
@@ -2775,6 +2777,21 @@ function MyCoursesSection() {
      short-circuits the hook, so switching versions in the picker would change
      the hook COUNT between renders — React throws, and the page goes white. */
   const cardStyle = useFeatureFlag('atlas-courses-card-style').variant
+  /* WHICH ATLAS CARD (2026-11-23): the PRD-fields copy (`AtlasCourseCardFigmaV2`) or Eric's 2026-11-18 card, untouched.
+     Read unconditionally, like the rest — see the note above. */
+  const prdFields = useFeatureFlag('atlas-courses-card-prd-fields').enabled
+  /* VIEW CERTIFICATE STAYS IN THE SHELL (2026-11-23). The card's `certificateHref` is the product route,
+     /my-learning/certificates — and `AppLayout`'s guard blocks exactly that from inside the rebrand with a toast ("the two
+     are kept apart"), which would make the PRD's one working button a dead end. So this page re-points it to the shell's
+     own certificates page, the way the shared card's title is re-pointed into `?section=course`. A REAL document URL — the
+     day `certificatePdfUrl` stops being a stub — is not the page and passes straight through. Found by clicking it. */
+  const certificateTo = (c: AtlasCourseCardData): string => {
+    if (c.certificateHref && c.certificateHref !== CERTIFICATES_PAGE) return c.certificateHref
+    const next = new URLSearchParams(params)
+    next.set('section', 'certificates')
+    next.delete('coursePage')
+    return `?${next.toString()}`
+  }
   const quickLinksMode = useFeatureFlag('atlas-pages-quick-links').variant
   const sharedCard = baseline && cardStyle !== 'atlas'
   const quickLinksHidden = baseline && quickLinksMode !== 'shown'
@@ -2881,18 +2898,29 @@ function MyCoursesSection() {
           />
         ) : (
           <div style={{ display: 'grid', gridTemplateColumns: `repeat(auto-fill, ${ATLAS_COURSE_CARD_W}px)`, gap: 16 }}>
-            {cards.map((c, i) => (
+            {cards.map((c, i) =>
               /* Figma 706:2416's card (2026-11-12, Eric: "rework the course cards to match") — `AtlasCourseCard`, the 213:3619
                  card, is kept unreferenced for the way back (White's Primary 100 fill was its `activeFill`; this card is Primary
-                 100 already). */
-              <AtlasCourseCardFigma
-                key={c.id}
-                data={c}
-                // See `actionFor` — the baseline's flag, or Eric's first card.
-                onAction={actionFor(i)}
-                onOpen={() => openHomeFor(c)}
-              />
-            ))}
+                 100 already). Since 2026-11-23 the flag picks its PRD-fields copy (`atlas-courses-card-prd-fields`); the
+                 original is drawn untouched when the flag is off. */
+              prdFields ? (
+                <AtlasCourseCardFigmaV2
+                  key={c.id}
+                  data={c}
+                  // See `actionFor` — the baseline's flag, or Eric's first card.
+                  onAction={actionFor(i)}
+                  onOpen={() => openHomeFor(c)}
+                  certificateTo={c.completed ? certificateTo(c) : undefined}
+                />
+              ) : (
+                <AtlasCourseCardFigma
+                  key={c.id}
+                  data={c}
+                  onAction={actionFor(i)}
+                  onOpen={() => openHomeFor(c)}
+                />
+              ),
+            )}
           </div>
         )
       }

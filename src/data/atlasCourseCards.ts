@@ -1,6 +1,7 @@
 import type { AtlasCourseCardData } from '@/components/compass/AtlasCourseCard'
 import type { Brand } from '@/context/AccountContext'
-import { courseExpiryState } from './courseExpiry'
+import { certificateForCourse, certificatePdfUrl } from './certificateFixtures'
+import { courseExpiryState, usableDaysLeft } from './courseExpiry'
 import { FIXTURE_TODAY, myCoursesFor, type MyCourseRecord } from './myCoursesFixtures'
 
 /**
@@ -13,15 +14,51 @@ import { FIXTURE_TODAY, myCoursesFor, type MyCourseRecord } from './myCoursesFix
  * tabs' invented New York Property & Casualty course (AtlasHomeV2
  * `DEMO_OTHER_COURSES`, same image), and its badge, date and button are
  * INVENTED for the demo — no fixture has a P&C enrolment to read them from.
+ *
+ * ⚠ RE-DATED 2026-11-23 for the My Courses PRD (section 3, Chi Wang,
+ * 2026-11-16). Each card now carries ISO `expiresAt` / `completedOn` dates set
+ * RELATIVE TO `FIXTURE_TODAY` (2026-05-11), and its date line is COMPUTED by
+ * `designDates` — the same `dateLine` the library goes through — so the five
+ * PRD shapes ("Access ends … · N days left", "Expired:", "Completed: … ·
+ * Score") are on screen at once and cannot drift from the fixtures' shapes.
+ * The authored "October 19, 2026 · 5:49 PM CDT" strings went with that: a
+ * Due Soon card dated five months out contradicted its own pill.
+ *
+ * ⚠ THE CE PACKAGE CARD (`demo-ny-pclh-refresher-ce`) IS OUT OF SCOPE FOR THE
+ * JAN 12 RELEASE and is left exactly as it was — authored date string, no
+ * description, no score. The Failed row of the PRD's table is demonstrated by
+ * the SIXTH card (`demo-fl-pc-practice-exam`) instead.
  */
+/* ⚠ DECLARED ABOVE THE CARDS ON PURPOSE: `designDates` runs while `ATLAS_MY_COURSES` is built, and a `const` below the
+   array would still be in its temporal dead zone — a ReferenceError at module load, not a type error. */
+/** Where View Certificate lands when there is no certificate to open — the certificates page, never a dead button
+ *  (the PRD's "No dead ends"). `certificatePdfUrl` returns the same page today; see its `TODO(data)`. */
+export const CERTIFICATES_PAGE = '/my-learning/certificates'
+
+const MONTHS = [
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
+]
+
 export const ATLAS_MY_COURSES: readonly AtlasCourseCardData[] = [
   {
     id: 'xcel-ny-producer-prelicensing',
     title: 'Florida Life and Health Pre-licensing',
     imageUrl: '/courses/fl-life-health.webp', // Florida's beach (2026-11-12, Eric: the cards in Florida; New York's skyline before)
     badge: 'Due Soon',
-    availableDate: 'October 19, 2026',
-    availableTime: '5:49 PM CDT',
+    // Two weeks of access left, enrolled six weeks ago (2026-11-23; "October 19, 2026 · 5:49 PM CDT" before).
+    ...designDates({ myStatus: 'in-progress', enrolledAt: '2026-04-01', expiresAt: '2026-05-25' }),
+    description: 'Every topic on the Florida Life & Health exam in self-paced lessons, with a practice quiz at the end of each one.',
     actionLabel: 'Resume Course',
     // Figma 706:2416's facts (2026-11-12, Eric) — the state is the course's, New York; the design's frame says Florida.
     state: 'Florida',
@@ -38,8 +75,9 @@ export const ATLAS_MY_COURSES: readonly AtlasCourseCardData[] = [
     // A Florida street of tile roofs and palms (2026-11-12, Eric). Unsplash photo 4T4AcGJvARQ, Unsplash License — free, no
     // credit required. New York's brownstones before.
     imageUrl: '/courses/fl-property-casualty.jpg',
-    availableDate: 'December 15, 2026',
-    availableTime: '11:59 PM CST',
+    // Seven months of access, just enrolled (2026-11-23; "December 15, 2026 · 11:59 PM CST" before).
+    ...designDates({ myStatus: 'not-started', enrolledAt: '2026-05-04', expiresAt: '2026-12-15' }),
+    description: 'Every topic on the Florida Property & Casualty exam in self-paced lessons, with a practice quiz at the end of each one.',
     actionLabel: 'Begin Course',
     actionStyle: 'secondary',
     state: 'Florida',
@@ -66,8 +104,12 @@ export const ATLAS_MY_COURSES: readonly AtlasCourseCardData[] = [
     // COMPLETED (2026-10-06, Eric's request) — an invented past completion
     // date; it was "Available until January 31, 2027" with Begin Course.
     completed: true,
-    availableDate: 'September 18, 2026',
-    availableTime: '3:12 PM CDT',
+    // Finished in March with a 92 (2026-11-23; "September 18, 2026 · 3:12 PM CDT" before). The score is invented — the PRD's
+    // "Completed: [date] · Score" line needs one.
+    ...designDates({ myStatus: 'completed', enrolledAt: '2026-02-20', completedOn: '2026-03-18', expiresAt: '2027-01-31', score: 92 }),
+    description: "One self-paced module on Florida's Preferred Business Practices requirement for licensed producers.",
+    // No certificate record for an invented course, so View Certificate lands on the certificates page — the PRD's fallback.
+    certificateHref: CERTIFICATES_PAGE,
     actionLabel: 'Completed',
     state: 'Florida',
     category: 'Continuing Education',
@@ -86,8 +128,9 @@ export const ATLAS_MY_COURSES: readonly AtlasCourseCardData[] = [
     title: 'Florida Personal Lines Pre-licensing',
     imageUrl: '/courses/0.webp',
     badge: 'Expired',
-    availableDate: 'November 2, 2026',
-    availableTime: '11:59 PM CST',
+    // Access ended three weeks ago (2026-11-23; "November 2, 2026 · 11:59 PM CST" before).
+    ...designDates({ myStatus: 'in-progress', enrolledAt: '2025-10-20', expiresAt: '2026-04-20' }),
+    description: 'Homeowners, auto and other personal lines coverage for the Florida exam, with practice questions throughout.',
     actionLabel: 'Purchase Extension',
     // Begin Course's outline (2026-11-12, Eric; the Expired pill's pink outline for a moment — `expired`, kept on the card).
     actionStyle: 'secondary',
@@ -117,7 +160,37 @@ export const ATLAS_MY_COURSES: readonly AtlasCourseCardData[] = [
       'Our Refresher CE Package bundles the hours Florida requires across Property, Casualty, Life and Health into one purchase, and is ideal for producers who hold several lines of authority.',
     progress: 87, // (2026-11-12, Eric; 100 first)
   },
+  /* THE SIXTH CARD (2026-11-23): a FAILED practice exam, so the PRD's Failed row — "Access ends … · N days left", her score,
+     Retake Course — is on screen while the CE package card above stays out of scope. Everything invented; the image is the
+     P&C card's Florida street again (same line of authority, no new photo). */
+  {
+    id: 'demo-fl-pc-practice-exam',
+    title: 'Florida Property & Casualty Practice Exam',
+    imageUrl: '/courses/fl-property-casualty.jpg',
+    ...designDates({ myStatus: 'failed', enrolledAt: '2026-03-02', expiresAt: '2027-03-02' }),
+    score: 62,
+    description: 'A timed 150-question simulation of the Florida Property & Casualty exam, scored on submission.',
+    actionLabel: 'Retake Course',
+    state: 'Florida',
+    category: 'Licensing',
+    lineOfAuthority: 'Property and Casualty',
+    packageSummary:
+      'The practice exam comes with every Florida Property & Casualty package and can be retaken as often as you like while your access lasts.',
+    progress: 100,
+  },
 ]
+
+/** A design card's ISO dates → its date line AND the ISO fields themselves, so the card carries both. */
+function designDates(
+  c: Pick<MyCourseRecord, 'myStatus' | 'enrolledAt' | 'expiresAt' | 'completedOn' | 'score'>,
+): Pick<AtlasCourseCardData, 'dateLabel' | 'availableDate' | 'availableTime' | 'expiresAt' | 'completedOn' | 'score'> {
+  return {
+    ...dateLine({ ...c, status: c.myStatus }, FIXTURE_TODAY),
+    expiresAt: c.expiresAt,
+    completedOn: c.completedOn,
+    score: c.score,
+  }
+}
 
 /** The links card's column — 260, the Home page's side column (2026-10-06,
  *  Eric's request; it was 280). */
@@ -175,20 +248,20 @@ export const ATLAS_MY_COURSES_WIDTH =
  * exactly the confusion decision 33 forbids. The archived collection needs the
  * link back before it can have cards.
  *
- * WHAT EACH FIELD BECOMES, and why the date line has three shapes rather than
- * one: the Atlas card draws a single date row inside a four-row subgrid, so
- * every card in a row must draw one or the titles, rules and buttons stop
- * lining up. Most fixture records carry no `expiresAt` — "Available until" has
- * nothing to say for them — so the label changes instead of the row vanishing.
+ * WHAT EACH FIELD BECOMES: see `dateLine` for the date row's five shapes. Until
+ * 2026-11-23 it had three, the third an "Enrolled:" line for the many records
+ * with no `expiresAt`; the PRD has no such line, so every XCEL record carries
+ * an access date now and the row always has a date to say.
  */
 export function atlasCoursesFor(brand: Brand, today: Date = FIXTURE_TODAY): AtlasCourseCardData[] {
   return myCoursesFor(brand)
     .filter((c) => !c.archived)
-    .map((c) => atlasCourseCardFor(c, today))
+    .map((c) => atlasCourseCardFor(c, today, brand))
 }
 
-/** One record → one card. Exported for the tests and the dev handoff's preview. */
-export function atlasCourseCardFor(course: MyCourseRecord, today: Date = FIXTURE_TODAY): AtlasCourseCardData {
+/** One record → one card. Exported for the tests and the dev handoff's preview.
+ *  `brand` is for the certificate lookup (2026-11-23); it defaults to the only brand. */
+export function atlasCourseCardFor(course: MyCourseRecord, today: Date = FIXTURE_TODAY, brand: Brand = 'xcel'): AtlasCourseCardData {
   const completed = course.myStatus === 'completed'
   const expiry = courseExpiryState(course, today)
   return {
@@ -200,29 +273,66 @@ export function atlasCourseCardFor(course: MyCourseRecord, today: Date = FIXTURE
        `courseExpiryState` returns 'none' for a completed course whatever its
        dates say (ruling 5), so a finished course never wears "Due Soon". */
     badge: expiry === 'expired' ? 'Expired' : expiry === 'expiring-soon' ? 'Due Soon' : undefined,
-    ...dateLine(course, completed),
+    ...dateLine(course, today),
     completed,
     ...action(course.myStatus),
-    // Figma 706:2416's rows (2026-11-12): what the record knows — its state and progress. Category and line are not on it.
+    // Figma 706:2416's rows (2026-11-12): the record's state and progress — and, since 2026-11-23, the PRD's labels too
+    // (section 3): category and line of authority are on the record now, invented per course.
     state: course.state,
+    category: course.category,
+    lineOfAuthority: course.lineOfAuthority,
     progress: completed ? 100 : (course.progress ?? 0),
+    /* THE PRD'S FIELDS (2026-11-23). `description` is passed through as-is — the CARD draws "Description coming soon" when
+       it is absent, so the fallback is one string in one place rather than a sentence stored on every record. */
+    description: course.description,
+    score: course.score,
+    expiresAt: course.expiresAt,
+    completedOn: course.completedOn,
+    /* A completed course's View Certificate: the course's own certificate when one is issued (`certificatePdfUrl` — the
+       one place the real document URL will land), else the certificates page. Never undefined on a completed card: the
+       PRD's "No dead ends" rules out a dead button. Not set on an unfinished course — it has no certificate to view. */
+    certificateHref: completed ? (certificatePdfUrl(certificateForCourse(brand, course.id)) ?? CERTIFICATES_PAGE) : undefined,
   }
 }
 
-/** The date row's label and value — the three shapes described above. */
+/**
+ * THE DATE ROW — the PRD's five shapes (section 3, 2026-11-16), one per status,
+ * and the Enrolled line that stood in for a missing clock is gone (2026-11-23):
+ *
+ *   Not Started · In Progress · Failed   Access ends [date] · N days left
+ *   Expired                              Expired: [date]
+ *   Completed                            Completed: [date] · Score N%
+ *
+ * The bold part is `availableDate`; `dateLabel` leads it and `availableTime`
+ * trails it, which is the shape `AtlasCourseCardData` already had. The days are
+ * `usableDaysLeft` — expiry minus one, the figure the study plan is built on —
+ * and the expired test is `courseExpiryState`, so this never does the date
+ * arithmetic itself. A record with NO `expiresAt` (none in XCEL now) gets an
+ * empty line rather than a sixth shape the PRD does not name.
+ */
 function dateLine(
-  course: MyCourseRecord,
-  completed: boolean,
-): Pick<AtlasCourseCardData, 'dateLabel' | 'availableDate'> {
-  if (completed) {
+  course: Pick<MyCourseRecord, 'myStatus' | 'status' | 'enrolledAt' | 'expiresAt' | 'completedOn' | 'score' | 'warnDays'>,
+  today: Date,
+): Pick<AtlasCourseCardData, 'dateLabel' | 'availableDate' | 'availableTime'> {
+  if (course.myStatus === 'completed') {
     // `completedOn` is required in practice for a completed record; a fixture
     // that forgot it falls back to the enrolment rather than rendering "undefined".
-    return { availableDate: longDate(course.completedOn ?? course.enrolledAt) }
+    return {
+      dateLabel: 'Completed:',
+      availableDate: longDate(course.completedOn ?? course.enrolledAt),
+      availableTime: course.score != null ? `· Score ${course.score}%` : undefined,
+    }
   }
-  if (course.expiresAt) return { availableDate: longDate(course.expiresAt) }
-  /* NO CLOCK — most of the library. "Available until" would be a date the
-     course does not have, so the row says when it was enrolled instead. */
-  return { dateLabel: 'Enrolled:', availableDate: longDate(course.enrolledAt) }
+  if (!course.expiresAt) return { availableDate: '' }
+  if (courseExpiryState({ ...course, status: course.status ?? course.myStatus }, today) === 'expired') {
+    return { dateLabel: 'Expired:', availableDate: longDate(course.expiresAt) }
+  }
+  const days = Math.max(0, usableDaysLeft(course.expiresAt, today) ?? 0)
+  return {
+    dateLabel: 'Access ends',
+    availableDate: longDate(course.expiresAt),
+    availableTime: `· ${days} ${days === 1 ? 'day' : 'days'} left`,
+  }
 }
 
 /** The button — one per lifecycle state. `completed` draws its own inactive
@@ -250,21 +360,6 @@ function longDate(iso: string | undefined): string {
   if (!y || !m || !d) return iso ?? ''
   return `${MONTHS[m - 1]} ${d}, ${y}`
 }
-
-const MONTHS = [
-  'January',
-  'February',
-  'March',
-  'April',
-  'May',
-  'June',
-  'July',
-  'August',
-  'September',
-  'October',
-  'November',
-  'December',
-]
 
 /**
  * A CARD OPENS HOME IN ITS OWN STATE — 2026-11-04, Eric's request: "add click

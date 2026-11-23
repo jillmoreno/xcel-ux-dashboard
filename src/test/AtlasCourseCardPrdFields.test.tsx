@@ -1,0 +1,205 @@
+import { cleanup, fireEvent, render, screen } from '@testing-library/react'
+import { MemoryRouter } from 'react-router-dom'
+import { afterEach, describe, expect, it, vi } from 'vitest'
+import { AccountProvider } from '@/context/AccountContext'
+import { FEATURE_FLAGS, FeatureFlagProvider } from '@/context/FeatureFlagContext'
+import { LearningPathsPanelProvider } from '@/components/learning/LearningPathsPanelContext'
+import { JumpBackInPanelProvider } from '@/components/dashboard/JumpBackInPanelContext'
+import { PlatformShell } from '@/components/layout/PlatformShell'
+import { AtlasCourseCardFigmaV2 } from '@/components/compass/AtlasCourseCardFigmaV2'
+import { ATLAS_MY_COURSES, atlasCoursesFor } from '@/data/atlasCourseCards'
+import { myCoursesFor } from '@/data/myCoursesFixtures'
+
+/**
+ * THE MY COURSES CARD, TO THE PRD — 2026-11-23, section 3 of the My Courses
+ * PRD (Chi Wang, 2026-11-16), behind `atlas-courses-card-prd-fields`.
+ *
+ * Four things the PRD makes non-negotiable, pinned here: the Completed card's
+ * button is a LINK to a certificate and is not disabled ("No dead ends"); every
+ * status draws its own date line; a course with no description says so rather
+ * than drawing nothing; and the progress bar exposes its number to assistive
+ * tech, not only its width.
+ */
+afterEach(cleanup)
+
+const BASELINE = 'jill-atlas-main'
+/* The Atlas card, the PRD copy of it. Library on or off is each test's own. */
+const PINS = 'atlas-pages-quick-links:hidden,atlas-courses-card-style:atlas,atlas-courses-card-prd-fields:on'
+
+function renderShell(rawQuery: string) {
+  const query = rawQuery.includes('ff=') ? rawQuery.replace('ff=', `ff=${PINS},`) : `${rawQuery}&ff=${PINS}`
+  // On `window.location` too — `?ff=` overrides are read straight off it (see AtlasLearningPages.test.tsx).
+  window.history.replaceState({}, '', `/dashboard-rebrand?demo=1&${query}`)
+  return render(
+    <MemoryRouter initialEntries={[`/dashboard-rebrand?demo=1&${query}`]}>
+      <AccountProvider>
+        <FeatureFlagProvider>
+          <LearningPathsPanelProvider>
+            <JumpBackInPanelProvider>
+              <PlatformShell />
+            </JumpBackInPanelProvider>
+          </LearningPathsPanelProvider>
+        </FeatureFlagProvider>
+      </AccountProvider>
+    </MemoryRouter>,
+  )
+}
+
+/** The six design cards — one per status, the CE package card included. */
+const DESIGN_CARDS = `section=courses&version=${BASELINE}&ff=atlas-courses-from-library:off`
+/** The learner's library — thirteen records, some with no description. */
+const LIBRARY = `section=courses&version=${BASELINE}&ff=atlas-courses-from-library:on`
+
+const dateLines = () =>
+  screen.getAllByTestId('atlas-card-date').map((el) => (el.textContent ?? '').replace(/\s+/g, ' ').trim())
+
+describe('the flag', () => {
+  it('is in the catalog, on by default on this branch, and on the Widgets group of dashboard-rebrand', () => {
+    const flag = FEATURE_FLAGS.find((f) => f.key === 'atlas-courses-card-prd-fields')!
+    expect(flag).toBeTruthy()
+    expect(flag.defaultEnabled).toBe(true)
+    expect(flag.group).toBe('Widgets')
+    expect(flag.page).toBe('dashboard-rebrand')
+    expect(flag.description).toMatch(/2026-11-16/)
+  })
+})
+
+describe('the Completed card', () => {
+  it('draws View Certificate as a live link, not a disabled Completed button', () => {
+    renderShell(DESIGN_CARDS)
+    const link = screen.getByRole('link', { name: 'View Certificate' })
+    /* INSIDE THE SHELL the link is the shell's own certificates page, not /my-learning/certificates: AppLayout blocks that
+       route from inside the rebrand with a toast, so the product route would be a dead end here. Found by clicking it. */
+    expect(link.getAttribute('href')).toContain('section=certificates')
+    expect(link.getAttribute('href')).not.toContain('/my-learning/')
+    expect(link.hasAttribute('disabled')).toBe(false)
+    expect(link.getAttribute('aria-disabled')).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Completed' })).toBeNull()
+  })
+
+  it('links to the product route when nothing re-points it', () => {
+    const done = ATLAS_MY_COURSES.find((c) => c.completed)!
+    render(
+      <MemoryRouter>
+        <AtlasCourseCardFigmaV2 data={done} />
+      </MemoryRouter>,
+    )
+    expect(screen.getByRole('link', { name: 'View Certificate' }).getAttribute('href')).toBe('/my-learning/certificates')
+  })
+
+  /* "No dead ends": every completed card has somewhere to go, and only a
+     completed card has it — an unfinished course has no certificate to view. */
+  it('resolves a certificate link for every completed course in the library, and for no other', () => {
+    const cards = atlasCoursesFor('xcel')
+    expect(cards.some((c) => c.completed)).toBe(true)
+    for (const c of cards) {
+      if (c.completed) expect(c.certificateHref).toMatch(/\/my-learning\/certificates/)
+      else expect(c.certificateHref).toBeUndefined()
+    }
+  })
+
+  /* The card before it set `pointerEvents: 'none'` on the disabled button so a
+     click fell through to the article's `onOpen`. A live link must not — the
+     button goes to the certificate, the rest of the card still goes Home. */
+  it('does not open Home when the link is clicked, while the card around it still does', () => {
+    const onOpen = vi.fn()
+    const done = ATLAS_MY_COURSES.find((c) => c.completed)!
+    render(
+      <MemoryRouter>
+        <AtlasCourseCardFigmaV2 data={done} onOpen={onOpen} />
+      </MemoryRouter>,
+    )
+    fireEvent.click(screen.getByRole('link', { name: 'View Certificate' }))
+    expect(onOpen).not.toHaveBeenCalled()
+    fireEvent.click(screen.getByRole('article', { name: done.title }))
+    expect(onOpen).toHaveBeenCalledTimes(1)
+  })
+})
+
+describe('the date line', () => {
+  it('draws the PRD’s three shapes across the design cards — every status on screen at once', () => {
+    renderShell(DESIGN_CARDS)
+    const lines = dateLines()
+    expect(lines.some((l) => /^Access ends \w+ \d+, \d{4} · \d+ days? left$/.test(l))).toBe(true)
+    expect(lines.some((l) => /^Expired: \w+ \d+, \d{4}$/.test(l))).toBe(true)
+    expect(lines.some((l) => /^Completed: \w+ \d+, \d{4} · Score \d+%$/.test(l))).toBe(true)
+  })
+
+  it('gives each library record the line its status calls for, and never an Enrolled line', () => {
+    const records = new Map(myCoursesFor('xcel').map((c) => [c.id, c]))
+    const cards = atlasCoursesFor('xcel')
+    const seen = new Set<string>()
+    for (const card of cards) {
+      const record = records.get(card.id)!
+      expect(card.availableDate).not.toBe('')
+      if (record.myStatus === 'completed') {
+        expect(card.dateLabel).toBe('Completed:')
+        expect(card.availableTime).toMatch(/^· Score \d+%$/)
+      } else if (card.badge === 'Expired') {
+        expect(card.dateLabel).toBe('Expired:')
+        expect(card.availableTime).toBeUndefined()
+      } else {
+        expect(card.dateLabel).toBe('Access ends')
+        expect(card.availableTime).toMatch(/^· \d+ days? left$/)
+      }
+      seen.add(card.dateLabel!)
+    }
+    expect([...seen].sort()).toEqual(['Access ends', 'Completed:', 'Expired:'])
+  })
+
+  it('shows the failed card’s score and the expired card’s last progress under the line', () => {
+    renderShell(DESIGN_CARDS)
+    expect(screen.getByText('Score: 62%')).toBeTruthy()
+    expect(screen.getByText('Last progress: 62%')).toBeTruthy()
+  })
+})
+
+describe('the description', () => {
+  it('says "Description coming soon" when the course has none', () => {
+    renderShell(LIBRARY)
+    const without = myCoursesFor('xcel').filter((c) => !c.archived && !c.description)
+    expect(without.length).toBeGreaterThan(0)
+    expect(screen.getAllByText('Description coming soon')).toHaveLength(without.length)
+  })
+
+  it('draws the course’s own when it has one', () => {
+    renderShell(LIBRARY)
+    const withOne = myCoursesFor('xcel').find((c) => !c.archived && c.description)!
+    expect(screen.getByText(withOne.description!)).toBeTruthy()
+  })
+})
+
+describe('the labels, the status and the progress', () => {
+  it('puts state, category and line of authority on every card', () => {
+    renderShell(DESIGN_CARDS)
+    const n = ATLAS_MY_COURSES.length
+    expect(screen.getAllByText(/^State:/)).toHaveLength(n)
+    expect(screen.getAllByText(/^Category:/)).toHaveLength(n)
+    expect(screen.getAllByText(/^Line of authority:/)).toHaveLength(n)
+  })
+
+  it('exposes the progress as a number — aria-valuenow between 0 and 100 — beside the status as text', () => {
+    renderShell(DESIGN_CARDS)
+    const bars = screen.getAllByRole('progressbar')
+    expect(bars).toHaveLength(ATLAS_MY_COURSES.length)
+    for (const bar of bars) {
+      expect(bar.getAttribute('aria-valuemin')).toBe('0')
+      expect(bar.getAttribute('aria-valuemax')).toBe('100')
+      const now = Number(bar.getAttribute('aria-valuenow'))
+      expect(Number.isInteger(now)).toBe(true)
+      expect(now).toBeGreaterThanOrEqual(0)
+      expect(now).toBeLessThanOrEqual(100)
+    }
+    for (const word of ['Completed', 'In Progress', 'Not Started']) expect(screen.getAllByText(word).length).toBeGreaterThan(0)
+  })
+})
+
+describe('the flag off', () => {
+  it('draws the 2026-11-18 card untouched — the disabled Completed button and no date line', () => {
+    renderShell(`section=courses&version=${BASELINE}&ff=atlas-courses-from-library:off,atlas-courses-card-prd-fields:off`)
+    expect(screen.getByRole('button', { name: 'Completed' }).hasAttribute('disabled')).toBe(true)
+    expect(screen.queryByRole('link', { name: 'View Certificate' })).toBeNull()
+    expect(screen.queryByTestId('atlas-card-date')).toBeNull()
+    expect(screen.queryByText('Description coming soon')).toBeNull()
+  })
+})

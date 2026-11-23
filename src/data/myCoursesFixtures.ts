@@ -37,8 +37,21 @@ export type MyCourseRecord = CourseCardData & {
   enrolledAt: string // ISO date (YYYY-MM-DD, local)
   /** Optional course expiration — when present, table view shows it in the
    * Course Expiration column and derives Days to Complete, and the card derives
-   * its expiry badge from it (`courseExpiry.ts`). Most courses have no clock. */
+   * its expiry badge from it (`courseExpiry.ts`). Most courses had no clock
+   * until 2026-11-23: every XCEL record carries one now, because the My
+   * Courses PRD (section 3, Chi Wang, 2026-11-16) has no "Enrolled" line — the
+   * Atlas card's date row is "Access ends [date] · N days left" or nothing. */
   expiresAt?: string
+  /* THE MY COURSES PRD'S LABELS (section 3, 2026-11-16) — the Atlas card draws
+     them under the title. Invented demo copy on every XCEL record; the catalog
+     has no such fields to read them from. */
+  /** "Licensing" / "Continuing Education". */
+  category?: string
+  /** "Life and Health", "Property and Casualty", "All Lines"… */
+  lineOfAuthority?: string
+  /** The course's blurb. Left off some records ON PURPOSE so the card's
+   *  "Description coming soon" fallback is on screen, not just in the code. */
+  description?: string
 }
 
 export const RECENTLY_ADDED_WINDOW_DAYS = 15
@@ -132,6 +145,9 @@ const _XCEL_COURSES: MyCourseRecord[] = [
     progress: 50,
     status: 'in-progress',
     enrolledAt: '2026-05-04',
+    category: 'Licensing',
+    lineOfAuthority: 'Life and Health',
+    description: 'Every topic on the Florida Life & Health exam in self-paced lessons, with a practice quiz at the end of each one.',
     expiresAt: '2027-05-04',
   },
   {
@@ -147,6 +163,10 @@ const _XCEL_COURSES: MyCourseRecord[] = [
     progress: 0,
     status: 'not-started',
     enrolledAt: '2026-05-04',
+    expiresAt: '2027-05-04',
+    category: 'Licensing',
+    lineOfAuthority: 'Life and Health',
+    description: 'A guided review of the exam’s heaviest-weighted topics, built to be taken after the pre-license course.',
   },
   {
     id: 'mc-xcel-livestream-review',
@@ -163,6 +183,10 @@ const _XCEL_COURSES: MyCourseRecord[] = [
     progress: 0,
     status: 'not-started',
     enrolledAt: '2026-05-04',
+    expiresAt: '2027-05-04',
+    category: 'Licensing',
+    lineOfAuthority: 'Life and Health',
+    // No description — the card's "Description coming soon" fallback (2026-11-23).
   },
   {
     id: 'mc-xcel-exam-cram',
@@ -177,6 +201,10 @@ const _XCEL_COURSES: MyCourseRecord[] = [
     progress: 0,
     status: 'not-started',
     enrolledAt: '2026-05-04',
+    expiresAt: '2027-05-04',
+    category: 'Licensing',
+    lineOfAuthority: 'Life and Health',
+    description: 'Two hours of the facts, figures and definitions most likely to appear on exam day.',
   },
   {
     id: 'mc-xcel-annuity-training',
@@ -191,6 +219,13 @@ const _XCEL_COURSES: MyCourseRecord[] = [
     progress: 100,
     status: 'completed',
     enrolledAt: '2026-02-20',
+    // Access runs a year from enrolment; the score is what the Atlas card's
+    // "Completed: [date] · Score" line reads (2026-11-23). Invented.
+    expiresAt: '2027-02-20',
+    score: 94,
+    category: 'Continuing Education',
+    lineOfAuthority: 'Life and Health',
+    description: 'Florida’s required four-hour annuity training: suitability, disclosure and the producer’s duties to the buyer.',
     completedOn: '2026-03-18',
   },
   {
@@ -206,6 +241,10 @@ const _XCEL_COURSES: MyCourseRecord[] = [
     progress: 25,
     status: 'in-progress',
     enrolledAt: '2026-03-11',
+    expiresAt: '2027-03-11',
+    category: 'Continuing Education',
+    lineOfAuthority: 'Health',
+    // No description — the fallback again, on an in-progress card.
   },
   {
     id: 'mc-xcel-ethics',
@@ -220,6 +259,10 @@ const _XCEL_COURSES: MyCourseRecord[] = [
     progress: 0,
     status: 'not-started',
     enrolledAt: '2026-05-06',
+    expiresAt: '2027-05-06',
+    category: 'Continuing Education',
+    lineOfAuthority: 'All Lines',
+    description: 'The ethical duties of a Florida producer, with case studies drawn from Department of Financial Services actions.',
   },
 
   /* ── State coverage for the card's time + outcome axes ──────────────────
@@ -249,6 +292,9 @@ const _XCEL_COURSES: MyCourseRecord[] = [
     progress: 60,
     status: 'in-progress',
     enrolledAt: '2026-01-15',
+    category: 'Continuing Education',
+    lineOfAuthority: 'Property and Casualty',
+    description: 'The National Flood Insurance Program’s rules, rating and claims process for Florida producers.',
     expiresAt: '2026-06-01',
   },
   {
@@ -267,6 +313,9 @@ const _XCEL_COURSES: MyCourseRecord[] = [
     progress: 30,
     status: 'in-progress',
     enrolledAt: '2026-04-01',
+    category: 'Continuing Education',
+    lineOfAuthority: 'Life and Health',
+    description: 'What changed in Florida’s annuity suitability standard and how to document a recommendation.',
     expiresAt: '2026-05-25',
   },
   {
@@ -285,6 +334,9 @@ const _XCEL_COURSES: MyCourseRecord[] = [
     progress: 45,
     status: 'in-progress',
     enrolledAt: '2025-10-20',
+    category: 'Licensing',
+    lineOfAuthority: 'Property and Casualty',
+    description: 'Every topic on the Florida Property & Casualty exam in self-paced lessons, with a practice quiz at the end of each one.',
     expiresAt: '2026-04-20',
   },
   {
@@ -304,6 +356,9 @@ const _XCEL_COURSES: MyCourseRecord[] = [
     progress: 15,
     status: 'in-progress',
     enrolledAt: '2026-01-01',
+    category: 'Continuing Education',
+    lineOfAuthority: 'Health',
+    description: 'The federal marketplace, premium tax credits and the plan rules a Florida health producer has to know.',
     expiresAt: '2026-06-25',
     warnDays: 14,
   },
@@ -321,6 +376,10 @@ const _XCEL_COURSES: MyCourseRecord[] = [
     progress: 100,
     status: 'failed',
     enrolledAt: '2026-03-02',
+    expiresAt: '2027-03-02',
+    category: 'Licensing',
+    lineOfAuthority: 'Property and Casualty',
+    description: 'A timed 150-question simulation of the Florida Property & Casualty exam, scored on submission.',
     score: 62,
   },
   {
@@ -338,6 +397,10 @@ const _XCEL_COURSES: MyCourseRecord[] = [
     progress: 100,
     status: 'failed',
     enrolledAt: '2026-03-09',
+    expiresAt: '2027-03-09',
+    category: 'Continuing Education',
+    lineOfAuthority: 'All Lines',
+    description: 'A short assessment on the ethics module. Scored, but the platform does not always report the number.',
   },
   {
     // ARCHIVED **and** failed — the regression case for decisions 33-34. The
@@ -357,6 +420,10 @@ const _XCEL_COURSES: MyCourseRecord[] = [
     progress: 100,
     status: 'failed',
     enrolledAt: '2025-11-14',
+    expiresAt: '2026-11-14',
+    category: 'Continuing Education',
+    lineOfAuthority: 'Adjuster',
+    description: 'The Florida adjuster’s statutory duties and the year’s rule changes.',
     score: 58,
     archived: true,
   },

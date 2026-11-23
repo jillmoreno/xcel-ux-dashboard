@@ -4824,6 +4824,38 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'atlas-courses-card-prd-fields',
+    /* THE MY COURSES CARD, TO THE PRD (section 3 of the My Courses PRD, Chi
+       Wang, 2026-11-16) — 2026-11-23, Jillienne.
+
+       On: `AtlasCourseCardFigmaV2`, a copy of the Figma 706:2416 card that
+       draws everything section 3 confirms on every card — the description (or
+       "Description coming soon"), the three labels (state, category, line of
+       authority) back on the card, the status as text, the 0–100 progress
+       figure and bar, and ONE date line per status: "Access ends [date] · N
+       days left", "Expired: [date]", "Completed: [date] · Score N%" — with a
+       failed course's score and an expired course's last progress under it.
+       And the Completed card's button WORKS: "View Certificate", a link to the
+       course's certificate (the certificates page when none is issued — "No
+       dead ends"), where the card before it drew a disabled "Completed".
+
+       Off: `AtlasCourseCardFigma` as Eric left it on 2026-11-18 — the facts in
+       the Course Details sheet, no description, no date line, the disabled
+       Completed button. The original is NOT edited; the flag chooses at the
+       call site in `MyCoursesSection`.
+
+       ⚠ THE BASELINE ONLY, like `atlas-courses-card-style`, and only on its
+       Atlas arm — the shared card is unaffected. The CE package card
+       (`demo-ny-pclh-refresher-ce`) is out of scope for the Jan 12 release and
+       is drawn from its unchanged data. */
+    group: 'Widgets',
+    label: 'My Courses card — PRD fields',
+    description:
+      'The Atlas My Courses card with everything section 3 of the My Courses PRD (2026-11-16) confirms: the description under the title ("Description coming soon" when there is none), State \u00b7 Category \u00b7 Line of authority back on the card, a date line per status \u2014 "Access ends [date] \u00b7 N days left", "Expired: [date]", "Completed: [date] \u00b7 Score" \u2014 the failed score and the expired course\u2019s last progress, and a WORKING "View Certificate" button on a completed course in place of the disabled "Completed". Off: the card as of 2026-11-18, facts in the Course Details sheet and no date line.',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'atlas-courses-from-library',
     /* MY COURSES READS THE LEARNER'S LIBRARY. On (`atlasCoursesFor`), the page
        renders the same fixtures `/my-learning/courses` reads, so the Demo

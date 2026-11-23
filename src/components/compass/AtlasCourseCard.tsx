@@ -55,6 +55,23 @@ export type AtlasCourseCardData = {
   packageSummary?: string
   /** 0–100; the progress row and its bar. Absent → read off the lifecycle (Completed 100, Begin 0). */
   progress?: number
+  /* THE MY COURSES PRD'S FIELDS (section 3, Chi Wang, 2026-11-16) — read by `AtlasCourseCardFigmaV2` only
+     (`atlas-courses-card-prd-fields`, 2026-11-23). The card before it ignores every one of them. */
+  /** The course's own blurb under its title. Absent → the V2 card draws "Description coming soon" — the PRD's
+   *  fallback, not an empty row. */
+  description?: string
+  /** Final score %, when the platform knows it. Failed: drawn as its own line. Completed: on the date line
+   *  ("Completed: [date] · Score N%"). Absent → the line omits the number rather than inventing one. */
+  score?: number
+  /** ISO yyyy-mm-dd — the access date the five date shapes are built from. Carried so a card can be re-dated
+   *  without re-authoring its line. */
+  expiresAt?: string
+  /** ISO yyyy-mm-dd — a completed course's completion date. */
+  completedOn?: string
+  /** Where a completed card's View Certificate goes. `atlasCourseCardFor` resolves it through
+   *  `certificatePdfUrl`; a course with no issued certificate falls back to the certificates page, because the
+   *  PRD's "No dead ends" rules out a dead button. */
+  certificateHref?: string
 }
 
 export function AtlasCourseCard({

@@ -336,17 +336,22 @@ describe('atlasCoursesFor — the library as Atlas cards', () => {
     for (const c of archived) expect(ids.has(c.id)).toBe(false)
   })
 
-  /* Every card draws one date row inside a four-row subgrid, so the row cannot
-     vanish for a course with no expiry — the LABEL changes instead. */
+  /* Every card draws one date row, so the row cannot vanish — the LABEL says
+     which of the PRD's shapes it is. Until 2026-11-23 a record with no expiry
+     read "Enrolled:"; the PRD (section 3, 2026-11-16) has no such line, so
+     every XCEL record carries an access date now. The five shapes themselves
+     are pinned in AtlasCourseCardPrdFields.test.tsx. */
   it('labels the date row by what the course actually has', () => {
     const cards = atlasCoursesFor('xcel')
     const records = new Map(myCoursesFor('xcel').map((c) => [c.id, c]))
     for (const card of cards) {
       const record = records.get(card.id)!
       expect(card.availableDate).not.toBe('')
-      if (record.myStatus === 'completed') expect(card.completed).toBe(true)
-      else if (record.expiresAt) expect(card.dateLabel).toBeUndefined()
-      else expect(card.dateLabel).toBe('Enrolled:')
+      expect(record.expiresAt).toBeTruthy()
+      if (record.myStatus === 'completed') {
+        expect(card.completed).toBe(true)
+        expect(card.dateLabel).toBe('Completed:')
+      } else expect(['Access ends', 'Expired:']).toContain(card.dateLabel)
     }
   })
 

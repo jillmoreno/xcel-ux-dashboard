@@ -17,6 +17,21 @@ import type { PrototypeFeature } from '../prototypeFeatures'
  * 2026-10-13, Atlas card and Quick Links rail included. `isEricAtlasWhiteLike`
  * is a SUPERSET of that predicate and reaching for it is the easy mistake;
  * `AtlasLearningPages.test.tsx` fails if anything here widens.
+ *
+ * ⚠ CORRECTED 2026-11-23. This file recorded the SHARED card as the decision
+ * ("drawn with the shared course card under a serif title … no button on the
+ * card") while `atlas-courses-card-style` has defaulted to `atlas` since
+ * 2026-11-03 on Eric's branch — the page draws the Figma 706:2416 card. The
+ * blurbs, the first decision and the card component below are corrected
+ * inline, the old wording quoted where it stood. The same day the card was
+ * taken to section 3 of the My Courses PRD (Chi Wang, 2026-11-16) on a copy,
+ * `AtlasCourseCardFigmaV2`, behind `atlas-courses-card-prd-fields`.
+ *
+ * ⚠ OUT OF SCOPE FOR JAN 12: the CE package card
+ * (`demo-ny-pclh-refresher-ce`). CE packages are a different product shape —
+ * several courses sold as one purchase — and the PRD's section 3 confirms the
+ * fields of a COURSE card, so the package card is neither restyled nor
+ * removed: its data is untouched and the new card draws what it has.
  */
 const feature: PrototypeFeature = {
   id: 'xcel-atlas-my-courses',
@@ -27,14 +42,17 @@ const feature: PrototypeFeature = {
   devStatus: 'not-ready',
   surface: 'atlas',
   owner: 'Jill',
-  lastUpdated: '2026-11-02T18:00:00Z',
+  lastUpdated: '2026-11-23T18:00:00Z',
   accent: 'blue',
   icon: 'grid',
   brands: ['xcel'],
+  // Corrected 2026-11-23 (it read: "drawn with the shared course card under a serif title, with no search, no filters, no
+  // status tabs and no button on the card").
   blurb:
-    'The learner’s whole course library on one page, reached from Home’s Quick Links and drawn with the shared course card under a serif title, with no search, no filters, no status tabs and no button on the card.',
+    'The learner’s whole course library on one page, reached from Home’s Quick Links and drawn with the Atlas card (Figma 706:2416) carrying the fields section 3 of the My Courses PRD confirms — description, labels, status, progress, one date line per status and a working button on every card, View Certificate included.',
+  // Corrected 2026-11-23 (it read: "the shared card with a serif title, no rail and no list controls").
   tileBlurb:
-    'The course library on one page: the shared card with a serif title, no rail and no list controls. The page Home’s Quick Links has always pointed at.',
+    'The course library on one page: the Atlas card to the My Courses PRD, with a working View Certificate on a finished course. No rail and no list controls.',
   pages: [
     {
       label: 'My Courses — the page itself',
@@ -52,22 +70,38 @@ const feature: PrototypeFeature = {
       to: '/dashboard-rebrand?demo=1&section=courses&ff=atlas-pages-quick-links:shown',
     },
     {
-      label: 'My Courses with the earlier card — the control turned over',
-      note: 'The card this page used to draw (Figma 213:3619), with an "Available until" line and a full-width button. Kept so the two can be read side by side.',
-      to: '/dashboard-rebrand?demo=1&section=courses&ff=atlas-courses-card-style:atlas',
+      label: 'My Courses — the PRD card, every status at once',
+      note: 'The six design cards under the PRD card (2026-11-23): Not Started, In Progress, Completed with View Certificate, Expired, Failed, and the out-of-scope CE package card. One date line per status, the description, the three labels.',
+      to: '/dashboard-rebrand?demo=1&section=courses&ff=atlas-courses-card-style:atlas,atlas-courses-from-library:off,atlas-courses-card-prd-fields:on',
+    },
+    {
+      label: 'My Courses — the card before the PRD, for comparison',
+      note: 'The card as of 2026-11-18: the facts in the Course Details sheet, no description, no date line, the disabled "Completed" button. The control turned off.',
+      to: '/dashboard-rebrand?demo=1&section=courses&ff=atlas-courses-card-style:atlas,atlas-courses-from-library:off,atlas-courses-card-prd-fields:off',
+    },
+    {
+      label: 'My Courses with the shared card — the control turned over',
+      // Corrected 2026-11-23 (it read: "the earlier card — the control turned over … The card this page used to draw
+      // (Figma 213:3619)"; the shared card is the other arm now, not the default).
+      note: 'The LMS dashboard’s CourseCard with a serif title and no button — the arm this page drew until 2026-11-03. Kept so the two can be read side by side.',
+      to: '/dashboard-rebrand?demo=1&section=courses&ff=atlas-courses-card-style:shared',
     },
   ],
   featureFlags: [
     { id: 'atlas-pages-quick-links', label: 'Quick Links on the learning pages', note: 'Hidden, which is what this page shows. Shown puts the side rail back on both learning pages and re-centres the content. Hiding it also takes away the only route to My Certificates that does not pass through Home.' },
-    { id: 'atlas-courses-card-style', label: 'My Courses card', note: 'Shared is the card documented here. Atlas draws the earlier card instead, with a date line and a full-width button.' },
+    // Corrected 2026-11-23 (it read: "Shared is the card documented here. Atlas draws the earlier card instead").
+    { id: 'atlas-courses-card-style', label: 'My Courses card', note: 'Atlas (the default since 2026-11-03) is the card documented here — Figma 706:2416 with a full-width button. Shared draws the LMS dashboard’s CourseCard instead, serif title and no button.' },
+    { id: 'atlas-courses-card-prd-fields', label: 'My Courses card — PRD fields', note: 'On (2026-11-23): the Atlas card to section 3 of the My Courses PRD — description, the three labels on the card, a date line per status, the failed score and expired progress, and a working View Certificate on a completed course. Off: the card as of 2026-11-18, with the disabled Completed button. Only matters when the card control is set to Atlas.' },
     { id: 'atlas-courses-from-library', label: 'My Courses list', note: 'Only does anything when the card control is set to Atlas. Off shows three fixed example courses in place of the learner’s own.' },
     { id: 'atlas-courses-open-course', label: 'My Courses buttons open the course', note: 'Whether the card opens the course. Off, the title links out of the learning shell instead, and the earlier card’s button is drawn disabled.' },
   ],
   devHandoff: {
     flagsNote:
-      'Four review controls, none of them a product setting. Only the first two are decisions a reviewer should expect to see turned over; the other two exist so the page as it was — three example cards, no working buttons — can still be opened beside the page as it is.',
+      'Five review controls, none of them a product setting. The card control and the PRD-fields control are the two a reviewer should expect to see turned over — the first picks the card, the second is the Jan 12 work on it; the other three exist so the page as it was can still be opened beside the page as it is.',
+    // Corrected 2026-11-23 (it read: "The card is the one the rest of the product already uses, unchanged except that its
+    // title is set in the heading serif. It has never carried a button and does not gain one here.").
     intro:
-      'Two things to build, and one of them is mostly absence. The page is the section header over a grid of cards: no search, no filter column, no status tabs, no View Archived and no side rail, every one of them left out on purpose and every one still in the code behind a prop. The card is the one the rest of the product already uses, unchanged except that its title is set in the heading serif. It has never carried a button and does not gain one here.',
+      'Two things to build, and one of them is mostly absence. The page is the section header over a grid of cards: no search, no filter column, no status tabs, no View Archived and no side rail, every one of them left out on purpose and every one still in the code behind a prop. The card is the Atlas card (Figma 706:2416), taken on 2026-11-23 to section 3 of the My Courses PRD: every card carries an image, the title and a description, the three labels, the status as text, the progress as a number and a bar, one date line for its status and one working button — View Certificate on a finished course.',
     components: [],
     uiComponents: [
       {
@@ -120,10 +154,64 @@ const feature: PrototypeFeature = {
         },
       },
       {
-        id: 'atlas-my-courses-card',
+        id: 'atlas-my-courses-card-prd',
         order: 2,
-        name: 'Course card — the shared card, serif title',
-        tabLabel: 'Course card',
+        name: 'Course card — the Atlas card to the PRD',
+        tabLabel: 'Course card (PRD)',
+        location:
+          'src/components/compass/AtlasCourseCardFigmaV2.tsx, a copy of AtlasCourseCardFigma.tsx (the 2026-11-18 card, never edited). The flag atlas-courses-card-prd-fields chooses between them in MyCoursesSection, src/components/layout/PlatformShell.tsx. The data — one date line per status, the labels, the score, the certificate link — is built in src/data/atlasCourseCards.ts (dateLine, atlasCourseCardFor); the card only draws it.',
+        summary:
+          'Section 3 of the My Courses PRD (Chi Wang, 2026-11-16), field by field. A 120px image (a default when the course has none), the title in the heading serif with "Course Details ›" under it, the description or "Description coming soon", the status pill, then State · Category · Line of authority, the status as text beside the 0–100 figure over a bar (aria-valuenow, min 0, max 100), one date line for the status with a detail line under it where the PRD asks for one, and one full-width button. Not Started: "Access ends [date] · N days left", Begin Course. In Progress: the same line, Resume Course. Failed: the same line, "Score: N%" under it, Retake Course. Expired: "Expired: [date]", "Last progress: N%" under it, Purchase Extension. Completed: "Completed: [date] · Score N%", View Certificate — a link, where the card before it drew a disabled "Completed". The days are usableDaysLeft — expiry minus one, the figure the study plan is built on — so the two never disagree.',
+        variants: [
+          { name: 'Not Started', when: 'The learner has not opened the course.', detail: '"Access ends [date] · N days left" and the outline Begin Course.' },
+          { name: 'In Progress', when: 'The learner has begun.', detail: 'The same date line, the filled bar, Resume Course.' },
+          { name: 'Failed', when: 'Finished, not passed.', detail: 'The Failed pill, "Access ends [date] · N days left", "Score: N%" under it when the platform knows one, Retake Course. The status text still reads "Progress Made" — see the decisions.' },
+          { name: 'Expired', when: 'Access ended before the learner finished.', detail: 'The Expired pill, "Expired: [date]", "Last progress: N%" under it, Purchase Extension in the outline style — see the decisions.' },
+          { name: 'Completed', when: 'The course is finished.', detail: '"Completed: [date] · Score N%" and View Certificate, a link to the course’s certificate — the certificates page when none is issued. The card steps back to Secondary 100.', why: 'The PRD’s "No dead ends": a disabled button on a finished course was the one dead end on the page.' },
+          { name: 'No description', when: 'The course has none.', detail: '"Description coming soon" in the description’s place, so the row never draws empty.', why: 'The PRD names the fallback; an empty row would read as a bug.' },
+          { name: 'The CE package card', when: 'demo-ny-pclh-refresher-ce, the sixth design card.', detail: 'Out of scope for Jan 12 and left as it was: its authored date, no description (so the fallback shows), no score. Drawn by the same card from unchanged data.', why: 'A CE package is several courses sold as one purchase — a different product shape the PRD’s course-card section does not cover.' },
+        ],
+        ctas: [
+          { name: 'Begin / Resume / Retake Course', does: 'Opens the course inside the learning shell (?section=course&coursePage=course), as before.' },
+          { name: 'Purchase Extension', does: 'Drawn, not wired — see the xcel-purchase-extension handoff.' },
+          { name: 'View Certificate', does: 'A link. Inside the learning shell it lands on the shell’s own Certificates & Transcripts page (?section=certificates) — MyCoursesSection re-points it, because AppLayout blocks /my-learning/* from inside the rebrand with a toast and the product route would be a dead end there. The card’s own data.certificateHref is that product route: certificatePdfUrl for the course’s issued certificate, else /my-learning/certificates. Stops propagation, so the click does not also open Home.' },
+          { name: 'Course Details ›', does: 'Opens the Course Details sheet — the three labels again, with the package paragraph.' },
+          { name: 'The card itself', does: 'Opens Home in this course’s state, everywhere but on its buttons and links.' },
+        ],
+        statesMatrix: [
+          { question: 'Where does View Certificate land today?', answer: 'On Certificates & Transcripts inside the shell, for every completed course, issued certificate or not — certificatePdfUrl is stubbed to the certificates page until a document endpoint exists (its TODO(data)), and the shell re-points that page to its own. A real document URL passes straight through the re-point. Found by clicking it: the first cut linked /my-learning/certificates and the shell’s guard blocked it with a toast — the exact dead end the PRD forbids.' },
+          { question: 'Why does every record have an access date now?', answer: 'The PRD has no "Enrolled" line, and most fixtures had no expiry, which is what the old third shape covered. Every XCEL record carries an expiresAt now; the story records’ dates are a year out so no badge changed.' },
+          { question: 'Why "Score" on the completed line but a separate line on the failed card?', answer: 'Section 3’s table: Completed puts the score on the date line; Failed lists it as an extra detail. Drawn as written.' },
+        ],
+        edgeCases: [
+          'A completed record with no score draws "Completed: [date]" and omits the score rather than inventing one.',
+          'A record with no expiresAt would draw no date line at all — none in XCEL does, by design, since 2026-11-23.',
+          'The description clamps to three lines, so a long blurb cannot push the row’s buttons out of line.',
+        ],
+        designSpec: {
+          tokens: [
+            { role: 'Card fill', token: '--color-primary-100' },
+            { role: 'Finished card fill', token: '--color-secondary-100' },
+            { role: 'Title face', token: '--font-heading-serif' },
+            { role: 'Description, labels, date line', token: '--font-body · --color-text-secondary' },
+            { role: 'Progress fill', token: 'the status pill’s strong fill (statusStrongFill)' },
+            { role: 'Button', token: '--color-primary-500' },
+          ],
+          responsive: ['A seven-row subgrid — image, title, description, labels, progress, dates, button — so every card in a row lines up with its neighbours whatever its title or description does.'],
+          sources: [
+            'The My Courses PRD, section 3 (Chi Wang, 2026-11-16).',
+            'src/components/compass/AtlasCourseCardFigmaV2.tsx and src/data/atlasCourseCards.ts.',
+            '/dashboard-rebrand?demo=1&section=courses&ff=atlas-courses-card-style:atlas,atlas-courses-from-library:off — every status at once.',
+          ],
+        },
+      },
+      {
+        id: 'atlas-my-courses-card',
+        order: 3,
+        // Corrected 2026-11-23 (it read: "Course card — the shared card, serif title", as the page's card; it is the OTHER
+        // arm of atlas-courses-card-style now).
+        name: 'Course card — the shared card, the other choice',
+        tabLabel: 'Shared card',
         location:
           'src/components/courses/CourseCard.tsx, the compact variant. The same component the catalog and /my-learning/courses render — not a copy of it.',
         summary:
@@ -172,9 +260,43 @@ const feature: PrototypeFeature = {
       items: [
         {
           question: 'Which card does the Atlas My Courses page draw?',
+          // Corrected 2026-11-23. It read: "The card the rest of the product already uses, with its title in the serif face
+          // and no call to action. The earlier card (Figma 213:3619) stays in the code behind the My Courses card control."
           decision:
-            'The card the rest of the product already uses, with its title in the serif face and no call to action. The earlier card (Figma 213:3619) stays in the code behind the My Courses card control.',
+            'The Atlas card — Figma 706:2416 since 2026-11-12, the default of the My Courses card control since 2026-11-03 on the Atlas Primary build. The shared card, serif title and no call to action, stays in the code as the control’s other choice. (Corrected 2026-11-23; this row recorded the shared card as the decision for three weeks after the default changed.)',
           status: 'Decided',
+        },
+        {
+          question: 'What does the Completed card’s button do?',
+          decision:
+            'It works: "View Certificate", a link to the course’s certificate, or to the certificates page when none is issued. Section 3 of the My Courses PRD (Chi Wang, 2026-11-16) names the button, and its "No dead ends" rules out the disabled "Completed" the card drew before. Inside the learning shell the link is re-pointed to the shell’s own Certificates & Transcripts page, because the shell blocks the product route with a toast — the same re-point the title link already gets. Behind atlas-courses-card-prd-fields on a copy of the card; the original is untouched. 2026-11-23.',
+          status: 'Decided',
+        },
+        {
+          question: 'Which fields does every card carry?',
+          decision:
+            'The PRD’s section 3, as written: image, title and description ("Description coming soon" without one), state, category and line of authority, the status as text, the progress as a number and a bar, one date line per status, and one button. The labels came back onto the card from the Course Details sheet; the sheet keeps them. 2026-11-23.',
+          status: 'Decided',
+        },
+        {
+          question: 'Is the CE package card in the Jan 12 scope?',
+          decision:
+            'No. demo-ny-pclh-refresher-ce is left exactly as it was — not restyled, not removed. A CE package is several courses sold as one purchase, a product shape the PRD’s course-card section does not describe. The Failed row of the PRD’s table is shown by a sixth design card, a failed practice exam, instead. 2026-11-23.',
+          status: 'Decided',
+        },
+        {
+          question: 'Does the status text read "Failed" and "Expired", or "Progress Made"?',
+          decision:
+            'Open. The card reads "Progress Made" for both (since 2026-11-12); the PRD wants the status itself. Left as it is on purpose, 2026-11-23 — a copy change under a flag is cheap, but it reverses a named decision and is Jillienne’s to make.',
+          status: 'Needs weigh-in',
+          owner: 'Jillienne',
+        },
+        {
+          question: 'Does Purchase Extension use the expired button style?',
+          decision:
+            'Open. AtlasCourseCardData declares actionStyle "expired" (the pink outline, BUTTON_EXPIRED) and no card uses it — the expired card borrows the Begin Course outline. Left as it is, 2026-11-23.',
+          status: 'Needs weigh-in',
+          owner: 'Jillienne',
         },
         {
           question: 'Does the page keep the Quick Links rail?',
@@ -223,6 +345,9 @@ const feature: PrototypeFeature = {
         },
       ],
       openItems: [
+        'Decide "Progress Made" against "Failed" / "Expired" for the status text (2026-11-23).',
+        'Decide whether Purchase Extension takes the expired button style (2026-11-23).',
+        'Replace the certificatePdfUrl stub with the real certificate document, so View Certificate opens the course’s own certificate rather than the page (2026-11-23).',
         'Carry the course id into the course page, so a card opens the course it names.',
         'Decide whether My Courses and My Certificates need a direct link, now that the side rail is off both pages.',
         'Lay the page out below 700px, with the rest of the learning shell.',

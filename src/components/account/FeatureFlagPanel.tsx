@@ -265,6 +265,7 @@ const REBRAND_FLAGS = [
   'atlas-home-opens-learning-pages',
   'atlas-pages-quick-links',
   'atlas-courses-card-style',
+  'atlas-courses-card-prd-fields', // 2026-11-23 — the card to the My Courses PRD (section 3)
   'atlas-courses-from-library',
   'atlas-courses-open-course',
   'atlas-certificates-card-style',
