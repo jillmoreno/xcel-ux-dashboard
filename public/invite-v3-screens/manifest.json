@@ -804,14 +804,21 @@
           ]
         },
         {
-          "file": "modals/select-your-state-and-line-of-authority/02-state-list-filtered-while-typing.png",
+          "file": "modals/select-your-state-and-line-of-authority/02-line-of-authority-tooltip-on-hover.png",
+          "state": "Line of authority tooltip on hover",
+          "seenIn": [
+            "Direct Email · Products"
+          ]
+        },
+        {
+          "file": "modals/select-your-state-and-line-of-authority/03-state-list-filtered-while-typing.png",
           "state": "State list filtered while typing",
           "seenIn": [
             "Direct Email · Products"
           ]
         },
         {
-          "file": "modals/select-your-state-and-line-of-authority/03-changed-continue-enabled.png",
+          "file": "modals/select-your-state-and-line-of-authority/04-changed-continue-enabled.png",
           "state": "Changed, Continue enabled",
           "seenIn": [
             "Direct Email · Products"
@@ -855,7 +862,15 @@
           ]
         },
         {
-          "file": "cards/select-your-state-and-line-of-authority/02-state-dropdown-open.png",
+          "file": "cards/select-your-state-and-line-of-authority/02-line-of-authority-tooltip-on-hover.png",
+          "state": "Line of authority tooltip on hover",
+          "seenIn": [
+            "QR Code · No Atlas account",
+            "QR Code · Has Atlas account"
+          ]
+        },
+        {
+          "file": "cards/select-your-state-and-line-of-authority/03-state-dropdown-open.png",
           "state": "State dropdown open",
           "seenIn": [
             "QR Code · No Atlas account",
@@ -863,7 +878,7 @@
           ]
         },
         {
-          "file": "cards/select-your-state-and-line-of-authority/03-state-filtered-while-typing.png",
+          "file": "cards/select-your-state-and-line-of-authority/04-state-filtered-while-typing.png",
           "state": "State filtered while typing",
           "seenIn": [
             "QR Code · No Atlas account",
@@ -871,7 +886,7 @@
           ]
         },
         {
-          "file": "cards/select-your-state-and-line-of-authority/04-state-chosen-line-of-authority-not-yet.png",
+          "file": "cards/select-your-state-and-line-of-authority/05-state-chosen-line-of-authority-not-yet.png",
           "state": "State chosen, line of authority not yet",
           "seenIn": [
             "QR Code · No Atlas account",
@@ -879,7 +894,7 @@
           ]
         },
         {
-          "file": "cards/select-your-state-and-line-of-authority/05-filled-continue-enabled.png",
+          "file": "cards/select-your-state-and-line-of-authority/06-filled-continue-enabled.png",
           "state": "Filled, Continue enabled",
           "seenIn": [
             "QR Code · No Atlas account",

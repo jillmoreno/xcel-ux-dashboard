@@ -545,6 +545,7 @@ async function directEmailProducts(page) {
       /* Since 2026-11-18 it is the QR step's card, opened on the current
          course (`CourseChoiceDialog`). */
       await w.shot(name.trim(), 'Opened on the current course')
+      await loaTooltip(w, name.trim(), d)
       const field = d.getByRole('combobox').first()
       if (await field.count()) {
         await field.fill('Tex')
@@ -563,6 +564,15 @@ async function directEmailProducts(page) {
   return w
 }
 
+/** The line of authority's tooltip, open — hovered, then let go (2026-11-23,
+ *  Afsana: its hover state was not captured). */
+async function loaTooltip(w, title, scope) {
+  await scope.getByRole('button', { name: 'What is a line of authority?' }).first().hover()
+  await w.shot(title, 'Line of authority tooltip on hover')
+  await w.page.mouse.move(0, 0)
+  await w.page.waitForTimeout(200)
+}
+
 async function qr(page, account) {
   const atlas = account === 'atlas'
   const w = new Walk(page)
@@ -573,6 +583,7 @@ async function qr(page, account) {
   const title = 'Select your state and line of authority'
   await page.getByRole('heading', { name: title }).waitFor()
   await w.shot(title, 'Empty, Continue disabled')
+  await loaTooltip(w, title, page)
   const state = page.getByRole('combobox', { name: /State/ })
   await state.click()
   await page.waitForTimeout(300)
