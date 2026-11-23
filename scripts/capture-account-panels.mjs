@@ -157,6 +157,9 @@ async function main() {
     const C = 'check-your-email'
     const check = page.getByRole('dialog', { name: 'Check your email' })
     await check.waitFor()
+    /* The click on Send reset link leaves the pointer where Resend link
+       draws, which would picture it in its hover colour. */
+    await page.mouse.move(0, 0)
     await shot(page, C, 'Sent — Resend link waits, with the countdown', check)
     /* A second at a time: each tick's re-render sets the next timeout, so
        one long jump moves the countdown by only a second. */

@@ -122,6 +122,11 @@ describe('Keycloak change password', () => {
     expect(screen.getByRole('heading', { name: 'Reset your password' })).toBeTruthy()
     const send = screen.getByRole('button', { name: 'Send reset link' }) as HTMLButtonElement
     expect(send.disabled).toBe(true)
+    expect(screen.queryByText('Forgot Email?')).toBeNull()
+    const help = screen.getByRole('link', { name: 'Contact us' }) as HTMLAnchorElement
+    expect(help.href).toBe('https://www.xcelsolutions.com/contact-us')
+    expect(help.target).toBe('_blank')
+    expect(help.closest('p')?.textContent).toBe('Need help? Contact us')
     fireEvent.change(screen.getByLabelText(/^Email/), { target: { value: EMAIL } })
     expect(send.disabled).toBe(false)
     fireEvent.click(send)
