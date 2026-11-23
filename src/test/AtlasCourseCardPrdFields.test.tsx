@@ -194,6 +194,23 @@ describe('the labels, the status and the progress', () => {
   })
 })
 
+describe('the Expired pill', () => {
+  /* 2026-11-23, Jillienne: "Expired badge should be a dark charcoal color". Charcoal on THIS card only — the shared pill's
+     catalog is unchanged, so the 2026-11-18 card keeps Error 100 (pinned under "the flag off"). */
+  it('is charcoal — Neutral 800 with light ink — on the PRD card', () => {
+    renderShell(DESIGN_CARDS)
+    const pill = screen.getByText('Expired', { selector: 'span' })
+    expect(pill.style.background).toContain('--color-neutral-800')
+    expect(pill.style.color).toContain('--color-neutral-50')
+  })
+
+  it('leaves the other five pills on the catalog’s fills', () => {
+    renderShell(DESIGN_CARDS)
+    expect(screen.getByText('Due Soon', { selector: 'span' }).style.background).toContain('--color-warning-300')
+    expect(screen.getAllByText('Failed', { selector: 'span' })[0].style.background).toContain('--color-error-100')
+  })
+})
+
 describe('the flag off', () => {
   it('draws the 2026-11-18 card untouched — the disabled Completed button and no date line', () => {
     renderShell(`section=courses&version=${BASELINE}&ff=atlas-courses-from-library:off,atlas-courses-card-prd-fields:off`)
@@ -201,5 +218,11 @@ describe('the flag off', () => {
     expect(screen.queryByRole('link', { name: 'View Certificate' })).toBeNull()
     expect(screen.queryByTestId('atlas-card-date')).toBeNull()
     expect(screen.queryByText('Description coming soon')).toBeNull()
+  })
+
+  it('keeps the Expired pill on Error 100 — the pill catalog is untouched', () => {
+    renderShell(`section=courses&version=${BASELINE}&ff=atlas-courses-from-library:off,atlas-courses-card-prd-fields:off`)
+    const pill = screen.getByText('Expired', { selector: 'span' })
+    expect(pill.style.background).toContain('--color-error-100')
   })
 })

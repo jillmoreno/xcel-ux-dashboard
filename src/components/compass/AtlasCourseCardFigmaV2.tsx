@@ -20,7 +20,9 @@ import { AtlasCourseDetailsSheet } from './AtlasCourseDetailsSheet'
  *   · a WORKING button on the completed card: "View Certificate", a link to `data.certificateHref` (the course's
  *     certificate, or the certificates page when none is issued — the PRD's "No dead ends"). The card before it drew a
  *     disabled "Completed" with `pointerEvents: 'none'` so the click fell through to the card's own open; a live link
- *     must not do that, so it stops propagation and the REST of the card still opens Home.
+ *     must not do that, so it stops propagation and the REST of the card still opens Home;
+ *   · the Expired pill in dark charcoal — Neutral 800, Neutral 50 ink (2026-11-23, Jillienne) — where the catalog's pill
+ *     is Error 100. Only this card; the pill itself is unchanged for every other caller.
  *
  * ⚠ TWO THINGS DELIBERATELY NOT CHANGED, both raised with Jillienne rather than decided here (2026-11-23):
  *   1. The status text still reads "Progress Made" for an expired or failed course (Eric, 2026-11-12); the PRD wants the
@@ -136,7 +138,13 @@ export function AtlasCourseCardFigmaV2({
         {/* …and "Review Course" across from it, at the card's right edge (2026-11-17, Eric: "a text link adjusted far right next
             to the status pills … with an angle right icon at the end of it"). It does what the card does — Home in this course. */}
         <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, alignSelf: 'stretch', marginTop: 'auto', paddingTop: 4, /* 4 more over the pills (2026-11-18, Eric) */ marginBottom: 0 /* and 4 more under them — the −4 went (same day) */ }}>
-          <AtlasStatusPill status={statusFor(data, progress)} />
+          {/* EXPIRED IN CHARCOAL (2026-11-23, Jillienne: "Expired badge should be a dark charcoal color") — Neutral 800 with
+              Neutral 50 ink, both on the ramp so the pair inverts together in the dark theme. The other five pills keep
+              the catalog's fills; the card before this one keeps Error 100 for Expired. */}
+          <AtlasStatusPill
+            status={statusFor(data, progress)}
+            {...(statusFor(data, progress) === 'expired' ? { fill: 'var(--color-neutral-800)', ink: 'var(--color-neutral-50)' } : null)}
+          />
           {/* Only on a finished card — completed, expired or failed. A course in progress or not started has none
               (2026-11-18, Eric). */}
           {steppedBack ? (

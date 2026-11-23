@@ -42,10 +42,21 @@ const STRONG: Record<AtlasCourseStatus, string> = {
 }
 export const statusStrongFill = (status: AtlasCourseStatus) => STRONG[status]
 
-export function AtlasStatusPill({ status }: { status: AtlasCourseStatus }) {
+export function AtlasStatusPill({
+  status,
+  fill: fillOverride,
+  ink,
+}: {
+  status: AtlasCourseStatus
+  /** A different fill for this one pill (2026-11-23, Jillienne: the PRD card's Expired pill in charcoal). ADDITIVE — a
+   *  caller that passes nothing gets the catalog above, unchanged, so the 2026-11-18 card is not touched by it. */
+  fill?: string
+  /** The label and icon colour to go with it; Neutral 800 when absent. */
+  ink?: string
+}) {
   const { label, fill, Icon } = PILLS[status]
   return (
-    <span style={{ ...PILL, background: fill }}>
+    <span style={{ ...PILL, background: fillOverride ?? fill, ...(ink ? { color: ink } : null) }}>
       {/* 1 lower than centred (2026-11-12, Eric). */}
       <Icon aria-hidden style={{ width: 10, height: 10, flex: 'none', position: 'relative', top: 1 }} />
       {label}
