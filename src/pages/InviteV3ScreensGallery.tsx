@@ -31,6 +31,9 @@ function logInOnly(c: ScreenComponent): boolean {
   return c.flows.length > 0 && c.flows.every((f) => f === LOG_IN_LABEL)
 }
 
+/** OCD's own log-in page, kept as it is — its own group on the Log In set. */
+const EXISTING_OCD_PAGE = 'page-ocd-log-in-page-existing-design'
+
 const LOG_IN_LABEL = INVITE_FLOWS_V3.find((f) => f.id === 'xcel-log-in')?.label ?? 'Log In'
 
 export type ScreenState = { file: string; state: string; seenIn: string[] }
@@ -80,10 +83,19 @@ export function InviteV3ScreensGallery({ set = 'checkout' }: { set?: 'checkout' 
   if (!shown.length) return <p style={NOTE}>These screenshots have not been captured yet.</p>
   /* Log In's were captured on their own, after the run — its date is theirs. */
   const capturedAt = (set === 'log-in' && shown.find((c) => c.capturedAt)?.capturedAt) || manifest.capturedAt
-  const groups = [
-    { title: 'Components', items: shown.filter((c) => c.kind !== 'page') },
-    { title: 'Pages', items: shown.filter((c) => c.kind === 'page') },
-  ]
+  /* The Log In set by what it is, not by kind (2026-11-23, Afsana): the new
+     designs, then OCD's own page with only its messages changed. */
+  const existingOcd = (c: ScreenComponent) => c.id === EXISTING_OCD_PAGE
+  const groups =
+    set === 'log-in'
+      ? [
+          { title: 'Net New OCD Designs that integrate Keycloak', items: shown.filter((c) => !existingOcd(c)) },
+          { title: 'Update to Error Messaging for existing OCD Log In page', items: shown.filter(existingOcd) },
+        ]
+      : [
+          { title: 'Components', items: shown.filter((c) => c.kind !== 'page') },
+          { title: 'Pages', items: shown.filter((c) => c.kind === 'page') },
+        ]
   const all: Open[] = groups.flatMap((g) => g.items.flatMap((c) => c.states.map((s) => ({ ...s, title: c.title }))))
   let index = 0
 

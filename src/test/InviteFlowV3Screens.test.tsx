@@ -500,7 +500,8 @@ describe('Invite Flow V3 — the email check', () => {
       await userEvent.click(screen.getByRole('button', { name: 'Continue' }))
       await userEvent.type(screen.getByLabelText('Digit 1 of 6'), '999999')
       await userEvent.click(screen.getByRole('button', { name: 'Confirm' }))
-      expect(screen.getByRole('alert')).toHaveTextContent('The code has expired. Request another code.')
+      /* An expired code is a used attempt (2026-11-23). */
+      expect(screen.getByRole('alert')).toHaveTextContent('The code has expired. Request another code. 4 attempts left.')
       expect(screen.getByLabelText('Digit 1 of 6').style.boxShadow).toBe('inset 0 -2px 0 var(--color-error-600)')
 
       /* A good code after the countdown has run out is expired too. */
@@ -508,7 +509,7 @@ describe('Invite Flow V3 — the email check', () => {
       expect(screen.queryByRole('alert')).not.toBeInTheDocument()
       for (let i = 0; i < 600; i++) await act(() => vi.advanceTimersByTimeAsync(1000))
       await userEvent.click(screen.getByRole('button', { name: 'Confirm' }))
-      expect(screen.getByRole('alert')).toHaveTextContent('The code has expired. Request another code.')
+      expect(screen.getByRole('alert')).toHaveTextContent('The code has expired. Request another code. 3 attempts left.')
 
       /* Resend clears it and starts a fresh 10 minutes. */
       await userEvent.click(screen.getByRole('button', { name: 'Resend code' }))

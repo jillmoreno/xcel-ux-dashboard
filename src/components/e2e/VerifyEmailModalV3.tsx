@@ -327,8 +327,12 @@ function CodeStep({
         e.preventDefault()
         if (!ready) return
         /* The code expires with the countdown — 10 minutes. */
-        if (entered === V3_EXPIRED_DEMO_CODE || secondsLeft <= 0) setCodeError('expired')
-        else if (entered === V3_INVALID_DEMO_CODE) {
+        /* An expired code is a used attempt too (2026-11-23, Afsana: "The
+           code has expired. Request another code. 4 attempts left."). */
+        if (entered === V3_EXPIRED_DEMO_CODE || secondsLeft <= 0) {
+          setCodeError('expired')
+          setAttemptsLeft((n) => Math.max(n - 1, 1))
+        } else if (entered === V3_INVALID_DEMO_CODE) {
           setCodeError('invalid')
           setAttemptsLeft((n) => Math.max(n - 1, 1))
         } else onVerified()
@@ -391,9 +395,8 @@ function CodeStep({
             code. Please try again." until then). */}
         {invalid ? (
           <p id="code-invalid" role="alert" style={INVALID}>
-            {codeError === 'expired'
-              ? 'The code has expired. Request another code.'
-              : `Incorrect code. ${attemptsLeft} ${attemptsLeft === 1 ? 'attempt' : 'attempts'} left.`}
+            {codeError === 'expired' ? 'The code has expired. Request another code.' : 'Incorrect code.'}{' '}
+            {`${attemptsLeft} ${attemptsLeft === 1 ? 'attempt' : 'attempts'} left.`}
           </p>
         ) : null}
       </div>

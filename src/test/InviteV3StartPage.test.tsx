@@ -206,6 +206,11 @@ describe('the stand-alone page’s Screens tab', () => {
     await userEvent.click(screen.getByRole('tab', { name: 'Revised Log In Page' }))
     expect(await screen.findByRole('article', { name: 'OCD log in (On the page)' })).toBeInTheDocument()
     expect(screen.queryByRole('article', { name: /Verify your email/ })).not.toBeInTheDocument()
+    /* Grouped by what it is, not by kind (2026-11-23). */
+    expect(screen.getByRole('region', { name: 'Net New OCD Designs that integrate Keycloak' })).toContainElement(
+      screen.getByRole('article', { name: 'OCD log in (On the page)' }),
+    )
+    expect(screen.queryByRole('region', { name: 'Components' })).not.toBeInTheDocument()
     /* Its own capture date, not the run's. */
     expect(screen.getByText(/^Captured 2026-11-23\./)).toBeInTheDocument()
   })

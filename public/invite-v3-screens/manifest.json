@@ -97,8 +97,8 @@
           ]
         },
         {
-          "file": "modals/verify-your-email/03-wrong-code-1-attempt-left.png",
-          "state": "Wrong code — 1 attempt left",
+          "file": "modals/verify-your-email/03-expired-code-3-attempts-left.png",
+          "state": "Expired code — 3 attempts left",
           "seenIn": [
             "Direct Email · No Atlas account",
             "QR Code · No Atlas account",
@@ -107,8 +107,8 @@
           ]
         },
         {
-          "file": "modals/verify-your-email/04-expired-code.png",
-          "state": "Expired code",
+          "file": "modals/verify-your-email/04-wrong-code-1-attempt-left.png",
+          "state": "Wrong code — 1 attempt left",
           "seenIn": [
             "Direct Email · No Atlas account",
             "QR Code · No Atlas account",

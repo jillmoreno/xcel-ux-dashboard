@@ -294,15 +294,16 @@ async function codeCheck(w, { email = null, emailStates = false, wrongCode = tru
       await w.click('Confirm', { scope: verify })
       if (state) await w.shot('Verify your email', state)
     }
+    /* An expired code is a used attempt too, so it sits second: wrong (4
+       left), expired (3 left), wrong, wrong (1 left). Not a fifth: what
+       follows it is not designed (2026-11-23, Afsana). */
     await wrong('Wrong code — 4 attempts left')
-    await wrong(null)
-    await wrong(null)
-    /* Not a fifth: what follows it is not designed (2026-11-23, Afsana). */
-    await wrong('Wrong code — 1 attempt left')
     await verify.getByLabel('Digit 1 of 6').click()
     await p.keyboard.type('999999')
     await w.click('Confirm', { scope: verify })
-    await w.shot('Verify your email', 'Expired code')
+    await w.shot('Verify your email', 'Expired code — 3 attempts left')
+    await wrong(null)
+    await wrong('Wrong code — 1 attempt left')
     /* The ten minutes, skipped: the countdown reads a deadline, so a clock
        moved on lands on Resend code. */
     await p.clock.install()
