@@ -554,11 +554,13 @@ describe('Invite Flow V3 — the email check', () => {
     const dialog = screen.getByRole('dialog', { name: 'Reset your password' })
     expect(within(dialog).getByAltText('XCEL Insurance Training by Colibri')).toBeInTheDocument()
     expect(dialog).toHaveTextContent('Enter your email and we’ll send you a link to reset your password.')
-    /* ← Back first, then Send reset link and "Can't log in? Contact us" —
+    /* ← Back first, then Send reset link and "Need help? Contact us" —
        Forgot Email? and Back to sign in went on 2026-11-23. */
     expect(within(dialog).queryByText('Forgot Email?')).not.toBeInTheDocument()
     expect(within(dialog).queryByRole('button', { name: 'Back to sign in' })).not.toBeInTheDocument()
     const contact = within(dialog).getByRole('link', { name: /Contact us/ })
+    expect(contact.closest('p')).toHaveTextContent(/^Need help\? Contact us/)
+    expect(dialog).not.toHaveTextContent('Can’t log in?')
     expect(contact).toHaveAttribute('href', 'https://www.xcelsolutions.com/contact-us')
     expect(contact).toHaveAttribute('target', '_blank')
     const order = [...dialog.querySelectorAll('button:not([aria-label]), a')].map((e) =>

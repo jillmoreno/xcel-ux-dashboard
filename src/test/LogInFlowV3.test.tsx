@@ -160,8 +160,10 @@ describe('Invite Flow V3 — Log In', () => {
     expect(screen.getByRole('heading', { name: 'Reset your password' })).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Back to sign in' })).not.toBeInTheDocument()
     expect(screen.queryByText('Forgot Email?')).not.toBeInTheDocument()
-    /* Can't log in? moved here from Log in, as Contact us (2026-11-23). */
+    /* Can't log in? moved here from Log in, as Contact us, then read "Need
+       help? Contact us" (2026-11-23). */
     const contact = screen.getByRole('link', { name: /Contact us/ })
+    expect(contact.closest('p')).toHaveTextContent(/^Need help\? Contact us/)
     expect(contact).toHaveAttribute('href', 'https://www.xcelsolutions.com/contact-us')
     expect(contact).toHaveAttribute('target', '_blank')
     expect(contact).toHaveAttribute('rel', 'noopener noreferrer')

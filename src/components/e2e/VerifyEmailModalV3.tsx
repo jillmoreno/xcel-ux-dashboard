@@ -707,7 +707,7 @@ function LoginStep({
           </label>
           {badResetEmail ? <EmailInvalid id="reset-request-invalid" /> : null}
         </div>
-        {/* Send reset link, primary; then "Can't log in? Contact us", the
+        {/* Send reset link, primary; then "Need help? Contact us", the
             card's last line. Forgot Email? and its sentence went on
             2026-11-23 (Afsana) for Contact us, and Back to sign in for ←
             Back. */}
@@ -953,13 +953,14 @@ export function KeycloakLogInCardV3({
   )
 }
 
-/** "Can't log in? Contact us" — XCEL's contact page in a new tab, at the foot
- *  of Reset your password (2026-11-23, Afsana; it was "Visit our help
- *  center", drawn only, on Log in). */
+/** "Need help? Contact us" — XCEL's contact page in a new tab, at the foot
+ *  of Reset your password (2026-11-23, Afsana; "Can't log in? Contact us"
+ *  until the same day, and "Visit our help center", drawn only, on Log in
+ *  before that). */
 function ContactUsLine() {
   return (
     <p style={{ ...NOTE, textAlign: 'center', alignSelf: 'stretch' }}>
-      Can’t log in?{' '}
+      Need help?{' '}
       <a
         href={XCEL_CONTACT_US}
         target="_blank"
@@ -1131,7 +1132,7 @@ function ResetPasswordStep({ email, onReset }: { email: string; onReset: () => v
 /* A valid new password for the demo fill — every rule met. */
 const RESET_DEMO_PASSWORD = 'Navarro#2027'
 
-/** XCEL's contact page — the Log In flow's "Can't log in? Contact us". */
+/** XCEL's contact page — the Log In flow's "Need help? Contact us". */
 const XCEL_CONTACT_US = 'https://www.xcelsolutions.com/contact-us'
 
 const VISUALLY_HIDDEN: CSSProperties = {

@@ -1,5 +1,5 @@
 {
-  "capturedAt": "2026-11-20",
+  "capturedAt": "2026-11-23",
   "components": [
     {
       "id": "modal-enter-your-email-to-continue",
@@ -148,8 +148,7 @@
             "Signed into XCEL (OCD) · Mixed · No Atlas account"
           ]
         }
-      ],
-      "capturedAt": "2026-11-23"
+      ]
     },
     {
       "id": "modal-email-verified",
@@ -367,8 +366,7 @@
             "Signed into XCEL (OCD) · Mixed · Has Atlas account"
           ]
         }
-      ],
-      "capturedAt": "2026-11-23"
+      ]
     },
     {
       "id": "modal-reset-your-password-enter-email",
@@ -412,7 +410,6 @@
           ]
         }
       ],
-      "capturedAt": "2026-11-23",
       "tag": "Keycloak (Atlas) account only"
     },
     {
@@ -444,7 +441,6 @@
           ]
         }
       ],
-      "capturedAt": "2026-11-23",
       "tag": "Keycloak (Atlas) account only"
     },
     {
@@ -499,7 +495,6 @@
           ]
         }
       ],
-      "capturedAt": "2026-11-23",
       "tag": "Keycloak (Atlas) account only"
     },
     {
@@ -550,8 +545,7 @@
             "Signed into XCEL (OCD) · Mixed · Has Atlas account"
           ]
         }
-      ],
-      "capturedAt": "2026-11-23"
+      ]
     },
     {
       "id": "modal-select-your-state-and-line-of-authority",
@@ -589,8 +583,7 @@
             "Direct Email · Products"
           ]
         }
-      ],
-      "capturedAt": "2026-11-23"
+      ]
     },
     {
       "id": "card-select-your-state-and-line-of-authority",
@@ -648,8 +641,7 @@
             "QR Code · Has Atlas account"
           ]
         }
-      ],
-      "capturedAt": "2026-11-23"
+      ]
     },
     {
       "id": "modal-do-you-have-a-partner-code",
@@ -752,8 +744,7 @@
             "Log In · No account"
           ]
         }
-      ],
-      "capturedAt": "2026-11-23"
+      ]
     },
     {
       "id": "card-log-in-alternative-to-log-in-to-continue",
@@ -792,7 +783,6 @@
           ]
         }
       ],
-      "capturedAt": "2026-11-23",
       "tag": "Keycloak (Atlas) account only"
     },
     {
@@ -825,7 +815,6 @@
           ]
         }
       ],
-      "capturedAt": "2026-11-23",
       "tag": "Keycloak (Atlas) account only"
     },
     {
@@ -867,8 +856,7 @@
             "Log In · No account"
           ]
         }
-      ],
-      "capturedAt": "2026-11-23"
+      ]
     }
   ]
 }
