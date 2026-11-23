@@ -458,6 +458,12 @@ const OCD_INFO: CSSProperties = {
   cursor: 'pointer',
 }
 
+/* ⚠ 24 TALL, SO IT STAYS IN THE LABEL'S ROW (2026-11-23, Afsana: it was
+   "bleeding on the field"). Centred on the icon, a tooltip taller than about
+   27px reaches the field's focus ring 6px below the 19px row — 8px padding
+   and a 17px line made it 33. Above the icon was the other fix, but it
+   covered the Log in heading. ⚠ ONE LINE ONLY: a message that wraps grows
+   back into the field. */
 const OCD_TIP: CSSProperties = {
   position: 'absolute',
   left: 22,
@@ -466,13 +472,13 @@ const OCD_TIP: CSSProperties = {
   zIndex: 1,
   width: 'max-content',
   maxWidth: 220,
-  padding: '8px 10px',
+  padding: '4px 8px',
   borderRadius: 4,
   background: 'var(--color-neutral-950)',
   color: 'var(--color-fixed-light)',
   fontFamily: 'var(--font-e2e-avenir)',
   fontSize: 12,
-  lineHeight: '17px',
+  lineHeight: '16px',
   fontWeight: 400,
 }
 
