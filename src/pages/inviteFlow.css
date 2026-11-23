@@ -245,22 +245,25 @@
   outline-offset: 2px;
 }
 
-/* XCEL'S TOOLTIP, AS THE LIVE SITE DRAWS IT — 2026-11-23, Afsana, from the
-   storefront's own: a 20px "?" in dark grey, and above it a white bubble,
-   black 12/16 text centred, 12px padding, 8px corners, a soft shadow and a
-   white caret pointing back at the icon. One look for every V3 tooltip (the
-   Log In email field's, the line of authority's), so a purchase path does
-   not mix styles.
+/* XCEL'S TOOLTIP — 2026-11-23, Afsana, from the live storefront's: an icon in
+   dark grey, and above it a bubble with 12/16 text centred, 12px padding,
+   8px corners, a soft shadow and a caret pointing back at the icon. One look
+   for every V3 tooltip (the Log In email field's, the line of authority's),
+   so a purchase path does not mix styles.
+   ⚠ THREE PLACES IT IS NOT THE LIVE SITE'S, the same day: the icon is an "i"
+   (`CircleInfo`), not its "?"; it is 16px, not 20 ("too big"); and the
+   bubble is charcoal with white text, not white with black ("little
+   contrast") — the line of authority's tooltip's old fill.
    ⚠ WHAT WE DO NOT COPY: the live one opens on hover only and its text sits
    inside the button. Ours open on keyboard focus (and the email one on a
-   tap), and the button's tap area is 44 × 45 though the icon is 20 × 21. */
+   tap), and the button's tap area is 44 × 44 though the icon is 16. */
 .cre-xcel-help {
   position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 20px;
-  height: 21px;
+  width: 16px;
+  height: 16px;
   padding: 0;
   border: none;
   background: transparent;
@@ -271,7 +274,7 @@
 .cre-xcel-help::before {
   content: '';
   position: absolute;
-  inset: -12px;
+  inset: -14px;
 }
 .cre-xcel-tip {
   position: absolute;
@@ -282,8 +285,8 @@
   max-width: 300px;
   padding: 12px;
   border-radius: 8px;
-  background: var(--color-fixed-light);
-  color: var(--color-e2e-tooltip-ink);
+  background: var(--color-e2e-tooltip-fill);
+  color: var(--color-fixed-light);
   box-shadow: 0 8px 16px -2px var(--color-e2e-tooltip-shadow);
   font-family: var(--font-e2e-avenir);
   font-weight: 400;
@@ -296,7 +299,7 @@
   pointer-events: none;
   z-index: 5;
 }
-/* The live site's 10px caret. */
+/* The live site's 10px caret, in the bubble's fill. */
 .cre-xcel-tip::after {
   content: '';
   position: absolute;
@@ -304,7 +307,7 @@
   left: 50%;
   transform: translateX(-50%);
   border: 5px solid transparent;
-  border-top-color: var(--color-fixed-light);
+  border-top-color: var(--color-e2e-tooltip-fill);
 }
 
 /* THE LINE-OF-AUTHORITY TOOLTIP — Invite Flow V3, 2026-10-30, from Afsana's

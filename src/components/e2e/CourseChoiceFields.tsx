@@ -1,5 +1,5 @@
 import { useState, type CSSProperties } from 'react'
-import { HelpCircle } from '@/icons'
+import { CircleInfo } from '@/icons'
 import { FINDER_LINES_OF_AUTHORITY, type FinderLineOfAuthority } from '@/data/xcelCourseFinder'
 import { INVITE_STATES } from '@/data/inviteMissingDetails'
 
@@ -133,7 +133,7 @@ export function CourseChoiceFields({
         <legend style={{ ...LABEL, marginBottom: 6 }}>
           {loaLabel}
           <span aria-hidden>*</span>
-          {/* The live site's "?" and tooltip (2026-11-23, Afsana) — see
+          {/* The shared V3 tooltip (2026-11-23, Afsana) — see
               `.cre-xcel-help` in inviteFlow.css. */}
           <span
             className="cre-xcel-help cre-e2e-loa-info"
@@ -141,7 +141,7 @@ export function CourseChoiceFields({
             tabIndex={0}
             aria-label="What is a line of authority?"
           >
-            <HelpCircle size={20} aria-hidden />
+            <CircleInfo size={16} aria-hidden />
             <span className="cre-xcel-tip cre-e2e-loa-tip" role="tooltip">
               Your line of authority is the type of insurance your license will let you sell.
             </span>

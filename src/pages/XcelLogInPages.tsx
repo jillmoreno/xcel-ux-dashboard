@@ -15,7 +15,7 @@ import {
 } from '@/components/e2e/VerifyEmailModalV3'
 import { LOADING_HANDOFF_MS } from '@/components/e2e/XcelLoadingPage'
 import { useFeatureFlag } from '@/context/FeatureFlagContext'
-import { HelpCircle } from '@/icons'
+import { CircleInfo } from '@/icons'
 import {
   INVITE_V3_LOG_IN_ACCOUNT_FLAG,
   LOG_IN_PATHS,
@@ -216,7 +216,7 @@ export function XcelOcdLogInPage() {
                   onBlur={() => setTip(false)}
                   className="cre-xcel-help"
                 >
-                  <HelpCircle size={20} aria-hidden />
+                  <CircleInfo size={16} aria-hidden />
                 </button>
                 {/* The live site's tooltip, above the icon (2026-11-23,
                     Afsana) — `.cre-xcel-tip` in inviteFlow.css. */}
