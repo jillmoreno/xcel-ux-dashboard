@@ -679,45 +679,23 @@ function LoginStep({
           </label>
           {badResetEmail ? <EmailInvalid id="reset-request-invalid" /> : null}
         </div>
-        {/* Send reset link, primary; then a light rule, "Forgot Email?" and
-            where to turn, then Back to sign in, secondary (2026-11-20,
-            Afsana). */}
+        {/* Send reset link, primary; then "Can't log in? Contact us" — and on
+            the checkout, Back to sign in under it. Forgot Email? and its
+            sentence went on 2026-11-23 (Afsana), on both, for Contact us. */}
         <div style={ACTIONS}>
           <button type="submit" className="cre-e2e-cta" disabled={!valid} aria-disabled={!valid} style={valid ? CTA : CTA_OFF}>
             Send reset link
           </button>
-          <hr aria-hidden style={FORGOT_EMAIL_RULE} />
-          <div style={FORGOT_EMAIL}>
-            <h3 style={FORGOT_EMAIL_TITLE}>Forgot Email?</h3>
-            <p style={FORGOT_EMAIL_TEXT}>
-              If you no longer have access to the email on file or have forgotten which one you used, please contact our
-              support team.
-            </p>
-          </div>
+          {onBack ? null : <ContactUsLine />}
           {onBack ? null : (
             <button type="button" style={CTA_SECONDARY} onClick={() => setRequesting(false)}>
               Back to sign in
             </button>
           )}
         </div>
-        {/* The Log In flow's way out, at the foot of Reset your password —
-            moved from its Log in and renamed (2026-11-23, Afsana: "Can't log
-            in? Contact us", to XCEL's contact page in a new tab). */}
-        {onBack ? (
-          <p style={{ ...NOTE, textAlign: 'center' }}>
-            Can’t log in?{' '}
-            <a
-              href={XCEL_CONTACT_US}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="cre-e2e-textlink"
-              style={{ ...TEXT_LINK, color: 'var(--color-xcel-brick)', textDecoration: 'none' }}
-            >
-              Contact us
-              <span style={VISUALLY_HIDDEN}> (opens in a new tab)</span>
-            </a>
-          </p>
-        ) : null}
+        {/* On the Log In flow, with no Back to sign in, it is the card's last
+            line (2026-11-23, Afsana). */}
+        {onBack ? <ContactUsLine /> : null}
         {/* The demo fill — the same invisible, labelled corner as the email
             step's. */}
         <button
@@ -965,6 +943,27 @@ export function KeycloakLogInCardV3({
         />
       )}
     </section>
+  )
+}
+
+/** "Can't log in? Contact us" — XCEL's contact page in a new tab, at the foot
+ *  of Reset your password (2026-11-23, Afsana; it was "Visit our help
+ *  center", drawn only, on Log in). */
+function ContactUsLine() {
+  return (
+    <p style={{ ...NOTE, textAlign: 'center', alignSelf: 'stretch' }}>
+      Can’t log in?{' '}
+      <a
+        href={XCEL_CONTACT_US}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="cre-e2e-textlink"
+        style={{ ...TEXT_LINK, color: 'var(--color-xcel-brick)', textDecoration: 'none' }}
+      >
+        Contact us
+        <span style={VISUALLY_HIDDEN}> (opens in a new tab)</span>
+      </a>
+    </p>
   )
 }
 
@@ -1328,35 +1327,8 @@ function EmailInvalid({ id }: { id: string }) {
   )
 }
 
-/* Reset your password — enter email: the rule under Send reset link, and
-   "Forgot Email?" under it (2026-11-20, Afsana). */
-const FORGOT_EMAIL_RULE: CSSProperties = {
-  alignSelf: 'stretch',
-  height: 0,
-  margin: '4px 0',
-  border: 'none',
-  borderTop: '1px solid var(--color-e2e-form-outline)',
-}
-
-const FORGOT_EMAIL: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 4 }
-
-const FORGOT_EMAIL_TITLE: CSSProperties = {
-  margin: 0,
-  fontFamily: 'var(--font-e2e-avenir)',
-  fontWeight: 800,
-  fontSize: 16,
-  lineHeight: '22px',
-  color: 'var(--color-text-primary)',
-}
-
-const FORGOT_EMAIL_TEXT: CSSProperties = {
-  margin: 0,
-  fontFamily: 'var(--font-e2e-avenir)',
-  fontSize: 14,
-  lineHeight: '21px',
-  color: 'var(--color-text-secondary)',
-}
-
+/* The card's buttons, stacked — on Reset your password, Send reset link,
+   Contact us, Back to sign in. */
 const ACTIONS: CSSProperties = {
   display: 'flex',
   flexDirection: 'column',
