@@ -50,9 +50,23 @@ const TABS: { id: Tab; label: string }[] = [
   { id: 'screens', label: 'Screens' },
 ]
 
+/* SCREENS HAS TWO SETS SINCE 2026-11-23 — Afsana: the Log In flow's screens
+   apart from the rest, so its log-in cards are not mistaken for the
+   checkout's, as a second row of tabs inside Screens: Invite & Purchase Flow
+   (the default) and Revised Log In Page, her names. `?set=log-in` in the
+   address; `?tab=log-in`, the top-level tab it was for an hour, still lands
+   there. */
+type ScreenSet = 'checkout' | 'log-in'
+const SETS: { id: ScreenSet; label: string }[] = [
+  { id: 'checkout', label: 'Invite & Purchase Flow' },
+  { id: 'log-in', label: 'Revised Log In Page' },
+]
+
 export function InviteV3StartPage() {
   const [params, setParams] = useSearchParams()
-  const tab: Tab = params.get('tab') === 'screens' ? 'screens' : 'flows'
+  const asked = params.get('tab')
+  const tab: Tab = asked === 'screens' || asked === 'log-in' ? 'screens' : 'flows'
+  const set: ScreenSet = params.get('set') === 'log-in' || asked === 'log-in' ? 'log-in' : 'checkout'
   const b2b = INVITE_FLOWS_V3.filter((f) => f.model === 'b2b')
   /* Not signed in first, then signed in (2026-11-18, Afsana), then Log In
      (2026-11-20) — this page's order only; the Design bar keeps the
@@ -62,14 +76,16 @@ export function InviteV3StartPage() {
   )
   return (
     <div style={PAGE}>
-      <main style={tab === 'screens' ? { ...COLUMN, maxWidth: 1120 } : COLUMN}>
+      <main style={tab === 'flows' ? COLUMN : { ...COLUMN, maxWidth: 1120 }}>
         <img src="/brand/xcel-logo.webp" alt="XCEL Insurance Training by Colibri" style={LOGO} />
         <header style={{ display: 'grid', gap: 8 }}>
           <h1 style={TITLE}>Invite &amp; purchase flow</h1>
           <p style={LEAD}>
             {tab === 'flows'
               ? 'Pick a flow and start it. Each one runs the flow’s own pages, from the invitation to Setting up your account, and stops there.'
-              : 'Each component and its states, once, with the flows that use it — then the pages. Click one to see it full size.'}
+              : set === 'log-in'
+                ? 'The Log In flow’s own screens — OCD’s log-in card and Keycloak’s Reset your password — each with its states. Click one to see it full size.'
+                : 'Each component and its states, once, with the flows that use it — then the pages. Click one to see it full size.'}
           </p>
         </header>
         {/* The whole prototype, with its Hub bar and design controls — every
@@ -88,8 +104,9 @@ export function InviteV3StartPage() {
             active={tab}
             onChange={(id) => {
               const next = new URLSearchParams(params)
-              if (id === 'screens') next.set('tab', 'screens')
-              else next.delete('tab')
+              if (id === 'flows') next.delete('tab')
+              else next.set('tab', id)
+              next.delete('set')
               setParams(next, { replace: true })
             }}
           />
@@ -100,7 +117,25 @@ export function InviteV3StartPage() {
             <FlowGroup title="Public site (B2C)" flows={b2c} />
           </>
         ) : (
-          <InviteV3ScreensGallery />
+          <>
+            <div>
+              {/* Compact, so it reads as a row under Screens, not beside it. */}
+              <PillTabs
+                label="Screens"
+                size="compact"
+                items={SETS}
+                active={set}
+                onChange={(id) => {
+                  const next = new URLSearchParams(params)
+                  next.set('tab', 'screens')
+                  if (id === 'log-in') next.set('set', 'log-in')
+                  else next.delete('set')
+                  setParams(next, { replace: true })
+                }}
+              />
+            </div>
+            <InviteV3ScreensGallery set={set} />
+          </>
         )}
       </main>
     </div>

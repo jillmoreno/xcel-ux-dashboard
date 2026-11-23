@@ -620,7 +620,8 @@
             "Signed into XCEL (OCD) · Targeted only · Has Atlas account"
           ]
         }
-      ]
+      ],
+      "tag": "Keycloak (Atlas) account only"
     },
     {
       "id": "modal-check-your-email",
@@ -650,7 +651,8 @@
             "Direct Email · Has Atlas account"
           ]
         }
-      ]
+      ],
+      "tag": "Keycloak (Atlas) account only"
     },
     {
       "id": "page-reset-your-password-page",
@@ -727,7 +729,8 @@
             "Signed into XCEL (OCD) · Targeted only · Has Atlas account"
           ]
         }
-      ]
+      ],
+      "tag": "Keycloak (Atlas) account only"
     },
     {
       "id": "modal-signing-you-in",
@@ -1006,6 +1009,108 @@
           ]
         }
       ]
+    },
+    {
+      "id": "card-ocd-log-in",
+      "title": "OCD log in",
+      "kind": "card",
+      "flows": [
+        "Log In"
+      ],
+      "states": [
+        {
+          "file": "cards/ocd-log-in/01-email-empty-continue-disabled.png",
+          "state": "Email, empty — Continue disabled",
+          "seenIn": [
+            "Log In · Atlas account",
+            "Log In · OCD account",
+            "Log In · No account"
+          ]
+        },
+        {
+          "file": "cards/ocd-log-in/02-email-info-tooltip-on-hover.png",
+          "state": "Email, info tooltip on hover",
+          "seenIn": [
+            "Log In · Atlas account",
+            "Log In · OCD account",
+            "Log In · No account"
+          ]
+        },
+        {
+          "file": "cards/ocd-log-in/03-email-filled-continue-enabled.png",
+          "state": "Email, filled — Continue enabled",
+          "seenIn": [
+            "Log In · Atlas account",
+            "Log In · OCD account",
+            "Log In · No account"
+          ]
+        },
+        {
+          "file": "cards/ocd-log-in/04-password-empty-log-in-disabled-back.png",
+          "state": "Password, empty — Log in disabled, ← Back",
+          "seenIn": [
+            "Log In · OCD account",
+            "Log In · No account"
+          ]
+        },
+        {
+          "file": "cards/ocd-log-in/05-password-filled-log-in-enabled.png",
+          "state": "Password, filled — Log in enabled",
+          "seenIn": [
+            "Log In · OCD account",
+            "Log In · No account"
+          ]
+        },
+        {
+          "file": "cards/ocd-log-in/06-username-or-password-incorrect.png",
+          "state": "Username or password incorrect",
+          "seenIn": [
+            "Log In · OCD account",
+            "Log In · No account"
+          ]
+        },
+        {
+          "file": "cards/ocd-log-in/07-signing-you-in.png",
+          "state": "Signing you in",
+          "seenIn": [
+            "Log In · OCD account"
+          ]
+        }
+      ],
+      "capturedAt": "2026-11-23"
+    },
+    {
+      "id": "card-reset-your-password-log-in",
+      "title": "Reset your password — Log In",
+      "kind": "card",
+      "flows": [
+        "Log In"
+      ],
+      "states": [
+        {
+          "file": "cards/reset-your-password-log-in/01-empty-send-reset-link-disabled-back.png",
+          "state": "Empty, Send reset link disabled, ← Back",
+          "seenIn": [
+            "Log In · Atlas account"
+          ]
+        },
+        {
+          "file": "cards/reset-your-password-log-in/02-invalid-email-address.png",
+          "state": "Invalid email address",
+          "seenIn": [
+            "Log In · Atlas account"
+          ]
+        },
+        {
+          "file": "cards/reset-your-password-log-in/03-filled-send-reset-link-enabled.png",
+          "state": "Filled, Send reset link enabled",
+          "seenIn": [
+            "Log In · Atlas account"
+          ]
+        }
+      ],
+      "capturedAt": "2026-11-23",
+      "tag": "Keycloak (Atlas) account only"
     }
   ]
 }

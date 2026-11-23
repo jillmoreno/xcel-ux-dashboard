@@ -1,4 +1,5 @@
 import { useEffect, useState, type CSSProperties } from 'react'
+import { INVITE_FLOWS_V3 } from '@/data/inviteFlowsV3'
 
 /**
  * THE SCREENS TAB OF `/invite-v3` — 2026-11-18, Afsana: "another tab that
@@ -17,7 +18,20 @@ import { useEffect, useState, type CSSProperties } from 'react'
  * browser. A picture does not follow the code: when a screen changes, re-run
  * the script. The page says when they were captured so nobody mistakes a
  * stale one for the build.
+ *
+ * ⚠ TWO SETS SINCE 2026-11-23 — Afsana: "to avoid confusion with the other
+ * log in screens that are a part of the ux, lets add a tab". The Log In
+ * flow's own screens (those no other flow uses) are Screens' Revised Log In
+ * Page tab; everything else is its Invite & Purchase Flow tab. `set` picks
+ * which.
  */
+
+/** A component only the Log In flow reaches. */
+function logInOnly(c: ScreenComponent): boolean {
+  return c.flows.length > 0 && c.flows.every((f) => f === LOG_IN_LABEL)
+}
+
+const LOG_IN_LABEL = INVITE_FLOWS_V3.find((f) => f.id === 'xcel-log-in')?.label ?? 'Log In'
 
 export type ScreenState = { file: string; state: string; seenIn: string[] }
 export type ScreenComponent = {
@@ -26,6 +40,11 @@ export type ScreenComponent = {
   kind: 'modal' | 'card' | 'page'
   flows: string[]
   states: ScreenState[]
+  /** Set when captured on its own, after the run (`--only`, 2026-11-23). */
+  capturedAt?: string
+  /** Who it is for, where that is not everyone — e.g. "Keycloak (Atlas)
+   *  account only" on the password reset (2026-11-23, Afsana). */
+  tag?: string
 }
 export type ScreensManifest = { capturedAt: string; components: ScreenComponent[] }
 
@@ -35,7 +54,7 @@ const KIND_LABEL: Record<ScreenComponent['kind'], string> = { modal: 'Modal', ca
 
 type Open = ScreenState & { title: string }
 
-export function InviteV3ScreensGallery() {
+export function InviteV3ScreensGallery({ set = 'checkout' }: { set?: 'checkout' | 'log-in' }) {
   const [manifest, setManifest] = useState<ScreensManifest | null>(null)
   const [failed, setFailed] = useState(false)
   /* The open picture: every state in one list, in page order, so the arrows
@@ -57,9 +76,13 @@ export function InviteV3ScreensGallery() {
     return <p style={NOTE}>The screenshots have not been captured yet.</p>
   if (!manifest) return <p style={NOTE}>Loading screenshots…</p>
 
+  const shown = manifest.components.filter((c) => logInOnly(c) === (set === 'log-in'))
+  if (!shown.length) return <p style={NOTE}>These screenshots have not been captured yet.</p>
+  /* Log In's were captured on their own, after the run — its date is theirs. */
+  const capturedAt = (set === 'log-in' && shown.find((c) => c.capturedAt)?.capturedAt) || manifest.capturedAt
   const groups = [
-    { title: 'Components', items: manifest.components.filter((c) => c.kind !== 'page') },
-    { title: 'Pages', items: manifest.components.filter((c) => c.kind === 'page') },
+    { title: 'Components', items: shown.filter((c) => c.kind !== 'page') },
+    { title: 'Pages', items: shown.filter((c) => c.kind === 'page') },
   ]
   const all: Open[] = groups.flatMap((g) => g.items.flatMap((c) => c.states.map((s) => ({ ...s, title: c.title }))))
   let index = 0
@@ -67,7 +90,7 @@ export function InviteV3ScreensGallery() {
   return (
     <div style={{ display: 'grid', gap: 40 }}>
       <p style={NOTE}>
-        Captured {manifest.capturedAt}. Pictures of the build on that day — a screen changed since then will not show
+        Captured {capturedAt}. Pictures of the build on that day — a screen changed since then will not show
         it until they are captured again.
       </p>
       {groups.map((group) =>
@@ -80,8 +103,12 @@ export function InviteV3ScreensGallery() {
                   <span style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8 }}>
                     <h3 style={CARD_TITLE}>{c.title}</h3>
                     <span style={KIND_TAG}>{KIND_LABEL[c.kind]}</span>
+                    {c.tag ? <span style={AUDIENCE_TAG}>{c.tag}</span> : null}
                   </span>
-                  <p style={USED_IN}>Used in: {c.flows.join(' · ')}</p>
+                  <p style={USED_IN}>
+                    Used in: {c.flows.join(' · ')}
+                    {c.capturedAt ? ` · Captured ${c.capturedAt}` : null}
+                  </p>
                 </header>
                 <ul style={c.kind === 'page' ? PAGE_GRID : STATE_GRID}>
                   {c.states.map((s) => {
@@ -216,6 +243,15 @@ const KIND_TAG: CSSProperties = {
   color: 'var(--color-text-secondary)',
   border: '1px solid var(--color-e2e-card-outline)',
   borderRadius: 999,
+}
+
+/* Who the component is for — the info blue, so it reads apart from the grey
+   kind tag beside it. */
+const AUDIENCE_TAG: CSSProperties = {
+  ...KIND_TAG,
+  color: 'var(--color-info-900)',
+  background: 'var(--color-info-100)',
+  border: '1px solid var(--color-info-200)',
 }
 
 const USED_IN: CSSProperties = { margin: 0, fontSize: 13, lineHeight: '18px', color: 'var(--color-text-secondary)' }

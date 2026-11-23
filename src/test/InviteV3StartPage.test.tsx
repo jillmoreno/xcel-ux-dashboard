@@ -144,6 +144,14 @@ describe('the stand-alone page’s Screens tab', () => {
         ],
       },
       {
+        id: 'card-ocd-log-in',
+        title: 'OCD log in',
+        kind: 'card',
+        flows: ['Log In'],
+        capturedAt: '2026-11-23',
+        states: [{ file: 'cards/ocd-log-in/01-empty.png', state: 'Email, empty', seenIn: ['Log In · OCD account'] }],
+      },
+      {
         id: 'page-your-cart',
         title: 'Your cart',
         kind: 'page',
@@ -177,6 +185,29 @@ describe('the stand-alone page’s Screens tab', () => {
     expect(within(pages).getByRole('article', { name: 'Your cart (Page)' })).toBeInTheDocument()
     expect(screen.getByText(/Captured 2026-11-19/)).toBeInTheDocument()
     expect(screen.queryByRole('link', { name: /No Atlas account/ })).not.toBeInTheDocument()
+  })
+
+  it('splits Screens into Invite & Purchase Flow (first) and Revised Log In Page (2026-11-23)', async () => {
+    render(
+      <MemoryRouter initialEntries={['/invite-v3?tab=screens']}>
+        <InviteV3StartPage />
+      </MemoryRouter>,
+    )
+    /* Two rows: the page's, and Screens' own. */
+    expect(screen.getAllByRole('tab').map((t) => t.textContent)).toEqual([
+      'Flows',
+      'Screens',
+      'Invite & Purchase Flow',
+      'Revised Log In Page',
+    ])
+    expect(screen.getByRole('tab', { name: 'Invite & Purchase Flow' })).toHaveAttribute('aria-selected', 'true')
+    await screen.findByRole('article', { name: 'Verify your email (Modal)' })
+    expect(screen.queryByRole('article', { name: /OCD log in/ })).not.toBeInTheDocument()
+    await userEvent.click(screen.getByRole('tab', { name: 'Revised Log In Page' }))
+    expect(await screen.findByRole('article', { name: 'OCD log in (On the page)' })).toBeInTheDocument()
+    expect(screen.queryByRole('article', { name: /Verify your email/ })).not.toBeInTheDocument()
+    /* Its own capture date, not the run's. */
+    expect(screen.getByText(/^Captured 2026-11-23\./)).toBeInTheDocument()
   })
 
   it('opens a state full size, says where it is seen, and steps through them', async () => {

@@ -24,8 +24,15 @@
  *         (baseUrl defaults to http://localhost:5210 — a production build
  *         served with SPA fallback, e.g. `npx vite preview`.)
  *
- * Always a full run: a component's states come from several flows, so one
- * flow cannot be re-captured on its own any more.
+ * A full run by default: a component's states come from several flows, so a
+ * flow is not re-captured on its own. ⚠ THE ONE EXCEPTION is a flow whose
+ * components no other flow reaches — Log In's OCD log-in card (2026-11-23,
+ * Afsana: "we would just need the OCD log in card and its varied states").
+ * `--only=xcel-log-in` walks that flow alone and MERGES: it replaces only
+ * the components it captured, stamps them with their own `capturedAt`, and
+ * leaves every other picture and the run's date as they were.
+ *
+ *         node scripts/capture-invite-v3-screens.mjs --only=xcel-log-in [baseUrl]
  *
  * Playwright is not a repo dependency. This resolves `playwright-core` from
  * the npx cache (the same copy `npx playwright` installs), or from
@@ -72,7 +79,9 @@ const { chromium } = loadPlaywright()
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const OUT = path.join(ROOT, 'public/invite-v3-screens')
-const BASE = (process.argv[2] ?? 'http://localhost:5210').replace(/\/$/, '')
+const ARGS = process.argv.slice(2)
+const ONLY = ARGS.find((a) => a.startsWith('--only='))?.slice('--only='.length) ?? null
+const BASE = (ARGS.find((a) => !a.startsWith('--')) ?? 'http://localhost:5210').replace(/\/$/, '')
 /* 1440 wide, not 1280 (2026-11-18, Afsana: the product pages "appear to not
    capture the full original width"). Eric's product page footer runs to
    1417px, so at 1280 the full-page shots had a white strip down the right. */
@@ -82,7 +91,7 @@ const VIEWPORT = { width: 1440, height: 900 }
 
 const ENTRY = { 'direct-email': '/end-to-end-demo/email', qr: '/end-to-end-demo/qr', b2c: '/end-to-end-demo/cart' }
 
-function startUrl(flowId, { account = null, cart = null, product = null } = {}) {
+function startUrl(flowId, { account = null, cart = null, product = null, logIn = null } = {}) {
   const b2c = flowId.startsWith('xcel-')
   const model = b2c ? 'b2c' : 'b2b'
   const ff = [
@@ -92,6 +101,7 @@ function startUrl(flowId, { account = null, cart = null, product = null } = {}) 
     ...(account ? [`invite-v3-email-account:${account}`] : []),
     ...(cart ? [`invite-v3-cart:${cart}`] : []),
     ...(product ? [`pdp-products:${product}`] : []),
+    ...(logIn ? [`invite-v3-log-in-account:${logIn}`] : []),
   ]
   const params = new URLSearchParams({ demo: '1', chrome: 'off', standalone: '1', ff: ff.join(',') })
   if (b2c) {
@@ -112,6 +122,19 @@ const slugify = (s) =>
     .replace(/^-|-$/g, '')
     .slice(0, 60)
 
+/* WHO A COMPONENT IS FOR, where it is not everyone — a tag on its card in the
+   Screens tab (2026-11-23, Afsana: "tag the image appropriately so reviewers
+   know that the reset your password modal applies when a user has keycloak
+   account"). By title, so a merge tags the earlier run's components too. */
+const KEYCLOAK_ONLY = 'Keycloak (Atlas) account only'
+const TAGS = {
+  'Reset your password — enter email': KEYCLOAK_ONLY,
+  'Reset your password — Log In': KEYCLOAK_ONLY,
+  'Check your email': KEYCLOAK_ONLY,
+  'Reset your password (page)': KEYCLOAK_ONLY,
+}
+const tagged = (c) => (TAGS[c.title] ? { ...c, tag: TAGS[c.title] } : c)
+
 /* Cards drawn on a page rather than in a dialog, cropped to the card. */
 const CARD_TITLES = ['Select your state and line of authority', 'Finish setting up your account']
 
@@ -128,7 +151,7 @@ class Walk {
 
   /** One state: cropped to its modal or card, or the page's viewport (or the
    *  full page). Skipped when identical to an earlier shot in this walk. */
-  async shot(title, state, { fullPage = false, settle = 350 } = {}) {
+  async shot(title, state, { fullPage = false, settle = 350, card = null } = {}) {
     await this.page.waitForTimeout(settle)
     /* Demo-only aids (Check your email's "open the reset link" line) are
        for walking the prototype, not part of the design developers read
@@ -138,7 +161,13 @@ class Walk {
     let kind = 'page'
     let buf = null
     const dialog = this.page.locator('[role=dialog]:visible').last()
-    if (!fullPage && (await dialog.count())) {
+    /* A card named by selector — OCD's log-in card has no shadow or rounded
+       corners for the heading search below to find (2026-11-23). */
+    const named = card ? this.page.locator(card).first() : null
+    if (named && (await named.count())) {
+      kind = 'card'
+      buf = await named.screenshot(shotOpts)
+    } else if (!fullPage && (await dialog.count())) {
       kind = 'modal'
       buf = await dialog.screenshot(shotOpts)
     } else if (!fullPage && CARD_TITLES.includes(title)) {
@@ -602,6 +631,63 @@ async function b2c(page, flowId, cart, account, slug) {
   return w
 }
 
+/** Keycloak's Log in, then its Reset your password — the Log In flow's own:
+ *  on the card, ← Back, no Back to sign in (2026-11-20). Filed apart from the
+ *  checkout modal's, and tagged Keycloak only (`TAGS`). */
+async function keycloakReset(w) {
+  const page = w.page
+  await page.waitForURL(/\/log-in\/keycloak/, { timeout: 10000 })
+  const KC = 'section[aria-labelledby="verify-email-title"]'
+  await w.click('Forgot password?', { wait: 500 })
+  const RESET = 'Reset your password — Log In'
+  const field = page.getByLabel(/^Email/)
+  await w.shot(RESET, 'Empty, Send reset link disabled, ← Back', { card: KC })
+  await field.fill('jordan@example')
+  await w.shot(RESET, 'Invalid email address', { card: KC })
+  await field.fill('jordan@example.com')
+  await w.shot(RESET, 'Filled, Send reset link enabled', { card: KC })
+  return w
+}
+
+/** Log In (2026-11-20): the header's Log In, No to the Partner Code, Yes to
+ *  the XCEL account, then OCD's log-in card, its states by where the account
+ *  is. Atlas leaves the card at Continue for Keycloak's, where only its Reset
+ *  your password is captured (`keycloakReset`). */
+async function logIn(page, account) {
+  const w = new Walk(page)
+  await go(page, startUrl('xcel-log-in', { logIn: account }))
+  await w.click('Log In', { wait: 600 })
+  await w.click('NO', { wait: 600 })
+  await w.click('YES', { wait: 600 })
+  await page.waitForURL(/\/log-in\/sign-in/, { timeout: 10000 })
+  const CARD = 'section[aria-label="Log in"]'
+  const TITLE = 'OCD log in'
+  const email = page.getByLabel('Email', { exact: true })
+  await w.shot(TITLE, 'Email, empty — Continue disabled', { card: CARD })
+  await page.getByRole('button', { name: 'About this field' }).hover()
+  await w.shot(TITLE, 'Email, info tooltip on hover', { card: CARD })
+  await page.mouse.move(0, 0)
+  await email.fill('jordan@example.com')
+  await w.shot(TITLE, 'Email, filled — Continue enabled', { card: CARD })
+  await w.click('Continue', { wait: 500 })
+  /* Keycloak knows the address: its own page, not OCD's password. */
+  if (account === 'atlas') return keycloakReset(w)
+  const pw = page.getByLabel('Password', { exact: true })
+  await w.shot(TITLE, 'Password, empty — Log in disabled, ← Back', { card: CARD })
+  await pw.fill(account === 'ocd' ? 'wrong' : 'Secret#2027')
+  await w.shot(TITLE, 'Password, filled — Log in enabled', { card: CARD })
+  await w.click('Log in', { wait: 500 })
+  /* A wrong password and no account read the same (2026-11-20). */
+  await w.shot(TITLE, 'Username or password incorrect', { card: CARD })
+  if (account === 'ocd') {
+    await pw.fill('Secret#2027')
+    await w.click('Log in', { wait: 400 })
+    /* Opened stand-alone, it holds here rather than going on into OCD. */
+    await w.shot(TITLE, 'Signing you in', { card: 'section[aria-label="Signing you in"]', settle: 150 })
+  }
+  return w
+}
+
 /* ---------- the plan ---------- */
 
 const PLAN = [
@@ -636,6 +722,16 @@ const PLAN = [
       ['none', 'no-atlas', 'None targeted', 'none'],
     ].map(([cart, account, label, slug]) => ({ label, slug, run: (p) => b2c(p, id, cart, account, slug) })),
   })),
+  {
+    id: 'xcel-log-in',
+    label: 'Log In',
+    model: 'b2c',
+    variants: [
+      { label: 'Atlas account', slug: 'atlas', run: (p) => logIn(p, 'atlas') },
+      { label: 'OCD account', slug: 'ocd', run: (p) => logIn(p, 'ocd') },
+      { label: 'No account', slug: 'none', run: (p) => logIn(p, 'none') },
+    ],
+  },
 ]
 
 /* ---------- run ---------- */
@@ -686,7 +782,12 @@ async function main() {
   }
   const browser = await chromium.launch()
   const failures = []
-  for (const flow of PLAN) {
+  const plan = ONLY ? PLAN.filter((f) => f.id === ONLY) : PLAN
+  if (!plan.length) {
+    console.error(`capture-invite-v3-screens: no flow "${ONLY}".`)
+    process.exit(1)
+  }
+  for (const flow of plan) {
     for (const v of flow.variants) {
       console.log(`\n${flow.id} / ${v.slug}`)
       CURRENT = { flow: flow.label, variant: v.label, model: flow.model === 'b2c' ? 'B2C' : 'B2B2C' }
@@ -717,23 +818,32 @@ async function main() {
   }
   await browser.close()
 
-  /* A fresh folder each run: old files would otherwise linger. */
-  if (fs.existsSync(OUT)) fs.rmSync(OUT, { recursive: true })
   const folder = { modal: 'modals', card: 'cards', page: 'pages' }
-  const components = group(ALL_SHOTS).map((c) => {
+  const manifestPath = path.join(OUT, 'manifest.json')
+  const today = new Date().toISOString().slice(0, 10)
+  /* A fresh folder each full run: old files would otherwise linger. `--only`
+     keeps the folder and clears just the components it re-captures. */
+  const previous = ONLY && fs.existsSync(manifestPath) ? JSON.parse(fs.readFileSync(manifestPath, 'utf8')) : null
+  if (!ONLY && fs.existsSync(OUT)) fs.rmSync(OUT, { recursive: true })
+  const captured = group(ALL_SHOTS).map((c) => {
     const id = slugify(c.title)
     const dir = path.join(OUT, folder[c.kind], id)
+    if (ONLY && fs.existsSync(dir)) fs.rmSync(dir, { recursive: true })
     fs.mkdirSync(dir, { recursive: true })
     const states = c.states.map((st, n) => {
       const file = `${folder[c.kind]}/${id}/${String(n + 1).padStart(2, '0')}-${slugify(st.state)}.png`
       fs.writeFileSync(path.join(OUT, file), st.buf)
       return { file, state: st.state, seenIn: st.seenIn }
     })
-    return { id: `${c.kind}-${id}`, title: c.title, kind: c.kind, flows: c.flows, states }
+    return tagged({ id: `${c.kind}-${id}`, title: c.title, kind: c.kind, flows: c.flows, states, ...(ONLY ? { capturedAt: today } : {}) })
   })
-  const manifestPath = path.join(OUT, 'manifest.json')
-  const today = new Date().toISOString().slice(0, 10)
-  fs.writeFileSync(manifestPath, JSON.stringify({ capturedAt: today, components }, null, 2) + '\n')
+  /* Merged: the earlier run's components, with these replacing any of the
+     same id — the run's own date unchanged, since the rest are its. */
+  const components = previous
+    ? [...previous.components.filter((c) => !captured.some((n) => n.id === c.id)).map(tagged), ...captured]
+    : captured
+  const capturedAt = previous?.capturedAt ?? today
+  fs.writeFileSync(manifestPath, JSON.stringify({ capturedAt, components }, null, 2) + '\n')
   const count = components.reduce((n, c) => n + c.states.length, 0)
   console.log(`\n${components.length} components, ${count} states → ${path.relative(ROOT, manifestPath)}`)
   if (failures.length) {
