@@ -77,6 +77,11 @@ export function AtlasCourseCardFigmaV2({
   /* HOW THE THREE LABELS ARE DRAWN — the design bar's `atlas-courses-card-meta` (2026-11-23, Jillienne: "lets explore some ui
      variations"). See the flag for the three arms. */
   const metaLayout = useFeatureFlag('atlas-courses-card-meta').variant ?? 'ruled-row'
+  // The description, shown or hidden — the design bar's `atlas-course-description` (2026-11-23); Home follows the same control.
+  const descriptionShown = useFeatureFlag('atlas-course-description').variant !== 'hidden'
+  /* NO BUTTON, NO LINKS (2026-11-23, Jillienne) — the design bar's `atlas-courses-card-actions`: the card is the one action
+     and Home has the buttons. The hover lift and focus ring (`.cre-atlas-card-v2`) are what is left to say so. */
+  const actionsShown = useFeatureFlag('atlas-courses-card-actions').variant !== 'hidden'
   /* THE RULED ROW ABBREVIATES THE STATE — "FL", not "Florida" (2026-11-23, Jillienne: "use the ruled row, have the state be
      abbreviated to help with wrapping issues"). `STATE_ABBR` is the catalog's map; a name it does not know, or a record
      that already carries the code (the library's `state: 'FL'`), passes through. The sheet keeps the full name. */
@@ -146,6 +151,10 @@ export function AtlasCourseCardFigmaV2({
             "course details link should be under the primary cta at bottom of card"); it sat here on the card before. */}
         <div style={TITLE_HEAD}>
           <h3 style={TITLE}>{data.title}</h3>
+          {/* The description RIGHT UNDER THE TITLE (2026-11-23, Jillienne: "should be right up against the title") — inside the
+              title's block, so the slack a short title leaves in the shared row falls below the description, not between.
+              Or its fallback; or nothing, under the design bar's Course description control. */}
+          {descriptionShown ? <p style={DESCRIPTION}>{data.description || 'Description coming soon'}</p> : null}
         </div>
         {/* One status pill (Figma 710:2531–2551, 2026-11-12, Eric), the most pressing: the clock before the course's own state. */}
         {/* At the foot of the title row, whatever the title's length, so every card's pills line up — 16 over the State line,
@@ -155,7 +164,7 @@ export function AtlasCourseCardFigmaV2({
         {/* THE STATUS PILL IS ON THE IMAGE NOW (2026-11-23, Jillienne: "have the status badge be in the top left of the image
             area" — the shared card's badges). What is left of this row is "Review Course ›", on a finished card only, at the
             card's right edge (2026-11-17, Eric). */}
-        {steppedBack ? (
+        {steppedBack && actionsShown ? (
           <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 8, alignSelf: 'stretch', marginTop: 'auto', paddingTop: 4 }}>
             <button
               type="button"
@@ -172,8 +181,6 @@ export function AtlasCourseCardFigmaV2({
           </span>
         ) : null}
       </div>
-      {/* The description (PRD section 3) — or its fallback. The sentence lives HERE, once, rather than on every record. */}
-      <p style={DESCRIPTION}>{data.description || 'Description coming soon'}</p>
       {/* State | Category | Line of authority — the PRD's labels, back on the card (2026-11-23), in the SHARED card's meta
           row style (Jillienne, same day, with that card's "Elective | 4 Hours | TX" row selected: "use this style"): the
           values alone, 12 / 500, hairline rules between them — `CourseMeta`'s row and `MetaRule`, not the 2026-11-12
@@ -247,6 +254,7 @@ export function AtlasCourseCardFigmaV2({
         ) : null}
         {detail ? <p style={DATE_LINE}>{detail}</p> : null}
       </div>
+      {actionsShown ? (
       <div style={ACTIONS_BLOCK}>
       <div style={ACTIONS}>
         {/* The ⋮ and its menu, OFF for now (2026-11-17, Eric: "turn off the kebab menu for now") — built and kept; set
@@ -349,6 +357,10 @@ export function AtlasCourseCardFigmaV2({
         <AngleRightSolid size={11} aria-hidden style={{ width: 6 }} />
       </button>
       </div>
+      ) : (
+        /* The actions row, empty — the subgrid row is kept so a mixed row of cards would still line up. */
+        <span aria-hidden />
+      )}
     </article>
     {/* Outside the article, so a click inside the sheet does not bubble (through the portal) to the card's open. */}
     <AtlasCourseDetailsSheet data={data} open={detailsOpen} onClose={() => setDetailsOpen(false)} />
@@ -367,12 +379,12 @@ function statusFor(data: AtlasCourseCardData, progress: number): AtlasCourseStat
   return 'not-started'
 }
 
-/* 24 in, 12 corners, Primary 100, no outline. A SUBGRID of SEVEN rows — image, title, description, facts, progress, dates,
-   buttons (2026-11-23; four on the card before it) — on the row of cards, so every card's rows line up with its
-   neighbours' (the parent grid is PlatformShell's). */
+/* 24 in, 12 corners. A SUBGRID of SIX rows — image, title + description, facts, progress, dates, buttons (2026-11-23; four
+   on the card before it) — on the row of cards, so every card's rows line up with its neighbours' (the parent grid is
+   PlatformShell's). */
 const CARD: CSSProperties = {
   display: 'grid',
-  gridRow: 'span 7',
+  gridRow: 'span 6',
   gridTemplateRows: 'subgrid',
   rowGap: 8,
   padding: 24,
@@ -390,7 +402,8 @@ const IMAGE: CSSProperties = { display: 'block', width: '100%', height: 120, obj
 /* The image's frame, so the pill can sit over it — 8 in from the top-left, the shared card's inset (2026-11-23). */
 const IMAGE_WRAP: CSSProperties = { position: 'relative' }
 const PILL_ON_IMAGE: CSSProperties = { position: 'absolute', top: 8, left: 8, display: 'inline-flex', boxShadow: '0 1px 2px rgb(0 0 0 / 0.12)', borderRadius: 14 }
-const TITLE_BLOCK: CSSProperties = { display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 14 /* 4 more over the pill (2026-11-12, Eric; the design's 10) */, paddingTop: 4, paddingBottom: 4 }
+// 8 between the description and whatever follows, 0 under (2026-11-23; 14 and 4 while the pill row sat here).
+const TITLE_BLOCK: CSSProperties = { display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 8, paddingTop: 4, paddingBottom: 0 }
 /* The title and its Course Details link (2026-11-18, Eric; a rule under them that day, then removed). The pair stretches to the foot of its share of the row, which is
    what holds the pills at one height across the row. */
 const TITLE_HEAD: CSSProperties = {
@@ -406,8 +419,10 @@ const TITLE: CSSProperties = {
   margin: 0,
   fontFamily: 'var(--font-heading-serif)',
   fontWeight: 700,
-  fontSize: 22, // My Certificates' card titles, 22 / 24 (2026-11-12, Eric; 20 / 21, the design's 18 / 19 before)
-  lineHeight: '24px',
+  // 18 / 22 (2026-11-23, Jillienne, with the title selected: "reduce font size") — the Figma card's own 18, on a line
+  // height that lets the serif breathe. The 2026-11-18 card keeps My Certificates' 22 / 24.
+  fontSize: 18,
+  lineHeight: '22px',
   color: 'var(--color-text-primary)',
   // Three lines at most (2026-11-23, the scan): the subgrid gives every title row the tallest title's height, so one
   // four-line title would push every card's pills down. The full title is the article's accessible name either way.
@@ -419,7 +434,6 @@ const TITLE: CSSProperties = {
 /* The description: the facts' face at 12, three lines at most so a long blurb cannot push the row's buttons apart. */
 const DESCRIPTION: CSSProperties = {
   margin: 0,
-  paddingBottom: 8,
   fontFamily: 'var(--font-body)',
   fontSize: 12,
   lineHeight: '18px',

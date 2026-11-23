@@ -178,6 +178,21 @@ const SHOW_COURSE_TABS: boolean = true
 /* My Courses' cards still in play — not completed, expired or failed — the Home course tabs (2026-11-12, Eric). */
 const ACTIVE_MY_COURSES = ATLAS_MY_COURSES.filter((c) => !c.completed && c.badge !== 'Expired' && c.actionLabel !== 'Retake Course')
 
+/* The description under the course title (2026-11-23): the body face at 14 / 22 in the secondary ink, three lines at most,
+   capped at the title column's comfortable measure. */
+const HEAD_DESCRIPTION: CSSProperties = {
+  margin: 0,
+  maxWidth: 560,
+  fontFamily: 'var(--font-body)',
+  fontSize: 14,
+  lineHeight: '22px',
+  color: 'var(--color-text-secondary)',
+  display: '-webkit-box',
+  WebkitLineClamp: 3,
+  WebkitBoxOrient: 'vertical',
+  overflow: 'hidden',
+}
+
 /* THE COURSE BOXES (2026-11-10, Eric) — a row of outlined course boxes ABOVE the course card, the picked one carrying an
    angle-down — or the tab strip IN the card's head: the design bar's Course tabs control (`atlas-course-tabs-place`) picks
    which. Both drive the same pick and progress. */
@@ -979,6 +994,24 @@ export function AtlasHomeJillMain({
   // The design bar's long title is the last word when there is no course at all.
   const shownTitle = cardCourse?.title ?? activeTab?.title ?? e2eTitle ?? (longTitle ? V2_LONG_TITLE : courseTitle)
   const shownCover = cardCourse?.imageUrl ?? activeTab?.coverUrl ?? coverUrl
+  /* THE DESCRIPTION UNDER THE TITLE (2026-11-23, Jillienne: "add this description to the Home page for the course, under the
+     title, and Add/Hide toggle should be there too") — the design bar's `atlas-course-description`, the same control the My
+     Courses card reads. The source follows the title's: the card the learner came from, else the picked tab's course, else
+     the demo's own (the first design card). The card's "Description coming soon" fallback, so the line is never empty. It
+     goes in through the head row's `meta` slot, ABOVE the access row, because the row component is Eric's and not edited;
+     the access row keeps its own `div`, which is what `AtlasCourseExpiry.test.tsx` reads. */
+  const descriptionShown = useFeatureFlag('atlas-course-description').variant !== 'hidden'
+  const courseDescription =
+    cardCourse?.description ??
+    atlasHomeCourseFor(activeTab?.id ?? null, e2eBrand)?.description ??
+    ATLAS_MY_COURSES[0]?.description ??
+    'Description coming soon'
+  const courseMetaWithDescription = (
+    <>
+      {descriptionShown ? <p style={HEAD_DESCRIPTION}>{courseDescription}</p> : null}
+      <div>{courseMeta}</div>
+    </>
+  )
   const selectCourse = (id: string) => {
     setParams((prev) => {
       const next = new URLSearchParams(prev)
@@ -1250,7 +1283,7 @@ export function AtlasHomeJillMain({
             onOverview={LINKS_OFF && !overviewOpensCompass ? NO_LINK : onOverview}
             onBegin={completedView ? onBeginCta : LINKS_OFF ? NO_LINK : onBegin}
             beginLabel={beginLabel}
-            meta={courseMeta}
+            meta={courseMetaWithDescription}
             /* Layout 2 is one click away on the cover — the two must not
                disagree about whether the course is current. */
             eyebrow={courseEyebrow}
@@ -1262,7 +1295,7 @@ export function AtlasHomeJillMain({
           coverRadius={4}
           cover={shownCover ?? undefined}
           title={shownTitle}
-          meta={courseMeta}
+          meta={courseMetaWithDescription}
           /* ⚠ THE CONGRATULATION IS THE EYEBROW AT 100% (2026-10-21). It used
              to sit in the meta row beside the access date, which left that row
              carrying a countdown and a celebration at once; the eyebrow is the

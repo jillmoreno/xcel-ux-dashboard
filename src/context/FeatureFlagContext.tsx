@@ -4865,6 +4865,63 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'atlas-course-description',
+    /* THE COURSE'S DESCRIPTION, ON THE CARD AND ON HOME — 2026-11-23, Jillienne,
+       with the card's description selected: "add a toggle to hide/show the
+       description. Also add this description to the Home page for the course,
+       under the title, and Add/Hide toggle should be there too."
+
+       One control, two places: the PRD card's description row
+       (`AtlasCourseCardFigmaV2`) and a line under the course title in Jill/
+       Atlas-Main's course head (`AtlasHomeJillMain`, through the head row's
+       `meta` slot — the row itself is Eric's and is not edited). Home reads
+       the card the learner came from, else the picked course tab's, else the
+       demo course's; the same "Description coming soon" fallback as the card.
+
+       `hidden` removes the line in both places. The card's subgrid row stays
+       so neighbours still line up. Eric's End-to-End Home is untouched. */
+    group: 'Widgets',
+    label: 'Course description',
+    description:
+      'Whether the course\u2019s description is drawn \u2014 on the My Courses PRD card under the title, and on Home under the course title. Shown (default) or Hidden, both places at once.',
+    defaultEnabled: true,
+    defaultVariant: 'shown',
+    variants: [
+      { value: 'shown', label: 'Shown' },
+      { value: 'hidden', label: 'Hidden' },
+    ],
+    surface: 'design',
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'atlas-courses-card-actions',
+    /* THE CARD'S ACTIONS, OR NONE — 2026-11-23, Jillienne: "add a toggle
+       variant where all of the ctas and links are hidden. user clicks on
+       card, it loads course as the active course on atlas home, all the
+       available ctas are right there."
+
+       `shown` (default): the PRD card as section 3 draws it — one button per
+       status, "Course Details ›" under it, "Review Course ›" on a finished
+       card. `hidden`: none of them. The card is the one action — a click
+       anywhere opens Home with this course active (`onOpen`, as before), and
+       Home's course head carries Begin / Resume / Purchase Extension / View
+       Certificate. The hover lift and the focus ring stay, which is what says
+       the card is clickable with nothing else on it. The answer to the scan's
+       "four ways to act on one card", as a variant to compare. PRD card only. */
+    group: 'Widgets',
+    label: 'My Courses card — actions',
+    description:
+      'Whether the PRD card carries its own button and links. Shown (default): the status\u2019s button, "Course Details \u203a" under it, "Review Course \u203a" on a finished card. Hidden: none \u2014 the card is the one action, opening Home with this course active, where the buttons are. PRD card only.',
+    defaultEnabled: true,
+    defaultVariant: 'shown',
+    variants: [
+      { value: 'shown', label: 'Shown' },
+      { value: 'hidden', label: 'Hidden — the card opens Home' },
+    ],
+    surface: 'design',
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'atlas-courses-card-meta',
     /* HOW THE PRD CARD DRAWS STATE · CATEGORY · LINE OF AUTHORITY — 2026-11-23,
        Jillienne, with the shared card's compact meta block selected

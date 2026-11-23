@@ -82,7 +82,7 @@ export const ATLAS_MY_COURSES: readonly AtlasCourseCardData[] = [
     actionStyle: 'secondary',
     state: 'Florida',
     category: 'Licensing',
-    lineOfAuthority: 'Property and Casualty',
+    lineOfAuthority: 'Property & Casualty',
     // Invented demo copy for the Course Details sheet (2026-11-18, Eric).
     packageSummary:
       'Our Standard package covers every topic on the Florida Property & Casualty exam with self-paced lessons and practice quizzes, and is ideal for those who like to study on their own schedule.',
@@ -173,7 +173,7 @@ export const ATLAS_MY_COURSES: readonly AtlasCourseCardData[] = [
     actionLabel: 'Retake Course',
     state: 'Florida',
     category: 'Licensing',
-    lineOfAuthority: 'Property and Casualty',
+    lineOfAuthority: 'Property & Casualty',
     packageSummary:
       'The practice exam comes with every Florida Property & Casualty package and can be retaken as often as you like while your access lasts.',
     progress: 100,

@@ -267,6 +267,8 @@ const REBRAND_FLAGS = [
   'atlas-courses-card-style',
   'atlas-courses-card-prd-fields', // 2026-11-23 — the card to the My Courses PRD (section 3)
   'atlas-courses-card-meta', // 2026-11-23 — how that card draws its three labels (a design-bar control too)
+  'atlas-course-description', // 2026-11-23 — the description on the card and on Home, shown / hidden
+  'atlas-courses-card-actions', // 2026-11-23 — the PRD card's button and links, shown / hidden (the card opens Home)
   'atlas-courses-from-library',
   'atlas-courses-open-course',
   'atlas-certificates-card-style',

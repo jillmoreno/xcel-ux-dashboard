@@ -91,6 +91,8 @@ const feature: PrototypeFeature = {
     { id: 'atlas-pages-quick-links', label: 'Quick Links on the learning pages', note: 'Hidden, which is what this page shows. Shown puts the side rail back on both learning pages and re-centres the content. Hiding it also takes away the only route to My Certificates that does not pass through Home.' },
     // Corrected 2026-11-23 (it read: "Shared is the card documented here. Atlas draws the earlier card instead").
     { id: 'atlas-courses-card-style', label: 'My Courses card', note: 'Atlas (the default since 2026-11-03) is the card documented here — Figma 706:2416 with a full-width button. Shared draws the LMS dashboard’s CourseCard instead, serif title and no button.' },
+    { id: 'atlas-courses-card-actions', label: 'My Courses card — actions', note: 'A design-bar control (2026-11-23): Shown draws the status’s button and the two text links; Hidden draws none, so the card is the one action and opens Home with the course active, where the buttons are. The answer to the scan’s "four ways to act on one card", as a variant.' },
+    { id: 'atlas-course-description', label: 'Course description', note: 'A design-bar control (2026-11-23): the description shown or hidden, on the PRD card under the title and on Home under the course title, both at once.' },
     { id: 'atlas-courses-card-meta', label: 'My Courses card — labels', note: 'A design-bar control (2026-11-23) for how the PRD card draws State, Category and Line of authority: the ruled row (decided, the state abbreviated), the shared card’s stacked icon-led block, or one labelled line per fact. The other two stay for comparison.' },
     { id: 'atlas-courses-card-prd-fields', label: 'My Courses card — PRD fields', note: 'On (2026-11-23): the Atlas card to section 3 of the My Courses PRD — description, the three labels on the card, a date line per status, the failed score and expired progress, and a working View Certificate on a completed course. Off: the card as of 2026-11-18, with the disabled Completed button. Only matters when the card control is set to Atlas.' },
     { id: 'atlas-courses-from-library', label: 'My Courses list', note: 'Only does anything when the card control is set to Atlas. Off shows three fixed example courses in place of the learner’s own.' },
@@ -293,6 +295,13 @@ const feature: PrototypeFeature = {
           decision:
             'The ruled row, with the state abbreviated — "FL | Licensing | Life and Health" — so the line rarely wraps. Decided 2026-11-23 against the other two, which stay on the design bar (atlas-courses-card-meta) for comparison until Ship retires them. The sheet keeps the full state name.',
           status: 'Decided',
+        },
+        {
+          question: 'Does the card carry its own button and links, or is the card the one action?',
+          decision:
+            'Open. Two choices on the design bar (atlas-courses-card-actions), built 2026-11-23: the card with its button, "Course Details ›" and "Review Course ›"; or the card with none of them, opening Home with the course active, where every button already is. The scan counted four ways to act on one card; the second choice makes it one.',
+          status: 'Needs weigh-in',
+          owner: 'Jillienne',
         },
         {
           question: 'Does the status text read "Failed" and "Expired", or "Progress Made"?',

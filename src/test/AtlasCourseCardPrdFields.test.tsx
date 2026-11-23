@@ -195,6 +195,15 @@ describe('the labels, the status and the progress', () => {
     expect(screen.queryByText('Florida', { selector: '[data-testid="atlas-card-facts"] span' })).toBeNull()
     expect(screen.getAllByText('Licensing').length).toBeGreaterThan(0)
     expect(screen.getAllByText('Life and Health').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('Property & Casualty').length).toBeGreaterThan(0) // the ampersand (2026-11-23)
+  })
+
+  it('draws the description inside the title block, right under the heading', () => {
+    renderShell(DESIGN_CARDS)
+    const card = screen.getByRole('article', { name: 'Florida Life and Health Pre-licensing' })
+    const heading = within(card).getByRole('heading')
+    const description = within(card).getByText(ATLAS_MY_COURSES[0].description!)
+    expect(heading.nextElementSibling).toBe(description)
   })
 
   it('exposes the progress as a number — aria-valuenow between 0 and 100 — beside the status as text', () => {
@@ -244,6 +253,59 @@ describe('the three label layouts — the design bar’s atlas-courses-card-meta
     expect(row.getAttribute('data-meta')).toBe('labelled')
     expect(within(row).getByText(/^State:/)).toBeTruthy()
     expect(within(row).getByText(/^Line of authority:/)).toBeTruthy()
+  })
+})
+
+describe('the description toggle — atlas-course-description', () => {
+  /* 2026-11-23, Jillienne: "add a toggle to hide/show the description. Also add this description to the Home page for the
+     course, under the title, and Add/Hide toggle should be there too." One control, two places. */
+  it('is a design-bar control, shown by default', () => {
+    const flag = FEATURE_FLAGS.find((f) => f.key === 'atlas-course-description')!
+    expect(flag.surface).toBe('design')
+    expect(flag.defaultVariant).toBe('shown')
+  })
+
+  it('hides every card’s description when hidden', () => {
+    renderShell(`${DESIGN_CARDS},atlas-course-description:hidden`)
+    expect(screen.queryByText(ATLAS_MY_COURSES[0].description!)).toBeNull()
+    expect(screen.queryByText('Description coming soon')).toBeNull()
+    expect(screen.getAllByRole('progressbar')).toHaveLength(ATLAS_MY_COURSES.length)
+  })
+
+  it('draws the course’s description under the title on Home, and hides it with the same control', () => {
+    renderShell(`section=dashboard&version=${BASELINE}`)
+    const heading = screen.getByRole('heading', { level: 2, name: /Life and Health Pre-licensing/ })
+    const description = screen.getByText(ATLAS_MY_COURSES[0].description!)
+    expect(heading.compareDocumentPosition(description) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    cleanup()
+    renderShell(`section=dashboard&version=${BASELINE}&ff=atlas-course-description:hidden`)
+    expect(screen.queryByText(ATLAS_MY_COURSES[0].description!)).toBeNull()
+  })
+})
+
+describe('the actions toggle — atlas-courses-card-actions', () => {
+  /* 2026-11-23, Jillienne: "a toggle variant where all of the ctas and links are hidden. user clicks on card, it loads
+     course as the active course on atlas home, all the available ctas are right there." */
+  it('is a design-bar control, shown by default', () => {
+    const flag = FEATURE_FLAGS.find((f) => f.key === 'atlas-courses-card-actions')!
+    expect(flag.surface).toBe('design')
+    expect(flag.defaultVariant).toBe('shown')
+  })
+
+  it('hidden: no button, no link on any card — the card itself still opens Home', () => {
+    renderShell(`${DESIGN_CARDS},atlas-courses-card-actions:hidden`)
+    const cards = screen.getAllByRole('article')
+    expect(cards).toHaveLength(ATLAS_MY_COURSES.length)
+    for (const card of cards) {
+      expect(within(card).queryAllByRole('button')).toHaveLength(0)
+      expect(within(card).queryAllByRole('link')).toHaveLength(0)
+      expect(card.tabIndex).toBe(0)
+      expect(card.className).toContain('cre-atlas-card-v2')
+    }
+    // The click goes through the router, not window.location: Home renders with this card's course in its head.
+    fireEvent.click(cards[0])
+    expect(screen.getByRole('heading', { level: 2, name: 'Florida Life and Health Pre-licensing' })).toBeTruthy()
+    expect(screen.queryByTestId('atlas-card-facts')).toBeNull()
   })
 })
 
