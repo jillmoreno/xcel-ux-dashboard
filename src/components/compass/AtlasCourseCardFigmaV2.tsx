@@ -116,21 +116,10 @@ export function AtlasCourseCardFigmaV2({
       <div style={TITLE_BLOCK}>
         {/* The title, then "Course Details ›" under it, then the rule (2026-11-18, Eric) — the link in Review Course's style,
             opening the facts the card used to carry in a sheet from the right. */}
+        {/* The title alone — "Course Details ›" moved to the foot of the card, under the button (2026-11-23, Jillienne:
+            "course details link should be under the primary cta at bottom of card"); it sat here on the card before. */}
         <div style={TITLE_HEAD}>
           <h3 style={TITLE}>{data.title}</h3>
-          <button
-            type="button"
-            className="cre-atlas-card-review"
-            onClick={(e) => {
-              e.stopPropagation()
-              setDetailsOpen(true)
-            }}
-            // Left, under the title (2026-11-18, Eric — right-aligned for a while that day).
-            style={REVIEW_LINK}
-          >
-            Course Details
-            <AngleRightSolid size={11} aria-hidden style={{ width: 6 }} />
-          </button>
         </div>
         {/* One status pill (Figma 710:2531–2551, 2026-11-12, Eric), the most pressing: the clock before the course's own state. */}
         {/* At the foot of the title row, whatever the title's length, so every card's pills line up — 16 over the State line,
@@ -165,12 +154,20 @@ export function AtlasCourseCardFigmaV2({
       </div>
       {/* The description (PRD section 3) — or its fallback. The sentence lives HERE, once, rather than on every record. */}
       <p style={DESCRIPTION}>{data.description || 'Description coming soon'}</p>
-      {/* State, Category and Line of authority — the PRD's labels, back on the card (2026-11-23). The sheet keeps them too,
-          with the package paragraph. A fact the course does not have is not drawn. */}
-      <div style={FACTS}>
-        {data.state ? <Fact label="State:" value={data.state} /> : null}
-        {data.category ? <Fact label="Category:" value={data.category} /> : null}
-        {data.lineOfAuthority ? <Fact label="Line of authority:" value={data.lineOfAuthority} /> : null}
+      {/* State | Category | Line of authority — the PRD's labels, back on the card (2026-11-23), in the SHARED card's meta
+          row style (Jillienne, same day, with that card's "Elective | 4 Hours | TX" row selected: "use this style"): the
+          values alone, 12 / 500, hairline rules between them — `CourseMeta`'s row and `MetaRule`, not the 2026-11-12
+          card's "State: Florida" lines. A fact the course does not have draws no rule. The sheet keeps the labelled
+          version with the package paragraph. */}
+      <div style={FACTS} data-testid="atlas-card-facts">
+        {[data.state, data.category, data.lineOfAuthority]
+          .filter((v): v is string => Boolean(v))
+          .map((v, i) => (
+            <span key={v} style={{ display: 'contents' }}>
+              {i > 0 ? <span aria-hidden style={FACT_RULE} /> : null}
+              <span>{v}</span>
+            </span>
+          ))}
       </div>
       <div style={PROGRESS}>
         <div style={PROGRESS_ROW}>
@@ -203,6 +200,7 @@ export function AtlasCourseCardFigmaV2({
         ) : null}
         {detail ? <p style={DATE_LINE}>{detail}</p> : null}
       </div>
+      <div style={ACTIONS_BLOCK}>
       <div style={ACTIONS}>
         {/* The ⋮ and its menu, OFF for now (2026-11-17, Eric: "turn off the kebab menu for now") — built and kept; set
             SHOW_CARD_MENU true to bring it back. The main button takes the row. */}
@@ -290,6 +288,21 @@ export function AtlasCourseCardFigmaV2({
           </button>
         )}
       </div>
+      {/* "Course Details ›" under the button, centred (2026-11-23, Jillienne) — the sheet with the three labels and the
+          package paragraph. Under the title on the card before. */}
+      <button
+        type="button"
+        className="cre-atlas-card-review"
+        onClick={(e) => {
+          e.stopPropagation()
+          setDetailsOpen(true)
+        }}
+        style={DETAILS_LINK}
+      >
+        Course Details
+        <AngleRightSolid size={11} aria-hidden style={{ width: 6 }} />
+      </button>
+      </div>
     </article>
     {/* Outside the article, so a click inside the sheet does not bubble (through the portal) to the card's open. */}
     <AtlasCourseDetailsSheet data={data} open={detailsOpen} onClose={() => setDetailsOpen(false)} />
@@ -306,16 +319,6 @@ function statusFor(data: AtlasCourseCardData, progress: number): AtlasCourseStat
   if (data.completed) return 'completed'
   if (progress > 0 || data.actionLabel === 'Resume Course') return 'in-progress'
   return 'not-started'
-}
-
-/* One run of text, so a long value wraps under its label inside the card rather than widening it (the 2026-11-12 card's
-   `Fact`, back from the sheet). */
-function Fact({ label, value }: { label: string; value: string }) {
-  return (
-    <span style={FACT}>
-      {label} <strong style={FACT_VALUE}>{value}</strong>
-    </span>
-  )
 }
 
 /* 24 in, 12 corners, Primary 100, no outline. A SUBGRID of SEVEN rows — image, title, description, facts, progress, dates,
@@ -369,18 +372,24 @@ const DESCRIPTION: CSSProperties = {
   WebkitBoxOrient: 'vertical',
   overflow: 'hidden',
 }
-/* The facts, as the 2026-11-12 card drew them. */
+/* The facts as ONE ROW, the shared card's `CourseMeta` row verbatim — inline-flex, 8 apart, 12 / 500 — wrapping when a long
+   line of authority needs it, in the card's secondary ink. */
 const FACTS: CSSProperties = {
   display: 'flex',
-  flexDirection: 'column',
-  gap: 6,
+  flexWrap: 'wrap',
+  alignItems: 'center',
+  gap: 8,
+  rowGap: 4,
   paddingTop: 4,
   paddingBottom: 12,
   color: 'var(--color-text-secondary)',
   fontFamily: 'var(--font-body)',
+  fontSize: 12,
+  fontWeight: 500,
+  lineHeight: '16px',
 }
-const FACT: CSSProperties = { display: 'block', fontSize: 11, lineHeight: '18px' }
-const FACT_VALUE: CSSProperties = { fontWeight: 700, fontSize: 10 }
+/* `MetaRule`, verbatim: a 1 × 12 hairline in the subtle border colour. */
+const FACT_RULE: CSSProperties = { width: 1, height: 12, background: 'var(--color-border-subtle)', flex: 'none' }
 /* The date line and the detail under it, in the facts' face; 12 under them before the button. */
 const DATES: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 2, paddingBottom: 12 }
 const DATE_LINE: CSSProperties = {
@@ -431,7 +440,14 @@ const REVIEW_LINK: CSSProperties = {
   whiteSpace: 'nowrap',
   cursor: 'pointer',
 }
-const ACTIONS: CSSProperties = { display: 'flex', gap: 6, alignItems: 'flex-end', alignSelf: 'end' }
+/* ⚠ NO `alignSelf: 'end'` HERE any more (2026-11-23): the row sits inside ACTIONS_BLOCK, a flex COLUMN, where align-self is
+   HORIZONTAL — it shrank the full-width button to its label and pushed it right. The block carries the grid-row alignment. */
+const ACTIONS: CSSProperties = { display: 'flex', gap: 6, alignItems: 'flex-end' }
+/** "Course Details ›" in the text link's style, centred under the full-width button (2026-11-23). */
+const DETAILS_LINK: CSSProperties = { ...REVIEW_LINK, alignSelf: 'center' }
+/* The button row and "Course Details ›" under it, 8 apart, at the foot of the subgrid row (2026-11-23). */
+const ACTIONS_BLOCK: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 8, alignSelf: 'end' }
+
 const KEBAB: CSSProperties = {
   display: 'inline-flex',
   alignItems: 'center',

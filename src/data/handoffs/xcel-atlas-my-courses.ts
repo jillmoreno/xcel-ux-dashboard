@@ -161,7 +161,7 @@ const feature: PrototypeFeature = {
         location:
           'src/components/compass/AtlasCourseCardFigmaV2.tsx, a copy of AtlasCourseCardFigma.tsx (the 2026-11-18 card, never edited). The flag atlas-courses-card-prd-fields chooses between them in MyCoursesSection, src/components/layout/PlatformShell.tsx. The data — one date line per status, the labels, the score, the certificate link — is built in src/data/atlasCourseCards.ts (dateLine, atlasCourseCardFor); the card only draws it.',
         summary:
-          'Section 3 of the My Courses PRD (Chi Wang, 2026-11-16), field by field. A 120px image (a default when the course has none), the title in the heading serif with "Course Details ›" under it, the description or "Description coming soon", the status pill, then State · Category · Line of authority, the status as text beside the 0–100 figure over a bar (aria-valuenow, min 0, max 100), one date line for the status with a detail line under it where the PRD asks for one, and one full-width button. Not Started: "Access ends [date] · N days left", Begin Course. In Progress: the same line, Resume Course. Failed: the same line, "Score: N%" under it, Retake Course. Expired: "Expired: [date]", "Last progress: N%" under it, Purchase Extension. Completed: "Completed: [date] · Score N%", View Certificate — a link, where the card before it drew a disabled "Completed". The days are usableDaysLeft — expiry minus one, the figure the study plan is built on — so the two never disagree.',
+          'Section 3 of the My Courses PRD (Chi Wang, 2026-11-16), field by field. A 120px image (a default when the course has none), the title in the heading serif, the description or "Description coming soon", the status pill, then State | Category | Line of authority as one row in the shared card’s meta style — values only, 12px, hairlines between — the status as text beside the 0–100 figure over a bar (aria-valuenow, min 0, max 100), one date line for the status with a detail line under it where the PRD asks for one, one full-width button, and "Course Details ›" centred under it. Not Started: "Access ends [date] · N days left", Begin Course. In Progress: the same line, Resume Course. Failed: the same line, "Score: N%" under it, Retake Course. Expired: "Expired: [date]", "Last progress: N%" under it, Purchase Extension. Completed: "Completed: [date] · Score N%", View Certificate — a link, where the card before it drew a disabled "Completed". The days are usableDaysLeft — expiry minus one, the figure the study plan is built on — so the two never disagree.',
         variants: [
           { name: 'Not Started', when: 'The learner has not opened the course.', detail: '"Access ends [date] · N days left" and the outline Begin Course.' },
           { name: 'In Progress', when: 'The learner has begun.', detail: 'The same date line, the filled bar, Resume Course.' },
@@ -175,7 +175,7 @@ const feature: PrototypeFeature = {
           { name: 'Begin / Resume / Retake Course', does: 'Opens the course inside the learning shell (?section=course&coursePage=course), as before.' },
           { name: 'Purchase Extension', does: 'Drawn, not wired — see the xcel-purchase-extension handoff.' },
           { name: 'View Certificate', does: 'A link. Inside the learning shell it lands on the shell’s own Certificates & Transcripts page (?section=certificates) — MyCoursesSection re-points it, because AppLayout blocks /my-learning/* from inside the rebrand with a toast and the product route would be a dead end there. The card’s own data.certificateHref is that product route: certificatePdfUrl for the course’s issued certificate, else /my-learning/certificates. Stops propagation, so the click does not also open Home.' },
-          { name: 'Course Details ›', does: 'Opens the Course Details sheet — the three labels again, with the package paragraph.' },
+          { name: 'Course Details ›', does: 'Under the button, centred, at the foot of the card. Opens the Course Details sheet — the three labels again, with the package paragraph. It sat under the title on the card before.' },
           { name: 'The card itself', does: 'Opens Home in this course’s state, everywhere but on its buttons and links.' },
         ],
         statesMatrix: [
@@ -194,6 +194,7 @@ const feature: PrototypeFeature = {
             { role: 'Finished card fill', token: '--color-secondary-100' },
             { role: 'Title face', token: '--font-heading-serif' },
             { role: 'Description, labels, date line', token: '--font-body · --color-text-secondary' },
+            { role: 'Label rules', token: '--color-border-subtle, 1 × 12 — the shared card’s MetaRule' },
             { role: 'Progress fill', token: 'the status pill’s strong fill (statusStrongFill)' },
             { role: 'Expired pill', token: '--color-neutral-800 fill · --color-neutral-50 ink' },
             { role: 'Button', token: '--color-primary-500' },

@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { AccountProvider } from '@/context/AccountContext'
@@ -170,12 +170,22 @@ describe('the description', () => {
 })
 
 describe('the labels, the status and the progress', () => {
-  it('puts state, category and line of authority on every card', () => {
+  /* The shared card's meta-row style (2026-11-23, Jillienne: "use this style for the State | Category | Line of
+     Authority"): the values alone, hairlines between, no "State:" labels. */
+  it('puts state, category and line of authority on every card as one ruled row, values only', () => {
     renderShell(DESIGN_CARDS)
-    const n = ATLAS_MY_COURSES.length
-    expect(screen.getAllByText(/^State:/)).toHaveLength(n)
-    expect(screen.getAllByText(/^Category:/)).toHaveLength(n)
-    expect(screen.getAllByText(/^Line of authority:/)).toHaveLength(n)
+    const rows = screen.getAllByTestId('atlas-card-facts')
+    expect(rows).toHaveLength(ATLAS_MY_COURSES.length)
+    for (const row of rows) {
+      // The leaf spans only — each value sits inside a `display: contents` wrapper that carries the same text.
+      const values = [...row.querySelectorAll('span:not([aria-hidden])')].filter((s) => s.children.length === 0).map((s) => s.textContent)
+      expect(values).toHaveLength(3)
+      expect(values[0]).toBe('Florida')
+      expect(row.querySelectorAll('[aria-hidden]')).toHaveLength(2)
+    }
+    expect(screen.queryByText(/^State:/)).toBeNull()
+    expect(screen.getAllByText('Licensing').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('Life and Health').length).toBeGreaterThan(0)
   })
 
   it('exposes the progress as a number — aria-valuenow between 0 and 100 — beside the status as text', () => {
@@ -211,6 +221,20 @@ describe('the Expired pill', () => {
   })
 })
 
+describe('Course Details', () => {
+  /* 2026-11-23, Jillienne: "course details link should be under the primary cta at bottom of card". Under the title on
+     the card before — pinned under "the flag off". */
+  it('sits under the button, not under the title, on the PRD card', () => {
+    renderShell(DESIGN_CARDS)
+    const card = screen.getByRole('article', { name: 'Florida Life and Health Pre-licensing' })
+    const button = within(card).getByRole('button', { name: 'Resume Course' })
+    const details = within(card).getByRole('button', { name: 'Course Details' })
+    // DOM order IS visual order here — the link follows the button, and both come after the title.
+    expect(button.compareDocumentPosition(details) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    expect(within(card).getByRole('heading').compareDocumentPosition(details) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+  })
+})
+
 describe('the flag off', () => {
   it('draws the 2026-11-18 card untouched — the disabled Completed button and no date line', () => {
     renderShell(`section=courses&version=${BASELINE}&ff=atlas-courses-from-library:off,atlas-courses-card-prd-fields:off`)
@@ -218,6 +242,14 @@ describe('the flag off', () => {
     expect(screen.queryByRole('link', { name: 'View Certificate' })).toBeNull()
     expect(screen.queryByTestId('atlas-card-date')).toBeNull()
     expect(screen.queryByText('Description coming soon')).toBeNull()
+  })
+
+  it('keeps Course Details under the title', () => {
+    renderShell(`section=courses&version=${BASELINE}&ff=atlas-courses-from-library:off,atlas-courses-card-prd-fields:off`)
+    const card = screen.getByRole('article', { name: 'Florida Life and Health Pre-licensing' })
+    const button = within(card).getByRole('button', { name: 'Resume Course' })
+    const details = within(card).getByRole('button', { name: 'Course Details' })
+    expect(details.compareDocumentPosition(button) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
   })
 
   it('keeps the Expired pill on Error 100 — the pill catalog is untouched', () => {
