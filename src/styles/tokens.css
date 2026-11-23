@@ -7614,6 +7614,11 @@ a.cre-library-card-title::after {
      live page 2026-11-20 for the Log In flow: the form's grey ground. Its
      Arial and link blue went the same day — the card takes Keycloak's. */
   --color-e2e-ocd-ground: #f5f5f5;
+  /* XCEL'S TOOLTIP, measured off the live site 2026-11-23: the "?" icon's
+     dark grey, the bubble's black text, and its soft shadow. */
+  --color-e2e-help-icon: #3a3a3a;
+  --color-e2e-tooltip-ink: #000000;
+  --color-e2e-tooltip-shadow: rgb(27 33 44 / 0.12);
   /* ⚠ THE INVITE EMAIL'S MAIL CLIENT — 2026-10-19. A MOCK OF SOMEBODY
      ELSE'S PRODUCT, so these are fixed rather than brand tokens: the one
      thing that page has to say is "you are not in XCEL yet", and a webmail

@@ -34,6 +34,16 @@
  *
  *         node scripts/capture-invite-v3-screens.mjs --only=xcel-log-in [baseUrl]
  *
+ * ⚠ AND ONE COMPONENT, WHEREVER IT IS — `--title=<component title>` keeps
+ * only that component's shots and merges them the same way (2026-11-23,
+ * Afsana: the state and line of authority screens still had the old "i").
+ * Pair it with `--only=<flow ids, comma-separated>` to walk just the flows
+ * that reach it; the component's flows and seen-in lists come out the same,
+ * since no other walk reaches it.
+ *
+ *         node scripts/capture-invite-v3-screens.mjs --only=direct-email,qr \
+ *           --title="Select your state and line of authority" [baseUrl]
+ *
  * Playwright is not a repo dependency. This resolves `playwright-core` from
  * the npx cache (the same copy `npx playwright` installs), or from
  * PLAYWRIGHT_CORE if set to a module path.
@@ -80,7 +90,10 @@ const { chromium } = loadPlaywright()
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const OUT = path.join(ROOT, 'public/invite-v3-screens')
 const ARGS = process.argv.slice(2)
-const ONLY = ARGS.find((a) => a.startsWith('--only='))?.slice('--only='.length) ?? null
+const ONLY = ARGS.find((a) => a.startsWith('--only='))?.slice('--only='.length).split(',') ?? null
+const TITLE = ARGS.find((a) => a.startsWith('--title='))?.slice('--title='.length) ?? null
+/* Either one means a partial run, merged into the last full run's manifest. */
+const PARTIAL = Boolean(ONLY || TITLE)
 const BASE = (ARGS.find((a) => !a.startsWith('--')) ?? 'http://localhost:5210').replace(/\/$/, '')
 /* 1440 wide, not 1280 (2026-11-18, Afsana: the product pages "appear to not
    capture the full original width"). Eric's product page footer runs to
@@ -782,9 +795,9 @@ async function main() {
   }
   const browser = await chromium.launch()
   const failures = []
-  const plan = ONLY ? PLAN.filter((f) => f.id === ONLY) : PLAN
+  const plan = ONLY ? PLAN.filter((f) => ONLY.includes(f.id)) : PLAN
   if (!plan.length) {
-    console.error(`capture-invite-v3-screens: no flow "${ONLY}".`)
+    console.error(`capture-invite-v3-screens: no flow "${ONLY.join(',')}".`)
     process.exit(1)
   }
   for (const flow of plan) {
@@ -823,24 +836,33 @@ async function main() {
   const today = new Date().toISOString().slice(0, 10)
   /* A fresh folder each full run: old files would otherwise linger. `--only`
      keeps the folder and clears just the components it re-captures. */
-  const previous = ONLY && fs.existsSync(manifestPath) ? JSON.parse(fs.readFileSync(manifestPath, 'utf8')) : null
-  if (!ONLY && fs.existsSync(OUT)) fs.rmSync(OUT, { recursive: true })
-  const captured = group(ALL_SHOTS).map((c) => {
+  const previous = PARTIAL && fs.existsSync(manifestPath) ? JSON.parse(fs.readFileSync(manifestPath, 'utf8')) : null
+  if (!PARTIAL && fs.existsSync(OUT)) fs.rmSync(OUT, { recursive: true })
+  const shots = TITLE ? ALL_SHOTS.filter((s) => s.title === TITLE) : ALL_SHOTS
+  if (TITLE && !shots.length) {
+    console.error(`capture-invite-v3-screens: no shots of "${TITLE}" — nothing written.`)
+    process.exit(1)
+  }
+  const captured = group(shots).map((c) => {
     const id = slugify(c.title)
     const dir = path.join(OUT, folder[c.kind], id)
-    if (ONLY && fs.existsSync(dir)) fs.rmSync(dir, { recursive: true })
+    if (PARTIAL && fs.existsSync(dir)) fs.rmSync(dir, { recursive: true })
     fs.mkdirSync(dir, { recursive: true })
     const states = c.states.map((st, n) => {
       const file = `${folder[c.kind]}/${id}/${String(n + 1).padStart(2, '0')}-${slugify(st.state)}.png`
       fs.writeFileSync(path.join(OUT, file), st.buf)
       return { file, state: st.state, seenIn: st.seenIn }
     })
-    return tagged({ id: `${c.kind}-${id}`, title: c.title, kind: c.kind, flows: c.flows, states, ...(ONLY ? { capturedAt: today } : {}) })
+    return tagged({ id: `${c.kind}-${id}`, title: c.title, kind: c.kind, flows: c.flows, states, ...(PARTIAL ? { capturedAt: today } : {}) })
   })
   /* Merged: the earlier run's components, with these replacing any of the
-     same id — the run's own date unchanged, since the rest are its. */
+     same id IN ITS PLACE, so the Screens tab's order does not move, and new
+     ones after — the run's own date unchanged, since the rest are its. */
   const components = previous
-    ? [...previous.components.filter((c) => !captured.some((n) => n.id === c.id)).map(tagged), ...captured]
+    ? [
+        ...previous.components.map((c) => captured.find((n) => n.id === c.id) ?? tagged(c)),
+        ...captured.filter((n) => !previous.components.some((c) => c.id === n.id)),
+      ]
     : captured
   const capturedAt = previous?.capturedAt ?? today
   fs.writeFileSync(manifestPath, JSON.stringify({ capturedAt, components }, null, 2) + '\n')

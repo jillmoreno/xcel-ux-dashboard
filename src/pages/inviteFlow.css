@@ -245,41 +245,78 @@
   outline-offset: 2px;
 }
 
-/* THE LINE-OF-AUTHORITY TOOLTIP — Invite Flow V3, 2026-10-30, from Afsana's
-   `xcel-b2b2c-email-flow.html` (`.loa-info` / `.loa-tip` there). Shown on
-   hover and on keyboard focus of the ⓘ beside the label. */
-.cre-e2e-loa-tip {
+/* XCEL'S TOOLTIP, AS THE LIVE SITE DRAWS IT — 2026-11-23, Afsana, from the
+   storefront's own: a 20px "?" in dark grey, and above it a white bubble,
+   black 12/16 text centred, 12px padding, 8px corners, a soft shadow and a
+   white caret pointing back at the icon. One look for every V3 tooltip (the
+   Log In email field's, the line of authority's), so a purchase path does
+   not mix styles.
+   ⚠ WHAT WE DO NOT COPY: the live one opens on hover only and its text sits
+   inside the button. Ours open on keyboard focus (and the email one on a
+   tap), and the button's tap area is 44 × 45 though the icon is 20 × 21. */
+.cre-xcel-help {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 21px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--color-e2e-help-icon);
+  cursor: pointer;
+}
+/* The tap area — invisible, so nothing on screen moves. */
+.cre-xcel-help::before {
+  content: '';
+  position: absolute;
+  inset: -12px;
+}
+.cre-xcel-tip {
   position: absolute;
   left: 50%;
-  bottom: calc(100% + 8px);
+  bottom: calc(100% + 10px);
   transform: translateX(-50%);
-  width: 260px;
-  padding: 10px 12px;
-  border-radius: 6px;
-  background: var(--color-text-primary);
-  color: var(--color-fixed-light);
+  width: max-content;
+  max-width: 300px;
+  padding: 12px;
+  border-radius: 8px;
+  background: var(--color-fixed-light);
+  color: var(--color-e2e-tooltip-ink);
+  box-shadow: 0 8px 16px -2px var(--color-e2e-tooltip-shadow);
   font-family: var(--font-e2e-avenir);
   font-weight: 400;
   font-size: 12px;
-  line-height: 17px;
+  line-height: 16px;
+  text-align: center;
   letter-spacing: normal;
   text-transform: none;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 0.12s ease;
+  white-space: normal;
   pointer-events: none;
   z-index: 5;
-  white-space: normal;
 }
-.cre-e2e-loa-tip::after {
+/* The live site's 10px caret. */
+.cre-xcel-tip::after {
   content: '';
   position: absolute;
   top: 100%;
   left: 50%;
   transform: translateX(-50%);
-  border: 6px solid transparent;
-  border-top-color: var(--color-text-primary);
+  border: 5px solid transparent;
+  border-top-color: var(--color-fixed-light);
+}
+
+/* THE LINE-OF-AUTHORITY TOOLTIP — Invite Flow V3, 2026-10-30, from Afsana's
+   `xcel-b2b2c-email-flow.html` (`.loa-info` / `.loa-tip` there). Shown on
+   hover and on keyboard focus of the icon beside the label. Its look is
+   `.cre-xcel-tip`'s since 2026-11-23; this keeps its width and its
+   show-and-hide. */
+.cre-e2e-loa-tip {
+  width: 260px;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.12s ease;
 }
 .cre-e2e-loa-info:hover .cre-e2e-loa-tip,
 .cre-e2e-loa-info:focus .cre-e2e-loa-tip {

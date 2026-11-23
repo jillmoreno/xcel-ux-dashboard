@@ -15,7 +15,7 @@ import {
 } from '@/components/e2e/VerifyEmailModalV3'
 import { LOADING_HANDOFF_MS } from '@/components/e2e/XcelLoadingPage'
 import { useFeatureFlag } from '@/context/FeatureFlagContext'
-import { CircleInfo } from '@/icons'
+import { HelpCircle } from '@/icons'
 import {
   INVITE_V3_LOG_IN_ACCOUNT_FLAG,
   LOG_IN_PATHS,
@@ -214,12 +214,14 @@ export function XcelOcdLogInPage() {
                   onFocus={() => setTip(true)}
                   onMouseLeave={() => setTip(false)}
                   onBlur={() => setTip(false)}
-                  style={OCD_INFO}
+                  className="cre-xcel-help"
                 >
-                  <CircleInfo size={14} aria-hidden />
+                  <HelpCircle size={20} aria-hidden />
                 </button>
+                {/* The live site's tooltip, above the icon (2026-11-23,
+                    Afsana) — `.cre-xcel-tip` in inviteFlow.css. */}
                 {tip ? (
-                  <span id={tipId} role="tooltip" style={OCD_TIP}>
+                  <span id={tipId} role="tooltip" className="cre-xcel-tip">
                     Enter email or username
                   </span>
                 ) : null}
@@ -445,41 +447,6 @@ const OCD_LABEL: CSSProperties = {
   fontWeight: 800,
   lineHeight: '19px',
   color: 'var(--color-text-primary)',
-}
-
-/* Grey, its message on hover (2026-11-20, Afsana) — and on focus or a tap,
-   so a keyboard or a phone can read it too. */
-const OCD_INFO: CSSProperties = {
-  display: 'inline-flex',
-  padding: 0,
-  border: 'none',
-  background: 'transparent',
-  color: 'var(--color-text-secondary)',
-  cursor: 'pointer',
-}
-
-/* ⚠ 24 TALL, SO IT STAYS IN THE LABEL'S ROW (2026-11-23, Afsana: it was
-   "bleeding on the field"). Centred on the icon, a tooltip taller than about
-   27px reaches the field's focus ring 6px below the 19px row — 8px padding
-   and a 17px line made it 33. Above the icon was the other fix, but it
-   covered the Log in heading. ⚠ ONE LINE ONLY: a message that wraps grows
-   back into the field. */
-const OCD_TIP: CSSProperties = {
-  position: 'absolute',
-  left: 22,
-  top: '50%',
-  transform: 'translateY(-50%)',
-  zIndex: 1,
-  width: 'max-content',
-  maxWidth: 220,
-  padding: '4px 8px',
-  borderRadius: 4,
-  background: 'var(--color-neutral-950)',
-  color: 'var(--color-fixed-light)',
-  fontFamily: 'var(--font-e2e-avenir)',
-  fontSize: 12,
-  lineHeight: '16px',
-  fontWeight: 400,
 }
 
 /* Keycloak's wrong-password line (`VerifyEmailModalV3`'s INVALID). */

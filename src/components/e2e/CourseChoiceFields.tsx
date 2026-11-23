@@ -1,4 +1,5 @@
 import { useState, type CSSProperties } from 'react'
+import { HelpCircle } from '@/icons'
 import { FINDER_LINES_OF_AUTHORITY, type FinderLineOfAuthority } from '@/data/xcelCourseFinder'
 import { INVITE_STATES } from '@/data/inviteMissingDetails'
 
@@ -132,12 +133,16 @@ export function CourseChoiceFields({
         <legend style={{ ...LABEL, marginBottom: 6 }}>
           {loaLabel}
           <span aria-hidden>*</span>
-          <span className="cre-e2e-loa-info" role="button" tabIndex={0} aria-label="What is a line of authority?" style={INFO}>
-            <svg aria-hidden viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="12" cy="12" r="10" />
-              <path d="M12 16v-4M12 8h.01" />
-            </svg>
-            <span className="cre-e2e-loa-tip" role="tooltip">
+          {/* The live site's "?" and tooltip (2026-11-23, Afsana) — see
+              `.cre-xcel-help` in inviteFlow.css. */}
+          <span
+            className="cre-xcel-help cre-e2e-loa-info"
+            role="button"
+            tabIndex={0}
+            aria-label="What is a line of authority?"
+          >
+            <HelpCircle size={20} aria-hidden />
+            <span className="cre-xcel-tip cre-e2e-loa-tip" role="tooltip">
               Your line of authority is the type of insurance your license will let you sell.
             </span>
           </span>
@@ -237,14 +242,6 @@ const SEARCH_ICON: CSSProperties = {
   transform: 'translateY(-50%)',
   color: 'var(--color-neutral-400)',
   pointerEvents: 'none',
-}
-
-const INFO: CSSProperties = {
-  position: 'relative',
-  display: 'inline-flex',
-  alignItems: 'center',
-  color: 'var(--color-text-secondary)',
-  cursor: 'help',
 }
 
 const PILLS: CSSProperties = { display: 'flex', flexWrap: 'wrap', gap: 8 }
