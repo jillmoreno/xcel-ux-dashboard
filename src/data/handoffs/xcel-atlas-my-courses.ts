@@ -164,11 +164,12 @@ const feature: PrototypeFeature = {
         summary:
           'Section 3 of the My Courses PRD (Chi Wang, 2026-11-16), field by field. A 120px image (a default when the course has none) with the status pill over its top-left corner, the title in the heading serif, the description or "Description coming soon", the status pill, then State | Category | Line of authority as one row in the shared card’s meta style — the state abbreviated ("FL"), values only, 12px, hairlines between — the status as text beside the 0–100 figure over a bar on a light grey track (aria-valuenow, min 0, max 100), one date line for the status with a detail line under it where the PRD asks for one, one full-width button, and "Course Details ›" centred under it. Not Started: "Access ends [date] · N days left", Begin Course. In Progress: the same line, Resume Course. Failed: the same line, "Score: N%" under it, Retake Course. Expired: "Expired: [date]", "Last progress: N%" under it, Purchase Extension. Completed: "Completed: [date] · Score N%", View Certificate — a link, where the card before it drew a disabled "Completed". The days are usableDaysLeft — expiry minus one, the figure the study plan is built on — so the two never disagree.',
         variants: [
+          { name: 'Every status', when: 'Always.', detail: 'One fill for every card — a lightened Secondary 100 with a 1px Primary 100 rule inside the edge. The finished card no longer steps back to a different ground (it did on the card before this one).', why: 'Asked for with the finished card selected: one material, so status is said by the pill and the line, not by the card’s colour.' },
           { name: 'Not Started', when: 'The learner has not opened the course.', detail: '"Access ends [date] · N days left" and the outline Begin Course.' },
           { name: 'In Progress', when: 'The learner has begun.', detail: 'The same date line, the filled bar, Resume Course.' },
           { name: 'Failed', when: 'Finished, not passed.', detail: 'The Failed pill, "Access ends [date] · N days left", "Score: N%" under it when the platform knows one, Retake Course. The status text still reads "Progress Made" — see the decisions.' },
           { name: 'Expired', when: 'Access ended before the learner finished.', detail: 'The Expired pill in dark charcoal — Neutral 800 with Neutral 50 ink, where the other pills keep their pale fills — then "Expired: [date]", "Last progress: N%" under it, Purchase Extension in the outline style — see the decisions.', why: 'A pale pink pill read as a warning still in play; charcoal reads as over.' },
-          { name: 'Completed', when: 'The course is finished.', detail: '"Completed: [date] · Score N%" and View Certificate, a link to the course’s certificate — the certificates page when none is issued. The card steps back to Secondary 100.', why: 'The PRD’s "No dead ends": a disabled button on a finished course was the one dead end on the page.' },
+          { name: 'Completed', when: 'The course is finished.', detail: '"Completed: [date] · Score N%" and View Certificate, a link to the course’s certificate — the certificates page when none is issued.', why: 'The PRD’s "No dead ends": a disabled button on a finished course was the one dead end on the page.' },
           { name: 'No description', when: 'The course has none.', detail: '"Description coming soon" in the description’s place, so the row never draws empty.', why: 'The PRD names the fallback; an empty row would read as a bug.' },
           { name: 'The CE package card', when: 'demo-ny-pclh-refresher-ce, the sixth design card.', detail: 'Out of scope for Jan 12 and left as it was: its authored date, no description (so the fallback shows), no score. Drawn by the same card from unchanged data.', why: 'A CE package is several courses sold as one purchase — a different product shape the PRD’s course-card section does not cover.' },
         ],
@@ -191,8 +192,8 @@ const feature: PrototypeFeature = {
         ],
         designSpec: {
           tokens: [
-            { role: 'Card fill', token: '--color-primary-100' },
-            { role: 'Finished card fill', token: '--color-secondary-100' },
+            { role: 'Card fill, every status', token: 'color-mix(--color-secondary-100 50%, --color-neutral-50) — a lighter Secondary 100 (2026-11-23)' },
+            { role: 'Card edge', token: '--color-primary-100, a 1px rule inside the edge' },
             { role: 'Title face', token: '--font-heading-serif' },
             { role: 'Description, labels, date line', token: '--font-body · --color-text-secondary' },
             { role: 'Label rules', token: '--color-border-subtle, 1 × 12 — the shared card’s MetaRule' },

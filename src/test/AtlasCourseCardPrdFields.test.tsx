@@ -247,6 +247,20 @@ describe('the three label layouts — the design bar’s atlas-courses-card-meta
   })
 })
 
+describe('the card fill', () => {
+  /* 2026-11-23, Jillienne, with the completed card selected: "all cards will have this background color, slightly lighter".
+     One fill for every status — the finished card no longer steps back from the rest. */
+  it('is the same lightened Secondary 100 on an unfinished card and a finished one', () => {
+    renderShell(DESIGN_CARDS)
+    const inProgress = screen.getByRole('article', { name: 'Florida Life and Health Pre-licensing' })
+    const done = screen.getByRole('article', { name: 'FL Preferred Business Practices for the Insurance Producer' })
+    expect(inProgress.style.background).toContain('--color-secondary-100')
+    expect(inProgress.style.background).toContain('color-mix')
+    expect(done.style.background).toBe(inProgress.style.background)
+    expect(inProgress.style.boxShadow).toContain('--color-primary-100')
+  })
+})
+
 describe('the status pill on the image', () => {
   /* 2026-11-23, Jillienne: "have the status badge be in the top left of the image area" — the shared card's badges. */
   it('sits inside the image frame, before the title', () => {

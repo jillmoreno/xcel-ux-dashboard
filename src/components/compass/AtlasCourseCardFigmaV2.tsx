@@ -123,7 +123,9 @@ export function AtlasCourseCardFigmaV2({
       // The whole card opens Home in this course; a hover lift and a focus ring say so (the scan's finding — the card was
       // clickable with nothing but a cursor to show it). `.cre-atlas-card-v2` in tokens.css.
       className={onOpen ? 'cre-atlas-card-v2' : undefined}
-      style={{ ...CARD, ...(steppedBack ? CARD_DONE : null), ...(onOpen ? { cursor: 'pointer' } : null) }}
+      // ONE FILL FOR EVERY CARD (2026-11-23, Jillienne, with the completed card selected: "all cards will have this background
+      // color, slightly lighter") — the finished card no longer steps back; `steppedBack` still picks the links and the bar.
+      style={{ ...CARD, ...(onOpen ? { cursor: 'pointer' } : null) }}
     >
       {/* The image, with the status pill over its top-left corner (2026-11-23, Jillienne — the shared card's badges sit the
           same way). One pill, the most pressing: the clock before the course's own state. Expired is charcoal here. */}
@@ -261,8 +263,7 @@ export function AtlasCourseCardFigmaV2({
               e.stopPropagation()
               setMenuOpen((o) => !o)
             }}
-            // On a completed card, the card's own Secondary 100 (2026-11-12, Eric).
-            style={steppedBack ? { ...KEBAB, background: CARD_DONE.background } : KEBAB}
+            style={KEBAB}
           >
             <EllipsisVerticalSolid aria-hidden style={{ width: 4, height: 13.5 }} />
           </button>
@@ -377,12 +378,14 @@ const CARD: CSSProperties = {
   padding: 24,
   boxSizing: 'border-box',
   borderRadius: 'var(--atlas-card-radius, 12px)',
-  background: 'var(--color-primary-100)',
+  /* THE FILL, EVERY CARD (2026-11-23, Jillienne): the finished card's Secondary 100, "slightly lighter" — mixed half with
+     Neutral 50, which is white here and inverts with the ramp in the dark theme, so the mix stays a tint of the card's own
+     ground rather than a fixed white. The 1 Primary 100 rule inside the edge comes with it. Primary 100 on the unfinished
+     cards and Secondary 100 on the finished ones was the 2026-11-12 card's split; that card keeps it. */
+  background: 'color-mix(in srgb, var(--color-secondary-100) 50%, var(--color-neutral-50))',
+  boxShadow: 'inset 0 0 0 1px var(--color-primary-100)',
   minWidth: 0,
 }
-/* A completed card steps back (2026-11-12, Eric): white, with a 1 Primary 100 rule drawn inside its edge so nothing moves. */
-// Its fill Secondary 100 (same day, Eric; white, then half Primary 100).
-const CARD_DONE: CSSProperties = { background: 'var(--color-secondary-100)', boxShadow: 'inset 0 0 0 1px var(--color-primary-100)' }
 const IMAGE: CSSProperties = { display: 'block', width: '100%', height: 120, objectFit: 'cover', borderRadius: 6 }
 /* The image's frame, so the pill can sit over it — 8 in from the top-left, the shared card's inset (2026-11-23). */
 const IMAGE_WRAP: CSSProperties = { position: 'relative' }
