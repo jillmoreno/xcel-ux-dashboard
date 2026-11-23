@@ -4907,13 +4907,17 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        Home's course head carries Begin / Resume / Purchase Extension / View
        Certificate. The hover lift and the focus ring stay, which is what says
        the card is clickable with nothing else on it. The answer to the scan's
-       "four ways to act on one card", as a variant to compare. PRD card only. */
+       "four ways to act on one card", as a variant to compare. PRD card only.
+
+       ⚠ HIDDEN IS THE DEFAULT (2026-11-23, Jillienne, the same hour, with the
+       hidden arm in front of her: "set this current view as the default").
+       Shown stays on the bar for the comparison. */
     group: 'Widgets',
     label: 'My Courses card — actions',
     description:
-      'Whether the PRD card carries its own button and links. Shown (default): the status\u2019s button, "Course Details \u203a" under it, "Review Course \u203a" on a finished card. Hidden: none \u2014 the card is the one action, opening Home with this course active, where the buttons are. PRD card only.',
+      'Whether the PRD card carries its own button and links. Hidden (default, 2026-11-23): none \u2014 the card is the one action, opening Home with this course active, where the buttons are. Shown: the status\u2019s button, "Course Details \u203a" under it, "Review Course \u203a" on a finished card. PRD card only.',
     defaultEnabled: true,
-    defaultVariant: 'shown',
+    defaultVariant: 'hidden',
     variants: [
       { value: 'shown', label: 'Shown' },
       { value: 'hidden', label: 'Hidden — the card opens Home' },

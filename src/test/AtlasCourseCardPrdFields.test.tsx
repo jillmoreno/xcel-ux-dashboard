@@ -1,3 +1,4 @@
+import type React from 'react'
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { afterEach, describe, expect, it, vi } from 'vitest'
@@ -24,7 +25,10 @@ afterEach(cleanup)
 
 const BASELINE = 'jill-atlas-main'
 /* The Atlas card, the PRD copy of it. Library on or off is each test's own. */
-const PINS = 'atlas-pages-quick-links:hidden,atlas-courses-card-style:atlas,atlas-courses-card-prd-fields:on'
+/* ⚠ `atlas-courses-card-actions:shown` IS PINNED HERE because the default became Hidden on 2026-11-23 ("set this current
+   view as the default"), and most of this file describes the button, the links and the date line beside them. The default
+   itself is pinned under "the actions toggle". */
+const PINS = 'atlas-pages-quick-links:hidden,atlas-courses-card-style:atlas,atlas-courses-card-prd-fields:on,atlas-courses-card-actions:shown'
 
 function renderShell(rawQuery: string) {
   const query = rawQuery.includes('ff=') ? rawQuery.replace('ff=', `ff=${PINS},`) : `${rawQuery}&ff=${PINS}`
@@ -40,6 +44,18 @@ function renderShell(rawQuery: string) {
             </JumpBackInPanelProvider>
           </LearningPathsPanelProvider>
         </FeatureFlagProvider>
+      </AccountProvider>
+    </MemoryRouter>,
+  )
+}
+
+/** The card on its own, actions SHOWN (the default is Hidden since 2026-11-23) — for the tests about its link and its click. */
+function renderCard(ui: React.ReactElement) {
+  window.history.replaceState({}, '', '/dashboard-rebrand?demo=1&ff=atlas-courses-card-actions:shown')
+  return render(
+    <MemoryRouter initialEntries={['/dashboard-rebrand?demo=1&ff=atlas-courses-card-actions:shown']}>
+      <AccountProvider>
+        <FeatureFlagProvider>{ui}</FeatureFlagProvider>
       </AccountProvider>
     </MemoryRouter>,
   )
@@ -86,11 +102,7 @@ describe('the Completed card', () => {
 
   it('links to the product route when nothing re-points it', () => {
     const done = ATLAS_MY_COURSES.find((c) => c.completed)!
-    render(
-      <MemoryRouter>
-        <AtlasCourseCardFigmaV2 data={done} />
-      </MemoryRouter>,
-    )
+    renderCard(<AtlasCourseCardFigmaV2 data={done} />)
     expect(screen.getByRole('link', { name: 'View Certificate' }).getAttribute('href')).toBe('/my-learning/certificates')
   })
 
@@ -111,11 +123,7 @@ describe('the Completed card', () => {
   it('does not open Home when the link is clicked, while the card around it still does', () => {
     const onOpen = vi.fn()
     const done = ATLAS_MY_COURSES.find((c) => c.completed)!
-    render(
-      <MemoryRouter>
-        <AtlasCourseCardFigmaV2 data={done} onOpen={onOpen} />
-      </MemoryRouter>,
-    )
+    renderCard(<AtlasCourseCardFigmaV2 data={done} onOpen={onOpen} />)
     fireEvent.click(screen.getByRole('link', { name: 'View Certificate' }))
     expect(onOpen).not.toHaveBeenCalled()
     fireEvent.click(screen.getByRole('article', { name: done.title }))
@@ -286,10 +294,34 @@ describe('the description toggle — atlas-course-description', () => {
 describe('the actions toggle — atlas-courses-card-actions', () => {
   /* 2026-11-23, Jillienne: "a toggle variant where all of the ctas and links are hidden. user clicks on card, it loads
      course as the active course on atlas home, all the available ctas are right there." */
-  it('is a design-bar control, shown by default', () => {
+  it('is a design-bar control, HIDDEN by default (2026-11-23: "set this current view as the default")', () => {
     const flag = FEATURE_FLAGS.find((f) => f.key === 'atlas-courses-card-actions')!
     expect(flag.surface).toBe('design')
-    expect(flag.defaultVariant).toBe('shown')
+    expect(flag.defaultVariant).toBe('hidden')
+  })
+
+  it('draws no button and no link with nothing pinned — the committed default', () => {
+    // Every pin but the actions one, so this reads the flag's own default.
+    window.history.replaceState({}, '', `/dashboard-rebrand?demo=1&section=courses&version=${BASELINE}&ff=atlas-pages-quick-links:hidden,atlas-courses-card-style:atlas,atlas-courses-card-prd-fields:on,atlas-courses-from-library:off`)
+    render(
+      <MemoryRouter initialEntries={[window.location.pathname + window.location.search]}>
+        <AccountProvider>
+          <FeatureFlagProvider>
+            <LearningPathsPanelProvider>
+              <JumpBackInPanelProvider>
+                <PlatformShell />
+              </JumpBackInPanelProvider>
+            </LearningPathsPanelProvider>
+          </FeatureFlagProvider>
+        </AccountProvider>
+      </MemoryRouter>,
+    )
+    const cards = screen.getAllByRole('article')
+    expect(cards).toHaveLength(ATLAS_MY_COURSES.length)
+    for (const card of cards) {
+      expect(within(card).queryAllByRole('button')).toHaveLength(0)
+      expect(within(card).queryAllByRole('link')).toHaveLength(0)
+    }
   })
 
   it('hidden: no button, no link on any card — the card itself still opens Home', () => {
@@ -330,8 +362,17 @@ describe('the status pill on the image', () => {
     const card = screen.getByRole('article', { name: 'Florida Life and Health Pre-licensing' })
     const frame = within(card).getByTestId('atlas-card-image')
     expect(frame.querySelector('img')).toBeTruthy()
-    expect(within(frame).getByText('Due Soon')).toBeTruthy()
+    // The Due Soon pill counts down (2026-11-23): "Access Ends 13 days" — the date line's own figure.
+    expect(within(frame).getByText('Access Ends 13 days')).toBeTruthy()
+    expect(within(card).getByTestId('atlas-card-date').textContent).toContain('13 days left')
     expect(frame.compareDocumentPosition(within(card).getByRole('heading')) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+  })
+
+  it('lays the card out as its own column — off the shared subgrid rows (2026-11-23)', () => {
+    renderShell(DESIGN_CARDS)
+    const card = screen.getByRole('article', { name: 'Florida Life and Health Pre-licensing' })
+    expect(card.style.display).toBe('flex')
+    expect(card.style.gridTemplateRows).toBe('')
   })
 
   it('draws a light grey track under the fill', () => {
@@ -354,7 +395,7 @@ describe('the Expired pill', () => {
 
   it('leaves the other five pills on the catalog’s fills', () => {
     renderShell(DESIGN_CARDS)
-    expect(screen.getByText('Due Soon', { selector: 'span' }).style.background).toContain('--color-warning-300')
+    expect(screen.getByText(/^Access Ends \d+ days?$/, { selector: 'span' }).style.background).toContain('--color-warning-300')
     expect(screen.getAllByText('Failed', { selector: 'span' })[0].style.background).toContain('--color-error-100')
   })
 })

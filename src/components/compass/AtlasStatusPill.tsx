@@ -46,6 +46,7 @@ export function AtlasStatusPill({
   status,
   fill: fillOverride,
   ink,
+  label: labelOverride,
 }: {
   status: AtlasCourseStatus
   /** A different fill for this one pill (2026-11-23, Jillienne: the PRD card's Expired pill in charcoal). ADDITIVE — a
@@ -53,8 +54,12 @@ export function AtlasStatusPill({
   fill?: string
   /** The label and icon colour to go with it; Neutral 800 when absent. */
   ink?: string
+  /** A different label for this one pill (2026-11-23, Jillienne: the PRD card's Due Soon reads "Access Ends N days").
+   *  Additive like `fill` — absent, the catalog's label. */
+  label?: string
 }) {
-  const { label, fill, Icon } = PILLS[status]
+  const { label: catalogLabel, fill, Icon } = PILLS[status]
+  const label = labelOverride ?? catalogLabel
   return (
     <span style={{ ...PILL, background: fillOverride ?? fill, ...(ink ? { color: ink } : null) }}>
       {/* 1 lower than centred (2026-11-12, Eric). */}

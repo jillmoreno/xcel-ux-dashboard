@@ -112,7 +112,8 @@ describe('My Courses on the Atlas baseline', () => {
      (`atlas-courses-from-library`), and the XCEL fixtures hold several
      in-progress courses — one button each. */
   it('draws the Atlas card when the flag says atlas — with its button', () => {
-    renderShell(`section=courses&version=${BASELINE}&ff=atlas-courses-card-style:atlas`)
+    // The PRD card's actions are Hidden by default since 2026-11-23; this test is about the card ARM, so it pins them shown.
+    renderShell(`section=courses&version=${BASELINE}&ff=atlas-courses-card-style:atlas,atlas-courses-card-actions:shown`)
     expect(screen.getAllByRole('button', { name: 'Resume Course' }).length).toBeGreaterThan(0)
   })
 

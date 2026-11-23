@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom'
 import { AngleRightSolid, EllipsisVerticalSolid, LocationDotRegular } from '@/icons'
 import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { STATE_ABBR } from '@/data/catalogFixtures'
+import { usableDaysLeft } from '@/data/courseExpiry'
+import { FIXTURE_TODAY } from '@/data/myCoursesFixtures'
 import { AtlasStatusPill, statusStrongFill, type AtlasCourseStatus } from './AtlasStatusPill'
 import type { AtlasCourseCardData } from './AtlasCourseCard'
 import { AtlasCourseDetailsSheet } from './AtlasCourseDetailsSheet'
@@ -82,6 +84,11 @@ export function AtlasCourseCardFigmaV2({
   /* NO BUTTON, NO LINKS (2026-11-23, Jillienne) — the design bar's `atlas-courses-card-actions`: the card is the one action
      and Home has the buttons. The hover lift and focus ring (`.cre-atlas-card-v2`) are what is left to say so. */
   const actionsShown = useFeatureFlag('atlas-courses-card-actions').variant !== 'hidden'
+  /* THE DUE SOON PILL COUNTS DOWN (2026-11-23, Jillienne, with the pill selected: "Access Ends <##> days") — the same
+     `usableDaysLeft` the date line prints, so the two never disagree. A card with no date keeps "Due Soon". */
+  const pillStatus = statusFor(data, progress)
+  const daysLeft = pillStatus === 'due-soon' ? usableDaysLeft(data.expiresAt, FIXTURE_TODAY) : null
+  const pillLabel = daysLeft != null ? `Access Ends ${Math.max(0, daysLeft)} ${daysLeft === 1 ? 'day' : 'days'}` : undefined
   /* THE RULED ROW ABBREVIATES THE STATE — "FL", not "Florida" (2026-11-23, Jillienne: "use the ruled row, have the state be
      abbreviated to help with wrapping issues"). `STATE_ABBR` is the catalog's map; a name it does not know, or a record
      that already carries the code (the library's `state: 'FL'`), passes through. The sheet keeps the full name. */
@@ -138,8 +145,9 @@ export function AtlasCourseCardFigmaV2({
         <img src={data.imageUrl} alt="" aria-hidden style={IMAGE} />
         <span style={PILL_ON_IMAGE}>
           <AtlasStatusPill
-            status={statusFor(data, progress)}
-            {...(statusFor(data, progress) === 'expired' ? { fill: 'var(--color-neutral-800)', ink: 'var(--color-neutral-50)' } : null)}
+            status={pillStatus}
+            label={pillLabel}
+            {...(pillStatus === 'expired' ? { fill: 'var(--color-neutral-800)', ink: 'var(--color-neutral-50)' } : null)}
           />
         </span>
       </div>
@@ -357,10 +365,7 @@ export function AtlasCourseCardFigmaV2({
         <AngleRightSolid size={11} aria-hidden style={{ width: 6 }} />
       </button>
       </div>
-      ) : (
-        /* The actions row, empty — the subgrid row is kept so a mixed row of cards would still line up. */
-        <span aria-hidden />
-      )}
+      ) : null}
     </article>
     {/* Outside the article, so a click inside the sheet does not bubble (through the portal) to the card's open. */}
     <AtlasCourseDetailsSheet data={data} open={detailsOpen} onClose={() => setDetailsOpen(false)} />
@@ -379,14 +384,16 @@ function statusFor(data: AtlasCourseCardData, progress: number): AtlasCourseStat
   return 'not-started'
 }
 
-/* 24 in, 12 corners. A SUBGRID of SIX rows — image, title + description, facts, progress, dates, buttons (2026-11-23; four
-   on the card before it) — on the row of cards, so every card's rows line up with its neighbours' (the parent grid is
-   PlatformShell's). */
+/* 24 in, 12 corners. A FLEX COLUMN, 8 between blocks — NOT the subgrid the card before it uses (2026-11-23, Jillienne, with
+   a title selected: "reduce bottom padding to 30px"). On the subgrid every card's title row took the TALLEST title in the
+   grid row, so the space under one card's description was 8, its neighbour's 52, and no padding could make it 30. Off the
+   subgrid each card owns its spacing: the description's 30 is 30 on every card. The cost is that progress bars and date
+   lines no longer sit at one height across a row — accepted, now that the actions at the foot are hidden by default and
+   nothing there needs to line up. */
 const CARD: CSSProperties = {
-  display: 'grid',
-  gridRow: 'span 6',
-  gridTemplateRows: 'subgrid',
-  rowGap: 8,
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 8,
   padding: 24,
   boxSizing: 'border-box',
   borderRadius: 'var(--atlas-card-radius, 12px)',
@@ -402,12 +409,11 @@ const IMAGE: CSSProperties = { display: 'block', width: '100%', height: 120, obj
 /* The image's frame, so the pill can sit over it — 8 in from the top-left, the shared card's inset (2026-11-23). */
 const IMAGE_WRAP: CSSProperties = { position: 'relative' }
 const PILL_ON_IMAGE: CSSProperties = { position: 'absolute', top: 8, left: 8, display: 'inline-flex', boxShadow: '0 1px 2px rgb(0 0 0 / 0.12)', borderRadius: 14 }
-// 8 between the description and whatever follows, 0 under (2026-11-23; 14 and 4 while the pill row sat here).
-const TITLE_BLOCK: CSSProperties = { display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 8, paddingTop: 4, paddingBottom: 0 }
+// 30 under the description to the labels (2026-11-23, Jillienne): 18 here + the column's 8 + the labels' 4 above.
+const TITLE_BLOCK: CSSProperties = { display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 8, paddingTop: 4, paddingBottom: 18 }
 /* The title and its Course Details link (2026-11-18, Eric; a rule under them that day, then removed). The pair stretches to the foot of its share of the row, which is
    what holds the pills at one height across the row. */
 const TITLE_HEAD: CSSProperties = {
-  flexGrow: 1,
   alignSelf: 'stretch',
   display: 'flex',
   flexDirection: 'column',
