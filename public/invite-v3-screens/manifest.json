@@ -2,102 +2,6 @@
   "capturedAt": "2026-11-20",
   "components": [
     {
-      "id": "page-youre-invited-to-get-licensed",
-      "title": "You’re Invited to Get Licensed",
-      "kind": "page",
-      "flows": [
-        "Direct Email"
-      ],
-      "states": [
-        {
-          "file": "pages/youre-invited-to-get-licensed/01-invitation-email-open.png",
-          "state": "Invitation email open",
-          "seenIn": [
-            "Direct Email · No Atlas account",
-            "Direct Email · Has Atlas account"
-          ]
-        }
-      ]
-    },
-    {
-      "id": "page-youve-been-invited",
-      "title": "You’ve been invited",
-      "kind": "page",
-      "flows": [
-        "Direct Email",
-        "QR Code"
-      ],
-      "states": [
-        {
-          "file": "pages/youve-been-invited/01-products-standard.png",
-          "state": "Products: Standard",
-          "seenIn": [
-            "Direct Email · No Atlas account",
-            "Direct Email · Has Atlas account",
-            "Direct Email · Products",
-            "QR Code · No Atlas account",
-            "QR Code · Has Atlas account"
-          ]
-        },
-        {
-          "file": "pages/youve-been-invited/02-products-standard-full-page.png",
-          "state": "Products: Standard — full page",
-          "seenIn": [
-            "Direct Email · Products"
-          ]
-        },
-        {
-          "file": "pages/youve-been-invited/03-products-multi-product.png",
-          "state": "Products: Multi-product",
-          "seenIn": [
-            "Direct Email · Products"
-          ]
-        },
-        {
-          "file": "pages/youve-been-invited/04-products-multi-product-full-page.png",
-          "state": "Products: Multi-product — full page",
-          "seenIn": [
-            "Direct Email · Products"
-          ]
-        },
-        {
-          "file": "pages/youve-been-invited/05-products-premier.png",
-          "state": "Products: Premier",
-          "seenIn": [
-            "Direct Email · Products"
-          ]
-        },
-        {
-          "file": "pages/youve-been-invited/06-products-premier-full-page.png",
-          "state": "Products: Premier — full page",
-          "seenIn": [
-            "Direct Email · Products"
-          ]
-        },
-        {
-          "file": "pages/youve-been-invited/07-products-california.png",
-          "state": "Products: California",
-          "seenIn": [
-            "Direct Email · Products"
-          ]
-        },
-        {
-          "file": "pages/youve-been-invited/08-products-california-full-page.png",
-          "state": "Products: California — full page",
-          "seenIn": [
-            "Direct Email · Products"
-          ]
-        },
-        {
-          "file": "pages/youve-been-invited/09-after-continue-texas-life.png",
-          "state": "After Continue — Texas Life",
-          "seenIn": [
-            "Direct Email · Products"
-          ]
-        }
-      ]
-    },
-    {
       "id": "modal-enter-your-email-to-continue",
       "title": "Enter your email to continue",
       "kind": "modal",
@@ -183,8 +87,8 @@
           ]
         },
         {
-          "file": "modals/verify-your-email/02-wrong-code.png",
-          "state": "Wrong code",
+          "file": "modals/verify-your-email/02-wrong-code-4-attempts-left.png",
+          "state": "Wrong code — 4 attempts left",
           "seenIn": [
             "Direct Email · No Atlas account",
             "QR Code · No Atlas account",
@@ -193,7 +97,17 @@
           ]
         },
         {
-          "file": "modals/verify-your-email/03-expired-code.png",
+          "file": "modals/verify-your-email/03-wrong-code-1-attempt-left.png",
+          "state": "Wrong code — 1 attempt left",
+          "seenIn": [
+            "Direct Email · No Atlas account",
+            "QR Code · No Atlas account",
+            "Not signed into XCEL (OCD) · Targeted only · No Atlas account",
+            "Signed into XCEL (OCD) · Targeted only · No Atlas account"
+          ]
+        },
+        {
+          "file": "modals/verify-your-email/04-expired-code.png",
           "state": "Expired code",
           "seenIn": [
             "Direct Email · No Atlas account",
@@ -203,7 +117,27 @@
           ]
         },
         {
-          "file": "modals/verify-your-email/04-code-entered-confirm-enabled.png",
+          "file": "modals/verify-your-email/05-ten-minutes-up-resend-code-available.png",
+          "state": "Ten minutes up — Resend code available",
+          "seenIn": [
+            "Direct Email · No Atlas account",
+            "QR Code · No Atlas account",
+            "Not signed into XCEL (OCD) · Targeted only · No Atlas account",
+            "Signed into XCEL (OCD) · Targeted only · No Atlas account"
+          ]
+        },
+        {
+          "file": "modals/verify-your-email/06-code-resent-banner-countdown-restarted.png",
+          "state": "Code resent — banner, countdown restarted",
+          "seenIn": [
+            "Direct Email · No Atlas account",
+            "QR Code · No Atlas account",
+            "Not signed into XCEL (OCD) · Targeted only · No Atlas account",
+            "Signed into XCEL (OCD) · Targeted only · No Atlas account"
+          ]
+        },
+        {
+          "file": "modals/verify-your-email/07-code-entered-confirm-enabled.png",
           "state": "Code entered, Confirm enabled",
           "seenIn": [
             "Direct Email · No Atlas account",
@@ -214,7 +148,8 @@
             "Signed into XCEL (OCD) · Mixed · No Atlas account"
           ]
         }
-      ]
+      ],
+      "capturedAt": "2026-11-23"
     },
     {
       "id": "modal-email-verified",
@@ -274,151 +209,6 @@
             "Not signed into XCEL (OCD) · Mixed · No Atlas account",
             "Signed into XCEL (OCD) · Targeted only · No Atlas account",
             "Signed into XCEL (OCD) · Mixed · No Atlas account"
-          ]
-        }
-      ]
-    },
-    {
-      "id": "page-secure-checkout",
-      "title": "Secure Checkout",
-      "kind": "page",
-      "flows": [
-        "Direct Email",
-        "QR Code",
-        "Not signed into XCEL (OCD)",
-        "Signed into XCEL (OCD)"
-      ],
-      "states": [
-        {
-          "file": "pages/secure-checkout/01-after-the-code-empty-b2b2c.png",
-          "state": "After the code — empty — B2B2C",
-          "seenIn": [
-            "Direct Email · No Atlas account",
-            "QR Code · No Atlas account"
-          ]
-        },
-        {
-          "file": "pages/secure-checkout/02-save-and-continue-with-required-fields-empty-b2b2c.png",
-          "state": "Save and continue with required fields empty — B2B2C",
-          "seenIn": [
-            "Direct Email · No Atlas account",
-            "QR Code · No Atlas account"
-          ]
-        },
-        {
-          "file": "pages/secure-checkout/03-student-information-filled-b2b2c.png",
-          "state": "Student information filled — B2B2C",
-          "seenIn": [
-            "Direct Email · No Atlas account",
-            "QR Code · No Atlas account"
-          ]
-        },
-        {
-          "file": "pages/secure-checkout/04-payment-card-form-empty-b2b2c.png",
-          "state": "Payment — card form empty — B2B2C",
-          "seenIn": [
-            "Direct Email · No Atlas account",
-            "Direct Email · Has Atlas account",
-            "QR Code · No Atlas account",
-            "QR Code · Has Atlas account"
-          ]
-        },
-        {
-          "file": "pages/secure-checkout/05-ready-to-place-the-order-b2b2c.png",
-          "state": "Ready to place the order — B2B2C",
-          "seenIn": [
-            "Direct Email · No Atlas account",
-            "Direct Email · Has Atlas account",
-            "QR Code · No Atlas account",
-            "QR Code · Has Atlas account"
-          ]
-        },
-        {
-          "file": "pages/secure-checkout/06-ready-to-place-the-order-full-page-b2b2c.png",
-          "state": "Ready to place the order — full page — B2B2C",
-          "seenIn": [
-            "Direct Email · No Atlas account",
-            "Direct Email · Has Atlas account",
-            "QR Code · No Atlas account",
-            "QR Code · Has Atlas account"
-          ]
-        },
-        {
-          "file": "pages/secure-checkout/07-after-log-in-filled-from-the-account-b2b2c.png",
-          "state": "After Log in — filled from the account — B2B2C",
-          "seenIn": [
-            "Direct Email · Has Atlas account",
-            "QR Code · Has Atlas account"
-          ]
-        },
-        {
-          "file": "pages/secure-checkout/08-after-the-code-empty-b2c.png",
-          "state": "After the code — empty — B2C",
-          "seenIn": [
-            "Not signed into XCEL (OCD) · Targeted only · No Atlas account",
-            "Not signed into XCEL (OCD) · Mixed · No Atlas account",
-            "Signed into XCEL (OCD) · Targeted only · No Atlas account",
-            "Signed into XCEL (OCD) · Mixed · No Atlas account"
-          ]
-        },
-        {
-          "file": "pages/secure-checkout/09-save-and-continue-with-required-fields-empty-b2c.png",
-          "state": "Save and continue with required fields empty — B2C",
-          "seenIn": [
-            "Not signed into XCEL (OCD) · Targeted only · No Atlas account",
-            "Signed into XCEL (OCD) · Targeted only · No Atlas account"
-          ]
-        },
-        {
-          "file": "pages/secure-checkout/10-student-information-filled-b2c.png",
-          "state": "Student information filled — B2C",
-          "seenIn": [
-            "Not signed into XCEL (OCD) · Targeted only · No Atlas account",
-            "Signed into XCEL (OCD) · Targeted only · No Atlas account"
-          ]
-        },
-        {
-          "file": "pages/secure-checkout/11-payment-card-form-empty-b2c.png",
-          "state": "Payment — card form empty — B2C",
-          "seenIn": [
-            "Not signed into XCEL (OCD) · Targeted only · No Atlas account",
-            "Not signed into XCEL (OCD) · Targeted only · Has Atlas account",
-            "Signed into XCEL (OCD) · Targeted only · No Atlas account",
-            "Signed into XCEL (OCD) · Targeted only · Has Atlas account"
-          ]
-        },
-        {
-          "file": "pages/secure-checkout/12-ready-to-place-the-order-b2c.png",
-          "state": "Ready to place the order — B2C",
-          "seenIn": [
-            "Not signed into XCEL (OCD) · Targeted only · No Atlas account",
-            "Not signed into XCEL (OCD) · Targeted only · Has Atlas account",
-            "Not signed into XCEL (OCD) · Mixed · No Atlas account",
-            "Not signed into XCEL (OCD) · Mixed · Has Atlas account",
-            "Signed into XCEL (OCD) · Targeted only · No Atlas account",
-            "Signed into XCEL (OCD) · Targeted only · Has Atlas account",
-            "Signed into XCEL (OCD) · Mixed · No Atlas account",
-            "Signed into XCEL (OCD) · Mixed · Has Atlas account"
-          ]
-        },
-        {
-          "file": "pages/secure-checkout/13-ready-to-place-the-order-full-page-b2c.png",
-          "state": "Ready to place the order — full page — B2C",
-          "seenIn": [
-            "Not signed into XCEL (OCD) · Targeted only · No Atlas account",
-            "Not signed into XCEL (OCD) · Targeted only · Has Atlas account",
-            "Signed into XCEL (OCD) · Targeted only · No Atlas account",
-            "Signed into XCEL (OCD) · Targeted only · Has Atlas account"
-          ]
-        },
-        {
-          "file": "pages/secure-checkout/14-after-log-in-filled-from-the-account-b2c.png",
-          "state": "After Log in — filled from the account — B2C",
-          "seenIn": [
-            "Not signed into XCEL (OCD) · Targeted only · Has Atlas account",
-            "Not signed into XCEL (OCD) · Mixed · Has Atlas account",
-            "Signed into XCEL (OCD) · Targeted only · Has Atlas account",
-            "Signed into XCEL (OCD) · Mixed · Has Atlas account"
           ]
         }
       ]
@@ -831,24 +621,6 @@
       "capturedAt": "2026-11-23"
     },
     {
-      "id": "page-qr-code",
-      "title": "QR code",
-      "kind": "page",
-      "flows": [
-        "QR Code"
-      ],
-      "states": [
-        {
-          "file": "pages/qr-code/01-partners-qr-code.png",
-          "state": "Partner’s QR code",
-          "seenIn": [
-            "QR Code · No Atlas account",
-            "QR Code · Has Atlas account"
-          ]
-        }
-      ]
-    },
-    {
       "id": "card-select-your-state-and-line-of-authority",
       "title": "Select your state and line of authority",
       "kind": "card",
@@ -906,63 +678,6 @@
         }
       ],
       "capturedAt": "2026-11-23"
-    },
-    {
-      "id": "page-your-cart",
-      "title": "Your cart",
-      "kind": "page",
-      "flows": [
-        "Not signed into XCEL (OCD)",
-        "Signed into XCEL (OCD)"
-      ],
-      "states": [
-        {
-          "file": "pages/your-cart/01-targeted-course-signed-out.png",
-          "state": "Targeted course, signed out",
-          "seenIn": [
-            "Not signed into XCEL (OCD) · Targeted only · No Atlas account",
-            "Not signed into XCEL (OCD) · Targeted only · Has Atlas account"
-          ]
-        },
-        {
-          "file": "pages/your-cart/02-targeted-course-and-an-unsupported-item-signed-out.png",
-          "state": "Targeted course and an unsupported item, signed out",
-          "seenIn": [
-            "Not signed into XCEL (OCD) · Mixed · No Atlas account",
-            "Not signed into XCEL (OCD) · Mixed · Has Atlas account"
-          ]
-        },
-        {
-          "file": "pages/your-cart/03-nothing-targeted-signed-out.png",
-          "state": "Nothing targeted, signed out",
-          "seenIn": [
-            "Not signed into XCEL (OCD) · None targeted"
-          ]
-        },
-        {
-          "file": "pages/your-cart/04-targeted-course-signed-in.png",
-          "state": "Targeted course, signed in",
-          "seenIn": [
-            "Signed into XCEL (OCD) · Targeted only · No Atlas account",
-            "Signed into XCEL (OCD) · Targeted only · Has Atlas account"
-          ]
-        },
-        {
-          "file": "pages/your-cart/05-targeted-course-and-an-unsupported-item-signed-in.png",
-          "state": "Targeted course and an unsupported item, signed in",
-          "seenIn": [
-            "Signed into XCEL (OCD) · Mixed · No Atlas account",
-            "Signed into XCEL (OCD) · Mixed · Has Atlas account"
-          ]
-        },
-        {
-          "file": "pages/your-cart/06-nothing-targeted-signed-in.png",
-          "state": "Nothing targeted, signed in",
-          "seenIn": [
-            "Signed into XCEL (OCD) · None targeted"
-          ]
-        }
-      ]
     },
     {
       "id": "modal-do-you-have-a-partner-code",

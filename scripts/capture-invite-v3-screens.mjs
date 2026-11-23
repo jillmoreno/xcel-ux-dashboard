@@ -149,6 +149,18 @@ const TAGS = {
 }
 const tagged = (c) => (TAGS[c.title] ? { ...c, tag: TAGS[c.title] } : c)
 
+/* PAGES LEFT OFF THE SCREENS TAB (2026-11-23, Afsana) — the walks still
+   pass through them, but their pictures are not kept, and a merge drops
+   any an earlier run left behind. By title. */
+const EXCLUDED = new Set([
+  'You’re Invited to Get Licensed',
+  'You’ve been invited',
+  'Secure Checkout',
+  'Your cart',
+  'QR code',
+])
+const kept = (c) => !EXCLUDED.has(c.title)
+
 /* Cards drawn on a page rather than in a dialog, cropped to the card. */
 const CARD_TITLES = ['Select your state and line of authority', 'Finish setting up your account']
 
@@ -272,13 +284,36 @@ async function codeCheck(w, { email = null, emailStates = false, wrongCode = tru
   await w.shot('Verify your email', 'Empty code, countdown running')
   await verify.getByLabel('Digit 1 of 6').click()
   if (wrongCode) {
-    await p.keyboard.type('000000')
-    await w.click('Confirm', { scope: verify })
-    await w.shot('Verify your email', 'Wrong code')
+    /* Every state of the code step (2026-11-23, Afsana: "ensure the verify
+       your email screenshots cover all the states"): the attempts counted
+       down, the expired code, Resend code once the ten minutes are up, and
+       the code resent. */
+    const wrong = async (state) => {
+      await verify.getByLabel('Digit 1 of 6').click()
+      await p.keyboard.type('000000')
+      await w.click('Confirm', { scope: verify })
+      if (state) await w.shot('Verify your email', state)
+    }
+    await wrong('Wrong code — 4 attempts left')
+    await wrong(null)
+    await wrong(null)
+    /* Not a fifth: what follows it is not designed (2026-11-23, Afsana). */
+    await wrong('Wrong code — 1 attempt left')
     await verify.getByLabel('Digit 1 of 6').click()
     await p.keyboard.type('999999')
     await w.click('Confirm', { scope: verify })
     await w.shot('Verify your email', 'Expired code')
+    /* The ten minutes, skipped: the countdown reads a deadline, so a clock
+       moved on lands on Resend code. */
+    await p.clock.install()
+    await p.clock.fastForward('10:01')
+    await p.waitForTimeout(1500)
+    /* Empty boxes, so the picture is the state and not the last code. */
+    for (let i = 6; i >= 1; i--) await verify.getByLabel(`Digit ${i} of 6`).fill('')
+    await p.mouse.click(5, 5)
+    await w.shot('Verify your email', 'Ten minutes up — Resend code available')
+    await w.click('Resend code', { scope: verify })
+    await w.shot('Verify your email', 'Code resent — banner, countdown restarted')
     await verify.getByLabel('Digit 1 of 6').click()
   }
   await p.keyboard.type('111111')
@@ -852,7 +887,7 @@ async function main() {
      keeps the folder and clears just the components it re-captures. */
   const previous = PARTIAL && fs.existsSync(manifestPath) ? JSON.parse(fs.readFileSync(manifestPath, 'utf8')) : null
   if (!PARTIAL && fs.existsSync(OUT)) fs.rmSync(OUT, { recursive: true })
-  const shots = TITLES ? ALL_SHOTS.filter((s) => TITLES.includes(s.title)) : ALL_SHOTS
+  const shots = (TITLES ? ALL_SHOTS.filter((s) => TITLES.includes(s.title)) : ALL_SHOTS).filter(kept)
   if (TITLES && !shots.length) {
     console.error(`capture-invite-v3-screens: no shots of "${TITLES.join('", "')}" — nothing written.`)
     process.exit(1)
@@ -872,9 +907,15 @@ async function main() {
   /* Merged: the earlier run's components, with these replacing any of the
      same id IN ITS PLACE, so the Screens tab's order does not move, and new
      ones after — the run's own date unchanged, since the rest are its. */
+  if (previous) {
+    for (const c of previous.components.filter((c) => !kept(c))) {
+      const dir = path.join(OUT, folder[c.kind], c.id.replace(/^(modal|card|page)-/, ''))
+      if (fs.existsSync(dir)) fs.rmSync(dir, { recursive: true })
+    }
+  }
   const components = previous
     ? [
-        ...previous.components.map((c) => captured.find((n) => n.id === c.id) ?? tagged(c)),
+        ...previous.components.filter(kept).map((c) => captured.find((n) => n.id === c.id) ?? tagged(c)),
         ...captured.filter((n) => !previous.components.some((c) => c.id === n.id)),
       ]
     : captured

@@ -251,8 +251,14 @@ describe('Invite Flow V3 — the Direct Email invitation', () => {
     await userEvent.click(within(ask).getByRole('button', { name: 'Continue' }))
     const dialog = screen.getByRole('dialog', { name: 'Verify your email' })
     expect(dialog).toHaveTextContent(E2E_LEARNER_EMAIL)
-    /* The partner named the address, so there is no other to go back for. */
-    expect(within(dialog).queryByRole('button', { name: 'Use a different email' })).not.toBeInTheDocument()
+    /* Use a different email under Didn't receive the code?, here too since
+       2026-11-23 — back to the email step, the address still in it. */
+    const resend = within(dialog).getByText('Didn’t receive the code?')
+    const change = within(dialog).getByRole('button', { name: 'Use a different email' })
+    expect(resend.compareDocumentPosition(change) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    await userEvent.click(change)
+    const back = screen.getByRole('dialog', { name: 'Enter your email to continue' })
+    expect(within(back).getByLabelText(/^Email\s*\*?$/)).toHaveValue(E2E_LEARNER_EMAIL)
   })
 
   it('leaves the checkout’s email plain until the check is done, then locks it', async () => {
@@ -376,10 +382,11 @@ describe('Invite Flow V3 — the email check', () => {
 
       const dialog = screen.getByRole('dialog')
       expect(within(dialog).getByAltText(/XCEL/)).toBeInTheDocument()
-      expect(dialog).toHaveTextContent('We sent a 6-digit code to sam@example.com. Be sure to check your spam or junk folders.')
+      /* The expiry ends the lead (2026-11-23; under the boxes from 11-13). */
+      expect(within(dialog).getByText(/^We sent a 6-digit code to/)).toHaveTextContent(
+        'We sent a 6-digit code to sam@example.com. Be sure to check your spam or junk folders. The code expires in 10 minutes.',
+      )
       expect(within(dialog).getByText('sam@example.com').tagName).toBe('STRONG')
-      /* The expiry, under the boxes (2026-11-13). */
-      expect(dialog).toHaveTextContent('The code expires in 10 minutes')
       expect(dialog).toHaveTextContent('Didn’t receive the code? Resend code in 10:00')
       expect(within(dialog).queryByRole('button', { name: 'Resend code' })).not.toBeInTheDocument()
       expect(within(dialog).getByRole('button', { name: 'Use a different email' })).toBeInTheDocument()
@@ -458,8 +465,10 @@ describe('Invite Flow V3 — the email check', () => {
     await userEvent.type(screen.getByLabelText('Digit 1 of 6'), '000000')
     await userEvent.click(screen.getByRole('button', { name: 'Confirm' }))
 
+    /* Red text under the boxes, the attempts counted down (2026-11-23). */
     const error = screen.getByRole('alert')
-    expect(error).toHaveTextContent('Invalid code. Please try again.')
+    expect(error).toHaveTextContent('Incorrect code. 4 attempts left.')
+    expect(error.style.color).toBe('var(--color-error-600)')
     expect(screen.getByRole('heading', { name: 'Verify your email' })).toBeInTheDocument()
     expect(screen.getByLabelText('Digit 1 of 6')).toHaveAttribute('aria-describedby', 'code-invalid')
     /* The red stroke along the bottom of every box. */
@@ -470,6 +479,17 @@ describe('Invite Flow V3 — the email check', () => {
 
     await userEvent.type(screen.getByLabelText('Digit 6 of 6'), '1')
     expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+  })
+
+  it('counts the attempts down with each wrong code — 4, 3, 2, then 1 attempt', async () => {
+    renderAt(CHECKOUT, V3_B2B)
+    await userEvent.type(within(screen.getByRole('dialog')).getByLabelText(/^Email\s*\*?$/), 'sam@example.com')
+    await userEvent.click(screen.getByRole('button', { name: 'Continue' }))
+    for (const left of ['4 attempts', '3 attempts', '2 attempts', '1 attempt']) {
+      await userEvent.type(screen.getByLabelText('Digit 1 of 6'), '000000')
+      await userEvent.click(screen.getByRole('button', { name: 'Confirm' }))
+      expect(screen.getByRole('alert')).toHaveTextContent(`Incorrect code. ${left} left.`)
+    }
   })
 
   it('says an expired code has expired — the demo’s 999999, or any code after the 10 minutes', async () => {

@@ -74,8 +74,9 @@ export function VerifyEmailModalV3({
   /** Hold on "Signing you in" before the checkout. */
   signsIn?: boolean
   /** An address the flow already has — Direct Email's invitation supplied it
-   *  (2026-11-04). The email step opens filled with it, and the code step
-   *  has no "Use a different email": the partner named this one. */
+   *  (2026-11-04). The email step opens filled with it. Its code step has
+   *  "Use a different email" too since 2026-11-23 (Afsana) — until then it
+   *  was left off, the partner having named this one. */
   suppliedEmail?: string
 }) {
   /* The email step always comes first — filled with a supplied address, so
@@ -208,7 +209,7 @@ export function VerifyEmailModalV3({
           <CodeStep
             identity={identity}
             onVerified={() => setStep('verified')}
-            onChangeEmail={suppliedEmail ? undefined : () => setStep('email')}
+            onChangeEmail={() => setStep('email')}
           />
         ) : step === 'verified' ? (
           <EmailVerified />
@@ -249,14 +250,25 @@ function CodeStep({
      digit changes. */
   const [codeError, setCodeError] = useState<'invalid' | 'expired' | null>(null)
   const invalid = codeError !== null
+  /* Wrong codes allowed before a new one is needed — the banner counts them
+     down, "Incorrect code. 4 attempts left." (2026-11-23, Afsana). A resent
+     code starts the count again. ⚠ AFTER THE FIFTH WRONG CODE IS NOT MOCKED
+     (Afsana: "do not mock up the 'after 5th' wrong code") — the count stops
+     at 1 rather than invent what none left looks like. */
+  const [attemptsLeft, setAttemptsLeft] = useState(CODE_ATTEMPTS)
   /* Resend unlocks when the code expires — 10 minutes, counted down under
      Confirm (2026-11-03, Afsana). */
-  const [secondsLeft, setSecondsLeft] = useState(RESEND_AFTER_S)
+  /* ⚠ COUNTED FROM A DEADLINE, not tick by tick (2026-11-23): a clock that
+     jumps — a tab asleep, or the screenshot script skipping the ten
+     minutes — lands on the right second. */
+  const [expiresAt, setExpiresAt] = useState(() => Date.now() + RESEND_AFTER_S * 1000)
+  const [now, setNow] = useState(() => Date.now())
+  const secondsLeft = Math.max(0, Math.ceil((expiresAt - now) / 1000))
   useEffect(() => {
     if (secondsLeft <= 0) return
-    const t = window.setTimeout(() => setSecondsLeft((s) => s - 1), 1000)
+    const t = window.setTimeout(() => setNow(Date.now()), 1000)
     return () => window.clearTimeout(t)
-  }, [secondsLeft])
+  }, [now, secondsLeft])
   const inputs = useRef<(HTMLInputElement | null)[]>([])
   const entered = digits.join('')
   const ready = codeComplete(entered)
@@ -316,8 +328,10 @@ function CodeStep({
         if (!ready) return
         /* The code expires with the countdown — 10 minutes. */
         if (entered === V3_EXPIRED_DEMO_CODE || secondsLeft <= 0) setCodeError('expired')
-        else if (entered === V3_INVALID_DEMO_CODE) setCodeError('invalid')
-        else onVerified()
+        else if (entered === V3_INVALID_DEMO_CODE) {
+          setCodeError('invalid')
+          setAttemptsLeft((n) => Math.max(n - 1, 1))
+        } else onVerified()
       }}
       noValidate
     >
@@ -339,10 +353,10 @@ function CodeStep({
           </p>
         ) : null}
         <p id="verify-email-lead" style={LEAD}>
-          {/* Shorter, with the expiry moved under the boxes (2026-11-13,
-              Afsana). */}
+          {/* The expiry is part of it again, at the end (2026-11-23, Afsana);
+              from 2026-11-13 it sat under the boxes. */}
           We sent a 6-digit code to <strong style={{ fontWeight: 800 }}>{identity.email.trim()}</strong>. Be sure to
-          check your spam or junk folders.
+          check your spam or junk folders. The code expires in 10 minutes.
         </p>
       </div>
 
@@ -372,12 +386,16 @@ function CodeStep({
             />
           ))}
         </div>
+        {/* Under the boxes, in the error red, the attempts counted down —
+            "Incorrect code. 4 attempts left." (2026-11-23, Afsana; "Invalid
+            code. Please try again." until then). */}
         {invalid ? (
           <p id="code-invalid" role="alert" style={INVALID}>
-            {codeError === 'expired' ? 'The code has expired. Request another code.' : 'Invalid code. Please try again.'}
+            {codeError === 'expired'
+              ? 'The code has expired. Request another code.'
+              : `Incorrect code. ${attemptsLeft} ${attemptsLeft === 1 ? 'attempt' : 'attempts'} left.`}
           </p>
         ) : null}
-        <p style={NOTE}>The code expires in 10 minutes</p>
       </div>
 
       <div style={ACTIONS}>
@@ -407,7 +425,10 @@ function CodeStep({
               onClick={() => {
                 setResent(true)
                 setCodeError(null)
-                setSecondsLeft(RESEND_AFTER_S)
+                setAttemptsLeft(CODE_ATTEMPTS)
+                const at = Date.now()
+                setNow(at)
+                setExpiresAt(at + RESEND_AFTER_S * 1000)
                 setDigits(Array(VERIFICATION_CODE_LENGTH).fill(''))
                 inputs.current[0]?.focus()
               }}
@@ -427,6 +448,9 @@ function CodeStep({
 }
 
 const RESEND_AFTER_S = 10 * 60
+
+/** Wrong codes before a new one is needed (2026-11-23, Afsana). */
+const CODE_ATTEMPTS = 5
 
 /* How long Email verified shows before the name step. */
 const VERIFIED_HOLD_MS = 2000
