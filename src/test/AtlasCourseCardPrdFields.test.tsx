@@ -204,6 +204,34 @@ describe('the labels, the status and the progress', () => {
   })
 })
 
+describe('the three label layouts — the design bar’s atlas-courses-card-meta', () => {
+  it('is a design-bar control on the Widgets group', () => {
+    const flag = FEATURE_FLAGS.find((f) => f.key === 'atlas-courses-card-meta')!
+    expect(flag.surface).toBe('design')
+    expect(flag.defaultVariant).toBe('ruled-row')
+    expect(flag.variants!.map((v) => v.value)).toEqual(['ruled-row', 'stacked', 'labelled'])
+  })
+
+  it('stacked: the state leads with its icon, category | line of authority under it', () => {
+    renderShell(`${DESIGN_CARDS},atlas-courses-card-meta:stacked`)
+    const row = screen.getAllByTestId('atlas-card-facts')[0]
+    expect(row.getAttribute('data-meta')).toBe('stacked')
+    expect(row.querySelector('svg')).toBeTruthy()
+    const lines = [...row.children].map((c) => c.textContent)
+    expect(lines[0]).toBe('Florida')
+    expect(lines[1]).toBe('LicensingLife and Health')
+    expect(row.querySelectorAll('span[aria-hidden]')).toHaveLength(1)
+  })
+
+  it('labelled: one "State: Florida" line per fact', () => {
+    renderShell(`${DESIGN_CARDS},atlas-courses-card-meta:labelled`)
+    const row = screen.getAllByTestId('atlas-card-facts')[0]
+    expect(row.getAttribute('data-meta')).toBe('labelled')
+    expect(within(row).getByText(/^State:/)).toBeTruthy()
+    expect(within(row).getByText(/^Line of authority:/)).toBeTruthy()
+  })
+})
+
 describe('the Expired pill', () => {
   /* 2026-11-23, Jillienne: "Expired badge should be a dark charcoal color". Charcoal on THIS card only — the shared pill's
      catalog is unchanged, so the 2026-11-18 card keeps Error 100 (pinned under "the flag off"). */

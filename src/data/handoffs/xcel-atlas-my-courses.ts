@@ -91,6 +91,7 @@ const feature: PrototypeFeature = {
     { id: 'atlas-pages-quick-links', label: 'Quick Links on the learning pages', note: 'Hidden, which is what this page shows. Shown puts the side rail back on both learning pages and re-centres the content. Hiding it also takes away the only route to My Certificates that does not pass through Home.' },
     // Corrected 2026-11-23 (it read: "Shared is the card documented here. Atlas draws the earlier card instead").
     { id: 'atlas-courses-card-style', label: 'My Courses card', note: 'Atlas (the default since 2026-11-03) is the card documented here — Figma 706:2416 with a full-width button. Shared draws the LMS dashboard’s CourseCard instead, serif title and no button.' },
+    { id: 'atlas-courses-card-meta', label: 'My Courses card — labels', note: 'A design-bar control (2026-11-23) for how the PRD card draws State, Category and Line of authority: one ruled row (default), the shared card’s stacked icon-led block, or one labelled line per fact. Open — see the decisions.' },
     { id: 'atlas-courses-card-prd-fields', label: 'My Courses card — PRD fields', note: 'On (2026-11-23): the Atlas card to section 3 of the My Courses PRD — description, the three labels on the card, a date line per status, the failed score and expired progress, and a working View Certificate on a completed course. Off: the card as of 2026-11-18, with the disabled Completed button. Only matters when the card control is set to Atlas.' },
     { id: 'atlas-courses-from-library', label: 'My Courses list', note: 'Only does anything when the card control is set to Atlas. Off shows three fixed example courses in place of the learner’s own.' },
     { id: 'atlas-courses-open-course', label: 'My Courses buttons open the course', note: 'Whether the card opens the course. Off, the title links out of the learning shell instead, and the earlier card’s button is drawn disabled.' },
@@ -285,6 +286,13 @@ const feature: PrototypeFeature = {
           decision:
             'No. demo-ny-pclh-refresher-ce is left exactly as it was — not restyled, not removed. A CE package is several courses sold as one purchase, a product shape the PRD’s course-card section does not describe. The Failed row of the PRD’s table is shown by a sixth design card, a failed practice exam, instead. 2026-11-23.',
           status: 'Decided',
+        },
+        {
+          question: 'How are the three labels drawn — one ruled row, stacked under an icon, or one labelled line each?',
+          decision:
+            'Open. Three choices on the design bar (atlas-courses-card-meta), built 2026-11-23 to compare against the shared card’s compact meta block. The ruled row is the default meanwhile.',
+          status: 'Needs weigh-in',
+          owner: 'Jillienne',
         },
         {
           question: 'Does the status text read "Failed" and "Expired", or "Progress Made"?',

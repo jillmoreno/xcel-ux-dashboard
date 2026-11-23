@@ -4856,6 +4856,39 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'atlas-courses-card-meta',
+    /* HOW THE PRD CARD DRAWS STATE · CATEGORY · LINE OF AUTHORITY — 2026-11-23,
+       Jillienne, with the shared card's compact meta block selected
+       ("Pharmacology Update 2026 / Online / Mandatory | 6 Hours / TX | CA |
+       NY | FL / ★ 4.8"): "use this style … lets explore some ui variations".
+       A DESIGN-BAR control on the PRD card only (`AtlasCourseCardFigmaV2`);
+       the 2026-11-18 card has its facts in the sheet and ignores this.
+
+       `ruled-row` (default): the three values on one line, 12 / 500, with
+       the shared card's 1 × 12 hairlines between — the style, not the shape.
+       `stacked`: the example's SHAPE — an icon-led first line (location-dot,
+       the state), then category | line of authority under it on a hairline,
+       the way the shared card stacks "Online" over "Mandatory | 6 Hours".
+       `labelled`: the 2026-11-12 card's three "State: Florida" lines, one per
+       fact, the label in the secondary ink and the value bold — the most
+       explicit of the three and the tallest.
+
+       Any arm keeps the card's subgrid rows; only the facts row changes. */
+    group: 'Widgets',
+    label: 'My Courses card — labels',
+    description:
+      'How the PRD card draws State, Category and Line of authority. Ruled row (default): one line, hairlines between the values. Stacked: the shared card\u2019s shape \u2014 an icon-led state line, then category | line of authority under it. Labelled: one "State: Florida" line per fact, label grey, value bold. PRD card only.',
+    defaultEnabled: true,
+    defaultVariant: 'ruled-row',
+    variants: [
+      { value: 'ruled-row', label: 'Ruled row' },
+      { value: 'stacked', label: 'Stacked, icon-led' },
+      { value: 'labelled', label: 'Labelled lines' },
+    ],
+    surface: 'design',
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'atlas-courses-from-library',
     /* MY COURSES READS THE LEARNER'S LIBRARY. On (`atlasCoursesFor`), the page
        renders the same fixtures `/my-learning/courses` reads, so the Demo

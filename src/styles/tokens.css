@@ -8220,6 +8220,12 @@ button.cre-admin-side-row {
 .cre-atlas-card-kebab:hover { background: var(--color-primary-200) !important; }
 .cre-atlas-card-review:hover { text-decoration: underline; }
 .cre-atlas-card-outline:not(:disabled):hover { background: var(--color-primary-100) !important; }
+/* The PRD card (AtlasCourseCardFigmaV2, 2026-11-23): the whole card opens Home in its course, so it says so — a soft lift
+   on hover and a 2px ring on keyboard focus (the scan: clickable, with only the cursor to show it). */
+.cre-atlas-card-v2 { transition: box-shadow 120ms ease, transform 120ms ease; }
+.cre-atlas-card-v2:hover { box-shadow: 0 4px 14px rgb(0 0 0 / 0.10); transform: translateY(-1px); }
+.cre-atlas-card-v2:focus-visible { outline: 2px solid var(--color-primary-500); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { .cre-atlas-card-v2 { transition: none; } .cre-atlas-card-v2:hover { transform: none; } }
 
 /* Quick Links pinned 40 under the header (2026-11-12, Eric: "stop scrolling vertically once it reaches 40 pixels below the
    header"). `--atlas-header-bottom` is the shell's. The card's parent is stretched to its column's height so the card has

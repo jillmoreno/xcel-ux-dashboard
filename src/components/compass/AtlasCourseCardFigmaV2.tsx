@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import { Link } from 'react-router-dom'
-import { AngleRightSolid, EllipsisVerticalSolid } from '@/icons'
+import { AngleRightSolid, EllipsisVerticalSolid, LocationDotRegular } from '@/icons'
+import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { AtlasStatusPill, statusStrongFill, type AtlasCourseStatus } from './AtlasStatusPill'
 import type { AtlasCourseCardData } from './AtlasCourseCard'
 import { AtlasCourseDetailsSheet } from './AtlasCourseDetailsSheet'
@@ -72,6 +73,10 @@ export function AtlasCourseCardFigmaV2({
   /* THE LINE UNDER THE DATE (PRD section 3): a failed course shows her score, an expired one her last progress. Nothing on
      the other three — the completed score is on the date line itself. */
   const detail = failed && data.score != null ? `Score: ${data.score}%` : expired ? `Last progress: ${progress}%` : null
+  /* HOW THE THREE LABELS ARE DRAWN — the design bar's `atlas-courses-card-meta` (2026-11-23, Jillienne: "lets explore some ui
+     variations"). See the flag for the three arms. */
+  const metaLayout = useFeatureFlag('atlas-courses-card-meta').variant ?? 'ruled-row'
+  const facts = [data.state, data.category, data.lineOfAuthority].filter((v): v is string => Boolean(v))
   /* The ⋮ menu: open on click, shut on a click anywhere else, on Escape, or on picking a row. */
   const [menuOpen, setMenuOpen] = useState(false)
   /* Course Details — the facts' sheet (2026-11-18, Eric). */
@@ -109,6 +114,9 @@ export function AtlasCourseCardFigmaV2({
       }
       tabIndex={onOpen ? 0 : undefined}
       data-cta-id={onOpen ? 'my-courses.card-open-home' : undefined}
+      // The whole card opens Home in this course; a hover lift and a focus ring say so (the scan's finding — the card was
+      // clickable with nothing but a cursor to show it). `.cre-atlas-card-v2` in tokens.css.
+      className={onOpen ? 'cre-atlas-card-v2' : undefined}
       style={{ ...CARD, ...(steppedBack ? CARD_DONE : null), ...(onOpen ? { cursor: 'pointer' } : null) }}
     >
       <img src={data.imageUrl} alt="" aria-hidden style={IMAGE} />
@@ -159,16 +167,43 @@ export function AtlasCourseCardFigmaV2({
           values alone, 12 / 500, hairline rules between them — `CourseMeta`'s row and `MetaRule`, not the 2026-11-12
           card's "State: Florida" lines. A fact the course does not have draws no rule. The sheet keeps the labelled
           version with the package paragraph. */}
-      <div style={FACTS} data-testid="atlas-card-facts">
-        {[data.state, data.category, data.lineOfAuthority]
-          .filter((v): v is string => Boolean(v))
-          .map((v, i) => (
+      {metaLayout === 'stacked' ? (
+        /* STACKED, ICON-LED — the shared compact card's shape: "Online" with its delivery icon over "Mandatory | 6 Hours".
+           Here the state leads with the location-dot (the 706:2416 design's own icon for it), then category | line of
+           authority on a hairline. */
+        <div style={FACTS_STACKED} data-testid="atlas-card-facts" data-meta="stacked">
+          {data.state ? (
+            <span style={FACT_LINE}>
+              <LocationDotRegular size={14} aria-hidden style={{ flex: 'none' }} />
+              <span>{data.state}</span>
+            </span>
+          ) : null}
+          {data.category || data.lineOfAuthority ? (
+            <span style={{ ...FACT_LINE, flexWrap: 'wrap' }}>
+              {data.category ? <span>{data.category}</span> : null}
+              {data.category && data.lineOfAuthority ? <span aria-hidden style={FACT_RULE} /> : null}
+              {data.lineOfAuthority ? <span>{data.lineOfAuthority}</span> : null}
+            </span>
+          ) : null}
+        </div>
+      ) : metaLayout === 'labelled' ? (
+        /* LABELLED LINES — the 2026-11-12 card's three lines, label in the secondary ink and the value bold. */
+        <div style={FACTS_LABELLED} data-testid="atlas-card-facts" data-meta="labelled">
+          {data.state ? <Fact label="State:" value={data.state} /> : null}
+          {data.category ? <Fact label="Category:" value={data.category} /> : null}
+          {data.lineOfAuthority ? <Fact label="Line of authority:" value={data.lineOfAuthority} /> : null}
+        </div>
+      ) : (
+        /* RULED ROW (default) — the three values on one line with the shared card's hairlines between. */
+        <div style={FACTS} data-testid="atlas-card-facts" data-meta="ruled-row">
+          {facts.map((v, i) => (
             <span key={v} style={{ display: 'contents' }}>
               {i > 0 ? <span aria-hidden style={FACT_RULE} /> : null}
               <span>{v}</span>
             </span>
           ))}
-      </div>
+        </div>
+      )}
       <div style={PROGRESS}>
         <div style={PROGRESS_ROW}>
           {/* No gauge before it (2026-11-12, Eric). */}
@@ -358,6 +393,12 @@ const TITLE: CSSProperties = {
   fontSize: 22, // My Certificates' card titles, 22 / 24 (2026-11-12, Eric; 20 / 21, the design's 18 / 19 before)
   lineHeight: '24px',
   color: 'var(--color-text-primary)',
+  // Three lines at most (2026-11-23, the scan): the subgrid gives every title row the tallest title's height, so one
+  // four-line title would push every card's pills down. The full title is the article's accessible name either way.
+  display: '-webkit-box',
+  WebkitLineClamp: 3,
+  WebkitBoxOrient: 'vertical',
+  overflow: 'hidden',
 }
 /* The description: the facts' face at 12, three lines at most so a long blurb cannot push the row's buttons apart. */
 const DESCRIPTION: CSSProperties = {
@@ -395,7 +436,7 @@ const DATES: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 2,
 const DATE_LINE: CSSProperties = {
   margin: 0,
   fontFamily: 'var(--font-body)',
-  fontSize: 11,
+  fontSize: 12, // the description's and the labels' 12 (2026-11-23, the scan: the most decision-bearing line was the smallest)
   lineHeight: '18px',
   color: 'var(--color-text-secondary)',
 }
@@ -429,7 +470,11 @@ const REVIEW_LINK: CSSProperties = {
   display: 'inline-flex',
   alignItems: 'center',
   gap: 4,
-  padding: 0,
+  // A 24-tall hit area on a 16-tall link (WCAG 2.2 target size, the scan's finding): 4 of padding above and below,
+  // pulled back out with the margin so the layout does not move.
+  padding: '4px 0',
+  marginTop: -4,
+  marginBottom: -4,
   border: 'none',
   background: 'none',
   fontFamily: 'var(--font-body)',
@@ -445,6 +490,41 @@ const REVIEW_LINK: CSSProperties = {
 const ACTIONS: CSSProperties = { display: 'flex', gap: 6, alignItems: 'flex-end' }
 /** "Course Details ›" in the text link's style, centred under the full-width button (2026-11-23). */
 const DETAILS_LINK: CSSProperties = { ...REVIEW_LINK, alignSelf: 'center' }
+/* The three label layouts (2026-11-23). STACKED: two lines, 2 apart, the shared compact card's `CourseMeta` block at the
+   card's 12. LABELLED: the 2026-11-12 card's lines. */
+const FACTS_STACKED: CSSProperties = {
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'flex-start',
+  gap: 4,
+  paddingTop: 4,
+  paddingBottom: 12,
+  color: 'var(--color-text-secondary)',
+  fontFamily: 'var(--font-body)',
+  fontSize: 12,
+  fontWeight: 500,
+  lineHeight: '16px',
+}
+const FACT_LINE: CSSProperties = { display: 'inline-flex', alignItems: 'center', gap: 8 }
+const FACTS_LABELLED: CSSProperties = {
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 6,
+  paddingTop: 4,
+  paddingBottom: 12,
+  color: 'var(--color-text-secondary)',
+  fontFamily: 'var(--font-body)',
+}
+const FACT: CSSProperties = { display: 'block', fontSize: 11, lineHeight: '18px' }
+const FACT_VALUE: CSSProperties = { fontWeight: 700, fontSize: 10 }
+/* One run of text, so a long value wraps under its label inside the card rather than widening it (the 2026-11-12 card's). */
+function Fact({ label, value }: { label: string; value: string }) {
+  return (
+    <span style={FACT}>
+      {label} <strong style={FACT_VALUE}>{value}</strong>
+    </span>
+  )
+}
 /* The button row and "Course Details ›" under it, 8 apart, at the foot of the subgrid row (2026-11-23). */
 const ACTIONS_BLOCK: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 8, alignSelf: 'end' }
 
