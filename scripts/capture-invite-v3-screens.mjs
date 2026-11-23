@@ -141,7 +141,11 @@ const slugify = (s) =>
    know that the reset your password modal applies when a user has keycloak
    account"). By title, so a merge tags the earlier run's components too. */
 const KEYCLOAK_ONLY = 'Keycloak (Atlas) account only'
+/* The Log In flow's Keycloak Log in — titled so it reads as the alternative
+   to the checkout's Log in to continue (2026-11-23, Afsana). */
+const KEYCLOAK_LOG_IN = 'Log in — alternative to Log in to continue'
 const TAGS = {
+  [KEYCLOAK_LOG_IN]: KEYCLOAK_ONLY,
   'Reset your password — enter email': KEYCLOAK_ONLY,
   'Reset your password — Log In': KEYCLOAK_ONLY,
   'Check your email': KEYCLOAK_ONLY,
@@ -699,13 +703,23 @@ async function b2c(page, flowId, cart, account, slug) {
   return w
 }
 
-/** Keycloak's Log in, then its Reset your password — the Log In flow's own:
- *  on the card, ← Back, no Back to sign in (2026-11-20). Filed apart from the
+/** Keycloak's Log in — the Log In flow's alternative to the checkout's Log in
+ *  to continue: ← Back, the welcome line, the address locked (2026-11-23,
+ *  Afsana: its password states were not captured) — then its Reset your
+ *  password, then back to Log in and Signing you in. Filed apart from the
  *  checkout modal's, and tagged Keycloak only (`TAGS`). */
 async function keycloakReset(w) {
   const page = w.page
   await page.waitForURL(/\/log-in\/keycloak/, { timeout: 10000 })
   const KC = 'section[aria-labelledby="verify-email-title"]'
+  const LOGIN = KEYCLOAK_LOG_IN
+  const pw = page.getByLabel(/^Password/)
+  await w.shot(LOGIN, 'Empty password, Log in disabled', { card: KC })
+  await pw.fill('wrong')
+  await w.click('Log in', { wait: 400 })
+  await w.shot(LOGIN, 'Wrong password', { card: KC })
+  await pw.fill('Navarro#2027')
+  await w.shot(LOGIN, 'Password entered, Log in enabled', { card: KC })
   await w.click('Forgot password?', { wait: 500 })
   const RESET = 'Reset your password — Log In'
   const field = page.getByLabel(/^Email/)
@@ -714,6 +728,11 @@ async function keycloakReset(w) {
   await w.shot(RESET, 'Invalid email address', { card: KC })
   await field.fill('jordan@example.com')
   await w.shot(RESET, 'Filled, Send reset link enabled', { card: KC })
+  /* Back to Log in, and in — stand-alone, it holds on Signing you in. */
+  await w.click('Back', { wait: 400 })
+  await page.getByLabel(/^Password/).fill('Navarro#2027')
+  await w.click('Log in', { wait: 300 })
+  await w.shot(LOGIN, 'Signing you in', { card: 'section[aria-label="Signing you in"]', settle: 150 })
   return w
 }
 

@@ -756,6 +756,46 @@
       "capturedAt": "2026-11-23"
     },
     {
+      "id": "card-log-in-alternative-to-log-in-to-continue",
+      "title": "Log in — alternative to Log in to continue",
+      "kind": "card",
+      "flows": [
+        "Log In"
+      ],
+      "states": [
+        {
+          "file": "cards/log-in-alternative-to-log-in-to-continue/01-empty-password-log-in-disabled.png",
+          "state": "Empty password, Log in disabled",
+          "seenIn": [
+            "Log In · Atlas account"
+          ]
+        },
+        {
+          "file": "cards/log-in-alternative-to-log-in-to-continue/02-wrong-password.png",
+          "state": "Wrong password",
+          "seenIn": [
+            "Log In · Atlas account"
+          ]
+        },
+        {
+          "file": "cards/log-in-alternative-to-log-in-to-continue/03-password-entered-log-in-enabled.png",
+          "state": "Password entered, Log in enabled",
+          "seenIn": [
+            "Log In · Atlas account"
+          ]
+        },
+        {
+          "file": "cards/log-in-alternative-to-log-in-to-continue/04-signing-you-in.png",
+          "state": "Signing you in",
+          "seenIn": [
+            "Log In · Atlas account"
+          ]
+        }
+      ],
+      "capturedAt": "2026-11-23",
+      "tag": "Keycloak (Atlas) account only"
+    },
+    {
       "id": "card-reset-your-password-log-in",
       "title": "Reset your password — Log In",
       "kind": "card",
