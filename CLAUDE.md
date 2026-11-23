@@ -1,441 +1,100 @@
 # XCEL UX Dashboard
 
-**One app with two front doors.** `/` is the UX Dashboard gateway — the project
-list Jillienne maintains. `/dashboard-rebrand` is the XCEL LMS product itself,
-which is what most design work actually changes. They share one Vite build, one
-token file, one icon registry and one `AccountContext`, which is why they are one
-repo rather than two.
+**One app with two front doors.** `/` is the **Hub** — six pages where the
+team's work is seen. `/dashboard-rebrand` is the XCEL LMS product itself, which
+is what most design work actually changes. They share one Vite build, one
+token file, one icon registry and one `AccountContext`, which is why they are
+one repo rather than two.
 
-**This file is the map, not the territory.** It was 4,456 lines until
-2026-09-21 — every decision this project has made, loaded in full before anyone
-asked a question. The detail now lives in `docs/`, one file per surface. Open the
-one you are touching; do not read all five.
+**This is the simple Hub (2026-11-21).** The advanced Hub — fourteen sections,
+stage and main, owners, scopes, a derived branch list, a release inbox, a To
+Do Board, QA Notes — is whole on the **`hub-advanced`** branch (tag
+`hub-advanced-2026-11-21`, commit `7b83b7a5`), with its CLAUDE.md, docs,
+guides and routines. The Archive page lists what was removed and how to bring
+it back. `docs/simple-hub.md` is the step-by-step record of the strip.
 
-## Prototypes is the source of truth. Refinement is everything else.
+## The Hub, in one table
 
-**Prototypes holds ONE row PER PRODUCT SURFACE, and every row is the same
-build (2026-09-28, restated 2026-10-14).** It answers *what is the product
-right now?* for developers and stakeholders. From 2026-09-28 it held exactly
-one row, because two rows pointing at two BUILDS of the same thing destroy the
-answer — from then on everyone has to ask which one is real.
+| Page | What it is | Who adds to it |
+|---|---|---|
+| **Design** | links to the work — branch builds, Figma files, documents, decks | anyone, on the page: Add link, paste, title, note, your name |
+| **Research** | the studies and findings behind the designs, grouped by project | anyone, the same way |
+| **PRDs** | the requirements documents the designs answer | anyone, the same way |
+| **Development** | the dev handoffs — one file per feature in `src/data/handoffs/` | Claude, via "write dev handoff notes", on the designer's branch |
+| **Done** | handoffs for finished work | whoever marks one done |
+| **Archive** | links archived off the three boards, and things removed from the project with the re-wire | the row's ⋯ → Archive; `ARCHIVED_ITEMS` in code |
 
-What changed on 2026-10-14 is the shape of the product, not the rule. A
-learner's journey has three doors — how they get **in** (invite and purchase),
-what they **land in** (the dashboard, end to end), and where they **study**
-(Compass) — and each is its own source of truth for a different question. The
-section holds one row per door, declared in `PROTOTYPE_SCOPES` in
-`prototypeFeatures.ts`, and the guarantee the one-row rule gave is kept in a
-stricter mechanical form that `UxDashboard.smoke.test.tsx` pins: **every row
-that opens is `main`'s build at `?demo=1`**, entered through one of the product
-app's doors (`/dashboard-rebrand`, `/end-to-end-demo`) — same origin, never a
-branch URL, never an `?ff=` pin, never a pinned `version=`, never an HTML
-document (a document is an exploration, not `main`'s build of the product). A `coming-soon` row is a
-**placeholder**: drawn disabled with a "Coming soon" tag, nothing to click —
-either nothing is built yet (the Admin row) or the surface is **held back**
-with its route kept on record while its owner decides what it carries (the
-end-to-end row, 2026-10-14; releasing it is `status: 'ready'`). Five rows, one
-build, one committed baseline.
+Two quiet links at the foot of the rail: **Guide** (`/contributing/`, the one
+guide) and **Demo build** (`/dashboard-rebrand?demo=1&journey=full`, the
+product on `main`). Neither is a section. The Design board's section id is
+still `demo` — it was Refinement until 2026-11-21; the id, store and endpoint
+did not change.
 
-So when you want several things visible at once FOR THE SAME SURFACE — two
-pacing treatments, a component's variants, a branch under discussion — **they
-go in Refinement**, which takes any number of rows, is authored in the browser
-(no code, no commit, no deploy), and is **visible to stakeholders too** —
-there is one site since 2026-10-15, and they are given its link.
+The three boards are one component (`LinkBoardPanel` in `LinksPanel.tsx`),
+one server module (`netlify/lib/linkBoard.ts`), three Blobs stores
+(`demos`, `research`, `prds`). A row is title · link · note · who · Updated;
+the roster is `DESIGNERS` in `linkStore.ts` (Jill · Anjani · Eric · Afsana).
 
-| Section | Means | Rows | Lives in |
+## The three sentences
+
+| Said | Routine | Who | Does |
 |---|---|---|---|
-| **Prototypes · Main** | this IS the product — released | one per surface, all on `main` | flag defaults on `main` |
-| **Prototypes · Stage** | decided by its owner, not yet released | the same rows, all on `stage` | flag defaults on `stage` |
-| **Design** (2026-11-16) | being worked on — every pushed branch | one per branch, grouped by feature | derived from Netlify + git; nobody authors it |
-| **Release** (2026-11-16) | on stage, not on main — Jillienne's inbox | one per waiting branch, by surface, Decided / Undecided | derived from git + the `.hub/decided/` markers |
-| **Refinement** | under discussion — notes, documents, decks | as many as you like | Netlify Blobs, authored on the page |
+| **"Share my work"** | `share-my-work` (aliases `share-branch`, `promote-to-refinement`) | anyone | cuts a branch if you are on main (named `work/<you>/<date>`), checks, commits with a subject it writes, pushes, hands back ONE line: the branch link to paste on Design. Zero questions. |
+| **"Write dev handoff notes for …"** | `dev-handoff-notes` | anyone | reads the branch, asks six short questions, writes `src/data/handoffs/<id>.ts` — the Development row — and puts the Design link on its Links row |
+| **"Ship …"** | `ship` (aliases `release`, `ship-to-main`) | Jillienne only | the branch you are on, a name, or a Design link; rebase; the FLAG REVIEW; build + tests; fast-forward merge into main; push; check the deploy |
 
-**STAGE (2026-11-01).** A third place, between a Refinement link and `main`,
-because there was nothing between *decided* and *released*: an owner who had
-run `promote-to-prototype` had a commit of defaults on their branch and no
-way to show anyone the surface with them until Jillienne merged. `stage` is a
-long-lived branch Netlify builds like any other
-(`stage--ux-design-xceldashboard.netlify.app`). Owners merge into it with
-`/share-to-stage`; Jillienne merges IT into `main` with `/release`
-(`ship-to-main` kept as an alias). **It is NOT a section** — Jillienne: "I
-want the prototype page to have both Main and Stage options there, not a new
-page in the rail" — so Prototypes has a **Main · Stage** switch above its
-rows (`?build=stage` in the address) and the rows are the same rows; the
-switch picks which build each opens. `src/data/stageBuild.ts` holds the
-origin and the reasoning; the smoke test pins both views. Three decisions
-the skills encode: releases are **all at once** (owners stay in their lane,
-and `share-to-stage` refuses a branch that crosses into another owner's
-files); **owners or Jillienne push to stage**, nobody else; **conflicts move
-to the share** — `share-to-stage` merges stage INTO the branch, in the
-owner's checkout, so two owners in one file collide there and not in a
-release. The Hub cannot read stage from main (same password, cross-origin),
-so what is WAITING on stage is the To Do Board's **On Stage** column, which
-`share-to-stage` files into, not a tag on the rows.
+Two more routines stay: `archive-a-feature` (unwire, keep the file, write the
+Archive row) and `freeze-for-testing` (the moderated user-test site; nothing
+to do with the Hub).
 
-**DESIGN IS BACK, DERIVED (2026-11-16).** Jillienne: the share-to-stage and
-Refinement links "are just adding more confusion and chaos." Every hand-off
-was a prefilled URL clicked through the site password into a Blobs row, and
-the same fact was authored three times. So the Hub now READS it: a new
-**Design** section between Prototypes and Refinement lists every branch
-Netlify has built lately (any state — a push is a row saying *Building…*),
-grouped by the feature its name says — `feat/<scope>-<feature>[--<variant>]`,
-`src/data/branchName.ts` — each row tagged *In design · On stage · Released*
-from git (`netlify/lib/branchGit.ts`, needs `GITHUB_TOKEN` on the Netlify
-project). The designer's whole job is **name the branch, push**.
-`share-branch` is checks · commit · push and says where the row is;
-`share-to-stage` files no card; the Prototypes *Staged* tag reads git first
-and the old cards second; the branch strip under Refinement is gone.
-Refinement is for what git cannot see — a note, a document, a deck — reached
-from the Design row's **Discuss in Refinement**. **RELEASE, the same day**:
-Jillienne: "I cannot tell what branch is ready on stage to be pushed to
-main." A rail row under Design lists every branch on stage and not on main,
-by surface, with one number (stage is N commits ahead of main) and a
-*Decided / Undecided* tag per branch from the marker `share-to-stage` now
-writes — `.hub/decided/<scope>.json`, one file per scope, honest because the
-Hub counts it only while its `commit` is ahead of main (`decidedOn` in
-`branchGit.ts`), so nothing is cleaned up after a release. The page says
-"Ready" or "Not yet"; `/release` checks the same files by the same rule.
-The Design row's caption names the next step (*next: /share-to-stage
-(owner)* · *waiting on Release*). `docs/gateway.md` has the rest. The 2026-10-15 "Design is retired" below is history: that Design was a
-list of feature rows by status; this one is derived and authored by nobody.
+**The flag review, inside Ship.** Every default the branch would change on
+`main` (`FeatureFlagContext.tsx` and `dashboardVersions.ts`), grouped by the
+component each flag gates, with every component carrying MORE THAN ONE flag
+called out first. Yes or no per flag. Then, per decided flag: retire it? —
+call sites take the winning path, the flag leaves `FEATURE_FLAGS` and
+`REBRAND_FLAGS`, the losing file stays with an Archive row.
 
-**THE VOCABULARY (2026-11-01).** Jillienne settled the words designers read,
-after an audit found the same thing under several names and one name on
-several things. In guides, About and UI copy: **routine** (not skill, not
-command); **the design lead (Jill)** for the role — defined once per guide as
-the person in charge of the project's GitHub repository, who owns `main` and
-releases — with "Jill" in conversational lines and "Jillienne" only in this
-file, code comments and commit history; **the Hub** for the site (never "the
-dashboard", which is the learner's; "gateway" and "UX Dashboard" are code and
-repo terms); **branch link** / **stage link** for a Netlify build address
-(not review link, not branch build); **review bar** for the dark bar (the
-component is still `PrototypeBar.tsx`); **Hide / Unhide / Show hidden** for
-the Refinement row action, so **Archive** means only the nav section; and
-**"promote" is retired as a designer word** — it had named four acts. The
-routines are now `share-component` · `share-branch` · `share-to-stage`
-(put work where people can see it), `decide-defaults` (a step inside
-share-to-stage; designers never type it), `freeze-for-testing`, and the
-design lead's `release`. Old names are alias skills. Code identifiers,
-paths and server fields did not change. Older paragraphs in this file keep
-the names they were written with; they are history.
+**Main is locked.** On GitHub, `main` requires Jillienne's review and refuses
+a direct push from anyone else (`.github/CODEOWNERS`, branch protection). In
+Claude, `.claude/hooks/protect-main.mjs` refuses the same for anyone but her,
+in plain words. `MainProtection.test.ts` pins both. There is no stage.
 
-**THE TO DO BOARD (2026-10-15)** is the rail's last section and the one
-thing on it that is not about a prototype: five columns — To Do, Working On
-It, Ready For Refinement, On Stage (2026-11-01), Ready for Prototype and Handoff — that say who is
-on what this week. Authored on the page like Refinement, on its own Blobs
-store, with its own people roster seeded from the same five names. Two rules
-are the SERVER's: a card in the handoff column is Jillienne's however it got
-there, and removing someone moves their cards to Unassigned rather than
-deleting them. It is NOT the archived To Do section (`todo-section`, id
-`todo`), which was a private per-browser checklist and is still archived.
-`docs/gateway.md` has the rest.
+## The one rule for product work: switches
 
-**ONE SITE since 2026-10-15.** The demo site — a second Netlify project that
-trimmed the gateway for stakeholders — is retired, with the Refinement
-public toggle and the `maturity` gate that only existed to feed it. The Hub
-is behind one password; stakeholders are given its link and see everything
-the team sees, except the review recaps, which the production deploy 404s
-at the edge. The three `archivedItems.ts` rows dated 2026-10-15 say how it
-was wired. The user-test build is unaffected.
+A React surface of the product goes in `src/` **behind a feature flag whose
+default is ON on your branch**. On main the flag is off until Ship decides
+it. **Changing something that already exists?** Copy it to a sibling
+(`StudyPaceTile.tsx` stays, `StudyPaceTileV2.tsx` is yours) and let the flag
+choose at the call site; the original is never touched, so two designers
+cannot collide. Mark a flag `surface: 'design'` to put it on the design
+controls bar; the demo controls bar is Jillienne's.
 
-**THE PROTOTYPES LINKS ARE DEACTIVATED (2026-11-17).** Jillienne: "deactivate
-the links to the main prototypes and stage prototypes so that the users get an
-error screen … on the error screen shown to the user is where the message
-should be." All four rows that open are marked `linkRetired` in
-`prototypeFeatures.ts`; under Main AND Stage the row renders
-`/prototype-unavailable/<id>` instead of the product, and that screen
-(`PrototypeLinkRetiredPage.tsx`) carries the message — the links are being
-replaced, check with UX Team/Product Owner for the new one (**no individual is
-named**: it named the scope's owner for half a day on 2026-11-17, until
-Jillienne read her own name on the live screen). **NOT `coming-soon`**,
-which is the other way to take a link away: that draws the row disabled with
-nothing to click, which hides the link and tells nobody anything. Here the
-click is kept precisely so there is somewhere to put the message. **Nothing
-about the rows' routes changed** — every `to` is still the real route and the
-smoke test still holds it to the one-build rule, so **reactivating a row is
-deleting its `linkRetired` line**, and `expectedHref` in
-`UxDashboard.smoke.test.tsx` is the single place the tests know about it. One
-screen for both builds on purpose: the stage origin is behind its own copy of
-the site password, so a retired screen served from there would be a login wall
-in front of the message. ⚠ New links are still OUTSTANDING from the scope
-owners — Eric (Atlas), Afsana & Eric (Invite), Anjani (Compass), Jillienne
-(end to end).
-
-Five rows as of the evening of 2026-10-14, the product first and then the
-doors around it: **End-to-End User Experience (Invite, Atlas, Compass)** — always the
-first row — then **Invite & Purchase** (`/end-to-end-demo`, Eric's End-to-End
-Demo — the Invited Product Detail page, its checkout, then the dashboard),
-**Atlas Learning — Work in Progress** (the end-to-end's middle: Home and the
-learning pages, same build at Home, Eric's), **Compass Learning**, and **Admin
-Tool** — a placeholder
-until the admin surface is built in React; the PartnerHub-fork exploration's
-row is archived (`admin-tool-row`, 2026-10-15) and its document kept. A fifth
-is a `PROTOTYPE_SCOPES` decision first and a row second.
-
-**Who promotes, and who merges, are two different columns (2026-10-14).**
-Each scope names an `owner`, and the owner both decides what that surface
-should be and runs `promote-to-prototype` for it on their own branch: Anjani
-for Compass, Eric for Atlas Learning, Afsana and Eric for Invite & Purchase,
-Cody for Admin, Jillienne for end to end. A promotion is a commit of defaults on a branch and
-reaches no stakeholder by itself. From 2026-11-01 the owner then runs
-`/share-to-stage` (which runs the promotion's questions itself if the branch
-has not answered them) and the surface is open to everyone on the stage build.
-**Only Jillienne releases** — `/release`, formerly `ship-to-main`, merges
-`stage` into `main` and refuses a stage with a group its owner has not
-decided — **and only she sets the default dashboard version.** That is the
-lock, for every scope. A branch never goes to main directly any more.
-**MAIN IS LOCKED TWICE (2026-10-29).** On GitHub, `main` carries a
-branch-protection rule — pull request required, code-owner review required,
-force-pushes and deletion refused, admins exempt — and `.github/CODEOWNERS`
-names Jillienne for every file, so a designer cannot push to main and cannot
-merge a pull request into it without her review, whatever tool sent it. That
-is the lock. In Claude, `.claude/hooks/protect-main.mjs` (PreToolUse on Bash)
-refuses, for anyone but her, a push aimed at main, a switch onto main, a
-commit or merge while standing on it, and `gh pr merge` — with a message
-saying whose step it is. That is the explanation, and like the file guard it
-only sees Claude's commands. `MainProtection.test.ts` pins both halves. She is
-exempt from both, so `release` is unchanged for her. `stage` carries no such
-rule: owners push to it, and that is the point.
-
-**Anyone promotes to Refinement**, and that door is unchanged —
-`share-branch` — `promote-to-refinement` until 2026-10-15, briefly `share`, and
-both older names still work —
-reads the branch and tags the row's product (Compass files → Compass), which is
-the tag the Compass row later absorbs.
-
-Two things that follow, and both have bitten:
-
-- **A Refinement row pinned with `?ff=` tracks `main`,** so it goes stale
-  silently when the component changes underneath — no error, it just quietly
-  becomes something else. When something must NOT move (a user test, a
-  sign-off), that is `freeze-for-testing`'s frozen branch, not a Refinement row.
-- **Refinement rows are not in git,** so there is no record of what was shown
-  when. It is a working surface, not a decision log — the decisions log on a dev
-  handoff is where a decision gets recorded.
-
-**Refinement filters by DESIGNER and has an archive (2026-10-15).** The pills
-over the board are the five names in `DESIGNERS` (`linkStore.ts`) — the same
-people `PROTOTYPE_SCOPES` names as owners — and Added by is a choice from that
-roster, so a row always lands under a pill; the product (Atlas · Compass ·
-Both) stays as the tag on the row. The row kebab has **Archive** beside
-Remove: archive HIDES a row (stamped who and when, server-side), **Show
-archive** top right lists what was hidden, **Unarchive** puts it back, and
-anyone can do either. Remove still deletes. The nav count and the branch
-strip both treat an archived row as off the board. Refinement only — the
-other three boards keep free-text authors and no archive.
-
-The ways in are already built: `share-branch` (a branch),
-`share-component` (one widget's variants), `share-to-stage` (moving a decided
-surface onto the stage build). There is deliberately no "create a second
-prototype" skill: a new SCOPE is a decision Jillienne makes in
-`PROTOTYPE_SCOPES`, and a second row for an existing scope is a Refinement
-job.
-
-**DEV HANDOFFS ARE THE DESIGNERS' OWN ROWS (2026-10-26).** A handoff is one
-file per feature in `src/data/handoffs/`, written by `/dev-handoff-notes` on
-the designer's branch. It lands on the Development board as `not-ready` and
-**the status is the designer's from there** — set in the file, which is what
-everyone sees (the row's kebab is a per-browser override). The only guardrails
-are the two that already exist: `release` (was `ship-to-main`) is Jillienne's,
-and `promote-to-prototype` / `share-to-stage` are the scope owner's (confirmed 2026-10-26: "promote to
-prototype stays with the owners"). The folder is deliberately OFF the protected
-list: until today the row lived in `prototypeFeatures.ts`, so the routine was
-one a designer could start and not finish. The file name is the id, which is
-what keeps two designers out of one file. `src/data/handoffs/README.md` has
-the skeleton; the four Atlas Home rows of 2026-10-19 predate the folder and
-stay where they are.
-
-**The way OUT is `retire-from-refinement`** (2026-09-29), and it runs both when
-the work shipped and when it did not. It exists because of the second bullet
-above: a row's build lives on a Netlify BRANCH deploy, so deleting the branch
-deletes the only viewable copy of the work, and "we tried this and decided not
-to" otherwise leaves no trace anywhere. It reads the row, makes the
-keep-or-delete-the-branch call explicit, writes the Archive row from what the
-reviewer actually wrote, and only then removes the row. It does NOT move work
-into Explorations — that section is for documents authored to be kept, and the
-skill records why.
-
-**THE DESIGNERS GROUP IS GONE (2026-10-15).** The rail used to end in a
-divider under a "Designers" eyebrow holding Design · Exploration · Archive ·
-QA Notes behind one (unenforced) gate. One site behind one password needs no
-second door, so: **Design is retired** (it listed nothing; the team does not
-work in a design/development split), **Exploration is renamed Explorations
-and moved up to sit directly under PRDs** — the briefs and the documents
-answering them, side by side in the nav — and **Archive and QA Notes sit
-under Dev Handoff**, ungated. Twelve sections — those ten plus the two Team
-sections, To Do Board and Hub Resources. The two `archivedItems.ts` rows
-`design-section` and `designers-gate` say how it was wired.
-
-**Four rows went the same day, after the preview** — `xcel-lms` and
-`xcel-admin-tool` from Explorations, and both Development handoffs
-(`xcel-course-entry`, `atlas-home-course-card`: "they were not ready"). They
-are kept verbatim in `src/data/archivedFeatureRows.ts`, a module nothing
-imports, with an `archivedItems.ts` row each; restoring one is a cut-and-paste
-back into `PROTOTYPE_FEATURES`. Development lists nothing until the next
-`/dev-handoff-notes` row lands.
-
-## Scope — read before adding a route
-
-**CHANGED 2026-09-08. This section used to say "gateway only, four routes".**
-It is now three things, and where a new screen belongs depends on which:
-
-| Surface | Lives in | Reached at |
-|---|---|---|
-| The UX Dashboard gateway | `src/pages/UxDashboardPage.tsx` + friends | `/`, `/prototype/:id`, `/research-rationale`, `/qa-notes`, `/links`, `/prds` (fourteen sections — Prototypes · Design · Release · Refinement · Research · Resources · PRDs · Explorations · Development · Done · Archive · QA Notes · To Do Board · Hub Resources) |
-| The XCEL product app | `src/pages/*`, `src/components/*` | `/dashboard-rebrand` + ~28 product routes |
-| The standalone prototypes | `public/prototypes/*.html` | `/prototypes/…`, opened in a tab or iframed |
-
-**A new XCEL screen has two homes now, and picking wrong is the mistake this
-section exists to prevent.** If it is a REACT surface of the product — a page in
-the shell, a panel, a card — it belongs in `src/` as a route. If it is a
-hand-authored HTML exploration answering a brief, it belongs in
-`public/prototypes/` as a document, and it gets a `PROTOTYPE_FEATURES` row, not
-a route — `category: 'exploration'`, no `devStatus`, and it lists in
-Explorations, under PRDs in the nav.
-
-The old warning still holds in its narrow form: **do not rebuild one of the six
-standalone prototypes as a React route.** That is the "two sources of truth"
-failure the previous wording was guarding against, and it is still real. What
-changed is that a React product surface is no longer automatically out of
-scope — the product IS React here now, exactly as it is in the LMS.
-
-
-## If you are a designer, this is the whole job
-
-1. **Make a branch** — say to Claude: *"Make a new branch called
-   `feat/your-thing` from main and switch to it."* Lowercase, dashes.
-2. **Build it.** A React surface of the product goes in `src/`, **behind a
-   feature flag whose default is ON on your branch** — that is what makes your
-   branch build show your work and what lets Jillienne decide, at merge, whether
-   it ships. A hand-authored HTML exploration goes in `public/demos/`.
-
-   **Changing something that already exists?** Don't thread conditionals through
-   it. Copy it to a sibling — `StudyPaceTile.tsx` stays, `StudyPaceTileV2.tsx` is
-   yours — and let the flag choose between them at the call site.
-   `CourseContentV2.tsx` is the worked example. The original is never touched, so
-   you cannot conflict with whoever else is editing it. **Fork the layout, import
-   the data:** if both versions duplicate the content, the comparison is no longer
-   about your change. Say `/share-component` and it will do this with you.
-3. **Share it — say `/share-branch`.** Since 2026-11-16 it is checks,
-   commit, push, and a line saying where the row is: the Hub's **Design**
-   section lists your branch on its own, under the feature its name says
-   (`feat/compass-study-planner` → Compass · "Study planner"; reuse the
-   words to add to a feature, `--variant` for a treatment of the same one),
-   *Building…* until Netlify finishes and then opening the build. No form,
-   no link to click, no card. Want to leave a note on where to look? The
-   row's ⋯ → **Discuss in Refinement** opens that form filled in. Then it
-   offers to cut your next branch.
-
-   By hand, if you would rather: *"Run the type check, the tests and lint"*
-   (add *"and the smoke suites"* if you touched `public/prototypes/`), then
-   *"Commit everything and push it to `feat/your-thing`"*, then Refinement →
-   Add link on the Hub. `/promote-to-refinement` is the old name for
-   `/share-branch` and still works.
-
-   ⚠ **NOT `/share` — that name is Claude Code's own.** It was the skill's
-   name for one day (2026-10-15 → 10-16) and never loaded: the bare command
-   reached Claude's feedback flow and the skill was not offered at all. It
-   failed SILENTLY, and the plain-English triggers ("share this branch") kept
-   working the whole time, which is what hid it.
-
-4. **Decided? Share it to stage — say `/share-to-stage`.** For a surface you
-   own. It asks the flag questions (`decide-defaults`) if your branch has not
-   answered them (which flag defaults become the surface's), merges today's
-   `stage` into your branch, runs the checks, pushes, and moves `stage` to
-   your branch. Your Design row says **On stage** on its own, and Prototypes
-   → **Stage** opens your work; **Main** does not until Jillienne runs
-   `/release`, after which the row says **Released**. No card to file.
-
-**You never run the site on your own computer.** There is no localhost step; the
-branch build IS the preview. Nothing here needs a terminal — every step above is
-a sentence you say to Claude with the project folder connected.
-
-Two guides, and since 2026-10-15 they divide by WHEN rather than by length —
-they used to be the same loop told twice:
-
-| Guide | When | Holds |
-|---|---|---|
-| **Contributing** — `/contributing/` | once, your first day | accounts, clone, dependencies, git identity, the vocabulary, the loop in one picture, where a new screen belongs, the flag rule |
-| **Designer Workflow** — `/designer-workflow/` | every day after | rebasing, building a change, `/share-branch`, promoting a surface, the routines, the morning auto-rebase, reading the Hub, the glossary, the troubleshooting table |
-
-Both are on the Hub under **Team → Hub Resources**, which is also where the
-stakeholder page `/about/` lives.
+A hand-authored HTML page goes in `public/demos/`, reachable on the branch
+build. `public/prototypes/` holds the finished explorations the smoke suites
+test — the documents are kept and served; their Hub rows are gone.
 
 ## What you do not need to touch
 
-These are the dashboard's own machinery. A design change should not reach them,
-and a pull request that edits them is usually a sign something was misunderstood.
-
-**This is enforced now, not just advised (2026-09-24).** Asking Claude to edit
-one of these files is refused, with a message naming the file and what to do
-instead — `.claude/hooks/protect-framework.mjs`, wired in `.claude/settings.json`.
-Jillienne is exempt (it checks `git config user.email`), so nothing about her own
-work changes. `FrameworkProtection.test.ts` is the backstop for the edits a hook
-cannot see — a hand edit in an IDE, or `sed` through the shell — and it fails the
-suite you run before pushing, naming the files.
-
-**A second hook guards `main` the same way (2026-10-29)** —
-`.claude/hooks/protect-main.mjs`, on every shell command: a push aimed at
-main, a switch onto main, a commit or merge while standing on it, or a
-pull-request merge is refused for anyone but Jillienne, in plain words.
-`MainProtection.test.ts` pins what it refuses and, as importantly, what it
-leaves alone (the daily `git rebase origin/main`).
-
-⚠ Both hooks are guardrails, not locks: the email check is one command to
-change, and they only intercept **Claude's** commands — a hand edit in an IDE
-reaches the file, a hand-typed terminal reaches git. `FrameworkProtection.test.ts`
-is what catches the file edits, when the suite is run before pushing. **`main`
-is the one thing that IS locked**, by GitHub's branch protection and
-`.github/CODEOWNERS` (see "MAIN IS LOCKED TWICE" above): that refuses a
-designer's push whatever sent it.
-
-⚠ **THE DEMO CONTROLS JOINED THE TABLE ON 2026-10-05**, after two designers
-edited the bar in the same week and collided: one adding three controls for
-their own dashboard version, the other restructuring which controls the bar
-carries. Both changes were reasonable; the merge was not. The bar is SHARED
-CHROME — its control list says what the PRODUCT demos, not what one exploration
-is exploring.
-
-### The two bars, and which one is yours
-
-| Bar | Rule | Shows | Who changes it |
-|---|---|---|---|
-| **Demo controls** | amber | how the product behaves for different LEARNERS — progress, tier, education | Jillienne only |
-| **Design controls** | light cyan | the decisions open inside YOUR exploration — fonts, brand colour, layout axes | any designer |
-
-**To put a control on the DESIGN bar you do not edit the bar.** Mark your flag
-`surface: 'design'` in the flag catalog and it appears, scoped to the dashboard
-VERSION you are on — a radiogroup if it has `variants`, an on/off if it does
-not. Name `versions: [...]` too when you have more than one version and the
-control belongs to only one of them; leave it off and the control follows you to
-every version you own.
-
-⚠ **THE DESIGN BAR STARTS HIDDEN, behind the robot's dropdown**, and anyone
-on the Hub can open it (one site since 2026-10-15; until then it was the
-design site's alone). A design decision worth putting in front of a
-stakeholder by default belongs on the DEMO bar instead — and that one is
-Jillienne's.
-
-`FeatureFlagPanel.tsx` is deliberately NOT protected either: adding your flag
-keys to `REBRAND_FLAGS` is something you must be able to do, or your flags are
-reachable only by hand-editing `?ff=`.
-The list of protected paths is THIS TABLE — a test reads it back out of this
-file, so the two cannot drift apart.
+The Hub's own machinery. Asking Claude to edit one of these is refused with a
+message naming the file (`.claude/hooks/protect-framework.mjs`, wired in
+`.claude/settings.json`); Jillienne is exempt (`git config user.email`).
+`FrameworkProtection.test.ts` reads THIS TABLE back out of this file, so the
+two cannot drift.
 
 | File | What it is |
 |---|---|
-| `src/pages/UxDashboardPage.tsx` | the gateway page — sections, nav, the rail |
-| `src/data/prototypeFeatures.ts` | the project rows and where each one points — EXCEPT dev handoffs, which are the designers' own, one file each in `src/data/handoffs/` (unprotected, 2026-10-26) |
+| `src/pages/UxDashboardPage.tsx` | the Hub page — sections, nav, the rail, the Archive page |
+| `src/data/prototypeFeatures.ts` | the project rows — EXCEPT dev handoffs, which are the designers' own, one file each in `src/data/handoffs/` (unprotected) |
 | `src/data/archivedItems.ts` | the Archive table |
-| `src/data/gatewayMode.ts`, `src/data/deployContext.ts` | the per-site and per-context build switches |
-| `netlify.toml`, `scripts/public-redirects.mjs` | the edge rules, and how branch builds differ from production |
-| `netlify/functions/`, `netlify/lib/` | the Refinement / Links / QA Notes endpoints |
+| `src/data/gatewayMode.ts`, `src/data/deployContext.ts` | the per-build switches (the user-test build; branch deploy vs production) |
+| `netlify.toml`, `scripts/public-redirects.mjs` | the edge rules |
+| `netlify/functions/`, `netlify/lib/` | the three boards' endpoints, row-archive, compare-notes |
 | `src/components/prototype/DemoControlsBar.tsx`, `src/components/prototype/DemoBar.tsx`, `src/components/prototype/demoBarUtil.ts` | the demo controls bar — which controls every reviewer sees |
-| `src/components/prototype/DesignControlsBar.tsx` | the design controls bar — you do not edit it to get a control on it (see below) |
+| `src/components/prototype/DesignControlsBar.tsx` | the design controls bar — mark your flag `surface: 'design'` instead of editing it |
 | `src/components/layout/AdminToolsMenu.tsx` | the robot — the UI/UX Demo Tools menu |
-| `.claude/hooks/`, `.claude/settings.json`, `.github/` | the two guards — the file guard and the main guard — the settings that wire them, and the CODEOWNERS file behind main's GitHub lock |
-| `.claude/skills/` | `release` (was `ship-to-main`), `share-to-stage`, `share-branch` (was `promote-to-refinement`; `share` for one day), `share-component` (was `promote-component`), `decide-defaults` (was `promote-to-prototype`, before that `promote-to-demo`), `freeze-for-testing` (was `promote-to-testing`), `retire-from-refinement`, `archive-a-feature`, `dev-handoff-notes` and `port-prototype` (2026-11-04) — every old name kept as an alias pointer. Jillienne's. Run them; don't edit them. |
-| `public/contributing/`, `public/designer-workflow/`, `public/about/` | the three guides (regenerate the PDFs if you do edit them) |
+| `.claude/hooks/`, `.claude/settings.json`, `.github/` | the two guards and the CODEOWNERS file behind main's lock |
+| `.claude/skills/` | the routines — `share-my-work`, `ship`, `dev-handoff-notes`, `archive-a-feature`, `freeze-for-testing`, and the alias names. Run them; don't edit them. |
+| `public/contributing/` | the guide (regenerate the PDF if you edit it) |
 
 ## Stack
 
@@ -445,9 +104,8 @@ file, so the two cannot drift apart.
 | Routing | react-router-dom v7 |
 | Icons | Font Awesome 7 Pro Light — self-hosted SVGs in `src/icons/` via `vite-plugin-svgr` |
 | Tokens | `src/styles/tokens.css` (`@theme inline`) |
-| Server code | Netlify functions over Netlify Blobs — QA Notes + captures, and the four link boards (Links, Refinement, Research, PRDs) — plus the read-only branch list |
+| Server code | Netlify functions over Netlify Blobs — the three boards, row-archive, compare-notes |
 | Tests | Vitest + @testing-library/react |
-
 
 ## Conventions
 
@@ -458,90 +116,75 @@ file, so the two cannot drift apart.
   and **no per-pill counts** — show the total beside the strip.
 - The dark `PrototypeBar` is theme-stable: it must look identical in light and
   dark, which is why `tokens.css` re-pins `neutral-800` / `neutral-50` inside
-  `[data-theme='dark'] .cre-prototype-bar`. Keep the bar's colours on those two
-  tokens or that exemption stops working.
-
-### The archive convention
-
-Don't delete outright. **Unwire** it (pull it from routes, render paths, flags),
-**keep the file** in the repo unreferenced, and **add an `ARCHIVED_ITEMS` row**
-with a `restoreNote` listing the actual re-wire steps. Bringing something back
-should be a re-wire, never a rebuild. `restoreNote` is the field most often
-written too thinly — name the files, the call sites, and anything deliberately
-*not* restored.
-
-Say **`/archive-a-feature`** and it walks the whole thing: finding every place
-the feature is wired (the flag catalog is the one people miss), deciding how far
-to unwire, and writing the row. `ArchiveConvention.test.ts` now enforces the
-thin bits — every `restoreNote` and `location` must name a place you can go to,
-not just describe an intention.
-
+  `[data-theme='dark'] .cre-prototype-bar`.
+- **The archive convention.** Don't delete outright. Unwire it, keep the file,
+  add an `ARCHIVED_ITEMS` row whose `restoreNote` names the files and call
+  sites. Say `/archive-a-feature`. `ArchiveConvention.test.ts` enforces that
+  every `restoreNote` and `location` name a place you can go. (The 2026-11-21
+  strip is the one exception: the files are on `hub-advanced`, and the rows
+  say so.)
 
 ## Verifying a change
 
 ```bash
-npx tsc -b --noEmit     # the real guardrail — `Brand` is a one-member union,
-                        # so a stray brand literal is a compile error
-npx vitest run          # ~1,066 tests
-npm run smoke           # the jsdom suites over public/prototypes/ — 674 assertions
+npx tsc -b --noEmit     # the real guardrail — `Brand` is a one-member union
+npx vitest run          # ~3,000 tests
+npm run smoke           # the jsdom suites over public/prototypes/
+npm run build           # what Netlify runs — Ship's gate
 ```
 
-**`npm test` does NOT run the smoke suites.** Run both. If you touched a guide,
-regenerate its PDF — `weasyprint public/<guide>/index.html
-public/<guide>/<guide>.pdf`, and `weasyprint` is installed since 2026-10-15.
-The tests assert a PDF exists; nothing can assert it is current.
+**`npm test` does NOT run the smoke suites.** `npm run lint` is not a gate
+(hundreds of problems on main); lint the files you changed. Guide edited?
+`weasyprint public/contributing/index.html public/contributing/contributing.pdf`.
 
 ## Where the detail lives
 
 | File | What is in it |
 |---|---|
-| [`docs/product-app.md`](docs/product-app.md) | **Most design work needs this one.** The dashboard versions, Readiness, the Study Journey, notifications, the flag catalog, and the 2026-09-08 migration |
-| [`docs/gateway.md`](docs/gateway.md) | The project list at `/` — sections, Refinement, Links, the one Netlify site (and the two it used to be), branch deploys, the guides |
+| [`docs/product-app.md`](docs/product-app.md) | **Most design work needs this one.** The dashboard versions, Readiness, the Study Journey, notifications, the flag catalog — the product's own history, unchanged by the Hub strip |
+| [`docs/gateway.md`](docs/gateway.md) | The Hub: the six pages, the boards, the one site, branch deploys |
+| [`docs/simple-hub.md`](docs/simple-hub.md) | The 2026-11-21 strip, step by step, with what changed in each |
 | [`docs/prototypes.md`](docs/prototypes.md) | The standalone HTML explorations and what each argues |
 | [`docs/admin-tool.md`](docs/admin-tool.md) | The PartnerHub fork answering the admin flows |
 | [`docs/testing.md`](docs/testing.md) | What each suite pins, and the two fragile-test rules |
 
-Older code comments say "see CLAUDE.md" and mean this material — start here and
-follow the link.
+## Siblings
 
-## Data files
+Two siblings carry the same gateway code — `../jill-dashboard-ux-designs`
+(the Common LMS) and `../partnerhub-ux-dashboard`. Both still run the
+advanced shape; the sync procedure is the `port-ux-dashboard` skill. Sync
+from `hub-advanced` if the target wants the advanced Hub, from `main` for
+this one.
 
-| File | Holds |
-|---|---|
-| [`src/data/handoffs/`](src/data/handoffs/README.md) | **The designers' dev handoffs, one file per feature (2026-10-26).** The file name is the row id, `category: 'dev-handoff'`, `export default` a `PrototypeFeature`; `handoffFeatures.ts` globs the folder and `prototypeFeatures.ts` spreads it into `PROTOTYPE_FEATURES`, so the board, the gateway and the export see one list. Not protected — `/dev-handoff-notes` writes here on a design branch. `HandoffFolder.test.ts` pins the rules; the smoke test's `EXPECTED_PLACEMENT` exempts these ids. |
-| [`src/data/prototypeFeatures.ts`](src/data/prototypeFeatures.ts) | The five XCEL rows + `PROTOTYPE_BASE`. The type block is verbatim from the LMS (so the ported components compile unchanged) plus one added field, `previewUrl`. Rows are ported verbatim from the LMS dashboard, which still has its own copies. |
-| [`src/data/archivedItems.ts`](src/data/archivedItems.ts) | The Archive table — two rows as of 2026-09-16 (the Profile page's Motivational Statement card, and the Dashboard MVP version retired by the flag audit). |
-| [`src/data/qaNotes.ts`](src/data/qaNotes.ts) | The committed QA seed — empty; findings are authored on the page. |
-| [`src/data/hubDocs.ts`](src/data/hubDocs.ts) | The **Hub Resources** section's rows (2026-10-15) — the three guides under `public/`, each with its page, its PDF and who it is for. Code rather than a board, because the list changes when a file is added. |
-| [`src/data/nyProducerRequirements.ts`](src/data/nyProducerRequirements.ts) | The New York Insurance Producer licence — the QE Focused version's demo. Sole owner of its INVENTED hour/exam figures, plus `examFactsFor` (the per-state exam facts the Readiness page reads). |
+## History — what was stripped on 2026-11-21, and why
 
-## Siblings and syncs
+Jillienne: "completely kill all the over-complicated features for this hub …
+the whole hub needs to be stripped down to the most simplistic version. I
+need a designer to be able to share links, I need them to be able to share
+from within the repo or without. I need to know if these links are Design,
+Research or PRD type links." And for the designer: "a designer that is not
+great at using Claude" should be able to say one sentence.
 
-This gateway has two siblings carrying the same code — `../jill-dashboard-ux-designs`
-(the Common LMS, where the gateway was born) and `../partnerhub-ux-dashboard`.
-The sync procedure is the `port-ux-dashboard` skill, Step 0. ⚠ Sync from
-`main` in the `xcel-main` worktree, never from whichever branch the main
-checkout happens to be on — the LMS's first pass on 2026-10-26 copied from a
-feature tip 80 commits behind `main` and missed the 2026-10-20/21 handoff
-rebuild.
+What went, each with an Archive row and whole on `hub-advanced`:
 
-- **2026-10-26 — the Common LMS hub synced FROM this repo @ `e7af3ea`**: the
-  twelve-section rail, the four boards, the To Do Board, Hub Resources, the
-  prototype bar's Design Hub label and actions kebab, the Not Ready rule, the
-  protect-framework hook, the seven workflow skills, and the one-page handoff
-  with States · Options · CTAs · Edge cases · Design Spec. Its decisions differ
-  where its product does — two Prototypes scopes (`dashboard-rebrand`,
-  `legacy-dashboard`), a Jill-only roster, Hub Resources empty, Refinement's
-  product control hidden, and its handoff detail is a SUPERSET that keeps its
-  own User Story · UX Logic · Acceptance · Notes · Quick Summary AFTER the XCEL
-  sections (34 features carry them). Its gateway keeps the three former tabs as
-  three stacked sections (Questions, Live Preview) under a jump nav.
-- **The same day, these came BACK from the LMS**: the opt-in **UI updates**
-  section under States (`showPreview` on a component — ASK the designer, see
-  the skill), the per-feature **Links** row on the gateway header
-  (`FeatureLinks`, `links` on a feature), the **Variants & Copy deck**
-  mechanism (`/variants/:deckId`, `src/data/variantDecks.ts`, the detail's two
-  "see it rendered" doors — no deck registered here yet), `thumbnailFocus` on a
-  feature, `preview` on an edge-case row (`StatePreviewFrame`), `?chrome=off`
-  on the gateway shell, and the `demoShareActionsUtil.ts` hook split that keeps
-  `demoShareActions.tsx` component-only for fast refresh.
+- **Prototypes** and its Main · Stage switch, scopes, owners, the retired-link
+  screen; **Design (derived)** — the branch list read from Netlify and git;
+  **Release** — the stage inbox and `.hub/decided/`; **Resources**;
+  **Explorations** (the documents stay); **QA Notes** with its product-side
+  capture and `public/qa/`; **To Do Board**; **Hub Resources**.
+- **Stage** itself: the `stage` branch is untouched on GitHub and nothing
+  pushes to it. `share-to-stage`, `decide-defaults` (its flag questions live
+  on inside Ship), `retire-from-refinement`, `share-component`,
+  `port-prototype` and three old aliases.
+- **Refinement** became **Design**: same board, same rows, trimmed to
+  Research's shape (no product tag, no feature grouping, no Replaces, compact
+  row). Hide became Archive, and archived rows list on the Archive page.
+- **Cody** came off the roster. The Designer Workflow and About guides.
+- The Simple/Advanced toggle proposed the same morning — rejected the same
+  day: "I want to not have the toggle back to advanced mode at all."
+
+What the strip found: Research was silently writing a supersession its hidden
+Replaces control could not clear (fixed, step 2). Everything before this
+date — the one-row rule, the vocabulary, stage, the derived Design, the
+2026-10-15 one-site decision, the 2026-09-08 migration — is in
+`hub-advanced`'s CLAUDE.md, where the reasons are kept with their dates.

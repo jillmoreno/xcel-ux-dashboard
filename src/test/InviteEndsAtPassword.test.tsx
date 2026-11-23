@@ -5,7 +5,6 @@ import { AccountProvider } from '@/context/AccountContext'
 import { FEATURE_FLAGS, FeatureFlagProvider } from '@/context/FeatureFlagContext'
 import { InvitedConfirmationPage } from '@/pages/InvitedConfirmationPage'
 import { END_TO_END_VERSION } from '@/pages/endToEndDemo'
-import { PROTOTYPE_FEATURES } from '@/data/prototypeFeatures'
 
 /**
  * THE INVITE & PURCHASE FLOW ENDS AT THE PASSWORD (2026-10-15, Jillienne:
@@ -123,37 +122,23 @@ describe('e2e-loading-opens-home — the End-to-End row\u2019s hand-off', () => 
   })
 
   /* ── THE CASE THIS WHOLE DESIGN EXISTS FOR ────────────────────────────────
-   * The two Prototypes rows open the SAME three pages. If they ever stop
-   * disagreeing about where the walk ends, one of the two rows is lying about
-   * what it answers — and the failure is silent on the page, because both
-   * still look right until you wait three seconds. So it is asserted from the
-   * rows themselves rather than from hardcoded strings. */
-  it('the two rows that open these pages ask different questions of them', () => {
-    const e2e = PROTOTYPE_FEATURES.find((f) => f.id === 'xcel-dashboard')!
-    const invite = PROTOTYPE_FEATURES.find((f) => f.id === 'xcel-invite')!
-    const q = (to: string) => new URL(to, 'https://x').searchParams
-    expect(q(e2e.to!).get('journey'), 'the End-to-End row walks the whole product').toBe('full')
-    expect(q(invite.to!).get('journey'), 'Invite & Purchase ends at the password — Afsana and Eric\u2019s surface').toBeNull()
-    /* ⚠ AND NO LONGER THE SAME DOOR EITHER (2026-10-20). The End-to-End row
-       lands on the DASHBOARD now — "lets set the Atlas to be the default view
-       the user comes in on" — with the flow one pick away on the Start
-       control; Invite & Purchase still opens the Product Detail page. The
-       door assertion was itself a weakening of an earlier pathname one
-       (2026-10-19), and weakening it again to "both are product-app routes"
-       would leave it asserting almost nothing.
-
-       So what it guards is stated directly instead: both rows are in-app
-       routes of the SAME BUILD at `?demo=1` — the Prototypes guarantee — and
-       the thing that makes them different walks is the journey param above,
-       which is the case's actual subject. */
-    for (const row of [e2e, invite]) {
-      const u = new URL(row.to!, 'https://x')
-      expect(u.searchParams.get('demo'), row.id).toBe('1')
-      expect(u.searchParams.get('version'), `${row.id} must not pin a version`).toBeNull()
-      expect(['/dashboard-rebrand', '/end-to-end-demo'], row.id).toContain(
-        `/${u.pathname.split('/')[1]}`,
-      )
-    }
+   * Until 2026-11-21 two Prototypes rows opened the SAME three pages and
+   * disagreed, on purpose, about where the walk ends: the End-to-End row
+   * carried `?journey=full` and Invite & Purchase did not. The rows went with
+   * the Prototypes section (`prototypes-section` in `archivedItems.ts`); what
+   * opens the full walk now is the "Demo build" link at the foot of the Hub's
+   * rail, whose address `UxDashboard.smoke.test.tsx` pins. The one half of
+   * the old case that still has a subject is asserted on that literal: the
+   * demo address walks the WHOLE product, at the committed baseline, pinning
+   * no version. The invite half has no row to read; the flag below is what
+   * decides where a walk without the param ends. */
+  it('the demo address walks the whole product, and pins nothing else', () => {
+    const DEMO_BUILD = '/dashboard-rebrand?demo=1&journey=full'
+    const u = new URL(DEMO_BUILD, 'https://x')
+    expect(u.searchParams.get('journey'), 'the demo build walks the whole product').toBe('full')
+    expect(u.searchParams.get('demo')).toBe('1')
+    expect(u.searchParams.get('version'), 'must not pin a version').toBeNull()
+    expect(['/dashboard-rebrand', '/end-to-end-demo']).toContain(`/${u.pathname.split('/')[1]}`)
   })
 
   it('on the End-to-End row\u2019s walk: three seconds, then the demo\u2019s Home', async () => {

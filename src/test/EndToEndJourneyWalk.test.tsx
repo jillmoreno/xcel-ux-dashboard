@@ -7,7 +7,6 @@ import { InviteEmailPage } from '@/pages/InviteEmailPage'
 import { InvitedProductDetailPage } from '@/pages/InvitedProductDetailPage'
 import { InvitedCheckoutPage } from '@/pages/InvitedCheckoutPage'
 import { InvitedConfirmationPage } from '@/pages/InvitedConfirmationPage'
-import { PROTOTYPE_FEATURES } from '@/data/prototypeFeatures'
 
 /**
  * THE WALK, PAGE BY PAGE — `?journey=full` from the End-to-End row's address
@@ -28,10 +27,15 @@ function Probe() {
   return <span data-testid="location">{pathname + search}</span>
 }
 
-/** The End-to-End row's address, read from the row itself — if the row stops
- *  carrying the param, this suite fails rather than quietly testing nothing. */
+/** The End-to-End address — the "Demo build" link at the foot of the Hub's
+ *  rail since the simple Hub (2026-11-21), which is what the End-to-End
+ *  Prototypes row (`xcel-dashboard`, read from `PROTOTYPE_FEATURES` here
+ *  until that section went — `prototypes-section` in `archivedItems.ts`)
+ *  opened. The literal is pinned to the rail link by "the Demo build link" in
+ *  `UxDashboard.smoke.test.tsx`; the two must agree, and if the link stops
+ *  carrying the param this suite fails rather than quietly testing nothing. */
 function endToEndRowAddress(): string {
-  return PROTOTYPE_FEATURES.find((f) => f.id === 'xcel-dashboard')!.to!
+  return '/dashboard-rebrand?demo=1&journey=full'
 }
 
 /**

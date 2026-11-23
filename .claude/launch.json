@@ -27,7 +27,10 @@
       ],
       "name": "xcel-dashboard",
       "runtimeExecutable": "sh",
-      "runtimeArgs": ["-c", "PATH=\"$HOME/.local/bin:$PATH\" npm run dev"],
+      "runtimeArgs": [
+        "-c",
+        "PATH=\"$HOME/.local/bin:$PATH\" npm run dev"
+      ],
       "port": 5200,
       "autoPort": true
     },
@@ -50,7 +53,10 @@
       ],
       "name": "xcel-dashboard-public",
       "runtimeExecutable": "sh",
-      "runtimeArgs": ["-c", "VITE_GATEWAY_MODE=public npm run dev"],
+      "runtimeArgs": [
+        "-c",
+        "VITE_GATEWAY_MODE=public npm run dev"
+      ],
       "port": 5202,
       "autoPort": true
     },
@@ -88,21 +94,50 @@
         "PATH is set for the same reason the xcel-dashboard entry sets one: the",
         "launcher's shell does not inherit the user's login PATH, so a bare",
         "`netlify` is `command not found` and the pane reports it as the dev",
-        "server exiting during startup \u2014 which reads as a crash in the app.",
+        "server exiting during startup — which reads as a crash in the app.",
         "netlify-cli installs to npm's global prefix, and this machine's is",
-        "$HOME/.local/node, so its bin directory is $HOME/.local/node/bin \u2014",
+        "$HOME/.local/node, so its bin directory is $HOME/.local/node/bin —",
         "NOT the $HOME/.local/bin the other entry uses, which holds node/npm and",
         "not this. Both are on the front here so either layout works.",
         "",
-        "If `netlify` is missing entirely: npm install -g netlify-cli"
+        "If `netlify` is missing entirely: npm install -g netlify-cli",
+        "2026-11-21: netlify-cli lives under nvm on this machine ($HOME/.nvm/versions/node/v22.22.2/bin), so that path is on the front too."
       ],
       "name": "xcel-dashboard-netlify",
       "runtimeExecutable": "sh",
       "runtimeArgs": [
         "-c",
-        "PATH=\"$HOME/.local/node/bin:$HOME/.local/bin:$PATH\" PORT=5201 netlify dev --port 8899 --target-port 5201 --offline --no-open --functions \"$PWD/netlify/functions\""
+        "PATH=\"$HOME/.nvm/versions/node/v22.22.2/bin:$HOME/.local/node/bin:$HOME/.local/bin:$PATH\" PORT=5201 netlify dev --port 8899 --target-port 5201 --offline --no-open --functions \"$PWD/netlify/functions\""
       ],
       "port": 8899
+    },
+    {
+      "// xcel-dashboard-hub": [
+        "THE HUB WITH ITS ENDPOINTS LIVE — the entry to use when you need to SEE",
+        "the Design or Release section locally (2026-11-18).",
+        "",
+        "Those two sections are derived from `/api/branches`, which plain vite does",
+        "not serve at all and which `--offline` cannot answer: the function calls",
+        "the Netlify API for the deploy feed and GitHub for the stage/released",
+        "facts, and both need the site's own env vars. So this entry differs from",
+        "`xcel-dashboard-netlify` in exactly one way — NO `--offline` — which is",
+        "what lets the CLI inject the linked site's environment into the function.",
+        "",
+        "⚠ IT NEEDS THE SITE LINKED. `netlify link --id <site id>` once; without it",
+        "the CLI has no env to inject and the sections render their 'not",
+        "configured' line instead of rows. The id is in `.netlify/state.json`.",
+        "",
+        "Ports: 8900 for netlify, 5203 for the vite it proxies to — one above the",
+        "pair the offline entry uses, so both can run at once.",
+        "2026-11-21: netlify-cli lives under nvm on this machine ($HOME/.nvm/versions/node/v22.22.2/bin), so that path is on the front too."
+      ],
+      "name": "xcel-dashboard-hub",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": [
+        "-c",
+        "PATH=\"$HOME/.nvm/versions/node/v22.22.2/bin:$HOME/.local/node/bin:$HOME/.local/bin:$PATH\" PORT=5203 netlify dev --port 8900 --target-port 5203 --no-open --functions \"$PWD/netlify/functions\""
+      ],
+      "port": 8900
     }
   ]
 }

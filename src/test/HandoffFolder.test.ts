@@ -59,7 +59,8 @@ describe('the dev-handoff folder', () => {
       expect(PROTOTYPE_FEATURES.find((p) => p.id === f.id), `${f.id} is not in PROTOTYPE_FEATURES`).toBe(f)
       // The three tags the row wears (2026-10-27): surface, designer, Updated.
       expect(f.surface, `${f.id} needs a surface — the kind tag's word`).toBeTruthy()
-      expect(f.prototypeScope, `${f.id}: a handoff carries \`surface\`, never \`prototypeScope\``).toBeUndefined()
+      // (`prototypeScope` was refused here while the field existed; it went
+      // with the Prototypes rows on 2026-11-21.)
       expect(f.owner, `${f.id} needs an owner — the designer tag`).toBeTruthy()
       expect(f.lastUpdated && !Number.isNaN(Date.parse(f.lastUpdated)), `${f.id} needs a parseable lastUpdated`).toBe(true)
     }

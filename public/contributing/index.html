@@ -4,44 +4,29 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <meta name="robots" content="noindex" />
-<title>First Time - Contributing to the Hub</title>
+<title>Contributing to the Hub</title>
 <!--
-  THE FIRST-DAY GUIDE — how a brand-new designer gets from nothing to their
-  first change on the Hub. Read once; the day-to-day guide (/designer-workflow/)
-  is every day after.
+  THE GUIDE — the one guide, since 2026-11-21 (the simple Hub). How a
+  brand-new designer gets from nothing to a link on the Hub's Design page,
+  and the three sentences they say to Claude after that. The Designer
+  Workflow and About guides went with the advanced Hub, which is whole on the
+  `hub-advanced` branch.
 
-  RESTRUCTURED 2026-10-29, Jillienne: "restructured to better match the layout
-  of the day to day. I want very simple high level overview, with a wireframe
-  if possible, and then really get into the details. Pretend this designer is
-  brand new. Explain everything in the most simplest of terms."
+  Jillienne, 2026-11-21: "the whole hub needs to be stripped down to the most
+  simplistic version … a designer that is not great at using Claude" should
+  be able to say one sentence. So every step here IS one sentence, with a copy
+  button, and there is no routine name to remember — the plain words are the
+  command.
 
-  So: the same rail, the same numbered Parts and the same speech bubbles as
-  the day-to-day guide — one shape for both — and the order is overview first
-  (Part 0 says what the three things are, Part 1 is the whole loop as one
-  drawing), then setup, then the words, then the rules, then the first change.
-  The Quick / Full tab switch of the 2026-10-15 version is gone: two views of
-  one document was the thing that made it feel repetitive.
-
-  Served at /contributing/ and from Hub Resources. One site since 2026-10-15,
-  and this folder is NOT blocked on it (scripts/public-redirects.mjs keeps one
-  rule, for /recaps/*). Stakeholders get /about/.
-
-  Self-contained: system fonts, the shared stylesheet (../guides/guide.css —
-  OneSite.test.tsx pins that this page and /about/ keep using it) plus the
-  rail layout inline below, no app code. The drawing uses LITERAL light
-  colours: weasyprint's inline SVG does not read CSS variables, and a picture
-  of a light screen should not invert with the page around it.
-
-  The PDF beside this file is rendered FROM this file:
-
-      weasyprint public/contributing/index.html public/contributing/contributing.pdf
-
-  Regenerate it whenever this page changes — a test asserts the PDF exists,
-  but cannot know it is current.
+  Served at /contributing/ and from the Guide link at the foot of the Hub's
+  rail. Self-contained: system fonts, the shared stylesheet (../guides/guide.css —
+  OneSite.test.tsx pins it) plus the rail and speech-bubble rules below.
+  Regenerate the PDF after editing: weasyprint public/contributing/index.html
+  public/contributing/contributing.pdf
 -->
 <link rel="stylesheet" href="../guides/guide.css" />
 <style>
-  /* THE RAIL LAYOUT, ported from /designer-workflow/ so the two guides are one
+  /* THE RAIL LAYOUT, ported from the retired day-to-day guide so the two were one
      shape. Everything else — type, tables, callouts, print — is guide.css. */
   :root {
     --rail: #16243a;
@@ -159,20 +144,20 @@
       <a href="#need"><small>2</small>What you need</a>
       <a href="#setup"><small>3</small>Setting up your computer</a>
       <p class="eyebrow">How it works</p>
-      <a href="#words"><small>4</small>The words you will see</a>
-      <a href="#homes"><small>5</small>Where your work lives</a>
+      <a href="#sentences"><small>4</small>The three sentences</a>
+      <a href="#boards"><small>5</small>The Hub's pages</a>
       <a href="#flags"><small>6</small>The one rule: switches</a>
       <p class="eyebrow">Your first day</p>
       <a href="#first"><small>7</small>Your first change</a>
       <a href="#never"><small>8</small>Things never to do</a>
-      <a href="#next"><small>9</small>Then: the day-to-day guide</a>
+      <a href="#words"><small>9</small>The words you will see</a>
     </nav>
   </aside>
 
   <main>
     <header class="head">
-      <p class="asof">As of 1 November 2026 · written by Jill Moreno</p>
-      <h1>First Time - Contributing to the Hub</h1>
+      <p class="asof">As of 21 November 2026 · written by Jill Moreno</p>
+      <h1>Contributing to the Hub</h1>
       <div class="actions">
         <a class="btn" href="contributing.pdf" download><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M8 2v8m0 0 3-3m-3 3L5 7M3 12v1.5h10V12"/></svg>Download as PDF</a>
         <a class="btn ghost noprint" href="/">← Back to the Hub</a>
@@ -181,20 +166,20 @@
 
     <section id="what">
       <h2><span class="part">Part 0</span>What this is</h2>
-      <p class="lead">This page gets you from nothing to your first change in front of the team. Read it once, on your first day. After that, the <a href="/designer-workflow/">day-to-day guide</a> is the one you keep open.</p>
-      <p>There are only three things to understand, and the rest of this page is detail about them.</p>
+      <p class="lead">This page gets you from nothing to your first link on the Hub. Read it once. After that, Part 4 is the only part you need, and it is three sentences long.</p>
+      <p>There are three things to understand, and the rest of this page is detail about them.</p>
       <div class="three">
-        <div><b>The Hub</b><p>A website where everyone — designers, developers, stakeholders — sees the team's work. It has a list of the product as it stands, and a board where work under discussion is reviewed.</p></div>
-        <div><b>Your branch</b><p>Your own private copy of the project. You change it as much as you like. Nothing on it is seen by anyone until you choose to share it, and nothing on it changes the product until the design lead releases it.</p></div>
+        <div><b>The Hub</b><p>A website where everyone — designers, developers, stakeholders — sees the team's work. It is six pages: three boards of links (Design, Research, PRDs), the developer handoffs (Development, Done) and the Archive.</p></div>
+        <div><b>Your branch</b><p>Your own private copy of the project. You change it as much as you like. Nothing on it is seen by anyone until you share it, and nothing on it changes the product until Jill ships it.</p></div>
         <div><b>Claude</b><p>The desktop app you type sentences to. It does every technical step for you — copying the project, saving your work, publishing it — so you never type a command.</p></div>
       </div>
-      <div class="rule-box">You design. Claude does the technical parts. You decide your surface; the design lead (Jill) releases.<small>You never type a command, you never run the website on your own computer, and you never touch the copy of the project that everyone sees.</small></div>
+      <div class="rule-box">You design. Claude does the technical parts. Jill ships.<small>You never type a command, you never run the website on your own computer, and you never touch the copy of the project that everyone sees.</small></div>
     </section>
 
     <section id="picture">
       <h2><span class="part">Part 1</span>The whole thing in one picture</h2>
-      <p class="lead">Your work travels left to right. Every box is a place; every arrow is one sentence you say to Claude, or one click.</p>
-      <div class="shot wide" role="img" aria-label="Wireframe of the loop: your computer with the project folder and Claude; an arrow labelled push to GitHub, your branch; an arrow labelled builds to your branch link, a web address that is your branch live; an arrow labelled add link to the Hub, where your chunk sits on the Refinement board and the team opens it and talks; then you share it to stage and Jill releases it into Prototypes, the product as it stands, with its Main and Stage builds.">
+      <p class="lead">Your work travels left to right. Every box is a place; every arrow is one sentence you say to Claude, or one paste.</p>
+      <div class="shot wide" role="img" aria-label="Wireframe of the loop: your computer with the project folder and Claude; an arrow labelled share my work to GitHub, your branch; an arrow labelled builds to your branch link, a web address that is your branch live; an arrow labelled paste to the Hub's Design page, where your link sits with the team's others; then Jill ships it and the Demo build, the product on main, shows it.">
         <svg viewBox="0 0 960 300" xmlns="http://www.w3.org/2000/svg" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif">
           <defs><marker id="arw" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5 0 10z" fill="#6b7280"/></marker></defs>
           <rect x="16" y="60" width="176" height="150" rx="12" fill="#fff" stroke="#c8ced6" stroke-width="1.5"/>
@@ -205,11 +190,11 @@
           <text x="104" y="168" text-anchor="middle" font-size="12.5" fill="#1a3c69" font-weight="600">Claude, connected to it</text>
           <text x="104" y="200" text-anchor="middle" font-size="11" fill="#6b7280">you work here</text>
           <line x1="192" y1="135" x2="236" y2="135" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arw)"/>
-          <text x="214" y="124" text-anchor="middle" font-size="10.5" fill="#6b7280">"push"</text>
+          <text x="214" y="124" text-anchor="middle" font-size="10.5" fill="#6b7280">"share my work"</text>
           <rect x="238" y="60" width="150" height="150" rx="12" fill="#fff" stroke="#c8ced6" stroke-width="1.5"/>
           <text x="313" y="88" text-anchor="middle" font-size="11" font-weight="700" fill="#6b7280" letter-spacing="1.4">GITHUB</text>
           <text x="313" y="118" text-anchor="middle" font-size="13" fill="#1b1d21">your branch</text>
-          <text x="313" y="138" text-anchor="middle" font-size="12" fill="#1f4e88" font-family="ui-monospace, Menlo, monospace">feat/…</text>
+          <text x="313" y="138" text-anchor="middle" font-size="12" fill="#1f4e88" font-family="ui-monospace, Menlo, monospace">work/you/…</text>
           <text x="313" y="170" text-anchor="middle" font-size="11" fill="#6b7280">a safe copy online,</text>
           <text x="313" y="186" text-anchor="middle" font-size="11" fill="#6b7280">yours alone</text>
           <line x1="388" y1="135" x2="432" y2="135" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arw)"/>
@@ -217,58 +202,54 @@
           <rect x="434" y="60" width="176" height="150" rx="12" fill="#fff" stroke="#c8ced6" stroke-width="1.5"/>
           <text x="522" y="88" text-anchor="middle" font-size="11" font-weight="700" fill="#6b7280" letter-spacing="1.4">YOUR BRANCH LINK</text>
           <rect x="450" y="104" width="144" height="26" rx="6" fill="#f3f5f8" stroke="#dfe3e8"/>
-          <text x="522" y="121" text-anchor="middle" font-size="10.5" fill="#1f4e88" font-family="ui-monospace, Menlo, monospace">feat-…--ux-design-…</text>
+          <text x="522" y="121" text-anchor="middle" font-size="10.5" fill="#1f4e88" font-family="ui-monospace, Menlo, monospace">work-you-…--ux-design-…</text>
           <text x="522" y="156" text-anchor="middle" font-size="12" fill="#1b1d21">a web address that is</text>
           <text x="522" y="172" text-anchor="middle" font-size="12" fill="#1b1d21">your branch, live</text>
-          <text x="522" y="198" text-anchor="middle" font-size="11" fill="#6b7280">this is your preview</text>
+          <text x="522" y="198" text-anchor="middle" font-size="11" fill="#6b7280">Claude hands you this</text>
           <line x1="610" y1="135" x2="654" y2="135" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arw)"/>
-          <text x="632" y="124" text-anchor="middle" font-size="10.5" fill="#6b7280">add link</text>
+          <text x="632" y="124" text-anchor="middle" font-size="10.5" fill="#6b7280">paste</text>
           <rect x="656" y="24" width="288" height="252" rx="12" fill="#fff" stroke="#c8ced6" stroke-width="1.5"/>
           <text x="800" y="50" text-anchor="middle" font-size="11" font-weight="700" fill="#6b7280" letter-spacing="1.4">THE HUB</text>
           <rect x="672" y="64" width="62" height="196" rx="6" fill="#16243a"/>
-          <text x="703" y="84" text-anchor="middle" font-size="7.5" fill="#9fb4cd" letter-spacing="1">DEMO</text>
-          <rect x="680" y="92" width="46" height="12" rx="3" fill="#2b3f5e"/>
-          <text x="703" y="101" text-anchor="middle" font-size="7.5" fill="#eef2f7">Prototypes</text>
-          <text x="703" y="124" text-anchor="middle" font-size="7.5" fill="#9fb4cd" letter-spacing="1">DESIGN</text>
-          <rect x="680" y="132" width="46" height="12" rx="3" fill="#3a7bd5"/>
-          <text x="703" y="141" text-anchor="middle" font-size="7.5" fill="#fff">Refinement</text>
-          <rect x="680" y="150" width="46" height="10" rx="3" fill="#2b3f5e"/>
-          <rect x="680" y="166" width="46" height="10" rx="3" fill="#2b3f5e"/>
-          <text x="703" y="194" text-anchor="middle" font-size="7.5" fill="#9fb4cd" letter-spacing="1">HANDOFF</text>
-          <rect x="680" y="202" width="46" height="10" rx="3" fill="#2b3f5e"/>
-          <rect x="680" y="218" width="46" height="10" rx="3" fill="#2b3f5e"/>
-          <text x="748" y="80" font-size="9" font-weight="700" fill="#1b1d21">Refinement</text>
-          <text x="748" y="92" font-size="7.5" fill="#6b7280">work under discussion</text>
+          <text x="703" y="84" text-anchor="middle" font-size="7.5" fill="#9fb4cd" letter-spacing="1">DESIGN</text>
+          <rect x="680" y="92" width="46" height="12" rx="3" fill="#3a7bd5"/>
+          <text x="703" y="101" text-anchor="middle" font-size="7.5" fill="#fff">Design</text>
+          <rect x="680" y="110" width="46" height="10" rx="3" fill="#2b3f5e"/>
+          <rect x="680" y="126" width="46" height="10" rx="3" fill="#2b3f5e"/>
+          <text x="703" y="152" text-anchor="middle" font-size="7.5" fill="#9fb4cd" letter-spacing="1">HANDOFF</text>
+          <rect x="680" y="160" width="46" height="10" rx="3" fill="#2b3f5e"/>
+          <rect x="680" y="176" width="46" height="10" rx="3" fill="#2b3f5e"/>
+          <rect x="680" y="192" width="46" height="10" rx="3" fill="#2b3f5e"/>
+          <rect x="680" y="236" width="46" height="12" rx="3" fill="#2b3f5e"/>
+          <text x="703" y="245" text-anchor="middle" font-size="7" fill="#eef2f7">Demo build ↗</text>
+          <text x="748" y="80" font-size="9" font-weight="700" fill="#1b1d21">Design</text>
+          <text x="748" y="92" font-size="7.5" fill="#6b7280">links to the work</text>
           <rect x="748" y="100" width="178" height="30" rx="6" fill="#eef2f7" stroke="#1f4e88"/>
-          <text x="758" y="113" font-size="8.5" fill="#1b1d21" font-weight="600">Your chunk — the link you added</text>
-          <text x="758" y="124" font-size="7.5" fill="#6b7280">you · Updated today · Atlas</text>
+          <text x="758" y="113" font-size="8.5" fill="#1b1d21" font-weight="600">Your link — the one you pasted</text>
+          <text x="758" y="124" font-size="7.5" fill="#6b7280">you · Updated today</text>
           <rect x="748" y="136" width="178" height="22" rx="6" fill="#fafafa" stroke="#eceef1"/>
-          <text x="758" y="150" font-size="8" fill="#8a9099">someone else's chunk</text>
-          <text x="748" y="176" font-size="8" fill="#454b55">the team opens it and talks, you push again</text>
+          <text x="758" y="150" font-size="8" fill="#8a9099">someone else's link</text>
+          <text x="748" y="176" font-size="8" fill="#454b55">the team opens it and talks; you share again</text>
           <line x1="837" y1="186" x2="837" y2="206" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arw)"/>
-          <text x="848" y="196" font-size="8" fill="#6b7280">you share to stage,</text>
-          <text x="848" y="205" font-size="8" fill="#6b7280">Jill releases</text>
+          <text x="848" y="198" font-size="8" fill="#6b7280">Jill ships</text>
           <rect x="748" y="210" width="178" height="48" rx="6" fill="#1f4e88"/>
-          <text x="837" y="226" text-anchor="middle" font-size="9" font-weight="700" fill="#cfdcec" letter-spacing="1">PROTOTYPES</text>
-          <text x="837" y="238" text-anchor="middle" font-size="8" fill="#cfdcec">Main · Stage</text>
-          <text x="837" y="251" text-anchor="middle" font-size="9" fill="#fff">the product as it stands</text>
+          <text x="837" y="228" text-anchor="middle" font-size="9" font-weight="700" fill="#cfdcec" letter-spacing="1">DEMO BUILD</text>
+          <text x="837" y="246" text-anchor="middle" font-size="9" fill="#fff">the product on main</text>
         </svg>
       </div>
       <p>In words, left to right:</p>
       <ol>
         <li><b>You change the project</b> in a folder on your computer, by talking to Claude.</li>
-        <li><b>Claude sends your branch to GitHub</b> when you say "push". GitHub is the online copy; your branch there is yours alone.</li>
-        <li><b>Netlify builds your branch into a website</b> at its own address, a few minutes after every push. That address is your preview. You never run the site yourself.</li>
-        <li><b>You add that address to Refinement</b> on the Hub. The moment you do, everyone with the Hub's link can open it.</li>
-        <li><b>The team looks and talks.</b> You change, push again; the address stays the same.</li>
-        <li><b>You share it to stage.</b> When your surface is decided, <code>/share-to-stage</code> puts your branch onto <b>stage</b> &mdash; a build everyone can open from Prototypes &rarr; Stage, and the step that asks you which switches become the product's defaults.</li>
-        <li><b>Jill releases it.</b> She puts stage into the product. Prototypes &rarr; Main then shows it, and you start the next piece on a fresh branch.</li>
+        <li><b>You say "share my work".</b> Claude checks it, saves it, sends your branch to GitHub, and hands you one web address.</li>
+        <li><b>That address is your branch, live.</b> Netlify builds it a few minutes after every share. You never run the site yourself.</li>
+        <li><b>You paste the address on the Hub's Design page.</b> The moment you do, everyone with the Hub's link can open it.</li>
+        <li><b>The team looks and talks.</b> You change, share again; the address stays the same.</li>
+        <li><b>Jill ships it.</b> She puts your branch into the product. The Demo build link at the foot of the Hub then shows it, and you start the next piece.</li>
       </ol>
       <div class="rule-box alert">
         <svg class="sign" viewBox="0 0 24 24" aria-hidden="true"><path class="face" fill="#c33c2e" d="M7.5 1h9L23 7.5v9L16.5 23h-9L1 16.5v-9Z"/><rect class="bar" fill="#ffffff" x="6" y="10.8" width="12" height="2.4" rx="1.2"/></svg>
-        <div><b>Most Important Thing.</b> You work on YOUR BRANCH. Never push directly to main.<small>"Push" always means your branch. Main is the copy everyone sees, and only the design lead puts anything there. If you ever find yourself on main, stop and tell Jill.</small></div>
+        <div><b>Most Important Thing.</b> You work on YOUR BRANCH. Never push directly to main.<small>"Share my work" never touches main. Main is the copy everyone sees, and only Jill puts anything there. If you ever find yourself on main, "share my work" moves you off it — and if anything looks wrong, stop and tell Jill.</small></div>
       </div>
-      <div class="note"><p><b>The one-sentence version.</b> Branch, build, share, discuss, stage, release. The day-to-day guide walks that loop every day; this page gets you to the start of it.</p></div>
     </section>
 
     <section id="need">
@@ -299,114 +280,120 @@
           <p>The project leans on a few hundred small pieces of code other people wrote. This fetches them. A few minutes; you only do it once, and Claude will tell you if it ever needs doing again.</p></li>
         <li><b class="t">Put your name on your work.</b>
           <div class="say"><span class="me">YOU</span><q>For this project, set my git name to Your Name and my git email to you@scorebuilders.com.</q></div>
-          <p>Use your real name and your work email. Every change you save carries this name, so the team can see whose it is. Skip it and your work shows up as "Claude".</p></li>
+          <p>Use your real name and your work email. Every change you save carries this name, so the team can see whose it is — and "share my work" names your branch after it.</p></li>
         <li><b class="t">Check.</b>
           <div class="say"><span class="me">YOU</span><q>Which branch am I on, and is the project up to date?</q></div>
-          <p>Claude should say you are on <code>main</code> and up to date. That is the one time you should be on main — Part 7 moves you off it before you change anything.</p></li>
+          <p>Claude should say you are on <code>main</code> and up to date. That is fine for now: the first time you say "share my work", it moves you onto a branch of your own.</p></li>
       </ol>
       <div class="note warn"><p><b>Nothing here runs the website.</b> You will never start the site on your own computer, and you do not need to. Your preview is the branch link in Part 1, which Netlify makes for you.</p></div>
     </section>
 
-    <section id="words">
-      <h2><span class="part">Part 4</span>The words you will see</h2>
-      <p class="lead">You never type these. Claude says them back to you, so here is what each one means.</p>
-      <div class="tablewrap"><table>
-        <thead><tr><th>Word</th><th>Plain meaning</th></tr></thead>
-        <tbody>
-          <tr><td class="k">the Hub</td><td>The website where the team's work is seen. One address, one password, everyone.</td></tr>
-          <tr><td class="k">the design lead</td><td>Jill Moreno. The person in charge of the project's repository on GitHub — she owns <code>main</code>, releases stage into it, and is the only person who can. When a guide says "ask Jill", this is why.</td></tr>
-          <tr><td class="k">main</td><td>The one copy of the project that IS the product. Only the design lead changes it.</td></tr>
-          <tr><td class="k">branch</td><td>Your own copy of the project, named like <code>feat/study-streak-card</code>. Everything you do happens on a branch.</td></tr>
-          <tr><td class="k">commit</td><td>A saved snapshot of your branch, with a short note saying what changed. Several a day is normal.</td></tr>
-          <tr><td class="k">push</td><td>Sending your commits to GitHub. After every push, Netlify builds your branch and the team can see it.</td></tr>
-          <tr><td class="k">branch link</td><td>Your branch as a live website, at its own address. Your preview, and the thing you share. (The <em>stage link</em> is the same idea for the <code>stage</code> branch.)</td></tr>
-          <tr><td class="k">rebase</td><td>Moving your branch so it starts from today's main instead of the day you made it. Every few days; the day-to-day guide shows how.</td></tr>
-          <tr><td class="k">stage</td><td>The build between your branch and the product: what surface owners have decided and shared, waiting on a release. Prototypes &rarr; Stage opens it. <code>/share-to-stage</code> puts your work there.</td></tr>
-          <tr><td class="k">release</td><td>Jill putting stage into main. The only way anything reaches the product. (Older pages say "ship to main"; same step.)</td></tr>
-          <tr><td class="k">switch, feature flag</td><td>A named on/off in the code that hides your change until it is decided. Part 6.</td></tr>
-          <tr><td class="k">Refinement</td><td>The Hub's board for work under discussion. Anyone adds to it, on the page.</td></tr>
-          <tr><td class="k">Prototypes</td><td>The Hub's list of the product as it stands, with a Main &middot; Stage switch. Main changes only by a release; Stage changes when an owner shares to it.</td></tr>
-          <tr><td class="k">routine</td><td>A ready-made checklist Claude runs with you, started by typing <code>/</code> and its name. <code>/share-branch</code> is the one you will use most.</td></tr>
-        </tbody>
-      </table></div>
-      <div class="note warn"><p><b>You work on your branch. Jill works on main.</b> The one rule under every word above — it is the stop sign in <a href="#picture">Part 1</a>.</p></div>
+    <section id="sentences">
+      <h2><span class="part">Part 4</span>The three sentences</h2>
+      <p class="lead">Everything after setup is one of these. Two are yours; the third is Jill's.</p>
+      <ol class="steps">
+        <li><b class="t">Share my work.</b>
+          <div class="say"><span class="me">YOU</span><q>Share my work.</q></div>
+          <p>Claude makes you a branch if you need one, checks the work, saves it, sends it up, and answers with one line: the address to paste on the Hub's <b>Design</b> page. It asks you nothing. If a check fails it says what, in one line, and stops.</p></li>
+        <li><b class="t">Write dev handoff notes.</b>
+          <div class="say"><span class="me">YOU</span><q>Write dev handoff notes for the study streak card.</q></div>
+          <p>Claude reads what you built and asks you six short questions in plain words — what it is made of, its states, its buttons, the edge cases, what you decided, anything else. It writes the page developers read, on the Hub's <b>Development</b> page, and asks for your Design link so the two point at each other.</p></li>
+        <li><b class="t">Ship. <span class="small">(Jill's)</span></b>
+          <div class="say"><span class="me">JILL</span><q>Ship Anjani's study streak card.</q></div>
+          <p>Jill puts a branch into the product. Claude shows her every switch the branch would change, she answers yes or no to each, and the Demo build then shows the work. Nobody else can do this — GitHub refuses, by design.</p></li>
+      </ol>
+      <div class="note"><p><b>No slash commands to remember.</b> The plain sentence is the command. (They exist for people who like them — <code>/share-my-work</code>, <code>/dev-handoff-notes</code>, <code>/ship</code> — but you never need one.)</p></div>
     </section>
 
-    <section id="homes">
-      <h2><span class="part">Part 5</span>Where your work lives</h2>
-      <p class="lead">Two kinds of work, two homes. Picking the wrong one is the most common mistake here, so say which kind it is when you ask Claude to build it.</p>
+    <section id="boards">
+      <h2><span class="part">Part 5</span>The Hub's pages</h2>
+      <p class="lead">Six pages. Three are boards you add links to; the rest fill themselves.</p>
       <div class="tablewrap"><table>
-        <thead><tr><th>You are making</th><th>Say to Claude</th><th>What it is</th><th>Reviewers open</th></tr></thead>
+        <thead><tr><th>Page</th><th>What goes there</th><th>Who adds to it</th></tr></thead>
         <tbody>
-          <tr><td class="k">A piece of the product</td><td>"a React component, behind a feature flag that is on by default on this branch"</td><td>A page, a card, a panel, or a new version of something that already exists, in the app's own code.</td><td>Your branch link at <code>/dashboard-rebrand?demo=1</code></td></tr>
-          <tr><td class="k">A standalone page to look at</td><td>"a standalone HTML page in public/demos"</td><td>A single hand-made web page, not wired into the app. An idea, a comparison, a brief answered in pictures.</td><td>Your branch link at <code>/demos/your-file.html</code></td></tr>
+          <tr><td class="k">Design</td><td>Links to the work — your branch link, a Figma file, a standalone page, a deck. Anything someone should open and look at.</td><td>Anyone. <b>Add link</b>, paste, a title, a line about where to look, your name.</td></tr>
+          <tr><td class="k">Research</td><td>The studies and findings behind the designs, grouped by project.</td><td>Anyone, the same way.</td></tr>
+          <tr><td class="k">PRDs</td><td>The requirements documents the designs answer.</td><td>Anyone, the same way.</td></tr>
+          <tr><td class="k">Development</td><td>The developer handoffs — one page per feature, written by "write dev handoff notes".</td><td>Claude, from your branch.</td></tr>
+          <tr><td class="k">Done</td><td>Handoffs for finished work.</td><td>Whoever marks a handoff done.</td></tr>
+          <tr><td class="k">Archive</td><td>Links archived off the three boards, and things removed from the project with how to bring them back.</td><td>The row's ⋯ menu → <b>Archive</b>. Unarchive from here.</td></tr>
         </tbody>
       </table></div>
-      <div class="note warn"><p><b>Never <code>public/prototypes/</code>.</b> That folder holds finished explorations that each have a row on the Hub and their own tests. Work in review goes in <code>public/demos/</code>, which exists for exactly that.</p></div>
-      <p><b>Changing something that already exists?</b> Do not edit it. Ask Claude to copy it to a sibling and build on the copy, with a switch choosing between the two. That way you and the person editing the original never collide. The routine <code>/share-component</code> does this for you.</p>
+      <p>Two more things at the foot of the rail: <b>Guide</b> is this page, and <b>Demo build</b> opens the product as it stands — what Jill has shipped. Send people your branch link, not that one; that one shows what is already decided.</p>
+      <div class="note"><p><b>Links from outside the project are the same paste.</b> A Figma file goes on Design exactly as a branch link does. The board does not care where a link lives.</p></div>
     </section>
 
     <section id="flags">
       <h2><span class="part">Part 6</span>The one rule: switches</h2>
-      <p class="lead">Every change to the product sits behind a switch. That one idea is what lets five designers work on one product without anyone's half-finished work appearing in front of stakeholders.</p>
+      <p class="lead">Every change to the product sits behind a switch. That one idea is what lets several designers work on one product without anyone's half-finished work appearing in the Demo build.</p>
       <ol>
         <li><b>On your branch, the switch is on.</b> Your branch link shows your work.</li>
         <li><b>On main, the switch is off.</b> The product looks exactly as it did.</li>
-        <li><b>When you share to stage, you decide the switch</b> &mdash; for the surface you own. <code>/share-to-stage</code> asks, switch by switch: on, and it is part of your surface; off, and the code is there but nothing shows. Stage then shows your answer to everyone.</li>
-        <li><b>When Jill releases, stage becomes main</b> with the switches as you set them. She does not re-decide them; she decides when.</li>
+        <li><b>When Jill ships your branch, she decides the switch.</b> Claude lists every switch the branch would change and she answers yes or no to each. Then it asks whether a switch that has been decided should be retired, so the code stays clean — the version that won becomes the thing, and the other one is kept on the Archive page.</li>
       </ol>
       <p>You get all of this by asking for it in the same breath as the work:</p>
       <div class="say"><span class="me">YOU</span><q>Build it behind a feature flag that is on by default on this branch.</q></div>
       <p>Then ask "What is the flag called?" and write it down. Reviewers can flip any switch live on your build from the robot icon on the dark bar, so you can show both versions from one address.</p>
-      <div class="note"><p><b>Why not just add it to Prototypes?</b> Prototypes holds one row per surface, all pointing at main, and a test refuses any other row. Your work reaches Prototypes by its switch turning on in main, never by adding a row.</p></div>
+      <p><b>Changing something that already exists?</b> Do not edit it. Ask Claude to copy it to a sibling and build on the copy, with a switch choosing between the two. That way you and the person editing the original never collide.</p>
     </section>
 
     <section id="first">
       <h2><span class="part">Part 7</span>Your first change, start to finish</h2>
-      <p class="lead">Set up and ready? This is the loop from Part 1 with the actual sentences. The day-to-day guide has the long version; this is enough for day one.</p>
+      <p class="lead">Set up and ready? This is the loop from Part 1 with the actual sentences.</p>
       <ol class="steps">
-        <li><b class="t">Get off main and onto a branch of your own.</b>
-          <div class="say"><span class="me">YOU</span><q>Fetch origin, then make a new branch called feat/short-name from origin/main and switch to it.</q></div>
-          <p>Name it <code>feat/</code> and two or three words, lowercase, joined with dashes. Claude confirms you are on it.</p></li>
-        <li><b class="t">Say what you want, the way you would to a developer beside you.</b><p>Name the page, the component, what it should do instead, and which kind of work it is (Part 5). Ask for the switch (Part 6). If Claude names a file you do not recognise, ask "What is that file?" before saying yes.</p></li>
+        <li><b class="t">Say what you want, the way you would to a developer beside you.</b><p>Name the page, the component, what it should do instead. Ask for the switch (Part 6). If Claude names a file you do not recognise, ask "What is that file?" before saying yes.</p></li>
         <li><b class="t">Share it.</b>
-          <div class="say"><span class="me">YOU</span><q>/share-branch</q></div>
-          <p>One routine does the rest: it checks the work, saves it, pushes it, waits for Netlify to build your branch, and opens the Refinement form already filled in. You read it over and click <b>Add link</b>. Then it opens a card for the To Do Board; click <b>Add card</b>.</p></li>
+          <div class="say"><span class="me">YOU</span><q>Share my work.</q></div>
+          <p>Claude answers with one address.</p></li>
+        <li><b class="t">Paste it on Design.</b><p>Open the Hub, <b>Design</b>, <b>Add link</b>. Paste the address, give it a title, write one line about where to look, pick your name. Done — the team can open it.</p></li>
         <li><b class="t">Look at it the way a reviewer would.</b><p>Open your row on the Hub and click through from the page a reviewer would start on, not straight to your component. Things that are invisible on a direct link are obvious on the first click.</p></li>
-        <li><b class="t">Keep going.</b><p>Each further change is step 2 and then <code>/share-branch</code> again; the address stays the same. When the next change is really a different piece of work, start a fresh branch for it.</p></li>
+        <li><b class="t">Keep going.</b><p>Each further change is step 1 and then "share my work" again; the address stays the same, so the row on Design stays right. When the next change is really a different piece of work, say "start a fresh branch for the next piece" and the next share makes a new one.</p></li>
       </ol>
-      <div class="note"><p><b>That is a chunk.</b> Finish a chunk, share it, start a fresh branch for the next. Small branches are the habit the whole Hub is built around.</p></div>
+      <div class="note"><p><b>That is a chunk.</b> Finish a chunk, share it, start fresh for the next. Small branches are the habit the whole Hub is built around.</p></div>
     </section>
 
     <section id="never">
       <h2><span class="part">Part 8</span>Things never to do</h2>
       <p class="lead">Short, because Claude refuses most of them for you and says why.</p>
       <ul>
-        <li><b>Never push to main.</b> Every push to main rebuilds the Hub for everyone. Be on your branch (Part 7, step 1) before asking Claude to push anything. You cannot do it by accident: Claude refuses the command and says whose step it is, and GitHub refuses the push even if something slipped past Claude.</li>
-        <li><b>Never add a row to Prototypes.</b> Your work gets there by its switch turning on in main, nothing else.</li>
+        <li><b>Never push to main.</b> "Share my work" never does. You cannot do it by accident: Claude refuses the command and says whose step it is, and GitHub refuses the push even if something slipped past Claude.</li>
         <li><b>Never run the site on your own computer.</b> Your branch link is the preview.</li>
         <li><b>Never edit the Hub's own files.</b> The project list, the demo bar, the routines. Claude refuses and names the file; ask Jill.</li>
-        <li><b>Never put review pages in <code>public/prototypes/</code>.</b> Those go in <code>public/demos/</code>.</li>
+        <li><b>Never put review pages in <code>public/prototypes/</code>.</b> A standalone page goes in <code>public/demos/</code>.</li>
         <li><b>Never invent a number.</b> A fee, a lesson count, a date XCEL has not published is marked as invented in the code and on screen. Ask instead.</li>
-        <li><b>Never share the main Hub address as your work.</b> Send your branch link. The main address shows what is already decided, and everything else the team is doing.</li>
+        <li><b>Never share the Demo build as your work.</b> Send your branch link. The Demo build shows what is already decided.</li>
       </ul>
     </section>
 
-    <section id="next">
-      <h2><span class="part">Part 9</span>Then: the day-to-day guide</h2>
-      <p class="lead">That is the setup done, and your first change shared. Everything after today is the other guide.</p>
-      <p>It covers sitting down each day, keeping your branch current, building a change properly, sharing it on Refinement, making your surface the prototype, writing the dev handoff for engineering, the ready-made routines, the morning auto-rebase, and what to say to Claude when something goes wrong.</p>
-      <p><a class="btn" href="/designer-workflow/">Designer Workflow on the Hub →</a></p>
-      <p class="small">The two guides are one shape on purpose: this one is <b>once, your first day</b>; that one is <b>every day after</b>. The glossary and the troubleshooting table live there.</p>
+    <section id="words">
+      <h2><span class="part">Part 9</span>The words you will see</h2>
+      <p class="lead">You never type these. Claude says them back to you, so here is what each one means.</p>
+      <div class="tablewrap"><table>
+        <thead><tr><th>Word</th><th>Plain meaning</th></tr></thead>
+        <tbody>
+          <tr><td class="k">the Hub</td><td>The website where the team's work is seen. One address, one password, everyone.</td></tr>
+          <tr><td class="k">Jill, the design lead</td><td>The person in charge of the project's repository on GitHub. She owns <code>main</code>, ships to it, and is the only person who can.</td></tr>
+          <tr><td class="k">main</td><td>The one copy of the project that IS the product. Only Jill changes it. The Demo build is main, live.</td></tr>
+          <tr><td class="k">branch</td><td>Your own copy of the project, named for you, like <code>work/anjani/2026-11-21</code>. Everything you do happens on a branch.</td></tr>
+          <tr><td class="k">commit</td><td>A saved snapshot of your branch, with a short note saying what changed. "Share my work" writes the note for you.</td></tr>
+          <tr><td class="k">push</td><td>Sending your commits to GitHub. "Share my work" does it; after every push Netlify builds your branch.</td></tr>
+          <tr><td class="k">branch link</td><td>Your branch as a live website, at its own address. Your preview, and the thing you paste on Design.</td></tr>
+          <tr><td class="k">switch, feature flag</td><td>A named on/off in the code that hides your change until it is decided. Part 6.</td></tr>
+          <tr><td class="k">ship</td><td>Jill putting a branch into main. The only way anything reaches the product.</td></tr>
+          <tr><td class="k">Demo build</td><td>The link at the foot of the Hub's rail: the product as it stands.</td></tr>
+          <tr><td class="k">routine</td><td>A ready-made checklist Claude runs with you. "Share my work" and "write dev handoff notes" are the two you will use.</td></tr>
+        </tbody>
+      </table></div>
+      <div class="note warn"><p><b>You work on your branch. Jill works on main.</b> The one rule under every word above — it is the stop sign in <a href="#picture">Part 1</a>.</p></div>
     </section>
 
-    <footer>First Time - Contributing to the Hub · 1 November 2026 · The first-day guide. Every day after is the <a href="/designer-workflow/">Designer Workflow guide</a>; stakeholders get <a href="/about/">How to read this dashboard</a>.</footer>
+    <footer>Contributing to the Hub · 21 November 2026 · The one guide. The advanced Hub's guides live with it on the <code>hub-advanced</code> branch.</footer>
   </main>
 </div>
 
 <script>
   /* A COPY BUTTON ON EVERY SPEECH BUBBLE, added here so a new bubble gets one
-     for free — the same idea the day-to-day guide carries. */
+     for free. */
   (function () {
     if (!navigator.clipboard) return;
     var icon = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5.5" y="5.5" width="8" height="8" rx="1.5"/><path d="M10.5 5.5V3.5a1 1 0 0 0-1-1h-6a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2"/></svg>';

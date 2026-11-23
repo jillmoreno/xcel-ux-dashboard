@@ -1,8 +1,12 @@
 /**
- * Links — the panel.
+ * The link boards — the panel.
  *
- * The section's one requirement is that a link can be added without a code
- * change. Nothing here is authored in the repo.
+ * One `LinkBoardPanel`, three instances: Design (`DemoPanel`), Research and
+ * PRDs. It was Links' panel first (2026-09-10) and Resources' until the
+ * simple Hub took that section off the rail (2026-11-21, `resources-section`
+ * in `archivedItems.ts`); the shape is unchanged. The one requirement is that
+ * a link can be added without a code change. Nothing here is authored in the
+ * repo.
  *
  * ── The form is behind a CTA, not on the page ────────────────────────────────
  * It started as an always-visible composer above the list, and that was the
@@ -36,14 +40,14 @@
 
 import {
   useCallback,
-  useEffect,
+  useLayoutEffect,
   useMemo,
+  useRef,
   useState,
   type CSSProperties,
   type ReactNode,
 } from 'react'
 import {
-  ArrowLeft,
   ArrowRotateLeft,
   ArrowUpRightFromSquare,
   BrowserWindow,
@@ -51,6 +55,7 @@ import {
   FileText,
   Grid,
   Layout,
+  MagnifyingGlassRegular,
   Package,
   PenToSquare,
   Plus,
@@ -65,8 +70,9 @@ import { Modal } from '@/components/ui/Modal'
 import {
   DEFAULT_PRODUCT,
   DESIGNERS,
-  LINKS_BOARD,
   MAX_FEATURE,
+  MAX_NOTE,
+  MAX_TYPE_OTHER,
   LINK_PRODUCTS,
   LINK_TYPES,
   LinkWriteError,
@@ -79,10 +85,10 @@ import {
   latestChunkFor,
   linkProductLabel,
   linkTypeLabel,
+  toMarkdown,
   matchesDesigner,
   matchesProduct,
   safeHref,
-  toMarkdown,
   type BoardItem,
   type Designer,
   type FeatureGroup,
@@ -95,15 +101,15 @@ import {
 import { DEMO_BOARD } from '@/data/demoStore'
 import { RESEARCH_BOARD } from '@/data/researchStore'
 import { PRD_BOARD } from '@/data/prdStore'
-import { GeneratedThumb } from './GeneratedThumb'
+import { GeneratedThumb, THUMB_ICON } from './GeneratedThumb'
 import { accentsByHost, hostKey, linkThumbKind } from './linkRowThumb'
 import { formatUpdated } from './formatUpdated'
 
 /**
- * What one board CALLS things and SHOWS. `LinksPanel` and `DemoPanel` below
- * are the two instances; the panel itself is `LinkBoardPanel`, shared since
- * 2026-09-18 so the two authoring surfaces cannot drift — the same reason the
- * Jump Back In card's rows became the Study Plan's real `TaskRow`.
+ * What one board CALLS things and SHOWS. `DemoPanel`, `ResearchPanel` and
+ * `PrdsPanel` below are the instances; the panel itself is `LinkBoardPanel`,
+ * shared since 2026-09-18 so the authoring surfaces cannot drift — the same
+ * reason the Jump Back In card's rows became the Study Plan's real `TaskRow`.
  */
 export type LinkBoardPresentation = {
   board: LinkBoard
@@ -177,41 +183,29 @@ export type LinkBoardPresentation = {
    * those chunks come in sequence.
    */
   showFeature?: boolean
+  /** What the grouping axis is CALLED on this board — "Feature" on Refinement,
+   *  "Project" on Research (2026-11-20). The stored field is the same one. */
+  featureNoun?: string
+  featurePlaceholder?: string
+  featureHint?: string
+  /** Whether a row may declare that it replaces an earlier one. Defaults ON so
+   *  Refinement is unchanged; Research turns it off — see the note at the
+   *  control. */
+  showSupersedes?: boolean
+  /** A tighter row: an icon-sized tile instead of the 160x110 panel, and the
+   *  tags right-aligned against the chevron. Both give their width to the
+   *  note. Research only so far — see `THUMB_ICON` and `HUB_TAG_COL_COMPACT`
+   *  for why each is safe to shrink on a link board. */
+  compactRows?: boolean
   /** The empty-state sentence when the endpoint IS reachable. */
   emptyHint: string
   /** The sentence under the form's fields. */
   saveHint: string
-  /**
-   * Fields to open the Add form WITH, once, as soon as the panel can author.
-   * This is the hand-off the `promote-to-refinement` skill uses: it derives
-   * the branch URL and the title in Claude Code and opens the full site at
-   * `/?section=demo&add=1&url=…&title=…&note=…`; the PAGE reads those params
-   * (it owns the router state) and passes them here. Nothing is saved without
-   * the designer's click — the form's own validation and the endpoint's both
-   * still run. Ignored whenever the panel cannot author (public build,
-   * endpoint down), so a prefill link opened on the public site does nothing.
-   */
-  prefill?: LinkPrefill | null
-  /** Called once the prefill has been consumed, so the owner can take the
-   *  params off the address and a reload does not reopen the form. */
-  onPrefillConsumed?: () => void
-}
-
-/** What `promote-to-refinement` hands the page. `product` arrived 2026-10-14:
- *  the skill reads it off the branch (Compass files → `compass`), so a row
- *  for Anjani's work opens already tagged and the Compass filter — and the
- *  Compass Prototypes row it will one day be promoted into — can find it.
- *  Absent or unreadable means the form's own default, exactly as before. */
-export type LinkPrefill = {
-  url: string
-  title: string
-  note: string
-  product?: LinkProduct
-  /** The feature this chunk is part of — `promote-to-refinement` passes the
-   *  one the branch's previous chunk used, so a designer cutting the next
-   *  branch lands in the same group without retyping it (2026-10-15).
-   *  Absent leaves the field empty and the row ungrouped, as before. */
-  feature?: string
+  /* `prefill` / `onPrefillConsumed` STOOD HERE (2026-09-21 → 2026-11-21):
+     the fields `promote-to-refinement` opened the Add form with, from
+     `/?section=demo&add=1&url=…`. The simple Hub's `share-my-work` hands back
+     a link to paste instead; nothing builds that address any more. On
+     `hub-advanced`. */
 }
 
 /** One glyph per `LinkThumbKind`. Kept HERE rather than in `linkRowThumb.ts`
@@ -225,6 +219,16 @@ const THUMB_GLYPH = {
 
 /* ── styles ───────────────────────────────────────────────────────────────── */
 
+/* ⚠ `--ux-card`, NOT `--ux-bg` (2026-11-20, Jillienne: "update the fields to
+   not have the weird background color"). `--ux-bg` is this page's RECESSED
+   surface — a step down from a card, and on the Hub's green palette that step
+   is a mint tint. It is right for a note sitting on a white card. In the Add
+   form it was wrong twice over: the dialog is already a card, so the fields
+   read as green boxes on white rather than as inputs, and a recessed input
+   says "disabled" in every other interface a designer uses.
+
+   The inputs now sit on the same surface as the sheet, which is how a field
+   reads as a field — the border does the work of separating it. */
 const fieldStyle: CSSProperties = {
   width: '100%',
   font: 'inherit',
@@ -233,7 +237,7 @@ const fieldStyle: CSSProperties = {
   padding: '9px 11px',
   borderRadius: 8,
   border: '1px solid var(--ux-border)',
-  background: 'var(--ux-bg)',
+  background: 'var(--ux-card)',
   color: 'var(--ux-text)',
 }
 
@@ -256,6 +260,29 @@ const hintStyle: CSSProperties = {
   fontSize: 11,
   lineHeight: 1.4,
   color: 'var(--ux-text-3)',
+}
+
+/** The over-length line, under the field. Red because it reports a LOSS —
+ *  text the designer typed is not in the box any more — which `hintStyle`'s
+ *  grey would understate. It is not an error style: nothing is blocked, and
+ *  the Save button never dims for it. */
+const cutStyle: CSSProperties = {
+  margin: '4px 0 0',
+  fontSize: 11,
+  lineHeight: 1.4,
+  color: 'var(--ux-danger, #b3261e)',
+}
+
+/** The search field and its glyph. The icon is positioned rather than placed
+ *  in a flex row so the input keeps its own full width and focus ring — a
+ *  wrapper that draws the border instead would need to re-implement focus. */
+const searchWrapStyle: CSSProperties = { position: 'relative', display: 'inline-flex', alignItems: 'center' }
+
+const searchIconStyle: CSSProperties = {
+  position: 'absolute',
+  left: 10,
+  color: 'var(--ux-text-3)',
+  pointerEvents: 'none',
 }
 
 const fieldWrapStyle: CSSProperties = { marginBottom: 12 }
@@ -454,19 +481,15 @@ const toolbarStyle: CSSProperties = {
   flexWrap: 'wrap',
 }
 
-/** The "Show archive" / "Back to board" door, top right — link-shaped, in the
- *  accent, so it reads as a place to go rather than as another action button. */
-const archiveLinkStyle: CSSProperties = {
-  ...btnStyle,
-  border: '1px solid transparent',
-  background: 'transparent',
-  color: 'var(--ux-accent)',
-}
-
-const archiveNoteStyle: CSSProperties = {
-  margin: '-6px 0 14px',
-  fontSize: 13,
-  color: 'var(--ux-text-2)',
+/** The board's heading on the Hub's Archive page — the same shape as the
+ *  page's own "Archived from the boards" title, so the groups read as one
+ *  list. */
+const archiveTitleStyle: CSSProperties = {
+  margin: '0 0 12px',
+  fontFamily: 'var(--font-heading)',
+  fontSize: 15,
+  fontWeight: 700,
+  color: 'var(--ux-text)',
 }
 
 const EMPTY_DRAFT: LinkDraft = {
@@ -480,21 +503,15 @@ const EMPTY_DRAFT: LinkDraft = {
   supersedes: '',
 }
 
-/** Below this the search field is a dead control — it costs a row of chrome to
- *  filter a list you can already see all of. Same reasoning as the status pills
- *  on the project sections, which only render when there is more than one. */
-const SEARCH_THRESHOLD = 6
-
 /** null = closed. 'new' = adding. A `StoredLink` = editing that record. One
  *  form for all three, so the add and edit paths cannot drift in what they
  *  validate — the same shape `QaNotesPanel` uses for its editor. */
 type Editing = null | 'new' | StoredLink
 
-/* THE AUTOMATIC BRANCH STRIP LIVED HERE from 2026-09-21 to 2026-11-16. It
-   is the Design section now (`DesignPanel.tsx`): the same branch list, grouped
-   by feature and saying where each branch is, as a section of its own rather
-   than a strip under a board it kept being confused with. Its "Add" is the
-   row's "Discuss in Refinement", which opens this panel's form prefilled. */
+/* THE AUTOMATIC BRANCH STRIP LIVED HERE from 2026-09-21 to 2026-11-16, and
+   became the derived Design section (`DesignPanel.tsx`) until 2026-11-21,
+   when that went with the advanced Hub too (`derived-design-section` in
+   `archivedItems.ts`). */
 
 /* ── a feature group ──────────────────────────────────────────────────────── */
 
@@ -590,6 +607,64 @@ function FeatureGroupBlock({
 
 /* ── the form ─────────────────────────────────────────────────────────────── */
 
+/**
+ * A textarea that is as tall as its content, and that trims to a cap while
+ * saying how much it trimmed (2026-11-20).
+ *
+ * ⚠ THE HEIGHT IS SET ON EVERY RENDER, not only on input. A controlled value
+ * can change without anyone typing — opening the form to EDIT an existing row
+ * is the case that matters — and a textarea sized only in `onChange` opens at
+ * one row with a paragraph scrolled inside it. Reset to `auto` first: without
+ * that, `scrollHeight` is measured against the height already set and the box
+ * can only ever grow.
+ *
+ * ⚠ IT TRIMS; IT DOES NOT REFUSE. `maxLength` on the element would be simpler
+ * and is the wrong behaviour — the browser silently drops the overflow of a
+ * paste with no feedback at all, which is the failure this is replacing. The
+ * value is cut here so the field shows exactly what will be saved, and the
+ * caller is told the size of the cut so it can say so.
+ */
+function AutoGrowTextarea({
+  id,
+  value,
+  onValueChange,
+  onOverflow,
+  max,
+  placeholder,
+  minRows = 2,
+}: {
+  id: string
+  value: string
+  onValueChange: (v: string) => void
+  onOverflow: (cut: number) => void
+  max: number
+  placeholder?: string
+  minRows?: number
+}) {
+  const ref = useRef<HTMLTextAreaElement | null>(null)
+  useLayoutEffect(() => {
+    const el = ref.current
+    if (!el) return
+    el.style.height = 'auto'
+    el.style.height = `${el.scrollHeight}px`
+  }, [value])
+  return (
+    <textarea
+      id={id}
+      ref={ref}
+      rows={minRows}
+      value={value}
+      onChange={(e) => {
+        const raw = e.target.value
+        onOverflow(Math.max(0, raw.length - max))
+        onValueChange(raw.length > max ? raw.slice(0, max) : raw)
+      }}
+      placeholder={placeholder}
+      style={{ ...fieldStyle, resize: 'none', overflow: 'hidden', display: 'block' }}
+    />
+  )
+}
+
 function LinkFormModal({
   p,
   editing,
@@ -620,6 +695,11 @@ function LinkFormModal({
   links: StoredLink[]
 }) {
   const isEdit = editing !== null && editing !== 'new'
+  /** How much of the last paste or keystroke did not fit. Lives here rather
+   *  than in the draft because it is about the last EDIT, not about the
+   *  record: it clears the moment the note fits again, and a saved row carries
+   *  no memory of having been trimmed. */
+  const [noteCut, setNoteCut] = useState(0)
   /** The chunks this one could be replacing: the same feature, still live, and
    *  never the row being edited. NOT scoped to the author — picking up where
    *  someone else left off is a real thing that happens, and refusing to let
@@ -704,6 +784,23 @@ function LinkFormModal({
                 </option>
               ))}
             </select>
+            {/* THE ESCAPE HATCH (2026-11-20, Jillienne: "I want the Type field
+                to have an option to type in a custom link"). Only when `other`
+                is chosen — a box that is always there would read as a second
+                required field. The closed list stays closed because `type` is
+                a trust boundary the server keeps its own copy of; this is the
+                room beside it. Empty is fine: the tag then just reads
+                "Other". */}
+            {draft.type === 'other' && (
+              <input
+                aria-label="Custom type"
+                value={draft.typeOther ?? ''}
+                maxLength={MAX_TYPE_OTHER}
+                onChange={(e) => onChange({ typeOther: e.target.value })}
+                placeholder="Your word for it — e.g. Transcript, Survey"
+                style={{ ...fieldStyle, marginTop: 6 }}
+              />
+            )}
           </div>
         )}
 
@@ -711,13 +808,37 @@ function LinkFormModal({
           <label style={labelStyle} htmlFor="link-note">
             Note <span style={optionalStyle}>— optional</span>
           </label>
-          <input
+          {/* A TEXTAREA THAT GROWS, and a cut that is SAID OUT LOUD
+              (2026-11-20, Jillienne). Three things were wrong with the single
+              line it replaced:
+
+                • a pasted paragraph showed about eight words of itself, so
+                  nobody could read back what they had just put in;
+                • nothing client-side knew about `MAX_NOTE`, so an over-long
+                  note was refused by the SERVER — after pressing Save, as a
+                  validation error, with the note still too long and no way to
+                  tell by how much;
+                • that refusal blocked the whole save, losing the url and title
+                  alongside it.
+
+              So the note is trimmed to the cap AS IT IS TYPED — what you see
+              is exactly what will be saved — and the overflow is reported
+              underneath in red. The save is never blocked: a cut note is a
+              shorter note, not an invalid one. */}
+          <AutoGrowTextarea
             id="link-note"
             value={draft.note}
-            onChange={(e) => onChange({ note: e.target.value })}
+            onValueChange={(v) => onChange({ note: v })}
+            onOverflow={setNoteCut}
+            max={MAX_NOTE}
             placeholder="Why it is here, or what to look at"
-            style={fieldStyle}
           />
+          {noteCut > 0 && (
+            <p style={cutStyle}>
+              Cut off at {MAX_NOTE} characters — {noteCut.toLocaleString()} removed. The rest is
+              saved; put anything longer where it can be linked.
+            </p>
+          )}
         </div>
 
         <div style={fieldWrapStyle}>
@@ -760,7 +881,7 @@ function LinkFormModal({
           <>
             <div style={fieldWrapStyle}>
               <label style={labelStyle} htmlFor="link-feature">
-                Feature <span style={optionalStyle}>— optional</span>
+                {p.featureNoun ?? 'Feature'} <span style={optionalStyle}>— optional</span>
               </label>
               {/* FREE TEXT with suggestions, not a list to choose from
                   (2026-10-15, Jillienne). A curated list would mean every new
@@ -776,7 +897,7 @@ function LinkFormModal({
                 value={draft.feature ?? ''}
                 maxLength={MAX_FEATURE}
                 onChange={(e) => onChange({ feature: e.target.value })}
-                placeholder="What this is part of — e.g. Study streak card"
+                placeholder={p.featurePlaceholder ?? 'What this is part of — e.g. Study streak card'}
                 style={fieldStyle}
               />
               <datalist id="link-feature-options">
@@ -785,11 +906,17 @@ function LinkFormModal({
                 ))}
               </datalist>
               <p style={hintStyle}>
-                Chunks of the same feature group together on the board, newest first.
+                {p.featureHint ?? 'Chunks of the same feature group together on the board, newest first.'}
               </p>
             </div>
 
-            {replaceable.length > 0 && (
+            {/* ⚠ `showSupersedes`, NOT `showFeature` (2026-11-20). The two rode
+                together until Research started grouping: "this study replaces
+                that study" is a Refinement idea — one chunk of work closing
+                another — and on a research project it would invite someone to
+                hide the earlier evidence, which is the opposite of the point.
+                Grouping and superseding are now separate switches. */}
+            {(p.showSupersedes ?? true) && replaceable.length > 0 && (
               <div style={fieldWrapStyle}>
                 <label style={labelStyle} htmlFor="link-supersedes">
                   Replaces
@@ -877,7 +1004,21 @@ function LinkFormModal({
 
 /* ── the panel ────────────────────────────────────────────────────────────── */
 
-export function LinkBoardPanel({ p }: { p: LinkBoardPresentation }) {
+/**
+ * `archiveView` (2026-11-21): render ONLY this board's archived rows, under
+ * the given heading, with no toolbar, no pills and no Add — the shape the
+ * Hub's ARCHIVE page draws for each board. Nothing when the board has no
+ * archived rows, so the page shows only the boards that have something.
+ * Jillienne: "the concept of hidden is not needed, just archive those
+ * things" — one word, one page, for everything taken off the Hub.
+ */
+export function LinkBoardPanel({
+  p,
+  archiveView,
+}: {
+  p: LinkBoardPresentation
+  archiveView?: { title: string }
+}) {
   const { index: rawIndex, refresh } = p.board.useLinks()
   const { createLink, saveLink, archiveLink, deleteLink, readLastAuthor, rememberLastAuthor } = p.board
   // Every row, every build (2026-10-15): the public build that filtered this
@@ -888,10 +1029,12 @@ export function LinkBoardPanel({ p }: { p: LinkBoardPresentation }) {
   const [draft, setDraft] = useState<LinkDraft>(EMPTY_DRAFT)
   const [errors, setErrors] = useState<string[]>([])
   const [busy, setBusy] = useState(false)
-  const [copied, setCopied] = useState(false)
   /* Which row just had its link copied — a per-row confirmation, because a
      menu closes on select and has no label left to change. */
-  const [shared, setShared] = useState<string | null>(null)
+  /* Which row just had something copied, and WHAT — two kebab items write to
+     the clipboard now, and "Link copied" over a markdown copy would be a
+     quiet lie. */
+  const [shared, setShared] = useState<{ id: string; label: string } | null>(null)
   const [query, setQuery] = useState('')
   /** '' = All. Not a `LinkType`, because "no type" is itself a filterable
    *  value here and would collide with it. */
@@ -900,16 +1043,14 @@ export function LinkBoardPanel({ p }: { p: LinkBoardPresentation }) {
   const [productFilter, setProductFilter] = useState<LinkProduct | ''>('')
   /* '' is All. Matched loosely against the typed author — see `matchesDesigner`. */
   const [designerFilter, setDesignerFilter] = useState<Designer | ''>('')
-  /* Which half of the board the list shows. The archive is the SAME store,
-     split on `archivedAt`; nothing moves anywhere when a row is archived. */
-  const [showArchive, setShowArchive] = useState(false)
-
-  /* Archived rows are HIDDEN, not deleted (2026-10-15): the board lists the
-     live ones, and "Show archive" flips the list to the others. A board without
-     the control has no archived rows, so `live` is its whole index. */
+  /* Archived rows are the SAME store, split on `archivedAt`; nothing moves
+     anywhere when a row is archived (2026-10-15). The board lists the live
+     ones; the archived ones are drawn by the Hub's Archive page, which mounts
+     this panel again in `archiveView` (2026-11-21 — until then a "Show
+     hidden" door top right flipped the board itself). */
   const live = useMemo(() => index.links.filter(isLive), [index.links])
   const archived = useMemo(() => index.links.filter((l) => !isLive(l)), [index.links])
-  const inArchive = Boolean(p.archivable) && showArchive
+  const inArchive = Boolean(p.archivable) && Boolean(archiveView)
   const source = inArchive ? archived : live
 
   const q = query.trim().toLowerCase()
@@ -925,7 +1066,7 @@ export function LinkBoardPanel({ p }: { p: LinkBoardPresentation }) {
             l.url.toLowerCase().includes(q) ||
             l.note.toLowerCase().includes(q) ||
             l.addedBy.toLowerCase().includes(q) ||
-            linkTypeLabel(l.type).toLowerCase().includes(q)),
+            linkTypeLabel(l.type, l.typeOther).toLowerCase().includes(q)),
       ),
     [source, q, typeFilter, productFilter, designerFilter],
   )
@@ -994,7 +1135,10 @@ export function LinkBoardPanel({ p }: { p: LinkBoardPresentation }) {
     setDraft((d) => {
       const next = { ...d, ...patch }
       const reconsider = 'feature' in patch || 'addedBy' in patch
-      if (p.showFeature && reconsider && !supersedesTouched && editing === 'new') {
+      // Only where the Replaces control is offered: a board that groups but
+      // does not supersede (Research) must not be handed a supersession its
+      // hidden control cannot clear — 2026-11-21, found by the test rewrite.
+      if (p.showFeature && p.showSupersedes !== false && reconsider && !supersedesTouched && editing === 'new') {
         next.supersedes =
           latestChunkFor(index.links, next.feature ?? '', next.addedBy ?? '')?.id ?? ''
       }
@@ -1025,49 +1169,6 @@ export function LinkBoardPanel({ p }: { p: LinkBoardPresentation }) {
     setErrors([])
     setEditing('new')
   }
-
-  /**
-   * The prefill — see `LinkBoardPresentation.prefill`. Waits until the
-   * endpoint has answered (before that `canAuthor` is false for the wrong
-   * reason), fires once, and tells the owner so the params come off the
-   * address. The owner is the page, which holds the router state: stripping
-   * them here with `history.replaceState` would leave the router believing
-   * they were still there, and the next section change would write them back.
-   */
-  const [prefillConsumed, setPrefillConsumed] = useState(false)
-  const { prefill, onPrefillConsumed } = p
-  useEffect(() => {
-    if (prefillConsumed || !prefill || !canAuthor) return
-    // Intentional, the `FeatureFlagPanel` precedent: the draft is SEEDED once
-    // an external fact arrives (the endpoint answered) and the designer then
-    // edits it, so it cannot be derived during render.
-    /* eslint-disable react-hooks/set-state-in-effect */
-    setPrefillConsumed(true)
-    setDraft({
-      ...EMPTY_DRAFT,
-      addedBy: readLastAuthor(),
-      url: prefill.url,
-      title: prefill.title,
-      note: prefill.note,
-      product: prefill.product ?? DEFAULT_PRODUCT,
-      // The feature the branch's previous chunk used, when the skill could work
-      // one out — so cutting the next branch lands in the same group without
-      // retyping it. "Replaces" is derived from it the moment the form opens,
-      // exactly as it would be if it had been typed.
-      feature: prefill.feature ?? '',
-      supersedes: prefill.feature
-        ? (latestChunkFor(index.links, prefill.feature, readLastAuthor())?.id ?? '')
-        : '',
-    })
-    setErrors([])
-    setEditing('new')
-    /* eslint-enable react-hooks/set-state-in-effect */
-    onPrefillConsumed?.()
-    // `index.links` is in here because the prefill's feature derives its
-    // "Replaces" default from the board. Re-running is harmless and never
-    // reopens the form: `prefillConsumed` is set on the first pass and is the
-    // effect's own guard.
-  }, [prefillConsumed, prefill, canAuthor, readLastAuthor, onPrefillConsumed, index.links])
 
   const beginEdit = (link: StoredLink) => {
     // The record's OWN author, not this browser's last one — editing someone
@@ -1153,18 +1254,6 @@ export function LinkBoardPanel({ p }: { p: LinkBoardPresentation }) {
     }
   }
 
-  const copy = async () => {
-    try {
-      // What the list is SHOWING — the archive when that is open — not the
-      // whole store, so a paste matches the page the reader is looking at.
-      await navigator.clipboard.writeText(toMarkdown(source))
-      setCopied(true)
-      window.setTimeout(() => setCopied(false), 1500)
-    } catch {
-      /* clipboard blocked — the list is unchanged, nothing to recover */
-    }
-  }
-
   /**
    * Share Link copies the row's DESTINATION — the branch build a reviewer is
    * being sent to look at — not a link to this dashboard section. The row is
@@ -1178,7 +1267,31 @@ export function LinkBoardPanel({ p }: { p: LinkBoardPresentation }) {
     if (!href) return
     try {
       await navigator.clipboard.writeText(href)
-      setShared(link.id)
+      setShared({ id: link.id, label: 'Link copied' })
+      window.setTimeout(() => setShared(null), 1800)
+    } catch {
+      /* clipboard blocked — nothing was changed, and no false confirmation */
+    }
+  }
+
+  /**
+   * ONE ROW AS MARKDOWN (2026-11-20, Jillienne: "can we add the copy markdown
+   * into the kebab for each individual item?").
+   *
+   * `toMarkdown` is the board's export and it takes a LIST — handing it a
+   * single-item array is the whole implementation, and is why this is not a
+   * second formatter to keep in step with the first. A row pasted into
+   * Confluence or a ticket then looks exactly like its line in a full export.
+   *
+   * ⚠ IT REPLACES THE TOOLBAR BUTTON, which was removed the same day for
+   * competing with Add. The function it called is still the one called here,
+   * so "the way out of a store nothing backs up" survives the button going —
+   * it is now per row rather than whole-board.
+   */
+  const copyMarkdown = async (link: StoredLink) => {
+    try {
+      await navigator.clipboard.writeText(toMarkdown([link]))
+      setShared({ id: link.id, label: 'Markdown copied' })
       window.setTimeout(() => setShared(null), 1800)
     } catch {
       /* clipboard blocked — nothing was changed, and no false confirmation */
@@ -1208,22 +1321,30 @@ export function LinkBoardPanel({ p }: { p: LinkBoardPresentation }) {
         onSelect: () => void share(link),
       })
     }
+    // Offered to READERS as well, for the same reason Share is: copying takes
+    // nothing and changes nothing, and a stakeholder pasting a row into a
+    // ticket is the point of the board.
+    items.push({
+      id: 'markdown',
+      label: 'Copy as markdown',
+      icon: <ClipboardList size={13} aria-hidden />,
+      onSelect: () => void copyMarkdown(link),
+    })
     if (p.archivable && canAuthor) {
       items.push(
         isLive(link)
           ? {
               id: 'archive',
-              /* HIDE, not Archive (2026-11-01, Jillienne): "Archive" is also
-                 the nav section for things removed from the project, and a
-                 row that is merely hidden from Refinement is not that. Same
-                 store, same `archived` field — only the word changed. */
-              label: 'Hide',
+              /* ARCHIVE again (2026-11-21). It was "Hide" from 2026-11-01 so
+                 that Archive meant only the nav section; now an archived row
+                 IS listed on that section, so the one word is right. */
+              label: 'Archive',
               icon: <Package size={13} aria-hidden />,
               onSelect: () => void archive(link, true),
             }
           : {
               id: 'unarchive',
-              label: 'Unhide',
+              label: 'Unarchive',
               icon: <ArrowRotateLeft size={13} aria-hidden />,
               onSelect: () => void archive(link, false),
             },
@@ -1296,14 +1417,14 @@ export function LinkBoardPanel({ p }: { p: LinkBoardPresentation }) {
         ? [
             {
               key: 'archived',
-              text: `Hidden ${formatUpdated(link.archivedAt)}${link.archivedBy.trim() ? ` · ${link.archivedBy.trim()}` : ''}`,
+              text: `Archived ${formatUpdated(link.archivedAt)}${link.archivedBy.trim() ? ` · ${link.archivedBy.trim()}` : ''}`,
             },
           ]
         : []),
       ...(p.showProduct
         ? [{ key: 'product', text: linkProductLabel(link.product), style: productBadgeStyle(link.product) }]
         : p.showType && link.type
-          ? [{ key: 'type', text: linkTypeLabel(link.type) }]
+          ? [{ key: 'type', text: linkTypeLabel(link.type, link.typeOther) }]
           : []),
     ]
     const actions = rowActions(link)
@@ -1315,9 +1436,14 @@ export function LinkBoardPanel({ p }: { p: LinkBoardPresentation }) {
           // `CSSProperties` cannot carry a pseudo-class.
           className="cre-uxlinks-row"
           titleClassName="cre-uxlinks-title"
+          compact={p.compactRows}
           thumb={
-            <GeneratedThumb accent={thumbAccents[hostKey(link.url)]} boost={1.7}>
-              <Glyph size={34} />
+            <GeneratedThumb
+              accent={thumbAccents[hostKey(link.url)]}
+              boost={1.7}
+              {...(p.compactRows ? { width: THUMB_ICON, height: THUMB_ICON } : null)}
+            >
+              <Glyph size={p.compactRows ? 20 : 34} />
             </GeneratedThumb>
           }
           title={link.title}
@@ -1330,8 +1456,11 @@ export function LinkBoardPanel({ p }: { p: LinkBoardPresentation }) {
           description={link.note.trim() || undefined}
           caption={href ? hostOf(link.url) : `${hostOf(link.url)} · not a linkable address`}
           tags={tags}
-          statusWidth={84}
-          status={shared === link.id ? <span style={hubTagStyle}>Link copied</span> : null}
+          // Wide enough for the longer of the two confirmations.
+          statusWidth={116}
+          status={
+            shared?.id === link.id ? <span style={hubTagStyle}>{shared.label}</span> : null
+          }
           href={href ?? undefined}
           external
           actions={canAuthor || actions.length > 0 ? actions : undefined}
@@ -1341,66 +1470,80 @@ export function LinkBoardPanel({ p }: { p: LinkBoardPresentation }) {
     )
   }
 
+  /* The Archive page's view of this board: the heading and the rows, or
+     nothing at all. */
+  if (archiveView) {
+    if (archived.length === 0) return null
+    return (
+      <section aria-labelledby={`archived-${p.board.config.event}`} style={{ marginBottom: 28 }}>
+        <h2 id={`archived-${p.board.config.event}`} style={archiveTitleStyle}>
+          {archiveView.title}
+        </h2>
+        <ul style={hubListStyle}>{archived.map((link) => renderRow(link))}</ul>
+        {/* Edit works here too, and a save carries the archive state through
+            (the draft copies it), so editing does not quietly unarchive. */}
+        <LinkFormModal
+          p={p}
+          editing={editing}
+          draft={draft}
+          errors={errors}
+          busy={busy}
+          onChange={change}
+          onChooseSupersedes={chooseSupersedes}
+          onSubmit={() => void submit()}
+          onClose={close}
+          links={index.links}
+        />
+      </section>
+    )
+  }
+
   return (
     <div>
       {/* ── toolbar ── */}
       {index.links.length > 0 && (
         <div style={toolbarStyle}>
-          {canAuthor && !inArchive && (
-            <button type="button" onClick={beginAdd} style={primaryBtnStyle}>
-              <Plus size={12} aria-hidden />
-              Add {p.noun}
-            </button>
-          )}
-          {inArchive && (
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 600, color: 'var(--ux-text)' }}>
-              <Package size={13} aria-hidden />
-              Archive
-            </span>
-          )}
-          {index.links.length >= SEARCH_THRESHOLD && (
+          {/* SEARCH FIRST, AND ALWAYS (2026-11-20, Jillienne: "make the search
+              field consistent on all pages, include a standard magnifying
+              glass icon").
+
+              ⚠ IT USED TO APPEAR ONLY AT SIX ROWS OR MORE. The threshold was
+              well meant — a search box over three rows is furniture — but it
+              made the four boards look like four different pages, and it moved
+              the whole toolbar the moment someone added a sixth row. A control
+              that comes and goes is harder to learn than one that is sometimes
+              unnecessary. */}
+          <span style={searchWrapStyle}>
+            <MagnifyingGlassRegular size={13} aria-hidden style={searchIconStyle} />
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder={`Search ${p.nounPlural}`}
               aria-label={`Search ${p.nounPlural}`}
-              style={{ ...fieldStyle, width: 200 }}
+              style={{ ...fieldStyle, width: 220, paddingLeft: 30 }}
             />
-          )}
+          </span>
           <span style={{ fontSize: 13, color: 'var(--ux-text-3)' }}>
             {rows.length} {rows.length === 1 ? p.noun : p.nounPlural}
           </span>
-          <button type="button" onClick={() => void copy()} style={{ ...btnStyle, marginLeft: 'auto' }}>
-            <ClipboardList size={12} aria-hidden />
-            {copied ? 'Copied' : 'Copy as markdown'}
-          </button>
-          {/* ── the archive door ──
-              Top right, a link-shaped button rather than a pill in the filter
-              strip: the archive is not a filter over the board, it is the
-              other half of the store, and the strip's pills still apply inside
-              it. Offered only once something is archived — "Show archive · 0"
-              is a door to an empty room. */}
-          {p.archivable && !inArchive && archived.length > 0 && (
-            <button type="button" onClick={() => setShowArchive(true)} style={archiveLinkStyle}>
-              <Package size={12} aria-hidden />
-              Show hidden · {archived.length}
-            </button>
-          )}
-          {inArchive && (
-            <button type="button" onClick={() => setShowArchive(false)} style={archiveLinkStyle}>
-              <ArrowLeft size={12} aria-hidden />
-              Back to board
-            </button>
-          )}
-        </div>
-      )}
+          {/* ── Add, far right ──
+              2026-11-20. It led the toolbar, which put the page's one WRITE
+              action in the place the eye starts — before anyone had seen what
+              was already on the board. Reading comes first and the action sits
+              at the end of the line.
 
-      {inArchive && (
-        <p style={archiveNoteStyle}>
-          {archived.length === 0
-            ? 'Nothing hidden.'
-            : `${archived.length} ${archived.length === 1 ? p.noun : p.nounPlural} hidden from the board. Unhide one to put it back.`}
-        </p>
+              "Copy as markdown" was removed in the same pass: a second button
+              competing with this one, for an export nobody on these boards was
+              using. The row kebab still copies a single link. */}
+          {canAuthor && (
+            <button type="button" onClick={beginAdd} style={{ ...primaryBtnStyle, marginLeft: 'auto' }}>
+              <Plus size={12} aria-hidden />
+              Add {p.noun}
+            </button>
+          )}
+          {/* No archive door here since 2026-11-21: archived rows are on the
+              Hub's Archive page, beside everything else taken off the Hub. */}
+        </div>
       )}
 
       {/* ── designer filter ──
@@ -1511,8 +1654,10 @@ export function LinkBoardPanel({ p }: { p: LinkBoardPresentation }) {
         </div>
       ) : rows.length === 0 ? (
         <p style={{ fontSize: 13, color: 'var(--ux-text-3)' }}>
-          {inArchive && archived.length === 0
-            ? `No archived ${p.nounPlural}.`
+          {live.length === 0 && !q && !typeFilter && !designerFilter
+            ? /* Every row is archived — say where they went rather than
+                 "no links match", which reads as a filter nobody set. */
+              `Nothing here right now. ${archived.length === 1 ? '1 link is' : `${archived.length} links are`} on the Archive page.`
             : `No ${p.nounPlural} match ${
                 q && (typeFilter || designerFilter)
                   ? 'that search and filter'
@@ -1557,26 +1702,11 @@ export function LinkBoardPanel({ p }: { p: LinkBoardPresentation }) {
   )
 }
 
-/* ── the two instances ────────────────────────────────────────────────────── */
+/* ── the three instances ──────────────────────────────────────────────────── */
 
-const LINKS_PRESENTATION: LinkBoardPresentation = {
-  board: LINKS_BOARD,
-  noun: 'link',
-  nounPlural: 'links',
-  showType: true,
-  showThumb: false,
-  showProduct: false,
-  showBadges: false,
-  emptyHint: 'Nothing here yet. Add a link.',
-  saveHint:
-    'Saved to the shared store — everyone who opens this site sees it, and it survives a cleared cache. The date is stamped for you.',
-}
-
-/** Links: authorable on BOTH sites, an editorial decision recorded in CLAUDE.md
- *  ("it is the place you send someone"). */
-export function LinksPanel() {
-  return <LinkBoardPanel p={LINKS_PRESENTATION} />
-}
+/* `LINKS_PRESENTATION` / `LinksPanel` — the Resources board, with the Type
+   taxonomy and nothing else — stood here until 2026-11-21. `resources-section`
+   in `archivedItems.ts`; on `hub-advanced`. */
 
 /**
  * Research (2026-10-07): the evidence behind the decisions — studies, findings,
@@ -1590,7 +1720,36 @@ const RESEARCH_PRESENTATION: LinkBoardPresentation = {
   board: RESEARCH_BOARD,
   noun: 'link',
   nounPlural: 'links',
-  showType: true,
+  // Archive in the kebab (2026-11-21), listed on the Hub's Archive page.
+  archivable: true,
+  showUpdated: true,
+  /* NO TYPE, AND SO NO FILTER STRIP (2026-11-20, Jillienne: "I dont think we
+     need filters. and I dont think we need type? This should be more of a
+     simple list of documents.").
+
+     One flag turns off three things, which is why it reads as a bigger change
+     than it is: the Type control in the form, the pills over the board (they
+     are derived from the types the rows actually carry), and the type tag on
+     the row. What is left is the thing itself — a title, a note, who added it
+     and when.
+
+     ⚠ THE TYPES THEMSELVES ARE NOT GONE. Links, Refinement and PRDs all keep
+     `showType: true`, so Confluence · Figma · Document and the custom `other`
+     word added earlier today still work there. This board simply does not ask
+     the question. Turning it back on is this line. */
+  showType: false,
+  /* PROJECTS (2026-11-20). The same stored field Refinement groups by, under
+     the word research uses for it. No supersedes: see the note at that
+     control — closing one study with another is not what this board does. */
+  showFeature: true,
+  featureNoun: 'Project',
+  featurePlaceholder: 'The project this belongs to — e.g. Onboarding study',
+  featureHint: 'Links in the same project group together, newest first.',
+  showSupersedes: false,
+  /* 2026-11-20: a research link's tile is a glyph chosen from its HOST, never
+     a picture — so the big panel was tinted space, and the note is the part
+     worth reading. */
+  compactRows: true,
   showThumb: false,
   showProduct: false,
   showBadges: false,
@@ -1600,8 +1759,8 @@ const RESEARCH_PRESENTATION: LinkBoardPresentation = {
     'Saved to the shared store — everyone who opens this site sees it, and it survives a cleared cache. The date is stamped for you.',
 }
 
-export function ResearchPanel() {
-  return <LinkBoardPanel p={RESEARCH_PRESENTATION} />
+export function ResearchPanel({ archiveView }: { archiveView?: { title: string } } = {}) {
+  return <LinkBoardPanel p={RESEARCH_PRESENTATION} archiveView={archiveView} />
 }
 
 /**
@@ -1616,6 +1775,11 @@ const PRD_PRESENTATION: LinkBoardPresentation = {
   noun: 'link',
   nounPlural: 'links',
   showType: true,
+  // The compact row, Archive in the kebab and the Updated stamp — the same
+  // three as Research and Design since 2026-11-21, so the boards read alike.
+  compactRows: true,
+  archivable: true,
+  showUpdated: true,
   showThumb: false,
   showProduct: false,
   showBadges: false,
@@ -1625,8 +1789,8 @@ const PRD_PRESENTATION: LinkBoardPresentation = {
     'Saved to the shared store — everyone who opens this site sees it, and it survives a cleared cache. The date is stamped for you.',
 }
 
-export function PrdsPanel() {
-  return <LinkBoardPanel p={PRD_PRESENTATION} />
+export function PrdsPanel({ archiveView }: { archiveView?: { title: string } } = {}) {
+  return <LinkBoardPanel p={PRD_PRESENTATION} archiveView={archiveView} />
 }
 
 /**
@@ -1635,41 +1799,33 @@ export function PrdsPanel() {
  * rows someone has flipped public. That asymmetry IS the review gate — see
  * `demoStore.ts`.
  */
-export function DemoPanel({
-  prefill,
-  onPrefillConsumed,
-}: {
-  prefill?: LinkPrefill | null
-  onPrefillConsumed?: () => void
-} = {}) {
+export function DemoPanel({ archiveView }: { archiveView?: { title: string } } = {}) {
+  /* THE DESIGN BOARD (2026-11-21), labelled Design on the Hub and still
+     section id `demo` so the rows already on it and every `?section=demo`
+     link survive. Research's shape: a title, a link, a note, who added it and
+     when. The product tag, the feature grouping, the supersedes control and
+     the big tile all came off the same day — Jillienne: "strip down the XCEL
+     hub into a more simple version" — and each is one line to put back. */
   const p: LinkBoardPresentation = {
     board: DEMO_BOARD,
-    // "link", not "demo" — what the designer is adding IS a link (to their
-    // branch), and "Add link" is what the button on the neighbouring Other
-    // Links panel says. Two boards, one verb.
     noun: 'link',
     nounPlural: 'links',
     showType: false,
-    showThumb: true,
-    showProduct: true,
-    showBadges: true,
+    showThumb: false,
+    showProduct: false,
+    showBadges: false,
     showUpdated: true,
-    // 2026-10-15, Jillienne: pills by designer, product stays a tag; Archive
-    // in the kebab, Show archive top right. Refinement only, both.
+    // Pills by designer (2026-10-15); Added by is a pick from the roster,
+    // remembered per browser.
     showDesigners: true,
     archivable: true,
-    // Feature Refinement (2026-10-15): rows group under the feature they are a
-    // chunk of, and a chunk replaced by a later one folds under "earlier".
-    showFeature: true,
+    showFeature: false,
+    showSupersedes: false,
+    compactRows: true,
     emptyHint:
-      'Nothing here yet. Push a branch and paste its link here.',
+      'Nothing here yet. Paste a link to your work — a branch build, a Figma file, a document.',
     saveHint:
       'Saved to the shared store — the team sees it on the full site right away. The date is stamped for you.',
-    // From `/?section=demo&add=1&url=…&title=…&note=…` — what
-    // `promote-to-refinement` opens. Refinement only: Resources is authored
-    // by hand, so `LinksPanel` passes nothing.
-    prefill,
-    onPrefillConsumed,
   }
-  return <LinkBoardPanel p={p} />
+  return <LinkBoardPanel p={p} archiveView={archiveView} />
 }

@@ -1,6 +1,5 @@
-import { afterEach, describe, expect, it, beforeEach, vi } from 'vitest'
-import { render, screen, waitFor, within } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
+import { describe, expect, it, beforeEach } from 'vitest'
+import { render, screen, within } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { UxDashboardPage } from '@/pages/UxDashboardPage'
 import { AccountProvider } from '@/context/AccountContext'
@@ -8,12 +7,9 @@ import { ThemeProvider } from '@/context/ThemeContext'
 import { existsSync, readFileSync, statSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { PROTOTYPE_FEATURES, PROTOTYPE_SCOPES, componentPreviewUrl } from '@/data/prototypeFeatures'
+import { PROTOTYPE_FEATURES, componentPreviewUrl } from '@/data/prototypeFeatures'
 import { ARCHIVED_ITEMS } from '@/data/archivedItems'
-import type { TodoCard } from '@/data/todoBoardStore'
-import { HUB_DOCS } from '@/data/hubDocs'
 import { HANDOFF_IDS } from '@/data/handoffFeatures'
-import { HUB_HOST, STAGE_BRANCH, STAGE_ORIGIN, prototypeHref } from '@/data/stageBuild'
 
 /**
  * Smoke test for the XCEL dashboard.
@@ -28,6 +24,14 @@ import { HUB_HOST, STAGE_BRANCH, STAGE_ORIGIN, prototypeHref } from '@/data/stag
  * cannot prove that origin is reachable or frame-embeddable, but it can pin the
  * shape of the URL so a careless edit to `PROTOTYPE_BASE` fails here instead of
  * silently blanking every preview in the browser.
+ *
+ * 2026-11-21: the simple Hub took Prototypes (and its Main · Stage switch),
+ * the derived Design list, Release, Resources, Explorations, QA Notes, the To
+ * Do Board and Hub Resources off the rail — and, the same day, their code out
+ * of the repo (one `archivedItems.ts` row each; the whole advanced Hub is on
+ * the `hub-advanced` branch). The tests that rendered them went with them.
+ * What stays here is the six-section rail and the pure data checks over
+ * `PROTOTYPE_FEATURES`, which holds the dev handoffs alone now.
  */
 
 function renderDashboard(initialPath = '/') {
@@ -43,34 +47,18 @@ function renderDashboard(initialPath = '/') {
 }
 
 /** The nav order is load-bearing — see `NAV_EYEBROWS` in UxDashboardPage.tsx.
- *  Thirteen sections since 2026-11-16: the twelve of 2026-10-15 (Design
- *  retired with the Designers group it headed, Explorations moved up under
- *  PRDs, Archive and QA Notes under Dev Handoff, ungated) plus DESIGN, back
- *  as a different thing — derived from the branch list, between Prototypes
- *  and Refinement. See `DesignPanel.tsx`. */
+ *  Six sections since the simple Hub (2026-11-21, `SIMPLE_SECTIONS`): the
+ *  three boards under one "Design & Research" eyebrow, then the handoffs and
+ *  the Archive under "Dev Handoff". Design is the board that was Refinement —
+ *  same id, store and endpoint. The thirteen of 2026-11-16 are on
+ *  `hub-advanced`. */
 const EXPECTED_SECTIONS = [
-  'Prototypes',
   'Design',
-  // Release (2026-11-16, same day): what is on stage and not on main —
-  // Jillienne's inbox, derived like Design. See `ReleasePanel.tsx`.
-  'Release',
-  'Refinement',
   'Research',
-  'Resources',
   'PRDs',
-  'Explorations',
   'Development',
   'Done',
   'Archive',
-  'QA Notes',
-  // The two Team sections (2026-10-15), last, under one "Team" eyebrow — see
-  // the `SectionDef`s in `UxDashboardPage.tsx`. The board is NOT the archived
-  // To Do section, which had id `todo` and is still archived. Hub Resources is
-  // the first way back to the guides since the Contributing section was
-  // archived and the rail-foot link to /about/ came off (both 2026-09-29, both
-  // still pinned gone below).
-  'To Do Board',
-  'Hub Resources',
 ]
 
 beforeEach(() => {
@@ -105,31 +93,10 @@ describe('XCEL dashboard — mount and nav', () => {
     expect(positions).toEqual([...positions].sort((a, b) => a - b))
   })
 
-  it('Hub Resources lists every guide, opening each in a new tab', async () => {
-    // The rows come from `HUB_DOCS`, which is code rather than a board, so the
-    // list is assertable in a way Refinement's never can be. New tab because
-    // each document is a full page with its own rail: opening one in this tab
-    // replaces the dashboard with something that has no way back to it.
-    const user = userEvent.setup()
-    renderDashboard()
-    await user.click(screen.getByRole('button', { name: /Hub Resources/ }))
-    for (const doc of HUB_DOCS) {
-      const link = screen.getByRole('link', { name: new RegExp(doc.title) })
-      expect(link).toHaveAttribute('href', doc.href)
-      expect(link).toHaveAttribute('target', '_blank')
-    }
-  })
-
-  it('every Hub Resources row points at a document this repo actually ships', () => {
-    // The one failure this list can have that nothing else would catch: a
-    // path typed by hand that no longer exists, which renders as a perfectly
-    // ordinary row and 404s on click.
-    for (const doc of HUB_DOCS) {
-      const pub = resolve(dirname(fileURLToPath(import.meta.url)), '../../public')
-      expect(existsSync(resolve(pub, doc.href.replace(/^\//, ''), 'index.html'))).toBe(true)
-      if (doc.pdf) expect(existsSync(resolve(pub, doc.pdf.replace(/^\//, '')))).toBe(true)
-    }
-  })
+  /* "every Hub Resources row points at a document this repo actually ships"
+     stood here until 2026-11-21 — `HUB_DOCS` went with its section
+     (`hub-resources-section`). The guides under `public/` are still served;
+     `OneSite.test.tsx` checks they exist. */
 
   it('the archived Contributing section no longer resolves, and its guide is untouched', () => {
     // ARCHIVED 2026-09-29. This test used to assert the section rendered the
@@ -168,50 +135,12 @@ describe('section routing (sectionOf)', () => {
    * Sandbox, which is that category's documented behaviour rather than a bug.
    */
   const EXPECTED_PLACEMENT: Record<string, string> = {
-    // The in-app rows — the only feature rows on the ungated front door. One
-    // per `prototypeScope`; see "Prototypes holds exactly the rows" below.
-    'xcel-invite': 'prototypes',
-    'xcel-atlas-learning': 'prototypes',
-    'xcel-dashboard': 'prototypes',
-    'xcel-compass': 'prototypes',
-    // The seven documents — Explorations, directly under PRDs since 2026-10-15.
-    // `xcel-lms` and `xcel-admin-tool` stood here until 2026-10-15 — archived
-    // (`archivedFeatureRows.ts`; `desktop-platform-row`, `admin-tool-row`).
-    'xcel-walkthrough': 'exploration',
-    'xcel-wireframes': 'exploration',
-    'xcel-admin': 'exploration',
-    // The Admin placeholder (2026-10-14) — a coming-soon row that opens nothing.
-    'xcel-admin-coming-soon': 'prototypes',
-    'xcel-exam-spec': 'exploration',
-    // `atlas-home-course-card` (the first handoff row, 2026-09-24) stood here
-    // until 2026-10-15 — archived, `home-course-card-handoff`.
-    // Added 2026-09-22 — see the row's own note in `prototypeFeatures.ts` for
-    // why this page stopped being masthead-only and took a tile.
-    'xcel-pace-presets': 'exploration',
-    // The Atlas vs. Compass typography and color audit (2026-10-27) — an
-    // exploration with no document; its gateway page carries the findings.
-    'xcel-design-system-audit': 'exploration',
-    /* The two Compass Readiness states (2026-11-06). ⚠ ONLY TWO ROWS for a
-       sixteen-state prototype: the rest live in a Design-canvas export that
-       cannot be served (its runtime re-fetches its own page and mis-slices
-       it), so the states are in the PRODUCT behind the Design bar instead,
-       and these two self-contained exports stand for the design here. */
-    'xcel-compass-readiness-58': 'exploration',
-    'xcel-compass-readiness-86': 'exploration',
-    'xcel-compass-mvp': 'exploration',
-    /* THE THREE VERSION ROWS (2026-11-10) — one per arm of
-       `compass-mvp-version`. ⚠ EXPLORATIONS, NOT PROTOTYPES: the block below
-       refuses a second row for the `compass` scope and refuses `?ff=` on any
-       Prototypes row, which is exactly what three pinned versions would be.
-       See the rows' own note in `prototypeFeatures.ts`. */
-    /* The first page audit of Refined (2026-11-12) — an exploration, not a
-       handoff: its eight findings are open design decisions. */
-    'xcel-compass-refined-course-audit': 'exploration',
-    'xcel-compass-v-anjani': 'exploration',
-    'xcel-compass-v-jeff': 'exploration',
-    'xcel-compass-v-refined': 'exploration',
-    // The compare page (2026-11-16) — V1 beside Refined, widget by widget.
-    'xcel-compass-compare-readiness': 'exploration',
+    /* THE FIVE PROTOTYPES ROWS AND THE FOURTEEN EXPLORATIONS ROWS WERE LISTED
+       HERE until 2026-11-21 (`'prototypes'` and `'exploration'`). Both
+       sections and their rows went with the advanced Hub — see
+       `prototypes-section` and `explorations-section` in `archivedItems.ts`;
+       the list is verbatim on `hub-advanced`. What is left is the four
+       hand-authored Atlas Home handoffs of 2026-10-19. */
     // `xcel-course-entry` (the repo's first authored dev handoff, 2026-09-24)
     // stood here until 2026-10-15 — archived, `course-entry-handoff`. Both
     // handoffs were removed as "not ready"; Development lists nothing now.
@@ -247,21 +176,8 @@ describe('section routing (sectionOf)', () => {
     expect(ids).toEqual(Object.keys(EXPECTED_PLACEMENT).sort())
   })
 
-  it('no Explorations row carries a devStatus', () => {
-    // The inverse of the rule below, and the one that actually bites in this
-    // repo. `sectionOf` checks devStatus BEFORE category, so a status added to
-    // one of these rows silently pulls it out of Explorations and onto the
-    // Development board — no error, and it reads as the row simply vanishing
-    // from the section.
-    for (const f of PROTOTYPE_FEATURES) {
-      const placed = EXPECTED_PLACEMENT[f.id]
-      if (placed !== 'exploration') continue
-      expect(
-        f.devStatus,
-        `${f.id} is in ${placed}, so it must NOT carry a devStatus`,
-      ).toBeUndefined()
-    }
-  })
+  /* "no Explorations row carries a devStatus" stood here — the inverse of
+     the rule below, for a section that is gone (2026-11-21). */
 
   it('every Development row carries an authored devStatus', () => {
     for (const f of PROTOTYPE_FEATURES) {
@@ -271,65 +187,19 @@ describe('section routing (sectionOf)', () => {
     }
   })
 
-  it('Prototypes holds exactly the rows meant to be ungated', () => {
+  it('a bare `/` lands on Design, and no feature row is on the front door', () => {
     /*
-     * Prototypes (Demo until 2026-09-18, when Demo became the authored-on-the-
-     * page review inbox) is the UNGATED front door for FEATURE ROWS: a viewer
-     * with no password sees this section's rows and no others. So what sits
-     * here is a decision about what a stakeholder may see unaccompanied, and
-     * it should not be possible to change it by accident.
-     *
-     * ⚠ This test was previously called "Demo is empty", and its comment
-     * claimed to be the tripwire that would fail if a row were ever promoted.
-     * IT WOULD NOT HAVE. It only asserted that one gated row's title was
-     * absent, which stayed true no matter what else appeared — so when
-     * `xcel-dashboard` was promoted on 2026-09-08 this test passed, and three
-     * unrelated `externalUrl` assertions were what actually caught it.
-     *
-     * It compares the whole set now, in both directions: promoting a row to
-     * Prototypes fails here, and so does demoting the one that belongs.
+     * Was "Prototypes holds exactly the rows meant to be ungated" — the
+     * two-directional set check over the rendered Prototypes rows. That
+     * section is off the rail since 2026-11-21 (the test is on
+     * `hub-advanced`), and the front door is now the Design BOARD, which lists
+     * links authored on the page rather than `PROTOTYPE_FEATURES` rows. So
+     * what is pinned is the landing section (`DEFAULT_SECTION`) and that no
+     * feature row — with its "Actions for <title>" kebab — is drawn on it.
      */
-    // Prototypes is the landing section, so a bare `/` is the case that matters.
     renderDashboard()
-    expect(screen.getByRole('heading', { level: 1, name: 'Prototypes' })).toBeInTheDocument()
-
-    // Counted from the RENDERED section rather than from the data, because
-    // what a passwordless viewer can reach is the actual concern. Every row
-    // carries one "Actions for <title>" kebab, so the kebabs are the rows.
-    const rows = screen
-      .getAllByRole('button', { name: /^Actions for / })
-      .map((b) => b.getAttribute('aria-label')?.replace(/^Actions for /, ''))
-    // ⚠ ONE ROW PER SCOPE since 2026-10-14 — it was exactly one row from
-    // 2026-09-28. The list is still written out, in section order, so adding
-    // a row is a deliberate edit here and not something a category typo does.
-    // The product FIRST (2026-10-14, Jillienne: "always have this be the
-    // first option"), then the doors around it.
-    //
-    // 2026-10-16: the end-to-end row RELEASED and so joined this list, at the
-    // top — it is the product row, and the order rule above is what puts it
-    // there rather than anything about its status.
-    expect(rows).toEqual([
-      'End-to-End User Experience (Invite, Atlas, Compass)',
-      'Invite & Purchase — Work in Progress',
-      'Atlas Learning — Work in Progress',
-      'Compass Learning — Work in Progress',
-    ])
-    // …plus the ONE remaining PLACEHOLDER, which has no kebab because it goes
-    // nowhere: drawn disabled, titled, tagged "Coming soon", and not a link.
-    // The Admin row has nothing built behind it. (The end-to-end row was the
-    // other kind — built, held back, route kept — until it was released.)
-    for (const [id, title] of [['xcel-admin-coming-soon', 'Admin Tool']]) {
-      const placeholder = document.querySelector(`[data-placeholder="${id}"]`)
-      expect(placeholder, `${id} should be drawn as a placeholder`).not.toBeNull()
-      expect(placeholder!.getAttribute('aria-disabled')).toBe('true')
-      expect(placeholder!.querySelector('a')).toBeNull()
-      // The generated mark, never a live frame — "a default icon image like
-      // the admin tool to show it's disabled".
-      expect(placeholder!.querySelector('iframe, img')).toBeNull()
-      expect(placeholder!.textContent).toContain(title)
-      expect(placeholder!.textContent).toContain('Coming soon')
-    }
-
+    expect(screen.getByRole('heading', { level: 1, name: 'Design' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /^Actions for / })).toBeNull()
     // …and a gated row is still not among them.
     expect(screen.queryByText('XCEL LMS — Desktop Platform')).not.toBeInTheDocument()
   })
@@ -342,44 +212,25 @@ describe('section routing (sectionOf)', () => {
  * needs no second door: Design (empty, unused) is retired, Explorations moved
  * up to sit directly under PRDs, and Archive and QA Notes sit under Dev
  * Handoff. These pin each half.
+ *
+ * 2026-11-21: Explorations and QA Notes are off the simple Hub's rail too, so
+ * the cases that opened them are on `hub-advanced`; what is left pins that a
+ * deep link to a hidden section lands on Design rather than on a lock.
  */
 describe('the Designers group is gone (2026-10-15)', () => {
-  it('opens Explorations on click — no password, no lock glyph', async () => {
-    const user = userEvent.setup()
-    renderDashboard()
-    expect(screen.queryByText(/— locked/)).not.toBeInTheDocument()
-    await user.click(screen.getByRole('button', { name: /Explorations/ }))
-    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Explorations')
-    expect(screen.getByText('XCEL LMS — Learner Walk-through')).toBeInTheDocument()
-    // Every document, and nothing else lists here.
-    expect(document.querySelectorAll('[data-row]').length).toBe(
-      PROTOTYPE_FEATURES.filter((f) => f.category === 'exploration').length,
-    )
-  })
-
-  it('Explorations sits directly under PRDs in the nav', () => {
-    renderDashboard()
-    const labels = within(screen.getByRole('navigation'))
-      .getAllByRole('button')
-      .map((b) => b.textContent ?? '')
-    const prds = labels.findIndex((l) => l.includes('PRDs'))
-    expect(prds).toBeGreaterThan(-1)
-    expect(labels[prds + 1]).toContain('Explorations')
-  })
-
-  it('a ?section=exploration deep link lands on it directly', () => {
+  it('a ?section=exploration deep link lands on Design — the section is off the rail, not locked', () => {
+    // `sectionFromParam` refuses a hidden section (2026-11-21), so a link
+    // shared before the simple Hub lands on the first section with no modal.
     renderDashboard('/?section=exploration')
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Explorations')
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Design')
   })
 
-  it('draws no Designers eyebrow; Design is a nav row again, directly under Prototypes (2026-11-16)', () => {
+  it('draws no Designers eyebrow; Design is the first nav row, and Research sits directly under it', () => {
     // The 2026-10-15 Design — feature rows by status, behind the Designers
-    // group — stays gone. The row that is back is the derived branch list
-    // (`DesignPanel.tsx`), and it sits under Prototypes because it answers
-    // the question between "what is the product" and "what is under
-    // discussion": what is being worked on.
+    // group — stays gone, and so is the derived branch list of 2026-11-16
+    // (`hub-advanced`). The Design that heads the rail since 2026-11-21 is
+    // the board that was Refinement.
     renderDashboard()
     expect(screen.queryByText(/^Designers$/i)).toBeNull()
     const nav = screen.getByRole('navigation')
@@ -389,17 +240,18 @@ describe('the Designers group is gone (2026-10-15)', () => {
     // The same normalisation `OneSite.test.tsx` uses: the count is appended
     // to the label's text.
     const name = (l: string) => l.replace(/\d+$/, '').trim()
-    const prototypes = labels.findIndex((l) => name(l) === 'Prototypes')
     const design = labels.findIndex((l) => name(l) === 'Design')
-    expect(design).toBe(prototypes + 1)
+    const research = labels.findIndex((l) => name(l) === 'Research')
+    expect(design).toBe(0)
+    expect(research).toBe(design + 1)
   })
 
-  it('a ?section=design deep link lands on the derived section, and says why it is empty here', async () => {
+  it('a ?section=design deep link lands on the Design board, not the derived list', () => {
+    // `design` was the derived branch list's id; it is hidden now, so the
+    // value resolves to nothing and the page falls back to the board.
     renderDashboard('/?section=design')
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Design')
-    // No `/api/branches` under test, so the panel says so rather than
-    // drawing an empty list that looks like "no branches".
-    expect(await screen.findByText(/only on the deployed Hub/)).toBeInTheDocument()
+    expect(screen.queryByText(/only on the deployed Hub/)).toBeNull()
   })
 })
 
@@ -468,13 +320,16 @@ describe('prototype URLs — served from this repo', () => {
         `${f.id} needs exactly one of to / externalUrl`,
       ).toBe(true)
     }
-    // Documents and routes exist, so neither filter above is vacuously empty.
-    // ⚠ No GATEWAY row exists since 2026-10-15 — both handoffs were archived
-    // ("not ready") — so `gatewayRows` IS empty and the guided-row guard below
-    // is vacuous until the next `/dev-handoff-notes` row lands. It stays in
-    // place for that day rather than being deleted with the rows.
-    expect(documentRows.length).toBeGreaterThan(0)
-    expect(routeRows.length).toBeGreaterThan(0)
+    /* ⚠ SINCE 2026-11-21 BOTH `documentRows` AND `routeRows` ARE EMPTY: the
+       document rows were Explorations and the route rows were Prototypes,
+       and both sections went with the advanced Hub. Every hand-authored row
+       left is a guided handoff, so the guided-row guard below is the live
+       one and the document / route checks are vacuous until a row of either
+       shape comes back (the two archive rows say how). They stay in place
+       for that day rather than being deleted with the rows. */
+    expect(gatewayRows.length).toBeGreaterThan(0)
+    expect(documentRows).toEqual([])
+    expect(routeRows).toEqual([])
   })
 
   it('a guided row opens its own gateway, not somewhere else', () => {
@@ -525,9 +380,12 @@ describe('prototype URLs — served from this repo', () => {
   })
 
   it('all document rows share one base, so a move stays one constant', () => {
+    // Vacuous while there are no document rows (see above) — `bases` is
+    // empty rather than `['/prototypes']` — and live again the day one comes
+    // back.
     const bases = new Set(documentRows.map((f) => f.externalUrl!.replace(/\/[^/]+$/, '')))
-    expect(bases.size).toBe(1)
-    expect([...bases][0]).toBe('/prototypes')
+    expect(bases.size).toBeLessThanOrEqual(1)
+    for (const base of bases) expect(base).toBe('/prototypes')
   })
 
   /*
@@ -594,474 +452,14 @@ describe('archive', () => {
   })
 })
 
-describe('the Prototypes row opens the committed configuration', () => {
-  it('carries `?demo=1`, not the bare route', () => {
-    // Demo mode swaps the working flag map for the committed baseline before
-    // first paint. Without the param, a returning reviewer's own persisted
-    // toggles ARE the demo — silently, and the nav is where that shows first.
-    //
-    // Asserted on the row rather than by rendering, because the failure is a
-    // missing query param on a link that still works perfectly.
-    //
-    // 2026-10-16: the end-to-end row moved to the OTHER product door when it
-    // was released — it opens at the invite flow's first page, not the
-    // dashboard, because the row's claim is the whole journey. What this
-    // case is actually guarding is `?demo=1`, so it asserts the param on
-    // whichever door the row carries rather than re-pinning the pathname.
-    //
-    // 2026-10-19: and it moved again, one page EARLIER — the invitation email
-    // ("clicking on end to end should start with the email first"). Same
-    // door, same two params; the pathname is checked by the door case below,
-    // which is why this one asserts the params rather than the address.
-    //
-    // 2026-10-20: and BACK to the dashboard — "lets set the Atlas to be the
-    // default view the user comes in on", taken with the Start control
-    // collapsing the flow's four screens into one entry, so the invite is a
-    // pick away rather than the front door. The pathname has now moved three
-    // times in five days and the params have not moved once, which is the
-    // case for this assertion being about `?demo=1` and `?journey=full`
-    // rather than the address — `journey=full` is what keeps this the FULL
-    // walk when the Start control jumps into it.
-    const row = PROTOTYPE_FEATURES.find((f) => f.id === 'xcel-dashboard')!
-    const e2e = new URL(row.to!, 'https://same.origin')
-    expect(e2e.pathname).toBe('/dashboard-rebrand')
-    expect(e2e.searchParams.get('demo')).toBe('1')
-    expect(e2e.searchParams.get('journey')).toBe('full')
-  })
-
-  it('holds the route rows and nothing else', () => {
-    // The document-shape guards are scoped to rows WITHOUT `to`; a document row
-    // that accidentally grows one would slip past every one of them.
-    //
-    // ⚠ BACK TO ONE. `xcel-course-entry` was briefly added here when it shipped
-    // with a `to` — which was the bug: a guided row must carry neither field or
-    // it never reaches its gateway. See `a guided row opens its own gateway`.
-    // The assertion stays the whole SET in both directions, which is what
-    // catches an accidental conversion; loosening it to a count would give up
-    // the guard entirely.
-    //
-    // ⚠ TWO SINCE 2026-10-14, both Prototypes rows. The guided-row trap above
-    // is unchanged.
-    //
-    // ⚠ AND THREE EXPLORATION ROWS SINCE 2026-11-10 — the Compass version
-    // rows. A `to` was only ever a Prototypes row's until then, and the line
-    // that said so is retired rather than quietly dropped: the three versions
-    // live in the PRODUCT behind one flag, so a row per version is a route
-    // with an `?ff=` pin or it is a second copy of the surface to keep in
-    // step. They are `explore` rows, so the guided-row trap above does not
-    // reach them. What this assertion still catches is the thing it was
-    // written for: any OTHER row growing a `to` by accident.
-    //
-    // ⚠ AND THE COMPARE ROW SINCE 2026-11-16 — `/compare/compass-readiness`,
-    // a route of this build that draws two versions' widgets side by side.
-    // An exploration for the same reason as the three above it.
-    expect(PROTOTYPE_FEATURES.filter((f) => f.to).map((f) => f.id).sort()).toEqual([
-      'xcel-atlas-learning',
-      'xcel-compass',
-      'xcel-compass-compare-readiness',
-      'xcel-compass-v-anjani',
-      'xcel-compass-v-jeff',
-      'xcel-compass-v-refined',
-      'xcel-dashboard',
-      'xcel-invite',
-    ])
-  })
-})
-
-/* ── Prototypes — one row per scope, every row the same build ────────────────
- *
- * 2026-10-14. Prototypes held ONE row from 2026-09-28, because two rows
- * pointing at two builds of the same thing make everyone ask which one is
- * real. The section now holds one row PER SCOPE (`PROTOTYPE_SCOPES`), and this
- * block is the stricter mechanical form of what the one-row rule guaranteed:
- * every row is `main`'s build at the committed baseline, so there is nothing
- * to ask "which one is real?" about. The thing to notice is what is NOT
- * allowed — a branch URL, an `?ff=` pin, a pinned `version=`, a document the
- * public build cannot serve — because each of those is a row that would stop
- * tracking the product, or stop opening, the moment `main` moved under it.
- *
- * Two shapes since 2026-10-14: a row that OPENS enters the product app through
- * one of its doors; a PLACEHOLDER (`coming-soon`, nothing to open) is drawn
- * disabled and says the door exists before the room does. A document row is
- * not admitted: the public build 404s `/prototypes/*`. */
-describe('Prototypes — one row per scope, every row the same build', () => {
-  const prototypeRows = PROTOTYPE_FEATURES.filter((f) => f.category === 'prototype')
-
-  it('every Prototypes row carries a scope, and no scope has two rows', () => {
-    const seen = new Map<string, string>()
-    for (const f of prototypeRows) {
-      expect(f.prototypeScope, `${f.id} is a Prototypes row and needs a prototypeScope`).toBeTruthy()
-      expect(
-        PROTOTYPE_SCOPES.some((s) => s.id === f.prototypeScope),
-        `${f.id} names a scope that is not in PROTOTYPE_SCOPES`,
-      ).toBe(true)
-      const prior = seen.get(f.prototypeScope!)
-      expect(
-        prior,
-        `${f.id} and ${prior} are both ${f.prototypeScope} — a second row for a scope is a Refinement job`,
-      ).toBeUndefined()
-      seen.set(f.prototypeScope!, f.id)
-    }
-  })
-
-  it('every scope names who decides what the surface should be', () => {
-    // 2026-10-14: design authority per scope — Anjani owns Compass and runs
-    // the promotion for it on her branch; the merge stays Jillienne's. See the
-    // note on PROTOTYPE_SCOPES. The skill reads this to know whose group is
-    // whose.
-    for (const s of PROTOTYPE_SCOPES) expect(s.owner, `${s.id} needs an owner`).toBeTruthy()
-    expect(PROTOTYPE_SCOPES.find((s) => s.id === 'compass')?.owner).toBe('Anjani')
-  })
-
-  it('no row outside Prototypes carries a scope', () => {
-    // The field means "which door of the product is this the source of truth
-    // for". On an Exploration or handoff row it would be a claim the section
-    // does not make.
-    for (const f of PROTOTYPE_FEATURES) {
-      if (f.category === 'prototype') continue
-      expect(f.prototypeScope, `${f.id} is not a Prototypes row and must not carry a scope`).toBeUndefined()
-    }
-  })
-
-  /** The product app's doors — the pathnames a row may enter at.
-   *
-   *  ⚠ A DOOR, NOT AN EXACT PATHNAME (2026-10-19). The end-to-end row opens
-   *  at `/end-to-end-demo/email`, a page UNDER the invite door rather than a
-   *  third entrance — the guarantee this case exists for is "same origin,
-   *  main's build, no pins", and which page of a flow a row starts on is the
-   *  owner's call. An unrelated route still fails: `/my-learning` matches no
-   *  door, and `/end-to-end-demos` is not under one either. */
-  const PRODUCT_DOORS = ['/dashboard-rebrand', '/end-to-end-demo']
-  const entersThroughADoor = (pathname: string) =>
-    PRODUCT_DOORS.some((d) => pathname === d || pathname.startsWith(`${d}/`))
-  const isPlaceholder = (f: (typeof prototypeRows)[number]) => f.status === 'coming-soon'
-
-  it('every Prototypes row with a route enters the product on main at the committed baseline', () => {
-    // Held-back rows keep their route on record, so it is checked too: when
-    // the word flips back to `ready`, the door it opens must already be right.
-    for (const f of prototypeRows.filter((f) => !isPlaceholder(f) || f.to)) {
-      expect(f.externalUrl, `${f.id}: a Prototypes row is a route, never a document`).toBeUndefined()
-      expect(f.to, `${f.id} needs a \`to\``).toBeTruthy()
-      const url = new URL(f.to!, 'https://same.origin')
-      expect(url.origin, `${f.id} must be same-origin — a branch URL is a second build`).toBe('https://same.origin')
-      expect(
-        entersThroughADoor(url.pathname),
-        `${f.id} must enter the product app through one of its doors (got ${url.pathname})`,
-      ).toBe(true)
-      expect(url.searchParams.get('demo'), `${f.id} must open the committed baseline`).toBe('1')
-      expect(url.searchParams.has('ff'), `${f.id} must not pin flags — it would stop tracking main`).toBe(false)
-      expect(url.searchParams.has('version'), `${f.id} must not pin a version — the baseline chooses it`).toBe(false)
-    }
-  })
-
-  it('a Prototypes row\u2019s kebab offers Copy link and nothing else', async () => {
-    // 2026-10-14, Jillienne on the preview. Mark in design, Mark done and the
-    // roll-up statuses are dev-cycle actions; a row that IS the product has
-    // no dev cycle to set. The Design/Development rows keep the full menu.
-    const user = userEvent.setup()
-    renderDashboard()
-    await user.click(screen.getByRole('button', { name: 'Actions for Compass Learning — Work in Progress' }))
-    const menu = await screen.findByRole('menu')
-    expect(within(menu).getAllByRole('menuitem').map((m) => m.textContent)).toEqual(['Copy link'])
-    await user.keyboard('{Escape}')
-    // …and the kebab is drawn in the gateway's tertiary ink, not the amber accent.
-    const kebab = screen.getByRole('button', { name: 'Actions for Compass Learning — Work in Progress' })
-    expect(kebab.style.color).toBe('var(--ux-text-3)')
-  })
-
-  it('Prototypes is two cards: the source of truth alone, then the work in progress', () => {
-    // 2026-10-14, Jillienne on the preview: "this is the same as the main
-    // branch, so can we have it separated from the rest to better indicate
-    // that it's the Final Prototype, Source of Truth".
-    renderDashboard()
-    const groups = [...document.querySelectorAll('main [data-group]')]
-    expect(groups.map((g) => g.getAttribute('data-group'))).toEqual(['source-of-truth', 'in-progress'])
-    expect(groups[0].textContent).toContain('Final prototype — source of truth')
-    expect([...groups[0].querySelectorAll('[data-row]')].map((r) => r.getAttribute('data-row'))).toEqual(['xcel-dashboard'])
-    expect(groups[1].textContent).toContain('Work in progress')
-    expect([...groups[1].querySelectorAll('[data-row]')].map((r) => r.getAttribute('data-row'))).toEqual([
-      'xcel-invite',
-      'xcel-atlas-learning',
-      'xcel-compass',
-      'xcel-admin-coming-soon',
-    ])
-  })
-
-  it('every Prototypes row that opens carries a valid lastUpdated stamp', () => {
-    // 2026-10-14. The "Updated" tag reads it; `ship-to-main` maintains it. An
-    // ISO timestamp with a zone, so the viewer's clock can render it.
-    for (const f of prototypeRows.filter((f) => !isPlaceholder(f))) {
-      expect(f.lastUpdated, `${f.id} needs a lastUpdated`).toBeTruthy()
-      expect(Number.isNaN(Date.parse(f.lastUpdated!)), `${f.id}: lastUpdated must parse`).toBe(false)
-      expect(f.lastUpdated, `${f.id}: lastUpdated must carry a zone (Z or offset)`).toMatch(/(Z|[+-]\d{2}:\d{2})$/)
-    }
-    for (const f of prototypeRows.filter((f) => isPlaceholder(f) && !f.to)) {
-      expect(f.lastUpdated, `${f.id}: nothing built, nothing to have updated`).toBeUndefined()
-    }
-  })
-
-  it('a Prototypes row wears its scope, its owner and its Updated time as tags', () => {
-    renderDashboard()
-    const compass = document.querySelector('[data-row="xcel-compass"]')!
-    // The outlined tags are the spans that carry a border; the owner tag's
-    // textContent is its hidden "Owner: " label plus the name.
-    // Outlined tags are the 4px-radius bordered spans; the generated thumbnail
-    // is bordered too, at the radius token, so the radius is the tell.
-    const tagsOf = (row: Element) =>
-      [...row.querySelectorAll('span')]
-        .filter((s) => s.style.border && s.style.borderRadius === '4px')
-        .map((s) => s.textContent ?? '')
-    const tags = tagsOf(compass)
-    // Owner, Updated, then the scope last (2026-10-15: "move these top ones
-    // to the bottom").
-    expect(tags[0]).toBe('Owner: Anjani')
-    expect(tags[1]).toMatch(/^Updated \w{3} \d{1,2}, \d{1,2}:\d{2}/)
-    expect(tags[2]).toBe('Compass')
-    // The product row stacks the same three, its scope reading "End-to-End".
-    // 2026-10-16: and NOTHING under them — it carried a fourth, "Coming soon",
-    // while it was held back, and releasing it is what takes that tag off. The
-    // absence is asserted, not just dropped: a row that silently went back to
-    // Coming soon would otherwise pass this case.
-    const e2e = document.querySelector('[data-row="xcel-dashboard"]')!
-    const e2eTags = tagsOf(e2e)
-    expect(e2eTags[0]).toBe('Owner: Jillienne')
-    expect(e2eTags[1]).toMatch(/^Updated /)
-    expect(e2eTags[2]).toBe('End-to-End')
-    expect(e2eTags).toHaveLength(3)
-    expect(e2e.textContent).not.toContain('Coming soon')
-    // The placeholder names its owner and says Coming soon, with no Updated.
-    const ph = document.querySelector('[data-placeholder="xcel-admin-coming-soon"]')!
-    expect(ph.textContent).toContain('Owner: Cody')
-    expect(ph.textContent).toContain('Coming soon')
-    expect(ph.textContent).not.toContain('Updated ')
-  })
-
-  it('the placeholders are written out, and a row never becomes one by accident', () => {
-    // 2026-10-14. Written out so a new placeholder is a deliberate edit here.
-    //
-    // 2026-10-16: the end-to-end row was RELEASED (Jillienne, "I want to turn
-    // on the end-to-end flow and work through it"), so only the Admin row is
-    // left — the one kind of placeholder with nothing built behind it. The
-    // held-back kind now has no instance, which is why the rule it stood for
-    // is restated below rather than deleted with it.
-    expect(prototypeRows.filter(isPlaceholder).map((f) => f.id)).toEqual(['xcel-admin-coming-soon'])
-    for (const f of prototypeRows.filter(isPlaceholder)) {
-      expect(f.kind, `${f.id}: a guided placeholder would try to open a gateway`).toBe('explore')
-    }
-    // The released row opens, and opens at a product door — the thing being
-    // held back was ever only its `status`.
-    const e2e = PROTOTYPE_FEATURES.find((f) => f.id === 'xcel-dashboard')!
-    expect(e2e.status, 'released 2026-10-16').toBe('ready')
-    expect(PRODUCT_DOORS.some((d) => e2e.to!.startsWith(d))).toBe(true)
-    // A row with no `to` and no `externalUrl` that is NOT coming-soon would be
-    // a dead link; the shape test above refuses it, this names the rule.
-    for (const f of prototypeRows.filter((f) => !f.to && !f.externalUrl)) {
-      expect(f.status, `${f.id} opens nothing, so it must say Coming soon`).toBe('coming-soon')
-    }
-  })
-
-  it('the rows read in the order PROTOTYPE_SCOPES declares — the product first', () => {
-    expect(PROTOTYPE_SCOPES[0].id, 'the end-to-end row is always first').toBe('end-to-end')
-    const order = PROTOTYPE_SCOPES.map((s) => s.id)
-    const got = prototypeRows.map((f) => order.indexOf(f.prototypeScope!))
-    expect(got, 'reorder the rows in prototypeFeatures.ts to match PROTOTYPE_SCOPES').toEqual([...got].sort((a, b) => a - b))
-  })
-
-  /* ── Main · Stage (2026-11-01) ─────────────────────────────────────────────
-   *
-   * Jillienne: "I want the prototype page to have both Main and Stage options
-   * there, not a new page in the rail." The section keeps its rows and gains a
-   * switch; the rule above ("every row is main's build") becomes "every row is
-   * main's build under Main, and the SAME path on the stage build under
-   * Stage". What is still refused is a row that opens anything else — the
-   * switch picks a build, never a different route. See `stageBuild.ts`. */
-  const openingRows = () => prototypeRows.filter((f) => !isPlaceholder(f) && f.to)
-  const hrefOf = (id: string) => document.querySelector(`[data-row="${id}"] a`)!.getAttribute('href')
-
-  /* ⚠ THE LINKS ARE DEACTIVATED — 2026-11-17, Jillienne: "deactivate the links
-     to the main prototypes and stage prototypes so that the users get an error
-     screen". A row carrying `linkRetired` is drawn exactly as before and still
-     takes a click; the click lands on the retired-link screen, which is where
-     the message about new links lives (`PrototypeLinkRetiredPage.tsx`).
-
-     THE RULE THE CASES BELOW USED TO ASSERT HAS NOT BEEN DROPPED, only moved
-     off the rendered href: `to` is still the real route, and the shape case
-     above ("every Prototypes row with a route enters the product on main at
-     the committed baseline") still holds every row to same-origin, a product
-     door, `?demo=1` and nothing pinned. That is what makes reactivating a row
-     one deleted line. This helper is the one place that knows which of the two
-     a row renders, so when the new links arrive, deleting the `linkRetired`
-     branch here puts every case below back to what it was. */
-  const expectedHref = (f: (typeof prototypeRows)[number], build: 'main' | 'stage') =>
-    f.linkRetired
-      ? `/prototype-unavailable/${f.id}${build === 'stage' ? '?build=stage' : ''}`
-      : build === 'stage'
-        ? `${STAGE_ORIGIN}${f.to}`
-        : f.to
-
-  it('the stage origin is the Netlify branch-deploy address of the `stage` branch on the Hub’s own site', () => {
-    // `HUB_URL` in PrototypeBar.tsx and `HUB_HOST` here are the same host:
-    // the stage address is derived from it, so a site rename moves both.
-    const bar = readFileSync(resolve(dirname(fileURLToPath(import.meta.url)), '../components/layout/PrototypeBar.tsx'), 'utf8')
-    expect(bar).toContain(`const HUB_URL = 'https://${HUB_HOST}/'`)
-    expect(STAGE_BRANCH).toBe('stage')
-    expect(STAGE_ORIGIN).toBe(`https://stage--${HUB_HOST}`)
-    // Same path, different origin — nothing about the route may change.
-    expect(prototypeHref('/dashboard-rebrand?demo=1', 'main')).toBe('/dashboard-rebrand?demo=1')
-    expect(prototypeHref('/dashboard-rebrand?demo=1', 'stage')).toBe(`${STAGE_ORIGIN}/dashboard-rebrand?demo=1`)
-  })
-
-  it('Prototypes carries a Main · Stage switch, Main by default, and no other section does', () => {
-    renderDashboard()
-    const group = screen.getByRole('radiogroup', { name: 'Which build the rows open' })
-    const radios = within(group).getAllByRole('radio')
-    expect(radios.map((r) => r.textContent)).toEqual(['Main', 'Stage'])
-    expect(radios[0]).toHaveAttribute('aria-checked', 'true')
-    expect(document.querySelector('[data-build-note]')!.textContent).toMatch(/main branch/i)
-    // Under Main every row that opens is exactly its authored `to` — the
-    // pre-switch behaviour, byte for byte — unless its link is deactivated,
-    // in which case it is the retired screen. See `expectedHref`.
-    for (const f of openingRows()) expect(hrefOf(f.id), f.id).toBe(expectedHref(f, 'main'))
-  })
-
-  it('under Stage every row opens the SAME path on the stage origin, in a new tab, and the notes say so', async () => {
-    const user = userEvent.setup()
-    renderDashboard()
-    await user.click(screen.getByRole('radio', { name: 'Stage' }))
-    expect(screen.getByRole('radio', { name: 'Stage' })).toHaveAttribute('aria-checked', 'true')
-    for (const f of openingRows()) {
-      const a = document.querySelector(`[data-row="${f.id}"] a`)!
-      expect(a.getAttribute('href'), f.id).toBe(expectedHref(f, 'stage'))
-      // Another origin opens in its own tab, like a document row does. A
-      // DEACTIVATED row does not: the retired screen is on this origin, and
-      // sending the reader to a new tab to be told the link is off — with the
-      // Back to the Hub link then going nowhere they came from — is worse than
-      // showing it in place.
-      expect(a.getAttribute('target'), f.id).toBe(f.linkRetired ? null : '_blank')
-    }
-    // The placeholder still opens nothing — a switch does not build the Admin tool.
-    expect(document.querySelector('[data-placeholder="xcel-admin-coming-soon"] a')).toBeNull()
-    // Both cards are still there, in the same order, and neither claims to be main.
-    const groups = [...document.querySelectorAll('main [data-group]')]
-    expect(groups.map((g) => g.getAttribute('data-group'))).toEqual(['source-of-truth', 'in-progress'])
-    // The notes are one plain line each (2026-11-01): the stage view says
-    // "next release", and never claims to be what the product is right now.
-    expect(groups[0].textContent).toContain('next release')
-    expect(groups[0].textContent).not.toContain('right now')
-    expect(document.querySelector('[data-build-note]')!.textContent).toMatch(/stage branch/i)
-  })
-
-  /* ── The staged tag (2026-11-04) ────────────────────────────────────────
-   *
-   * The gap this closes, in the words it was reported in: "when Anjani
-   * pushes to stage, why is the prototype not updating?" The switch WAS
-   * working — it rewrote the row's href to the stage origin, which is all it
-   * ever claimed to do — but the card looked identical under both builds, so
-   * a designer who had just staged a surface had no way to tell the share had
-   * landed. The row now reads the On Stage card for its own scope and says so.
-   *
-   * ⚠ IT READS A CARD, NOT THE STAGE BUILD. `stageBuild.ts` still holds: the
-   * Hub cannot fetch the stage site (cross-origin, same site password). What
-   * it reads is its own Blobs store, which `/share-to-stage` wrote to — see
-   * `useStagedScopes`. */
-  const boardWith = (cards: Partial<TodoCard>[]) => {
-    const full = cards.map((c, i) => ({
-      id: `card-00${i + 1}`,
-      title: 'Compass — week view',
-      note: '',
-      owner: 'Anjani',
-      column: 'stage',
-      position: i,
-      addedDate: '2026-11-04',
-      updatedAt: '2026-11-04T17:12:48.000Z',
-      archived: false,
-      archivedAt: '',
-      archivedBy: '',
-      scope: 'compass',
-      ...c,
-    }))
-    return vi.spyOn(globalThis, 'fetch').mockImplementation((input: RequestInfo | URL) =>
-      String(input).startsWith('/api/todo-board')
-        ? Promise.resolve(
-            new Response(JSON.stringify({ cards: full, people: [] }), {
-              status: 200,
-              headers: { 'content-type': 'application/json' },
-            }),
-          )
-        : Promise.resolve(new Response('{}', { status: 404 })),
-    )
-  }
-
-  /* The spy is global, so it MUST come off — a later test in this file that
-     rendered the dashboard would otherwise still be reading a board with a
-     staged Compass card in it. */
-  afterEach(() => vi.restoreAllMocks())
-
-  it('a staged surface says so on its row — "Staged" under Stage, "Waiting on stage" under Main', async () => {
-    boardWith([{}])
-    const user = userEvent.setup()
-    renderDashboard()
-    const compass = () => document.querySelector('[data-row="xcel-compass"]')!
-
-    // UNDER MAIN the row opens main's build, which does NOT contain the
-    // staged work — so it must not say "Staged". It points at the switch.
-    await waitFor(() => expect(compass().textContent).toContain('Waiting on stage'))
-    expect(compass().textContent).not.toContain('Staged Nov')
-    // And the row's link is what the switch says it is — today the retired
-    // screen under both builds (2026-11-17); the TAG is unaffected either way,
-    // which is the thing this case is about.
-    expect(hrefOf('xcel-compass')).toBe(
-      expectedHref(prototypeRows.find((f) => f.id === 'xcel-compass')!, 'main'),
-    )
-
-    // UNDER STAGE it is the staged thing, so it says when and by whom.
-    await user.click(screen.getByRole('radio', { name: 'Stage' }))
-    await waitFor(() => expect(compass().textContent).toMatch(/Staged Nov 4 · Anjani/))
-    expect(compass().textContent).not.toContain('Waiting on stage')
-
-    // ⚠ ONLY THE SCOPE THAT WAS STAGED. A tag on every row would be the
-    // original bug wearing a label — four of these surfaces are untouched.
-    for (const f of openingRows().filter((f) => f.prototypeScope !== 'compass')) {
-      expect(document.querySelector(`[data-row="${f.id}"]`)!.textContent, f.id).not.toContain('Staged Nov')
-    }
-  })
-
-  it('an ARCHIVED stage card is a released surface — the row goes quiet', async () => {
-    /* Archiving the On Stage card is how a release clears this. A row that
-       kept its tag after the work shipped would say "waiting" for ever, which
-       is the one thing worse than saying nothing. */
-    boardWith([{ archived: true }])
-    renderDashboard()
-    await waitFor(() => expect(screen.getByRole('radio', { name: 'Main' })).toBeInTheDocument())
-    expect(document.querySelector('[data-row="xcel-compass"]')!.textContent).not.toContain('stage')
-  })
-
-  it('a card with no scope tags nothing — the board is mostly not about surfaces', async () => {
-    // Most cards on the board are a week's work, not a product surface. Only
-    // the ones `/share-to-stage` files carry a scope.
-    boardWith([{ scope: '', title: 'Write the release notes' }])
-    renderDashboard()
-    await waitFor(() => expect(screen.getByRole('radio', { name: 'Main' })).toBeInTheDocument())
-    for (const f of openingRows()) {
-      expect(document.querySelector(`[data-row="${f.id}"]`)!.textContent, f.id).not.toContain('Waiting on stage')
-    }
-  })
-
-  it('the build is in the address — `?build=stage` — and absent for Main', async () => {
-    // Deep-linked to Stage, the switch opens on Stage.
-    renderDashboard('/?build=stage')
-    expect(screen.getByRole('radio', { name: 'Stage' })).toHaveAttribute('aria-checked', 'true')
-    for (const f of openingRows()) expect(hrefOf(f.id), f.id).toBe(expectedHref(f, 'stage'))
-    // An unknown value is Main, not an empty board.
-    document.body.innerHTML = ''
-    renderDashboard('/?build=nonsense')
-    expect(screen.getByRole('radio', { name: 'Main' })).toHaveAttribute('aria-checked', 'true')
-    // The switch is Prototypes-only: Development shows no radiogroup.
-    const user = userEvent.setup()
-    await user.click(screen.getByRole('button', { name: /^Development/ }))
-    expect(screen.queryByRole('radiogroup', { name: 'Which build the rows open' })).toBeNull()
-  })
-})
+/* "the Prototypes row opens the committed configuration" and "Prototypes —
+   one row per scope, every row the same build" stood here — the `?demo=1`
+   check, the route-row set, the one-row-per-scope rule, the scope owners, the
+   product doors, the `lastUpdated` stamps, the placeholders, the row order and
+   the `stageBuild.ts` origin. The section, `PROTOTYPE_SCOPES` and
+   `stageBuild.ts` all went with the advanced Hub on 2026-11-21
+   (`prototypes-section` in `archivedItems.ts`); the cases are verbatim on
+   `hub-advanced`. */
 
 /* ── The component detail's jump nav ─────────────────────────────────────────
  *
@@ -1106,5 +504,42 @@ describe('component detail — COMPONENT_SECTIONS matches the render order', () 
        a comment looks like. */
     expect(src).toMatch(/const COMPONENT_SECTIONS = \[\n(?:(?!\s*\{ id:).*\n)*\s*\{ id: 'variants'/)
     expect(src).toContain("useState<ComponentSectionId>('variants')")
+  })
+})
+
+/* ── The demo build link — 2026-11-21 ──────────────────────────────────────
+ * Prototypes is off the rail in the simple Hub, so the product on `main` is
+ * reached from one quiet link at the foot of the rail. Jillienne: a main link
+ * "for demo purposes eventually, but I don't want it to be the main thing
+ * when users come to the UX hub." One link, new tab, the end-to-end door. */
+describe('the Demo build link', () => {
+  it('sits at the foot of the rail, once, and opens the product on main in a new tab', () => {
+    renderDashboard()
+    const links = screen.getAllByRole('link', { name: /Demo build/ })
+    expect(links).toHaveLength(1)
+    const link = links[0]
+    expect(link.getAttribute('href')).toBe('/dashboard-rebrand?demo=1&journey=full')
+    expect(link.getAttribute('target')).toBe('_blank')
+    expect(link.getAttribute('rel')).toContain('noopener')
+    // Inside the rail, not the content pane — the aside holds the nav.
+    expect(screen.getByRole('navigation').parentElement).toContainElement(link)
+  })
+
+  it('is not a nav section — the rail still reads the six pages', () => {
+    renderDashboard()
+    const nav = screen.getByRole('navigation')
+    expect(within(nav).queryByText('Demo build')).toBeNull()
+    expect(within(nav).queryByText('Guide')).toBeNull()
+  })
+
+  /* THE GUIDE LINK — 2026-11-21, the same day Hub Resources went. One guide
+     now (`/contributing/`), one quiet link beside Demo build. */
+  it('the Guide link sits beside it, opening the one guide in a new tab', () => {
+    renderDashboard()
+    const links = screen.getAllByRole('link', { name: /^Guide$/ })
+    expect(links).toHaveLength(1)
+    expect(links[0].getAttribute('href')).toBe('/contributing/')
+    expect(links[0].getAttribute('target')).toBe('_blank')
+    expect(screen.getByRole('navigation').parentElement).toContainElement(links[0])
   })
 })

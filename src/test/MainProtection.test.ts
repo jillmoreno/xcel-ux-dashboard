@@ -72,6 +72,6 @@ describe('the main-protection hook', () => {
 
   it('says whose step it is, in plain words', () => {
     expect(verdict('git push origin main', 'feat/x')).toContain('Jillienne’s step')
-    expect(verdict('git push origin main', 'feat/x')).toContain('/share-branch')
+    expect(verdict('git push origin main', 'feat/x')).toContain('/share-my-work')
   })
 })

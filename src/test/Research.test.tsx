@@ -10,7 +10,8 @@ import { ResearchRationalePage } from '@/pages/ResearchRationalePage'
 import { UxDashboardPage } from '@/pages/UxDashboardPage'
 import { AccountProvider } from '@/context/AccountContext'
 import { ThemeProvider } from '@/context/ThemeContext'
-import type { StoredLink } from '@/data/linkStore'
+import { MAX_NOTE, type StoredLink } from '@/data/linkStore'
+import { THUMB_ICON } from '@/components/prototype/GeneratedThumb'
 
 /**
  * Research — the third board (2026-10-07).
@@ -43,6 +44,7 @@ const row = (over: Partial<StoredLink> = {}): StoredLink => ({
   archivedAt: '',
   archivedBy: '',
   feature: '',
+  typeOther: '',
   supersedes: '',
   ...over,
 })
@@ -148,7 +150,7 @@ describe('the research endpoint', () => {
 /* ── the panel ────────────────────────────────────────────────────────────── */
 
 describe('ResearchPanel', () => {
-  it('reads from and writes to its own endpoint, with the Type field and no public toggle', async () => {
+  it('reads from and writes to its own endpoint, with no Type field and no public toggle', async () => {
     const user = userEvent.setup()
     const { calls } = mockEndpoint([row()])
     render(<ResearchPanel />)
@@ -158,8 +160,11 @@ describe('ResearchPanel', () => {
 
     await user.click(screen.getByRole('button', { name: /Add link/ }))
     const dialog = await screen.findByRole('dialog')
-    // Links' shape, not Refinement's.
-    expect(within(dialog).getByLabelText(/^Type/)).toBeInTheDocument()
+    /* ⚠ `queryBy…not`, and it read `getBy…toBeInTheDocument` until 2026-11-20.
+       Research took Links' shape when it was built, Type included; it is now
+       a plain list of documents and asks no Type question — see
+       `RESEARCH_PRESENTATION`. The public toggle was never here. */
+    expect(within(dialog).queryByLabelText(/^Type/)).not.toBeInTheDocument()
     expect(within(dialog).queryByRole('switch', { name: 'Show on public site' })).not.toBeInTheDocument()
 
     await user.type(within(dialog).getByLabelText('Address'), 'https://example.com/interviews')
@@ -225,4 +230,169 @@ describe('the Research section on the gateway', () => {
     // The incoming query survives the hop, as it does on `/links`.
     expect(params.get('appearance')).toBe('dusk')
   })
+})
+
+/* ── Projects, and no type (2026-11-20) ──────────────────────────────────── */
+
+describe('Research projects', () => {
+  it('groups by project, and the field is called Project', async () => {
+    /* The stored field is `feature` — the same one Refinement groups by. Only
+       the word on the form differs, so a research link and a design chunk are
+       not two mechanisms. */
+    const user = userEvent.setup()
+    mockEndpoint([
+      row({ id: 'research-001', title: 'Interviews round 1', feature: 'Onboarding study' }),
+      row({ id: 'research-002', title: 'Survey results', feature: 'Onboarding study' }),
+    ])
+    render(<ResearchPanel />)
+    expect(await screen.findByText('Onboarding study')).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: /Add link/i }))
+    expect(screen.getByLabelText(/Project/)).toBeInTheDocument()
+  })
+
+  it('offers no Replaces control — closing one study with another is not what this board does', async () => {
+    const user = userEvent.setup()
+    mockEndpoint([row({ title: 'Round 1', feature: 'Onboarding study', addedBy: 'Jill' })])
+    render(<ResearchPanel />)
+    await screen.findByText('Round 1')
+    await user.click(screen.getByRole('button', { name: /Add link/i }))
+    expect(screen.queryByLabelText('Replaces')).toBeNull()
+  })
+
+  it('asks no Type question, and shows no filter strip', async () => {
+    /* 2026-11-20: "I dont think we need filters. and I dont think we need
+       type? This should be more of a simple list of documents." One flag
+       (`showType`) carries all three — the control, the pills and the tag. */
+    const user = userEvent.setup()
+    mockEndpoint([row({ title: 'A study', type: 'reference' })])
+    render(<ResearchPanel />)
+    await screen.findByText('A study')
+    expect(screen.queryByRole('group', { name: /Filter by type/i })).toBeNull()
+    expect(screen.queryByText('Reference')).toBeNull()
+
+    await user.click(screen.getByRole('button', { name: /Add link/i }))
+    expect(screen.queryByLabelText(/Type/)).toBeNull()
+    expect(screen.queryByLabelText('Custom type')).toBeNull()
+  })
+
+  it('the other boards keep their type control', async () => {
+    // The taxonomy is not gone, only unasked here. PRDs still has it (and
+    // Resources did, until it went with the advanced Hub on 2026-11-21).
+    const user = userEvent.setup()
+    const { PrdsPanel } = await import('@/components/prototype/LinksPanel')
+    mockEndpoint([row({ title: 'A resource' })])
+    render(<PrdsPanel />)
+    await screen.findByText('A resource')
+    await user.click(screen.getByRole('button', { name: /Add link/i }))
+    const opts = [...screen.getByLabelText(/Type/).querySelectorAll('option')].map((o) => o.textContent)
+    expect(opts).toEqual(expect.arrayContaining(['Confluence', 'Figma', 'Document', 'Other\u2026']))
+  })
+})
+
+/* ── The note field (2026-11-20) ──────────────────────────────────────────── */
+
+describe('the note field', () => {
+  const longNote = 'x'.repeat(620)
+
+  it('is a textarea, so a pasted paragraph can be read back', async () => {
+    const user = userEvent.setup()
+    mockEndpoint([row()])
+    render(<ResearchPanel />)
+    await user.click(await screen.findByRole('button', { name: /Add link/i }))
+    expect(screen.getByLabelText(/Note/).tagName).toBe('TEXTAREA')
+  })
+
+  it('trims to the cap and says how much it cut, in place of the old server refusal', async () => {
+    /* Before today nothing client-side knew about MAX_NOTE: an over-long note
+       was refused by the SERVER, after Save, and took the url and title down
+       with it. The cut happens here now, and it is reported. */
+    const user = userEvent.setup()
+    mockEndpoint([row()])
+    render(<ResearchPanel />)
+    await user.click(await screen.findByRole('button', { name: /Add link/i }))
+    const note = screen.getByLabelText(/Note/) as HTMLTextAreaElement
+    await user.click(note)
+    await user.paste(longNote)
+    expect(note.value).toHaveLength(MAX_NOTE)
+    expect(screen.getByText(/Cut off at 500 characters/)).toBeInTheDocument()
+    expect(screen.getByText(/120 removed/)).toBeInTheDocument()
+  })
+
+  it('never blocks the save — a cut note is a shorter note, not an invalid one', async () => {
+    const user = userEvent.setup()
+    const { calls } = mockEndpoint([row()])
+    render(<ResearchPanel />)
+    await user.click(await screen.findByRole('button', { name: /Add link/i }))
+    await user.type(screen.getByLabelText(/Address/i), 'https://example.com/x')
+    await user.type(screen.getByLabelText(/Title/i), 'Cut note')
+    await user.click(screen.getByLabelText(/Note/))
+    await user.paste(longNote)
+
+    const save = screen.getAllByRole('button', { name: /^Add link$/i }).at(-1)!
+    expect(save).not.toBeDisabled()
+    await user.click(save)
+    await waitFor(() => expect(calls.some((c) => c.method === 'POST')).toBe(true))
+    const posted = calls.find((c) => c.method === 'POST')!.body as { note: string }
+    expect(posted.note).toHaveLength(MAX_NOTE)
+  })
+
+  it('the warning clears once the note fits again', async () => {
+    const user = userEvent.setup()
+    mockEndpoint([row()])
+    render(<ResearchPanel />)
+    await user.click(await screen.findByRole('button', { name: /Add link/i }))
+    const note = screen.getByLabelText(/Note/)
+    await user.click(note)
+    await user.paste(longNote)
+    expect(screen.getByText(/Cut off at 500 characters/)).toBeInTheDocument()
+    await user.clear(note)
+    await user.type(note, 'short')
+    expect(screen.queryByText(/Cut off at 500 characters/)).toBeNull()
+  })
+})
+
+/* ── The compact row (2026-11-20) ─────────────────────────────────────────── */
+
+describe('the Research row is compact', () => {
+  it('draws an icon-sized tile, not the 160x110 panel', async () => {
+    mockEndpoint([row({ title: 'A study' })])
+    render(<ResearchPanel />)
+    await screen.findByText('A study')
+    const tile = document.querySelector('.cre-uxlinks-row a span[aria-hidden]') as HTMLElement
+    expect(tile.style.width).toBe(`${THUMB_ICON}px`)
+    expect(tile.style.height).toBe(`${THUMB_ICON}px`)
+  })
+
+  it('clamps the note to two lines — a quick summary, not the note', async () => {
+    /* 2026-11-20. Clamped by LINES, not characters: a character count cuts at
+       a different width on every row because the text is proportional. The
+       stored note is untouched — only the row is short. */
+    const longNote = 'Participants repeatedly missed the study plan entry point. '.repeat(8)
+    mockEndpoint([row({ title: 'A study', note: longNote })])
+    render(<ResearchPanel />)
+    await screen.findByText('A study')
+    const blurb = screen.getByText(longNote.trim()) as HTMLElement
+    expect(blurb.style.webkitLineClamp).toBe('2')
+    // and the full note is still there to be read when the row opens
+    expect(blurb.textContent).toHaveLength(longNote.trim().length)
+  })
+
+  it('right-aligns the tags, against the chevron', async () => {
+    /* "shift these tags to the right, closer to the chevron so there is more
+       text for the copy". The column is narrower AND the tags sit at its end;
+       left-aligned in a narrower column would just move them left. */
+    mockEndpoint([row({ title: 'A study', addedBy: 'Jill' })])
+    render(<ResearchPanel />)
+    await screen.findByText('A study')
+    const tag = screen.getByText('Added 2026-10-07')
+    expect((tag as HTMLElement).style.justifySelf).toBe('end')
+  })
+
+  /* "leaves the other boards alone" stood here — it rendered Resources, the
+     one board still on the 160px tile, to show `compactRows` was Research's
+     flag. Every surviving board is compact since the simple Hub (2026-11-21)
+     and Resources went with the advanced Hub, so there is no full-tile board
+     left to assert on. The flag is still a flag; `LinkRowThumb.test.tsx`
+     pins the compact form on Design and PRDs. */
 })

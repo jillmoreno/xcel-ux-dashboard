@@ -1,5 +1,11 @@
 # The standalone prototypes
 
+> **No Hub row since 2026-11-21.** The Explorations section went with the
+> advanced Hub (`hub-advanced` branch; `explorations-section` in
+> `archivedItems.ts`). The documents under `public/prototypes/` are still
+> served and still tested by `npm run smoke`; a link to one belongs on the
+> Hub's Design page like any other.
+
 The hand-authored HTML explorations in `public/prototypes/` — six with a row
 in the project list, five without — and what each one argues.
 

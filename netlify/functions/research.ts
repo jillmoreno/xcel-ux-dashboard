@@ -34,6 +34,14 @@ export default linkBoardHandler({
   segment: 'research',
   types: ALLOWED_TYPES,
   products: false,
-  archivable: false,
-  features: false,
+  // Archivable since 2026-11-21, like Design: archived rows list on the
+  // Hub's Archive page.
+  archivable: true,
+  /* PROJECTS (2026-11-20, Jillienne: "I want to be able to add a project").
+     `features` is the record's grouping axis — `feature` plus `supersedes` —
+     and Research presents it as the PROJECT a link belongs to. The field is
+     the same one Refinement groups by; only the word on the form differs
+     (`featureNoun` in the panel). Records written before today carry no
+     project and read as ungrouped, which is what they are. */
+  features: true,
 })

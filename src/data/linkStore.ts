@@ -1,11 +1,11 @@
 /**
- * Links — the browser side of the authoring endpoint.
+ * The link boards — the browser side of the authoring endpoint.
  *
- * Deliberately UNLIKE `qaNoteStore.ts` in one respect: there is no committed
- * seed and therefore no merge. The QA section ships an array in
- * `src/data/qaNotes.ts` that stored records override; the Links section ships
- * nothing, because its whole reason for existing is that a link can be added
- * without touching the repo. So the store is the list, full stop.
+ * There is no committed seed and therefore no merge: a board ships nothing,
+ * because its whole reason for existing is that a link can be added without
+ * touching the repo. So the store is the list, full stop. (The QA Notes
+ * store, which merged a committed array with stored records, was the
+ * contrast until it went with the advanced Hub on 2026-11-21.)
  *
  * The cost of that is real and worth stating plainly: Netlify Blobs is not
  * backed up, so this list lives in exactly one place. `toMarkdown` is the
@@ -20,10 +20,11 @@ import { useCallback, useEffect, useState } from 'react'
 
 /**
  * SHARED with the Demo board since 2026-09-18. Everything below the type
- * declarations is `createLinkBoard(config)`, and this module's named exports
- * are the LINKS instance of it — so every existing import keeps working, and
- * `demoStore.ts` is a second instance with a different endpoint, event and
- * label rather than a second copy of this file.
+ * declarations is `createLinkBoard(config)`; `demoStore.ts`, `researchStore.ts`
+ * and `prdStore.ts` are the instances, each with its own endpoint, event and
+ * label rather than a copy of this file. (This module was the LINKS instance
+ * too — `LINKS_BOARD` and its re-exports — until Resources went with the
+ * advanced Hub on 2026-11-21.)
  */
 export type LinkBoardConfig = {
   /** `/api/links` — the collection; `${base}/:id` is one record. */
@@ -64,16 +65,35 @@ export type LinkBoardConfig = {
  * `''` rather than an optional key so "never had one" and "had one and cleared
  * it" stay one state, the same rule `note` and `addedBy` follow.
  */
+/* THE FOUR ORIGINALS, then the places research actually lives (2026-11-20,
+   Jillienne, for the Research section's projects). Confluence, Figma and
+   Document are named because they are what a research project attaches:
+   a page, a file, a board.
+
+   `other` is the ESCAPE HATCH, and it is a real member rather than a free-text
+   `type` for one reason — the server keeps its own copy of this list
+   (`ALLOWED_TYPES` in `netlify/lib/linkBoard.ts`) because `type` is a trust
+   boundary. Opening that field to arbitrary strings would remove the boundary;
+   `other` keeps it closed and puts the designer's own word in `typeOther`, a
+   bounded free-text field validated the way `feature` is. */
 export const LINK_TYPES = [
   { id: 'brief', label: 'Brief' },
   { id: 'design', label: 'Design' },
   { id: 'prototype', label: 'Prototype' },
   { id: 'reference', label: 'Reference' },
+  { id: 'confluence', label: 'Confluence' },
+  { id: 'figma', label: 'Figma' },
+  { id: 'document', label: 'Document' },
+  { id: 'other', label: 'Other…' },
 ] as const
 
 export type LinkType = (typeof LINK_TYPES)[number]['id'] | ''
 
-export function linkTypeLabel(type: LinkType): string {
+export function linkTypeLabel(type: LinkType, typeOther = ''): string {
+  // `other` wears the designer's own word when there is one — the tag should
+  // say "Transcript", not "Other…". Falls back to the menu label when the
+  // custom word is empty, which is what an older record carries.
+  if (type === 'other') return typeOther.trim() || 'Other'
   return LINK_TYPES.find((t) => t.id === type)?.label ?? ''
 }
 
@@ -136,7 +156,10 @@ export function matchesProduct(row: LinkProduct, filter: LinkProduct | ''): bool
  * rows. `PROTOTYPE_SCOPES` still says "Jillienne" — that is design authority
  * on a surface, a different list for a different job.
  */
-export const DESIGNERS = ['Jill', 'Anjani', 'Eric', 'Afsana', 'Cody'] as const
+/* Cody came off the roster on 2026-11-21 (Jillienne: "Remove Cody from the
+   filters"). Rows he added keep his name — the pills match the typed author,
+   so they simply no longer have a pill of their own. */
+export const DESIGNERS = ['Jill', 'Anjani', 'Eric', 'Afsana'] as const
 
 export type Designer = (typeof DESIGNERS)[number]
 
@@ -171,7 +194,15 @@ export function matchesDesigner(addedBy: string, filter: Designer | ''): boolean
  * ungrouped row, which renders exactly as a row does now. There is no backfill
  * and no migration — the board is mixed on purpose while the habit forms.
  */
+/** The note's cap — kept in step with `MAX_NOTE` in
+ *  `netlify/lib/linkBoard.ts`, which is the one that is enforced. The form
+ *  trims to it as you type so a long paste is cut HERE, with a message, rather
+ *  than refused by the server after you press Save. */
+export const MAX_NOTE = 500
 export const MAX_FEATURE = 80
+/** The custom type's cap — kept in step with `MAX_TYPE_OTHER` in
+ *  `netlify/lib/linkBoard.ts`, which is the one that is enforced. */
+export const MAX_TYPE_OTHER = 40
 
 /** The grouping key. Case- and whitespace-insensitive, so "Streak card" and
  *  "streak  Card" are one feature. Returns '' for an ungrouped row. */
@@ -332,6 +363,11 @@ export type StoredLink = {
   /** What kind of thing it points at. '' when unset — optional, so the records
    *  written before this field existed stay valid without a backfill. */
   type: LinkType
+  /** The designer's own word for the kind, when `type` is `other` — '' for
+   *  every other type and for records written before this existed. Bounded
+   *  free text, like `feature`: the closed `type` list is the trust boundary
+   *  and this is the room left beside it. */
+  typeOther: string
   /** Which product this row is about. Only the Demo board's endpoint stores it
    *  (Links drops the field); everywhere else it normalises to `both`. */
   product: LinkProduct
@@ -372,6 +408,8 @@ export type LinkDraft = Pick<StoredLink, 'title' | 'url' | 'note' | 'addedBy' | 
   archived?: boolean
   archivedAt?: string
   archivedBy?: string
+  /** Only meaningful when `type` is `other`; the server clears it otherwise. */
+  typeOther?: string
   /** Refinement only, both of them — the boards without the controls drop the
    *  fields on the way in, so a Resources row cannot quietly acquire a feature
    *  nothing on that board can show or edit. */
@@ -524,6 +562,7 @@ function normalise(v: StoredLink): StoredLink {
     // Absent on every record written before Feature Refinement, and on every
     // board but Refinement. Both read as an ungrouped row, which is what they
     // are — there is no backfill, by design.
+    typeOther: typeof v.typeOther === 'string' ? v.typeOther : '',
     feature: typeof v.feature === 'string' ? v.feature : '',
     supersedes: typeof v.supersedes === 'string' ? v.supersedes : '',
   }
@@ -749,21 +788,9 @@ export function createLinkBoard(cfg: LinkBoardConfig) {
   }
 }
 
-/* ── the Links instance ───────────────────────────────────────────────────── */
-
-export const LINKS_BOARD = createLinkBoard({
-  base: '/api/links',
-  event: 'cgp.links',
-  lastAuthorKey: 'cgp.links.lastAuthor',
-})
-
-export const {
-  listLinks,
-  createLink,
-  saveLink,
-  deleteLink,
-  useLinks,
-  useLinkCount,
-  readLastAuthor,
-  rememberLastAuthor,
-} = LINKS_BOARD
+/* THE LINKS INSTANCE — `LINKS_BOARD` (`/api/links`, `cgp.links`) and its
+   bare re-exports (`listLinks`, `createLink`, `saveLink`, `deleteLink`,
+   `useLinks`, `useLinkCount`, `readLastAuthor`, `rememberLastAuthor`) — stood
+   here until 2026-11-21. `resources-section` in `archivedItems.ts`; on
+   `hub-advanced`. The three boards still share `cgp.links.lastAuthor` as
+   their `lastAuthorKey`, so the name a browser last signed with survives. */

@@ -1,5 +1,11 @@
 # The XCEL product app
 
+> **The Hub changed on 2026-11-21.** This file is the PRODUCT's history and
+> is unchanged by it, but it names things that are gone: Prototypes rows,
+> Refinement, stage, `promote-to-prototype` / `decide-defaults`. Read those
+> as history. Today a flag default reaches `main` through Jillienne's `ship`
+> routine, whose flag review asks per flag; see `docs/simple-hub.md`.
+
 Everything under `/dashboard-rebrand` — the dashboard versions, Readiness,
 the Study Journey, notifications, the flag catalog, and the migration that
 brought it here. **This is the file most design work needs.**
