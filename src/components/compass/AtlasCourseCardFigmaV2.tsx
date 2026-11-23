@@ -231,25 +231,6 @@ export function AtlasCourseCardFigmaV2({
           ))}
         </div>
       )}
-      <div style={PROGRESS}>
-        <div style={PROGRESS_ROW}>
-          {/* No gauge before it (2026-11-12, Eric). */}
-          <span style={{ flex: 1, minWidth: 0 }}>{status}</span>
-          <strong style={{ fontWeight: 700 }}>{progress}%</strong>
-        </div>
-        <div
-          role="progressbar"
-          aria-label={`${data.title} progress`}
-          aria-valuemin={0}
-          aria-valuemax={100}
-          aria-valuenow={progress}
-          style={BAR_TRACK}
-        >
-          {/* The fill in the 400 of the card's status colour (2026-11-12, Eric; Primary 500, then the pill's own fill). */}
-          {/* …but Primary 200 on an expired or failed card (2026-11-12, Eric). */}
-          <span style={{ ...BAR_FILL, width: `${progress}%`, background: expired || failed ? 'var(--color-primary-200)' : statusStrongFill(statusFor(data, progress)) }} />
-        </div>
-      </div>
       {/* THE DATE LINE — one per status, computed in `atlasCourseCards.ts` (`dateLine`); the card only draws what it is
           given. An empty `availableDate` draws nothing, which keeps the subgrid row rather than the sentence. */}
       <div style={DATES}>
@@ -366,6 +347,28 @@ export function AtlasCourseCardFigmaV2({
       </button>
       </div>
       ) : null}
+      {/* THE PROGRESS, AT THE FOOT OF THE CARD (2026-11-23, Jillienne: "move the progress bar to the bottom of the card") — the
+          status row over the bar, pushed to the card's bottom edge, so across a row the bars sit level again whatever the
+          titles above them do. It sat between the labels and the date line before. */}
+      <div style={PROGRESS}>
+        <div style={PROGRESS_ROW}>
+          {/* No gauge before it (2026-11-12, Eric). */}
+          <span style={{ flex: 1, minWidth: 0 }}>{status}</span>
+          <strong style={{ fontWeight: 700 }}>{progress}%</strong>
+        </div>
+        <div
+          role="progressbar"
+          aria-label={`${data.title} progress`}
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-valuenow={progress}
+          style={BAR_TRACK}
+        >
+          {/* The fill in the 400 of the card's status colour (2026-11-12, Eric; Primary 500, then the pill's own fill). */}
+          {/* …but Primary 200 on an expired or failed card (2026-11-12, Eric). */}
+          <span style={{ ...BAR_FILL, width: `${progress}%`, background: expired || failed ? 'var(--color-primary-200)' : statusStrongFill(statusFor(data, progress)) }} />
+        </div>
+      </div>
     </article>
     {/* Outside the article, so a click inside the sheet does not bubble (through the portal) to the card's open. */}
     <AtlasCourseDetailsSheet data={data} open={detailsOpen} onClose={() => setDetailsOpen(false)} />
@@ -406,9 +409,11 @@ const CARD: CSSProperties = {
   minWidth: 0,
 }
 const IMAGE: CSSProperties = { display: 'block', width: '100%', height: 120, objectFit: 'cover', borderRadius: 6 }
-/* The image's frame, so the pill can sit over it — 8 in from the top-left, the shared card's inset (2026-11-23). */
+/* The image's frame, so the pill can straddle its top-left corner (2026-11-23, Jillienne: "overlap the top corner a bit so
+   its 50/50 on background and image") — half the pill's 21 above the image's top edge, and 10 past its left edge, so it
+   sits on the card's ground and the photo at once. It was 8 in from the corner for an hour that day. */
 const IMAGE_WRAP: CSSProperties = { position: 'relative' }
-const PILL_ON_IMAGE: CSSProperties = { position: 'absolute', top: 8, left: 8, display: 'inline-flex', boxShadow: '0 1px 2px rgb(0 0 0 / 0.12)', borderRadius: 14 }
+const PILL_ON_IMAGE: CSSProperties = { position: 'absolute', top: -10.5, left: -10, display: 'inline-flex', boxShadow: '0 1px 2px rgb(0 0 0 / 0.12)', borderRadius: 14 }
 // 30 under the description to the labels (2026-11-23, Jillienne): 18 here + the column's 8 + the labels' 4 above.
 const TITLE_BLOCK: CSSProperties = { display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 8, paddingTop: 4, paddingBottom: 18 }
 /* The title and its Course Details link (2026-11-18, Eric; a rule under them that day, then removed). The pair stretches to the foot of its share of the row, which is
@@ -476,8 +481,9 @@ const DATE_LINE: CSSProperties = {
   lineHeight: '18px',
   color: 'var(--color-text-secondary)',
 }
-/* The progress: its row, then the bar 10 under it, 16 under the bar. */
-const PROGRESS: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 10, paddingBottom: 16 }
+/* The progress: its row, then the bar 10 under it — at the card's foot (2026-11-23), `marginTop: auto` pinning it to the bottom
+   edge, 8 clear of whatever is above. The 16 under it went: the card's own 24 is the space below now. */
+const PROGRESS: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 10, marginTop: 'auto', paddingTop: 8 }
 const PROGRESS_ROW: CSSProperties = {
   display: 'flex',
   alignItems: 'center',

@@ -368,6 +368,15 @@ describe('the status pill on the image', () => {
     expect(frame.compareDocumentPosition(within(card).getByRole('heading')) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
   })
 
+  it('puts the progress at the foot of the card, after the date line (2026-11-23)', () => {
+    renderShell(DESIGN_CARDS)
+    const card = screen.getByRole('article', { name: 'Florida Life and Health Pre-licensing' })
+    const bar = within(card).getByRole('progressbar')
+    const date = within(card).getByTestId('atlas-card-date')
+    expect(date.compareDocumentPosition(bar) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    expect(card.lastElementChild!.contains(bar)).toBe(true)
+  })
+
   it('lays the card out as its own column — off the shared subgrid rows (2026-11-23)', () => {
     renderShell(DESIGN_CARDS)
     const card = screen.getByRole('article', { name: 'Florida Life and Health Pre-licensing' })
