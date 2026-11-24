@@ -26,6 +26,7 @@ export function AtlasCourseDetailsSheetV2({
   open,
   onClose,
   actions,
+  notice,
 }: {
   data: AtlasCourseCardData
   open: boolean
@@ -34,6 +35,9 @@ export function AtlasCourseDetailsSheetV2({
    *  (2026-11-24, Jillienne: "that sheet view should give the user the same ctas that are currently available as if this
    *  course was active in the atlas home"). The card builds them; the sheet only places them. */
   actions?: ReactNode
+  /** THE DEADLINE'S OWN BOX, above the buttons (2026-11-24, Jillienne) — the card builds it (`SheetExtensionBox`) when the
+   *  course is inside its last week or past its date; absent otherwise. */
+  notice?: ReactNode
 }) {
   const titleSerif = useSheetTitleSerif()
   const sheetInset = useSheetInset()
@@ -64,6 +68,7 @@ export function AtlasCourseDetailsSheetV2({
             ))}
           </div>
         ) : null}
+        {notice ? <div style={NOTICE}>{notice}</div> : null}
         {actions ? <div style={ACTIONS}>{actions}</div> : null}
         {/* A light rule between the buttons and the Description (2026-11-24, Jillienne). */}
         <div aria-hidden style={DIVIDER} />
@@ -130,6 +135,8 @@ const LABEL_RULE: CSSProperties = { width: 1, height: 12, background: 'var(--col
 /* The buttons under the labels, 8 apart, wrapping — Home's course head's row (2026-11-24); 24 below the labels ("add padding
    above the ctas"; 16 before). */
 const ACTIONS: CSSProperties = { display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 24 }
+/* The deadline box's slot: 24 below the labels, like the buttons; the buttons then follow it at 16. */
+const NOTICE: CSSProperties = { marginTop: 24 }
 /* The rule under the buttons, Primary 100 — the card's own edge — 20 below them; the body's 18 follows. */
 const DIVIDER: CSSProperties = { height: 1, marginTop: 20, background: 'var(--color-primary-100)' }
 const BODY: CSSProperties = { flex: 1, overflowY: 'auto', padding: '18px 22px 24px' }

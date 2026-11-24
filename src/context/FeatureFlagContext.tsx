@@ -4865,6 +4865,27 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'atlas-courses-sheet-extension-box',
+    /* THE DEADLINE AND THE EXTENSION IN THEIR OWN BOX, in the PRD card's Course
+       Details sheet — 2026-11-24, Jillienne: "for this specific sheet view
+       where there is a deadline and extension situation, the messaging and
+       purchase extension should be in its own message box". Her four answers
+       the same day: follow Home's tiers (amber inside seven usable days, red
+       inside two, neutral once access has ended); the quiet copy, the
+       deadline alone; the box ABOVE the course buttons; Purchase Extension in
+       the box only, not in the button row. Drawn, not wired, as everywhere.
+
+       Off: the sheet as of that morning — Purchase Extension as an outlined
+       button in the row, and alone once expired. */
+    group: 'Widgets',
+    label: 'My Courses sheet — extension box',
+    description:
+      'In the PRD card\u2019s Course Details sheet, when a course is inside its last week or past its date: the deadline and Purchase Extension in a message box above the course buttons, toned by Home\u2019s tiers \u2014 amber, red, neutral. Off: Purchase Extension sits in the button row as before.',
+    defaultEnabled: true,
+    surface: 'design',
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'atlas-courses-card-title-align',
     /* WHERE A SHORT TITLE SITS IN ITS 60-TALL BOX — 2026-11-24, Jillienne:
        "add a toggle that moves the title to the center of this section

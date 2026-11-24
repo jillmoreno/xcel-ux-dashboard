@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import { Link } from 'react-router-dom'
-import { AngleRightSolid, ArrowRight, Award, EllipsisVerticalSolid, HourglassClock } from '@/icons'
+import { AngleRightSolid, ArrowRight, Award, CalendarExclamation, EllipsisVerticalSolid, HourglassClock, TriangleExclamation } from '@/icons'
+import { accessCountLabel } from './atlasCourseAccess'
 import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { STATE_ABBR } from '@/data/catalogFixtures'
 import { EXPIRY_SOON_DAYS, courseExpiryTier, formatMilestoneDate, usableDaysLeft } from '@/data/courseExpiry'
@@ -90,6 +91,8 @@ export function AtlasCourseCardFigmaV2({
   /* NO BUTTON, NO LINKS (2026-11-23, Jillienne) — the design bar's `atlas-courses-card-actions`: the card is the one action
      and Home has the buttons. The hover lift and focus ring (`.cre-atlas-card-v2`) are what is left to say so. */
   const actionsShown = useFeatureFlag('atlas-courses-card-actions').variant !== 'hidden'
+  // The sheet's deadline box — the design bar's `atlas-courses-sheet-extension-box` (2026-11-24).
+  const extensionBox = useFeatureFlag('atlas-courses-sheet-extension-box').enabled
   // A short title at the top of its box, or centred — the design bar's `atlas-courses-card-title-align` (2026-11-24), to decide.
   const titleCentred = useFeatureFlag('atlas-courses-card-title-align').variant === 'center'
   /* THE DUE SOON PILL COUNTS DOWN (2026-11-23, Jillienne, with the pill selected: "Access Ends <##> days") — the same
@@ -433,7 +436,8 @@ export function AtlasCourseCardFigmaV2({
       data={data}
       open={detailsOpen}
       onClose={() => setDetailsOpen(false)}
-      actions={<SheetActions data={data} expired={expired} onAction={onAction} certificateTo={certificateTo} />}
+      notice={extensionBox ? <SheetExtensionBox data={data} expired={expired} /> : null}
+      actions={<SheetActions data={data} expired={expired} onAction={onAction} certificateTo={certificateTo} inBox={extensionBox} />}
     />
     </>
   )
@@ -543,36 +547,87 @@ const FACTS: CSSProperties = {
 /* `MetaRule`, verbatim: a 1 × 12 hairline in the subtle border colour. */
 const FACT_RULE: CSSProperties = { width: 1, height: 12, background: 'var(--color-border-subtle)', flex: 'none' }
 /**
- * HOME'S BUTTONS FOR THIS COURSE, in the sheet (2026-11-24). The rule is `AtlasHomeJillMain`'s course head: Purchase
- * Extension from the warning tier on (`courseExpiryTier` — the Home's own span, 7 usable days amber, 2 red) and alone once
- * expired; Course Overview and the course's own verb while it is live; View Certificate at 100%. Purchase Extension is
- * drawn and not wired, exactly as on Home — see the xcel-purchase-extension handoff.
+ * THE DEADLINE AND THE EXTENSION IN THEIR OWN BOX (2026-11-24, Jillienne), above the sheet's buttons. Home's tiers, exactly
+ * (`courseExpiryTier` — the Home course head's own span): amber inside seven usable days with the triangle, red inside two
+ * with the calendar mark, neutral once access has gone. The quiet copy — the deadline alone, no persuasion — until product
+ * writes the line. Purchase Extension lives here and nowhere else in the sheet, and GOES TO THE STORE (`STORE_URL`, a new
+ * tab) — the one Purchase Extension in the product that goes anywhere; Home's and the card's stay drawn, not wired. Nothing on a course outside its last week, or a finished one.
+ */
+function SheetExtensionBox({ data, expired }: { data: AtlasCourseCardData; expired: boolean }) {
+  const tier = courseExpiryTier({ status: data.completed ? 'completed' : 'in-progress', expiresAt: data.expiresAt }, FIXTURE_TODAY)
+  if (data.completed || tier === 'normal' || !data.expiresAt) return null
+  const days = Math.max(0, usableDaysLeft(data.expiresAt, FIXTURE_TODAY) ?? 0)
+  const lastDay = tier === 'urgent' && days === 0
+  const date = formatMilestoneDate(data.expiresAt)
+  const tone = expired ? BOX_ENDED : tier === 'urgent' ? BOX_URGENT : BOX_SOON
+  const Icon = tier === 'soon' ? TriangleExclamation : CalendarExclamation
+  return (
+    <div style={{ ...BOX, ...tone.box }} data-testid="sheet-extension-box" data-tier={expired ? 'expired' : tier}>
+      <p style={{ ...BOX_HEAD, color: tone.ink }}>
+        <Icon size={15} aria-hidden style={{ flex: 'none' }} />
+        {expired ? `Access ended ${date}` : lastDay ? 'Today is the last day' : `Access ends in ${accessCountLabel(days)}`}
+      </p>
+      <p style={BOX_LINE}>{expired ? 'Your access to this course has ended.' : `Your access to this course ends ${date}.`}</p>
+      {/* TO THE STORE (2026-11-24, Jillienne: "Button does nothing, it goes to ecomm site") — the XCEL storefront, in a
+          new tab, since an extension is bought there and not in the LMS. The storefront's root for now: which page sells
+          an extension is the xcel-purchase-extension handoff's open question. Primary once access has gone — nothing else
+          is left to do; the tone's outline while it lasts. */}
+      <a
+        href={STORE_URL}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={expired ? 'cre-atlas-card-primary' : undefined}
+        style={expired ? { ...SHEET_BUTTON, ...BUTTON_LINK } : { ...SHEET_BUTTON, ...BUTTON_LINK, background: 'transparent', borderColor: tone.ink, color: tone.ink }}
+        data-testid="sheet-extension"
+      >
+        Purchase Extension
+      </a>
+    </div>
+  )
+}
+/** Where Purchase Extension goes: the XCEL storefront (2026-11-24). The root, not a product page — see the note above. */
+export const STORE_URL = 'https://www.xcelsolutions.com/'
+const BOX: CSSProperties = { display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 6, padding: '14px 16px', borderRadius: 9, borderStyle: 'solid', borderWidth: 1 }
+const BOX_HEAD: CSSProperties = { margin: 0, display: 'inline-flex', alignItems: 'center', gap: 8, fontFamily: 'var(--font-body)', fontSize: 14, lineHeight: '20px', fontWeight: 700 }
+const BOX_LINE: CSSProperties = { margin: '0 0 6px', fontFamily: 'var(--font-body)', fontSize: 13, lineHeight: '20px', color: 'var(--color-text-primary)' }
+/* Home's three tones (WhiteCourseMeta): Warning 700, Error 600, Neutral 800 — on the ramp's 100 with its 300 edge. */
+const BOX_SOON = { ink: 'var(--color-warning-700)', box: { background: 'var(--color-warning-100)', borderColor: 'var(--color-warning-300)' } }
+const BOX_URGENT = { ink: 'var(--color-error-600)', box: { background: 'var(--color-error-100)', borderColor: 'var(--color-error-200)' } }
+const BOX_ENDED = { ink: 'var(--color-neutral-800)', box: { background: 'var(--color-neutral-100)', borderColor: 'var(--color-neutral-200)' } }
+
+/**
+ * HOME'S BUTTONS FOR THIS COURSE, in the sheet (2026-11-24). The rule is `AtlasHomeJillMain`'s course head: Course Overview
+ * and the course's own verb while it is live, View Certificate at 100% (unless pending). Purchase Extension is the box's
+ * (`inBox`) — with the box off, it is here instead: outlined from the warning tier on and alone once expired, as the sheet
+ * drew it before the box. Drawn and not wired either way.
  */
 function SheetActions({
   data,
   expired,
   onAction,
   certificateTo,
+  inBox,
 }: {
   data: AtlasCourseCardData
   expired: boolean
   onAction?: () => void
   certificateTo?: string
+  /** The deadline box carries Purchase Extension; this row does not. */
+  inBox: boolean
 }) {
   const tier = courseExpiryTier({ status: data.completed ? 'completed' : 'in-progress', expiresAt: data.expiresAt }, FIXTURE_TODAY)
-  const extension = !data.completed && tier !== 'normal'
+  const extension = !inBox && !data.completed && tier !== 'normal'
   const verb = data.completed ? 'Review Course' : data.actionLabel
   if (expired) {
-    return (
-      <button type="button" className="cre-atlas-card-primary" style={SHEET_BUTTON} data-testid="sheet-action">
+    // Once access has gone there is nothing else to do: the box's button is the whole sheet's action (or the row's, box off).
+    return inBox ? null : (
+      <a href={STORE_URL} target="_blank" rel="noopener noreferrer" className="cre-atlas-card-primary" style={{ ...SHEET_BUTTON, ...BUTTON_LINK }} data-testid="sheet-action">
         Purchase Extension
-      </button>
+      </a>
     )
   }
   /* THE PRIMARY FIRST, ALWAYS (2026-11-24, Jillienne: "primary cta should always be at the top") — the course's verb leads,
-     then Course Overview, then the outlined extras: View Certificate on a finished course, Purchase Extension inside the
-     warning week. Home's head runs the other way; in a wrapping row the primary has to lead or it lands alone on a second
-     line, as it did. */
+     then Course Overview, then the outlined extras. */
   return (
     <>
       <button type="button" className="cre-atlas-card-primary" style={SHEET_BUTTON} onClick={onAction} disabled={!onAction} data-testid="sheet-action">
@@ -599,9 +654,9 @@ function SheetActions({
         </Link>
       ) : null}
       {extension ? (
-        <button type="button" className="cre-atlas-card-outline" style={{ ...SHEET_BUTTON, ...SHEET_BUTTON_OUTLINE }} data-testid="sheet-action">
+        <a href={STORE_URL} target="_blank" rel="noopener noreferrer" className="cre-atlas-card-outline" style={{ ...SHEET_BUTTON, ...SHEET_BUTTON_OUTLINE, ...BUTTON_LINK }} data-testid="sheet-action">
           Purchase Extension
-        </button>
+        </a>
       ) : null}
     </>
   )

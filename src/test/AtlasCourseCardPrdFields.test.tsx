@@ -446,19 +446,60 @@ describe('Details →', () => {
       const card = screen.getByRole('article', { name: title })
       fireEvent.click(within(card).getByRole('button', { name: 'Details' }))
       const dialog = screen.getByRole('dialog', { name: `${title} details` })
-      expect(within(dialog).getAllByTestId('sheet-action').map((b) => b.textContent)).toEqual(labels)
+      expect(within(dialog).queryAllByTestId('sheet-action').map((b) => b.textContent)).toEqual(labels)
     }
-    // The primary verb leads, always (2026-11-24: "primary cta should always be at the top"); five usable days left on the
-    // first card — inside Home's amber week — so Purchase Extension joins it.
-    expectActions('Florida Life and Health Pre-licensing', ['Resume Course', 'Course Overview', 'Purchase Extension'])
+    // The primary verb leads, always (2026-11-24: "primary cta should always be at the top"). Purchase Extension is the
+    // deadline box's, not the row's, since the same afternoon.
+    expectActions('Florida Life and Health Pre-licensing', ['Resume Course', 'Course Overview'])
     expectActions('Florida Health Insurance Pre-licensing', ['Resume Course', 'Course Overview'])
     expectActions('Florida Property & Casualty', ['Begin Course', 'Course Overview'])
     expectActions('Florida Property & Casualty Practice Exam', ['Retake Course', 'Course Overview'])
     expectActions('FL Preferred Business Practices for the Insurance Producer', ['Review Course', 'Course Overview', 'View Certificate'])
     // Not yet issued: nothing to view (2026-11-24).
     expectActions('Florida Ethics for Insurance Producers', ['Review Course', 'Course Overview'])
-    // Expired: Purchase Extension ALONE, as Home reshapes the head once access has gone.
-    expectActions('Florida Personal Lines Pre-licensing', ['Purchase Extension'])
+    // Expired: no row at all — the box's Purchase Extension is the whole sheet's action, as Home reshapes the head.
+    expectActions('Florida Personal Lines Pre-licensing', [])
+  })
+
+  /* 2026-11-24, Jillienne: the deadline and Purchase Extension "in its own message box". Home's tiers, the quiet copy,
+     above the buttons, the button in the box only. */
+  it('boxes the deadline and Purchase Extension above the buttons, toned by Home’s tiers', () => {
+    const open = (title: string) => {
+      cleanup()
+      renderShell(`${DESIGN_CARDS},atlas-courses-card-actions:hidden`)
+      fireEvent.click(within(screen.getByRole('article', { name: title })).getByRole('button', { name: 'Details' }))
+      return screen.getByRole('dialog', { name: `${title} details` })
+    }
+    // Five usable days: amber, "Access ends in 5 days", the outlined button in the tone.
+    let dialog = open('Florida Life and Health Pre-licensing')
+    let box = within(dialog).getByTestId('sheet-extension-box')
+    expect(box.getAttribute('data-tier')).toBe('soon')
+    expect(box.textContent).toContain('Access ends in 5 days')
+    expect(box.textContent).toContain('Your access to this course ends 05/17/2026.')
+    // To the storefront, in a new tab (2026-11-24: "it goes to ecomm site").
+    const ext = within(box).getByRole('link', { name: 'Purchase Extension' })
+    expect(ext.getAttribute('href')).toBe('https://www.xcelsolutions.com/')
+    expect(ext.getAttribute('target')).toBe('_blank')
+    expect(within(dialog).queryAllByTestId('sheet-action').map((b) => b.textContent)).not.toContain('Purchase Extension')
+    // Above the buttons.
+    expect(box.compareDocumentPosition(within(dialog).getAllByTestId('sheet-action')[0]) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    // Expired: neutral, past tense, the button primary and alone.
+    dialog = open('Florida Personal Lines Pre-licensing')
+    box = within(dialog).getByTestId('sheet-extension-box')
+    expect(box.getAttribute('data-tier')).toBe('expired')
+    expect(box.textContent).toContain('Access ended 04/20/2026')
+    expect(within(box).getByRole('link', { name: 'Purchase Extension' }).className).toContain('cre-atlas-card-primary')
+    // Outside the week, nothing.
+    dialog = open('Florida Health Insurance Pre-licensing')
+    expect(within(dialog).queryByTestId('sheet-extension-box')).toBeNull()
+  })
+
+  it('with the box control off, Purchase Extension is back in the row', () => {
+    renderShell(`${DESIGN_CARDS},atlas-courses-card-actions:hidden,atlas-courses-sheet-extension-box:off`)
+    fireEvent.click(within(screen.getByRole('article', { name: 'Florida Life and Health Pre-licensing' })).getByRole('button', { name: 'Details' }))
+    const dialog = screen.getByRole('dialog', { name: 'Florida Life and Health Pre-licensing details' })
+    expect(within(dialog).queryByTestId('sheet-extension-box')).toBeNull()
+    expect(within(dialog).getAllByTestId('sheet-action').map((b) => b.textContent)).toEqual(['Resume Course', 'Course Overview', 'Purchase Extension'])
   })
 
   it('wires the course verb to the card’s action, and View Certificate to the shell’s certificates page', () => {
