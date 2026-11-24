@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { AngleRightSolid, EllipsisVerticalSolid, LocationDotRegular } from '@/icons'
 import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { STATE_ABBR } from '@/data/catalogFixtures'
-import { usableDaysLeft } from '@/data/courseExpiry'
+import { formatMilestoneDate, usableDaysLeft } from '@/data/courseExpiry'
 import { FIXTURE_TODAY } from '@/data/myCoursesFixtures'
 import { AtlasStatusPill, statusStrongFill, type AtlasCourseStatus } from './AtlasStatusPill'
 import type { AtlasCourseCardData } from './AtlasCourseCard'
@@ -72,7 +72,17 @@ export function AtlasCourseCardFigmaV2({
   // An expired course reads "Progress Made" — it is not in progress any more (2026-11-12, Eric; "Progress" first).
   const failed = data.actionLabel === 'Retake Course'
   // A failed course reads "Progress Made" too — finished, not passed, not "in progress" (2026-11-12).
-  const status = data.completed ? 'Completed' : expired || failed ? 'Progress Made' : progress > 0 ? 'In Progress' : 'Not Started'
+  // A finished course's status row carries its date — "Completed - 03/18/2026" (2026-11-24, Jillienne), in the milestone
+  // format `formatMilestoneDate` gives every Completed: / Expired: line. A record with no `completedOn` says "Completed" alone.
+  const status = data.completed
+    ? data.completedOn
+      ? `Completed - ${formatMilestoneDate(data.completedOn)}`
+      : 'Completed'
+    : expired || failed
+      ? 'Progress Made'
+      : progress > 0
+        ? 'In Progress'
+        : 'Not Started'
   /* THE LINE UNDER THE DATE (PRD section 3): a failed course shows her score, an expired one her last progress. Nothing on
      the other three — the completed score is on the date line itself. */
   const detail = failed && data.score != null ? `Score: ${data.score}%` : expired ? `Last progress: ${progress}%` : null
@@ -88,7 +98,13 @@ export function AtlasCourseCardFigmaV2({
      `usableDaysLeft` the date line prints, so the two never disagree. A card with no date keeps "Due Soon". */
   const pillStatus = statusFor(data, progress)
   const daysLeft = pillStatus === 'due-soon' ? usableDaysLeft(data.expiresAt, FIXTURE_TODAY) : null
-  const pillLabel = daysLeft != null ? `Access Ends ${Math.max(0, daysLeft)} ${daysLeft === 1 ? 'day' : 'days'}` : undefined
+  // …and the Completed pill carries the score — "Completed - Score: 92%" (2026-11-24, Jillienne). No score, no suffix.
+  const pillLabel =
+    daysLeft != null
+      ? `Access Ends ${Math.max(0, daysLeft)} ${daysLeft === 1 ? 'day' : 'days'}`
+      : pillStatus === 'completed' && data.score != null
+        ? `Completed - Score: ${data.score}%`
+        : undefined
   /* THE RULED ROW ABBREVIATES THE STATE — "FL", not "Florida" (2026-11-23, Jillienne: "use the ruled row, have the state be
      abbreviated to help with wrapping issues"). `STATE_ABBR` is the catalog's map; a name it does not know, or a record
      that already carries the code (the library's `state: 'FL'`), passes through. The sheet keeps the full name. */
@@ -158,7 +174,12 @@ export function AtlasCourseCardFigmaV2({
         {/* The title alone — "Course Details ›" moved to the foot of the card, under the button (2026-11-23, Jillienne:
             "course details link should be under the primary cta at bottom of card"); it sat here on the card before. */}
         <div style={TITLE_HEAD}>
-          <h3 style={TITLE}>{data.title}</h3>
+          {/* ONE HEIGHT FOR EVERY TITLE (2026-11-24, Jillienne, with a three-line title selected: "every title section should
+              be this height … add an ellipsis"): a 66-tall box — three lines of 22 — the title clamped to three lines
+              with an ellipsis, a shorter title at the top of the box. */}
+          <div style={TITLE_BOX} data-testid="atlas-card-title-box">
+            <h3 style={TITLE}>{data.title}</h3>
+          </div>
           {/* The description RIGHT UNDER THE TITLE (2026-11-23, Jillienne: "should be right up against the title") — inside the
               title's block, so the slack a short title leaves in the shared row falls below the description, not between.
               Or its fallback; or nothing, under the design bar's Course description control. */}
@@ -414,8 +435,9 @@ const IMAGE: CSSProperties = { display: 'block', width: '100%', height: 120, obj
    sits on the card's ground and the photo at once. It was 8 in from the corner for an hour that day. */
 const IMAGE_WRAP: CSSProperties = { position: 'relative' }
 const PILL_ON_IMAGE: CSSProperties = { position: 'absolute', top: -10.5, left: -10, display: 'inline-flex', boxShadow: '0 1px 2px rgb(0 0 0 / 0.12)', borderRadius: 14 }
-// 30 under the description to the labels (2026-11-23, Jillienne): 18 here + the column's 8 + the labels' 4 above.
-const TITLE_BLOCK: CSSProperties = { display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 8, paddingTop: 4, paddingBottom: 18 }
+// No padding under the title block (2026-11-24, Jillienne: "remove bottom padding"; 18 the day before, for 30 to the labels).
+// The column's 8 and the labels' own 4 are what remain between the description and the labels.
+const TITLE_BLOCK: CSSProperties = { display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 8, paddingTop: 4, paddingBottom: 0 }
 /* The title and its Course Details link (2026-11-18, Eric; a rule under them that day, then removed). The pair stretches to the foot of its share of the row, which is
    what holds the pills at one height across the row. */
 const TITLE_HEAD: CSSProperties = {
@@ -426,6 +448,9 @@ const TITLE_HEAD: CSSProperties = {
   gap: 6,
   // The rule under it went the same day (2026-11-18, Eric) — and with it the 12 that held it off the title.
 }
+/* The title's fixed box: three lines of 22, the title at its TOP (2026-11-24, Jillienne — centred for a few minutes: "they
+   should not be centered - they should align to the top"). */
+const TITLE_BOX: CSSProperties = { alignSelf: 'stretch', height: 66, display: 'flex', alignItems: 'flex-start' }
 const TITLE: CSSProperties = {
   margin: 0,
   fontFamily: 'var(--font-heading-serif)',
@@ -435,8 +460,8 @@ const TITLE: CSSProperties = {
   fontSize: 18,
   lineHeight: '22px',
   color: 'var(--color-text-primary)',
-  // Three lines at most (2026-11-23, the scan): the subgrid gives every title row the tallest title's height, so one
-  // four-line title would push every card's pills down. The full title is the article's accessible name either way.
+  // Three lines at most, then an ellipsis (2026-11-23, the scan; the fixed box the day after). The full title is the
+  // article's accessible name either way.
   display: '-webkit-box',
   WebkitLineClamp: 3,
   WebkitBoxOrient: 'vertical',

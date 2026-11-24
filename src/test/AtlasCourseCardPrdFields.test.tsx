@@ -206,12 +206,26 @@ describe('the labels, the status and the progress', () => {
     expect(screen.getAllByText('Property & Casualty').length).toBeGreaterThan(0) // the ampersand (2026-11-23)
   })
 
+  it('gives every title the same 66px box, the title clamped at three lines and at the top (2026-11-24)', () => {
+    renderShell(DESIGN_CARDS)
+    const boxes = screen.getAllByTestId('atlas-card-title-box')
+    expect(boxes).toHaveLength(ATLAS_MY_COURSES.length)
+    for (const box of boxes) {
+      expect(box.style.height).toBe('66px')
+      expect(box.style.alignItems).toBe('flex-start')
+      const h = box.querySelector('h3')!
+      expect(h.style.webkitLineClamp).toBe('3')
+      expect(h.style.overflow).toBe('hidden')
+    }
+  })
+
   it('draws the description inside the title block, right under the heading', () => {
     renderShell(DESIGN_CARDS)
     const card = screen.getByRole('article', { name: 'Florida Life and Health Pre-licensing' })
     const heading = within(card).getByRole('heading')
     const description = within(card).getByText(ATLAS_MY_COURSES[0].description!)
-    expect(heading.nextElementSibling).toBe(description)
+    // The heading sits in its fixed box; the description follows the box.
+    expect(heading.parentElement!.nextElementSibling).toBe(description)
   })
 
   it('exposes the progress as a number — aria-valuenow between 0 and 100 — beside the status as text', () => {
@@ -226,7 +240,9 @@ describe('the labels, the status and the progress', () => {
       expect(now).toBeGreaterThanOrEqual(0)
       expect(now).toBeLessThanOrEqual(100)
     }
-    for (const word of ['Completed', 'In Progress', 'Not Started']) expect(screen.getAllByText(word).length).toBeGreaterThan(0)
+    for (const word of ['In Progress', 'Not Started']) expect(screen.getAllByText(word).length).toBeGreaterThan(0)
+    // The completed card's status row carries its date (2026-11-24): "Completed - 03/18/2026".
+    expect(screen.getByText('Completed - 03/18/2026')).toBeTruthy()
   })
 })
 
@@ -364,6 +380,9 @@ describe('the status pill on the image', () => {
     expect(frame.querySelector('img')).toBeTruthy()
     // The Due Soon pill counts down (2026-11-23): "Access Ends 13 days" — the date line's own figure.
     expect(within(frame).getByText('Access Ends 13 days')).toBeTruthy()
+    // …and the Completed pill carries the score (2026-11-24).
+    const done = screen.getByRole('article', { name: 'FL Preferred Business Practices for the Insurance Producer' })
+    expect(within(within(done).getByTestId('atlas-card-image')).getByText('Completed - Score: 92%')).toBeTruthy()
     expect(within(card).getByTestId('atlas-card-date').textContent).toContain('13 days left')
     expect(frame.compareDocumentPosition(within(card).getByRole('heading')) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
   })
