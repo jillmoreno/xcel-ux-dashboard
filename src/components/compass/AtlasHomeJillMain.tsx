@@ -310,6 +310,17 @@ export function AtlasHomeJillMain({
      renders equal. */
   const { brand: e2eBrand } = useAccount()
   const onWhite = isEricAtlasWhiteLike(resolveDashboardVersion(searchParams.get('version'), e2eBrand))
+  /* A MY COURSES CARD'S COURSE, when the learner came from one (2026-11-04, Eric's request) — its title and cover, and
+     SINCE 2026-11-24 ITS ACCESS DATE AND ITS PROGRESS TOO (Jillienne: "when clicking on a card from the my courses page, it
+     needs to update accordingly on this atlas home page, the access ends should match logic, as well as the course progress
+     should match logic"). Read up here because the access window below is built from it. The card still sets the demo
+     bar's Progress and Expires on its way here (`atlasHomeStateFor`, to the NEAREST presets), so the bar is close to what
+     Home shows — but the bar's rows are fixed steps (7 · 15 · 30 · 90 days; 14% · 36% · 75%) and a card's own figures
+     rarely sit on one, so while `?atlasCourse=` is on the address the CARD is the source of the date and the percent and
+     those two bar controls are not. Leave My Courses and come back by another route and the bar rules again. */
+  const atlasCourseParam = searchParams.get(ATLAS_HOME_COURSE_PARAM)
+  // Memoised so the pace model's `useMemo` below sees a stable dependency (the React Compiler lint asks for it).
+  const cardCourse = useMemo(() => atlasHomeCourseFor(atlasCourseParam, e2eBrand), [atlasCourseParam, e2eBrand])
   /* The demo's course title — short, or long when the Long title control is
      on, and FOLLOWING THE COURSE CONTROL since 2026-10-15. This is the
      dashboard, so it shows the course the reviewer picked; the invite door at
@@ -431,7 +442,8 @@ export function AtlasHomeJillMain({
      record of where the number came from ("at 0% should default to 30 days
      for course access", 2026-10-16) and the thing to restore if Expires ever
      regains a per-state arm. */
-  const accessIso = accessExpiresAt
+  // The card's own access date when the learner came from a card (2026-11-24); the Expires control's window otherwise.
+  const accessIso = cardCourse?.expiresAt ?? accessExpiresAt
   /**
    * EXPIRY IMPLIES THE LEARNER HAD STARTED (2026-10-20, Jillienne: "when
    * expired, lets show some sort of progress as most users would have at
@@ -791,8 +803,12 @@ export function AtlasHomeJillMain({
      how far down Step 1 the checks reach. `expired` is off the picker and
      resolves to its own stage. */
   const rung = atlasRungFor(progressPick)
+  /* THE FIGURE: the card's own progress when the learner came from a card (2026-11-24) — the ring, the journey titles and
+     the lesson count all read it — else the rung's. The rung still supplies the stage, the readiness band and how far down
+     Step 1 the checks reach; a finished card's 100 and the preset's 100 agree, and an expired card keeps its last figure. */
+  const shownPercent = cardCourse?.progress != null && progressPick !== 'expired' ? cardCourse.progress : rung.percent
   const progress: { stage: ProgressStage; percent?: number } =
-    progressPick === 'expired' ? V3_EXPIRED : { stage: rung.stage, percent: rung.percent }
+    progressPick === 'expired' ? V3_EXPIRED : { stage: rung.stage, percent: shownPercent }
   /* ⚠ THE LESSON COUNT FOLLOWS THE DEMO'S PROGRESS (2026-10-16, Jillienne:
      "as user progresses through the course progress options, the 23 of 36
      completed should update accordingly").
@@ -809,7 +825,7 @@ export function AtlasHomeJillMain({
      total stays the path's — and only where the title already has that
      shape, so a title without it is left exactly as it is. */
   const journeyStops: readonly JourneyStop[] = shownStops.map((stop) => {
-    const title = journeyTitleFor(stop.title, rung.percent)
+    const title = journeyTitleFor(stop.title, shownPercent)
     return title === stop.title ? stop : { ...stop, title }
   })
   /* ⚠ WHICH ROWS CARRY THE GREEN CHECK (2026-10-16, Jillienne: "add to the
@@ -832,7 +848,7 @@ export function AtlasHomeJillMain({
     0,
     journeyStops.findIndex((s) => isLessonRowTitle(s.title)),
   )
-  const doneRows = rung.percent > 0 ? lessonRowIdx + rung.stepsDone : 0
+  const doneRows = shownPercent > 0 ? lessonRowIdx + rung.stepsDone : 0
   /* ⚠ NOTHING IS "CURRENT" WHEN EVERYTHING IS DONE. A filled current-dot
      among green checks would say the learner is still on that row. */
   const currentRowIdx = doneRows < journeyStops.length ? doneRows : -1
@@ -969,10 +985,7 @@ export function AtlasHomeJillMain({
   const pickedTabId = homeCourseParam != null && !tabs.some((t) => t.id === homeCourseParam) ? '' : (activeTab?.id ?? path.id)
   // The demo's course: the one Invited Product Detail sells (2026-10-15,
   // Eric's request), in place of the course data's title.
-  /* A My Courses card's course, when the learner came from one (2026-11-04,
-     Eric's request) — its title and cover; the card set Progress and Expires
-     on its way here. See `atlasHomeStateFor`. */
-  const cardCourse = atlasHomeCourseFor(searchParams.get(ATLAS_HOME_COURSE_PARAM), e2eBrand)
+  // `cardCourse` — the card the learner came from — is read near the top, where the access window needs it (2026-11-24).
   // A course tab's title too, not only its cover (2026-11-10, Eric: "clicking one of the course tabs, change the course image and
   // title"); the first tab is the demo's own course, so it keeps the demo's title.
   // The picked tab's title and cover — the first tab's when none is picked (2026-11-12).

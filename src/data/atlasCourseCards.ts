@@ -1,7 +1,9 @@
 import type { AtlasCourseCardData } from '@/components/compass/AtlasCourseCard'
 import type { Brand } from '@/context/AccountContext'
-import { certificateForCourse, certificatePdfUrl } from './certificateFixtures'
-import { courseExpiryState, formatMilestoneDate, usableDaysLeft } from './courseExpiry'
+import { ATLAS_PROGRESS_LADDER } from '@/components/compass/atlasProgressLadder'
+import { certificateForCourse, certificatePdfUrl, certificateStateForCourse } from './certificateFixtures'
+import { EXPIRY_PICKER } from './courseFixtures'
+import { courseExpiryState, daysUntilIso, formatMilestoneDate, usableDaysLeft } from './courseExpiry'
 import { FIXTURE_TODAY, myCoursesFor, type MyCourseRecord } from './myCoursesFixtures'
 
 /**
@@ -25,10 +27,10 @@ import { FIXTURE_TODAY, myCoursesFor, type MyCourseRecord } from './myCoursesFix
  * Due Soon card dated five months out contradicted its own pill. (mm/dd/yyyy
  * since 2026-11-24.)
  *
- * ⚠ THE CE PACKAGE CARD (`demo-ny-pclh-refresher-ce`) IS OUT OF SCOPE FOR THE
- * JAN 12 RELEASE and is left exactly as it was — authored date string, no
- * description, no score. The Failed row of the PRD's table is demonstrated by
- * the SIXTH card (`demo-fl-pc-practice-exam`) instead.
+ * ⚠ THE CE PACKAGE CARD (`demo-ny-pclh-refresher-ce`) was out of scope for
+ * the Jan 12 release and is OFF THE PAGE since 2026-11-24 — kept below as
+ * `ATLAS_CE_PACKAGE_CARD`, read by nothing. The Failed row of the PRD's table
+ * is demonstrated by the practice-exam card (`demo-fl-pc-practice-exam`).
  */
 /* ⚠ DECLARED ABOVE THE CARDS ON PURPOSE: `designDates` runs while `ATLAS_MY_COURSES` is built, and a `const` below the
    array would still be in its temporal dead zone — a ReferenceError at module load, not a type error. */
@@ -43,8 +45,9 @@ export const ATLAS_MY_COURSES: readonly AtlasCourseCardData[] = [
     title: 'Florida Life and Health Pre-licensing',
     imageUrl: '/courses/fl-life-health.webp', // Florida's beach (2026-11-12, Eric: the cards in Florida; New York's skyline before)
     badge: 'Due Soon',
-    // Two weeks of access left, enrolled six weeks ago (2026-11-23; "October 19, 2026 · 5:49 PM CDT" before).
-    ...designDates({ myStatus: 'in-progress', enrolledAt: '2026-04-01', expiresAt: '2026-05-25' }),
+    // FIVE usable days left (2026-11-24, Jillienne: "adjust this card so its 5 days left to complete" — inside the week the
+    // pill counts down in; two weeks the day before). Enrolled six weeks ago.
+    ...designDates({ myStatus: 'in-progress', enrolledAt: '2026-04-01', expiresAt: '2026-05-17' }),
     description: 'Every topic on the Florida Life & Health exam in self-paced lessons, with a practice quiz at the end of each one.',
     actionLabel: 'Resume Course',
     // Figma 706:2416's facts (2026-11-12, Eric) — the state is the course's, New York; the design's frame says Florida.
@@ -55,6 +58,24 @@ export const ATLAS_MY_COURSES: readonly AtlasCourseCardData[] = [
     packageSummary:
       'Our Premier package adds flashcards, a recorded review class, and our Pass Guarantee to the standard package and is ideal for those looking to maximize their studying with various learning formats.',
     progress: 45,
+  },
+  /* THE SECOND CARD (2026-11-24, Jillienne: "another example of a card that is in progress that is more than 30 days until
+     access expires so that its the normal atlas blue progress and there is no badge"): IN PROGRESS, ten months of access
+     left — well outside the 60-day warning window — so the pill is the plain "In Progress", the bar the Info ramp's blue,
+     and the access line a long count. Everything invented; the image is the project's stock study photo (`/courses/3.webp`). */
+  {
+    id: 'demo-fl-health-prelicensing',
+    title: 'Florida Health Insurance Pre-licensing',
+    imageUrl: '/courses/3.webp',
+    ...designDates({ myStatus: 'in-progress', enrolledAt: '2026-03-01', expiresAt: '2027-03-01' }),
+    description: 'Every topic on the Florida Health exam in self-paced lessons, with a practice quiz at the end of each one.',
+    actionLabel: 'Resume Course',
+    state: 'Florida',
+    category: 'Licensing',
+    lineOfAuthority: 'Health',
+    packageSummary:
+      'Our Standard package covers every topic on the Florida Health exam with self-paced lessons and practice quizzes, and is ideal for those who like to study on their own schedule.',
+    progress: 30,
   },
   {
     id: 'demo-ny-pc',
@@ -106,6 +127,26 @@ export const ATLAS_MY_COURSES: readonly AtlasCourseCardData[] = [
       "This continuing education course meets Florida's Preferred Business Practices requirement in one self-paced module, and is ideal for producers renewing their license on a tight timeline.",
     progress: 100,
   },
+  /* A SECOND COMPLETED CARD (2026-11-24, Jillienne: "show another completed course (make up the name and the image), and
+     make this Certificate link at the bottom show a Hourglass icon, and Certificate Pending") — finished, its certificate
+     NOT YET ISSUED, so the foot says Certificate Pending and the sheet offers no View Certificate. Everything invented; the
+     image is the project's stock photo `/courses/5.webp`. */
+  {
+    id: 'demo-fl-ethics-producers',
+    title: 'Florida Ethics for Insurance Producers',
+    imageUrl: '/courses/5.webp',
+    completed: true,
+    ...designDates({ myStatus: 'completed', enrolledAt: '2026-03-10', completedOn: '2026-04-28', expiresAt: '2027-03-10', score: 88 }),
+    description: 'The ethical duties of a Florida producer, with case studies drawn from Department of Financial Services actions.',
+    certificatePending: true,
+    actionLabel: 'Completed',
+    state: 'Florida',
+    category: 'Continuing Education',
+    lineOfAuthority: 'All Lines',
+    packageSummary:
+      'This continuing education course meets Florida\u2019s ethics requirement in one self-paced module. Its certificate is issued once the affidavit is signed.',
+    progress: 100,
+  },
   /* THE FOURTH CARD (2026-11-12, Eric): New York Personal Lines, EXPIRED — its access ran out partway through, so its button
      is Purchase Extension (not wired). Badge, date, progress and button INVENTED like the P&C card's. The image is the
      project's own stock homeowners photo (`/courses/0.webp`, a couple and an agent over a new home's keys) — personal lines,
@@ -129,27 +170,9 @@ export const ATLAS_MY_COURSES: readonly AtlasCourseCardData[] = [
       'Our Plus package adds flashcards and timed practice exams to the standard package and is ideal for those who want to test their readiness before exam day.',
     progress: 62,
   },
-  /* THE FIFTH CARD (2026-11-12, Eric): the NY P&C / L&H Refresher CE Package, FAILED — finished, its final exam not passed,
-     so its button is Retake Course (which is what makes the card read Failed). Everything but the title INVENTED. The image
-     is the project's stock agent-and-clients meeting (`/courses/6.webp`). */
-  {
-    id: 'demo-ny-pclh-refresher-ce',
-    title: 'FL Property, Casualty, Life, and Health Refresher CE Package',
-    imageUrl: '/courses/6.webp',
-    availableDate: 'January 15, 2027',
-    availableTime: '11:59 PM CST',
-    actionLabel: 'Retake Course',
-    state: 'Florida',
-    category: 'Continuing Education',
-    lineOfAuthority: 'Property, Casualty, Life and Health',
-    // Invented demo copy for the Course Details sheet (2026-11-18, Eric).
-    packageSummary:
-      'Our Refresher CE Package bundles the hours Florida requires across Property, Casualty, Life and Health into one purchase, and is ideal for producers who hold several lines of authority.',
-    progress: 87, // (2026-11-12, Eric; 100 first)
-  },
-  /* THE SIXTH CARD (2026-11-23): a FAILED practice exam, so the PRD's Failed row — "Access ends … · N days left", her score,
-     Retake Course — is on screen while the CE package card above stays out of scope. Everything invented; the image is the
-     P&C card's Florida street again (same line of authority, no new photo). */
+  /* THE FIFTH CARD (2026-11-23; the sixth until the CE package card left on 2026-11-24): a FAILED practice exam, so the PRD's
+     Failed row — the access line, her score, Retake Course — is on screen. Everything invented; the image is the P&C card's
+     Florida street again (same line of authority, no new photo). */
   {
     id: 'demo-fl-pc-practice-exam',
     title: 'Florida Property & Casualty Practice Exam',
@@ -163,9 +186,30 @@ export const ATLAS_MY_COURSES: readonly AtlasCourseCardData[] = [
     lineOfAuthority: 'Property & Casualty',
     packageSummary:
       'The practice exam comes with every Florida Property & Casualty package and can be retaken as often as you like while your access lasts.',
-    progress: 100,
+    progress: 87, // (2026-11-24, Jillienne: "change this progress made to the 87%"; 100 the day before)
   },
 ]
+
+/* THE CE PACKAGE CARD, OFF THE PAGE (2026-11-24, Jillienne, with it selected: "remove this version"). It was the fifth design
+   card from 2026-11-12 (Eric) and was out of scope for the Jan 12 release — left untouched while the PRD card took shape
+   around it — until she took it off the page. KEPT HERE, READ BY NOTHING, so putting it back is one line in the array
+   above (its Archive row says so); `atlasHomeCourseFor` no longer finds it, which is right, since no card opens it. */
+export const ATLAS_CE_PACKAGE_CARD: AtlasCourseCardData = {
+  id: 'demo-ny-pclh-refresher-ce',
+  title: 'FL Property, Casualty, Life, and Health Refresher CE Package',
+  imageUrl: '/courses/6.webp',
+  availableDate: 'January 15, 2027',
+  availableTime: '11:59 PM CST',
+  actionLabel: 'Retake Course',
+  state: 'Florida',
+  category: 'Continuing Education',
+  lineOfAuthority: 'Property, Casualty, Life and Health',
+  // Invented demo copy for the Course Details sheet (2026-11-18, Eric).
+  packageSummary:
+    'Our Refresher CE Package bundles the hours Florida requires across Property, Casualty, Life and Health into one purchase, and is ideal for producers who hold several lines of authority.',
+  progress: 87, // (2026-11-12, Eric; 100 first)
+}
+
 
 /** A design card's ISO dates → its date line AND the ISO fields themselves, so the card carries both. */
 function designDates(
@@ -279,6 +323,8 @@ export function atlasCourseCardFor(course: MyCourseRecord, today: Date = FIXTURE
        one place the real document URL will land), else the certificates page. Never undefined on a completed card: the
        PRD's "No dead ends" rules out a dead button. Not set on an unfinished course — it has no certificate to view. */
     certificateHref: completed ? (certificatePdfUrl(certificateForCourse(brand, course.id)) ?? CERTIFICATES_PAGE) : undefined,
+    // Not yet issued — the card says "Certificate Pending" rather than linking (2026-11-24).
+    certificatePending: completed && certificateStateForCourse(brand, course.id) === 'pending',
   }
 }
 
@@ -288,9 +334,8 @@ export function atlasCourseCardFor(course: MyCourseRecord, today: Date = FIXTURE
  * In the Home course head's wording and mm/dd/yyyy since 2026-11-24
  * (Jillienne: "Update Access Ends to match this style"):
  *
- *   Not Started · In Progress · Failed   Access Ends: 05/25/2026, 13 days to complete
- *   Expired                              Expired: 04/20/2026
- *   Completed                            Completed: 03/18/2026, Score 92%
+ *   Not Started · In Progress · Failed · Completed   Access Ends: 05/17/2026, (5 days)
+ *   Expired                                          Expired: 04/20/2026
  *
  * The bold part is `availableDate`; `dateLabel` leads it and `availableTime`
  * trails it, which is the shape `AtlasCourseCardData` already had. The days are
@@ -303,24 +348,23 @@ function dateLine(
   course: Pick<MyCourseRecord, 'myStatus' | 'status' | 'enrolledAt' | 'expiresAt' | 'completedOn' | 'score' | 'warnDays'>,
   today: Date,
 ): Pick<AtlasCourseCardData, 'dateLabel' | 'availableDate' | 'availableTime'> {
-  if (course.myStatus === 'completed') {
-    // `completedOn` is required in practice for a completed record; a fixture
-    // that forgot it falls back to the enrolment rather than rendering "undefined".
-    return {
-      dateLabel: 'Completed:',
-      availableDate: formatMilestoneDate(course.completedOn ?? course.enrolledAt),
-      availableTime: course.score != null ? `Score ${course.score}%` : undefined,
-    }
-  }
+  /* A COMPLETED COURSE SAYS WHEN ITS ACCESS ENDS, like a live one (2026-11-24, Jillienne: "also add this to the completed
+     cards") — access really does end then, certificate or no certificate. Its completion date is the status row's and its
+     score the pill's, so the "Completed: [date], Score N%" line this returned until that day is gone. No clock, no line. */
   if (!course.expiresAt) return { availableDate: '' }
+  if (course.myStatus === 'completed') {
+    const days = Math.max(0, usableDaysLeft(course.expiresAt, today) ?? 0)
+    return { dateLabel: 'Access Ends:', availableDate: formatMilestoneDate(course.expiresAt), availableTime: `(${days} ${days === 1 ? 'day' : 'days'})` }
+  }
   if (courseExpiryState({ ...course, status: course.status ?? course.myStatus }, today) === 'expired') {
     return { dateLabel: 'Expired:', availableDate: formatMilestoneDate(course.expiresAt) }
   }
   const days = Math.max(0, usableDaysLeft(course.expiresAt, today) ?? 0)
+  // "(293 days)" in parentheses (2026-11-24, Jillienne: "Access Ends: mm/dd/yyyy, (293 days)"; "293 days to complete" before).
   return {
     dateLabel: 'Access Ends:',
     availableDate: formatMilestoneDate(course.expiresAt),
-    availableTime: `${days} ${days === 1 ? 'day' : 'days'} to complete`,
+    availableTime: `(${days} ${days === 1 ? 'day' : 'days'})`,
   }
 }
 
@@ -362,13 +406,33 @@ function action(status: MyCourseRecord['myStatus']): Pick<AtlasCourseCardData, '
 export const ATLAS_HOME_COURSE_PARAM = 'atlasCourse'
 
 export function atlasHomeStateFor(card: AtlasCourseCardData): { progress: string; expiry: string } {
+  /* THE NEAREST PRESETS (2026-11-24; three coarse ones before — Developing 36% for anything in play, 30 days for anything
+     unbadged). Home itself reads the card's exact date and percent now (`AtlasHomeJillMain`, `cardCourse`); this sets the
+     two bar controls to the rows closest to them so the bar is nearly honest rather than wildly off. Completed and
+     Begin Course keep their own rungs; Expired keeps the picker's one expired row. */
   const progress = card.completed
     ? 'completed'
     : card.actionLabel === 'Begin Course'
       ? 'not-started'
-      : 'developing'
-  const expiry = card.badge === 'Expired' ? '-3' : card.badge === 'Due Soon' && !card.completed ? '7' : '30'
+      : nearestRung(card.progress ?? 0)
+  const expiry =
+    card.badge === 'Expired'
+      ? '-3'
+      : String(nearestExpiryRow(card.expiresAt ? (daysUntilIso(card.expiresAt, FIXTURE_TODAY) ?? 30) : 30))
   return { progress, expiry }
+}
+
+/** The ladder rung whose percent is closest to the card's — the readiness band and the checks follow it. */
+function nearestRung(percent: number): string {
+  let best = ATLAS_PROGRESS_LADDER[0]
+  for (const rung of ATLAS_PROGRESS_LADDER) if (Math.abs(rung.percent - percent) < Math.abs(best.percent - percent)) best = rung
+  return best.key
+}
+
+/** The Expires row closest to the card's days-until, among the positive rows. */
+function nearestExpiryRow(days: number): number {
+  const rows = EXPIRY_PICKER.map((o) => o.value).filter((v): v is number => typeof v === 'number' && v > 0)
+  return rows.reduce((best, v) => (Math.abs(v - days) < Math.abs(best - days) ? v : best), rows[0])
 }
 
 /** `?atlasCourse=` → that card's title and cover, from the design's three or

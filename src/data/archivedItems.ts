@@ -57,6 +57,18 @@ export type ArchivedItem = {
 export const ARCHIVED_ITEMS: ArchivedItem[] = [
   /* ── 2026-11-24, two design-bar controls retired from the PRD card work on feat/atlas-updates-11-23 ─────────── */
   {
+    id: 'atlas-my-courses-ce-package-card',
+    name: 'My Courses — the CE package design card',
+    what: 'The fifth of the Atlas My Courses page\u2019s design cards (2026-11-12, Eric): "FL Property, Casualty, Life, and Health Refresher CE Package", FAILED at 87%, Retake Course, an authored "January 15, 2027 · 11:59 PM CST" date. Out of scope for the Jan 12 PRD work from 2026-11-23, when the Failed row got a practice-exam card of its own.',
+    location:
+      'Kept VERBATIM as `ATLAS_CE_PACKAGE_CARD` in `src/data/atlasCourseCards.ts`, under `ATLAS_MY_COURSES` — an export nothing imports. The image, `public/courses/6.webp`, is the project\u2019s stock photo and stays.',
+    flag: 'None — a row of ATLAS_MY_COURSES, the design cards `atlas-courses-from-library:off` draws.',
+    dateRemoved: '2026-11-24',
+    reason: 'Jillienne, with the card selected on the PRD card page: "remove this version". A CE package is several courses sold as one purchase; the PRD\u2019s section 3 describes a course card, and this one read as a course that did not fit it.',
+    restoreNote:
+      'Paste `ATLAS_CE_PACKAGE_CARD` back into the `ATLAS_MY_COURSES` array in `src/data/atlasCourseCards.ts` (it stood fifth, before the practice exam) and delete the export. Its date is an authored string, not `designDates`, so the PRD card draws it as "January 15, 2027, 11:59 PM CST" rather than mm/dd/yyyy — give it `...designDates({ myStatus: \'failed\', enrolledAt, expiresAt })` if it is to match. `useMyCoursesCount` reads the array\u2019s length, so the header\u2019s count follows on its own.',
+  },
+  {
     id: 'atlas-header-logo-new',
     name: 'XCEL logo — the New lockup (design-bar control)',
     what: 'A Design-bar control, `atlas-header-logo` (2026-11-19, Eric), offering Figma "Atlas UX Design" 757:2138\u2019s new XCEL logo in the Atlas header beside the lockup drawn since 2026-09-09. Old / New; Old by default.',

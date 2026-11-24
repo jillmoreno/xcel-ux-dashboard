@@ -72,6 +72,10 @@ export type AtlasCourseCardData = {
    *  `certificatePdfUrl`; a course with no issued certificate falls back to the certificates page, because the
    *  PRD's "No dead ends" rules out a dead button. */
   certificateHref?: string
+  /** A completed course whose certificate is NOT YET ISSUED — something still owed (an affidavit, a survey, a proctor's
+   *  sign-off). The PRD card's foot says "Certificate Pending" with an hourglass instead of linking, and the sheet offers
+   *  no View Certificate (2026-11-24). `certificateStateForCourse` sets it on the library's records. */
+  certificatePending?: boolean
 }
 
 export function AtlasCourseCard({

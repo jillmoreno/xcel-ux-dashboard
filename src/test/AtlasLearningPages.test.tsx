@@ -349,10 +349,9 @@ describe('atlasCoursesFor — the library as Atlas cards', () => {
       const record = records.get(card.id)!
       expect(card.availableDate).not.toBe('')
       expect(record.expiresAt).toBeTruthy()
-      if (record.myStatus === 'completed') {
-        expect(card.completed).toBe(true)
-        expect(card.dateLabel).toBe('Completed:')
-      } else expect(['Access Ends:', 'Expired:']).toContain(card.dateLabel)
+      if (record.myStatus === 'completed') expect(card.completed).toBe(true)
+      // Live and completed alike say when access ends (2026-11-24); only an expired course says "Expired:".
+      expect(['Access Ends:', 'Expired:']).toContain(card.dateLabel)
     }
   })
 

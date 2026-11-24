@@ -4846,8 +4846,8 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
 
        ⚠ THE BASELINE ONLY, like `atlas-courses-card-style`, and only on its
        Atlas arm — the shared card is unaffected. The CE package card
-       (`demo-ny-pclh-refresher-ce`) is out of scope for the Jan 12 release and
-       is drawn from its unchanged data. */
+       (`demo-ny-pclh-refresher-ce`) was out of scope for the Jan 12 release
+       and is off the page since 2026-11-24 (`ATLAS_CE_PACKAGE_CARD`). */
     /* ON THE DESIGN BAR AS "Old card / New card" (2026-11-23, Jillienne: "add a design toggle that shows old card / new
        card"). Two named arms rather than a bare on/off switch so the bar says what each side IS. `?ff=…:off` still
        reaches the old card — the call site reads enabled AND the arm. */
@@ -4862,6 +4862,27 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
       { value: 'new', label: 'New card' },
       { value: 'old', label: 'Old card' },
     ],
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'atlas-courses-card-title-align',
+    /* WHERE A SHORT TITLE SITS IN ITS 60-TALL BOX — 2026-11-24, Jillienne:
+       "add a toggle that moves the title to the center of this section
+       vertically so i can show someone and make a decision". `top` (default,
+       her call earlier that day: "they should align to the top"); `center`,
+       which the box was for a few minutes before that. A design-bar control
+       on the PRD card only; the three-line clamp is the same either way. */
+    group: 'Widgets',
+    label: 'My Courses card — title',
+    description:
+      'Where a short title sits in the PRD card\u2019s fixed 60px title box. Top (default): the first line at the top, the slack below. Centred: the title in the middle of the box, the slack split above and below. Three-line titles fill the box either way.',
+    defaultEnabled: true,
+    defaultVariant: 'top',
+    variants: [
+      { value: 'top', label: 'Top' },
+      { value: 'center', label: 'Centred' },
+    ],
+    surface: 'design',
     page: 'dashboard-rebrand',
   },
   {

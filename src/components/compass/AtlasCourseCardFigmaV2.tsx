@@ -1,13 +1,13 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import { Link } from 'react-router-dom'
-import { AngleRightSolid, ArrowRight, EllipsisVerticalSolid } from '@/icons'
+import { AngleRightSolid, ArrowRight, Award, EllipsisVerticalSolid, HourglassClock } from '@/icons'
 import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { STATE_ABBR } from '@/data/catalogFixtures'
-import { formatMilestoneDate, usableDaysLeft } from '@/data/courseExpiry'
+import { EXPIRY_SOON_DAYS, courseExpiryTier, formatMilestoneDate, usableDaysLeft } from '@/data/courseExpiry'
 import { FIXTURE_TODAY } from '@/data/myCoursesFixtures'
 import { AtlasStatusPill, statusStrongFill, type AtlasCourseStatus } from './AtlasStatusPill'
 import type { AtlasCourseCardData } from './AtlasCourseCard'
-import { AtlasCourseDetailsSheet } from './AtlasCourseDetailsSheet'
+import { AtlasCourseDetailsSheetV2 } from './AtlasCourseDetailsSheetV2'
 
 /**
  * THE ATLAS COURSE CARD, TO THE MY COURSES PRD — 2026-11-23, Jillienne. Section 3 of the My Courses PRD (Chi Wang,
@@ -32,8 +32,8 @@ import { AtlasCourseDetailsSheet } from './AtlasCourseDetailsSheet'
  *      status itself — Failed, Expired.
  *   2. Purchase Extension still borrows the `secondary` outline; `actionStyle: 'expired'` (BUTTON_EXPIRED) stays unused.
  *
- * ⚠ THE CE PACKAGE CARD (`demo-ny-pclh-refresher-ce`) is out of scope for the Jan 12 release: its data is untouched, so
- * this card draws it with whatever it has — no description (the fallback), no score, its authored date.
+ * ⚠ THE CE PACKAGE CARD (`demo-ny-pclh-refresher-ce`) was out of scope for the Jan 12 release and is off the page since
+ * 2026-11-24 (Jillienne: "remove this version") — `ATLAS_CE_PACKAGE_CARD` in atlasCourseCards.ts, read by nothing.
  *
  * The 2026-11-12 card's own notes follow.
  *
@@ -82,24 +82,37 @@ export function AtlasCourseCardFigmaV2({
       : progress > 0
         ? 'In Progress'
         : 'Not Started'
-  /* THE LINE UNDER THE DATE (PRD section 3): a failed course shows her score, an expired one her last progress. Nothing on
-     the other three — the completed score is on the date line itself. */
-  const detail = failed && data.score != null ? `Score: ${data.score}%` : expired ? `Last progress: ${progress}%` : null
+  /* NO DATE BLOCK ON A FINISHED CARD (2026-11-24, Jillienne, with the expired and completed lines selected: "dont need
+     this, showing elsewhere on card"): the end date is on the Expired pill, the completion date on the status row, the score
+     on the pill, the last progress on the bar's marker. The failed card's "Score: 62%" line went with them for the same
+     reason — its pill carries the score. What is left is the access line on a live course, which nothing else says. */
+  const showDates = !expired // the completed card keeps its access line too (2026-11-24: "also add this to the completed cards")
   /* NO BUTTON, NO LINKS (2026-11-23, Jillienne) — the design bar's `atlas-courses-card-actions`: the card is the one action
      and Home has the buttons. The hover lift and focus ring (`.cre-atlas-card-v2`) are what is left to say so. */
   const actionsShown = useFeatureFlag('atlas-courses-card-actions').variant !== 'hidden'
+  // A short title at the top of its box, or centred — the design bar's `atlas-courses-card-title-align` (2026-11-24), to decide.
+  const titleCentred = useFeatureFlag('atlas-courses-card-title-align').variant === 'center'
   /* THE DUE SOON PILL COUNTS DOWN (2026-11-23, Jillienne, with the pill selected: "Access Ends <##> days") — the same
      `usableDaysLeft` the date line prints, so the two never disagree. A card with no date keeps "Due Soon". */
-  const pillStatus = statusFor(data, progress)
-  const daysLeft = pillStatus === 'due-soon' ? usableDaysLeft(data.expiresAt, FIXTURE_TODAY) : null
+  /* THE COUNTDOWN PILL IS THE LAST WEEK'S (2026-11-24, Jillienne: "Access ends indicator should only be showing if the
+     course is ending in 7 days or less") — `EXPIRY_SOON_DAYS`, Home's own amber tier, counted in usable days. The record's
+     "Due Soon" badge fires at the catalogue's sixty, which is right for a grid of thirteen and too early for this pill, so a
+     course outside the week wears the plain In Progress here. */
+  const usable = usableDaysLeft(data.expiresAt, FIXTURE_TODAY)
+  const rawStatus = statusFor(data, progress)
+  const pillStatus = rawStatus === 'due-soon' && (usable == null || usable > EXPIRY_SOON_DAYS) ? 'in-progress' : rawStatus
+  const daysLeft = pillStatus === 'due-soon' ? usable : null
   // …and the Completed and Failed pills carry the score — "Completed - Score: 92%", "Failed - Score: 62%" (2026-11-24,
   // Jillienne). No score, no suffix: the platform does not always know one on a failed course.
+  // …and the Expired pill carries the date it ended — "Expired - 04/20/2026" (2026-11-24, Jillienne). No date, "Expired".
   const pillLabel =
     daysLeft != null
       ? `Access Ends ${Math.max(0, daysLeft)} ${daysLeft === 1 ? 'day' : 'days'}`
       : (pillStatus === 'completed' || pillStatus === 'failed') && data.score != null
         ? `${pillStatus === 'completed' ? 'Completed' : 'Failed'} - Score: ${data.score}%`
-        : undefined
+        : pillStatus === 'expired' && data.expiresAt
+          ? `Expired - ${formatMilestoneDate(data.expiresAt)}`
+          : undefined
   /* THE RULED ROW ABBREVIATES THE STATE — "FL", not "Florida" (2026-11-23, Jillienne: "use the ruled row, have the state be
      abbreviated to help with wrapping issues"). `STATE_ABBR` is the catalog's map; a name it does not know, or a record
      that already carries the code (the library's `state: 'FL'`), passes through. The sheet keeps the full name. */
@@ -173,8 +186,8 @@ export function AtlasCourseCardFigmaV2({
           {/* ONE HEIGHT FOR EVERY TITLE (2026-11-24, Jillienne, with a three-line title selected: "every title section should
               be this height … add an ellipsis"): a 66-tall box — three lines of 22 — the title clamped to three lines
               with an ellipsis, a shorter title at the top of the box. */}
-          <div style={TITLE_BOX} data-testid="atlas-card-title-box">
-            <h3 style={TITLE}>{data.title}</h3>
+          <div style={{ ...TITLE_BOX, ...(titleCentred ? { alignItems: 'center' } : null) }} data-testid="atlas-card-title-box">
+            <h3 className="cre-atlas-card-v2-title" style={TITLE}>{data.title}</h3>
           </div>
           {/* NO DESCRIPTION (2026-11-24, Jillienne: "keep description hidden, and remove this flag"). It sat here under the title
               for a day, with "Description coming soon" as its fallback, behind `atlas-course-description` — decided hidden
@@ -227,9 +240,9 @@ export function AtlasCourseCardFigmaV2({
           given. In the Home course head's meta-row style since 2026-11-24 (Jillienne, with "Course Access Ends: 06/10/2026,
           29 days to complete" selected: "Update Access Ends to match this style. mm/dd/yyyy") — 11 / 14, the label at 500 in
           Neutral 700, the date and the day count at 600 in the primary ink, "to complete" back at 500. (Its Primary 200 rules
-          moved up under the title block the same hour.) An empty `availableDate` draws nothing. */}
-      <div style={DATES}>
-        {data.availableDate ? (
+          moved up under the title block the same hour.) Only on a LIVE course since the same day — see `showDates`. */}
+      {showDates && data.availableDate ? (
+        <div style={DATES}>
           <p style={DATE_ROW} data-testid="atlas-card-date">
             {data.dateLabel ? <span style={DATE_LABEL}>{data.dateLabel}</span> : null}
             <span style={DATE_VALUE}>
@@ -238,9 +251,8 @@ export function AtlasCourseCardFigmaV2({
             </span>
             {data.availableTime ? <DateTrail text={data.availableTime} /> : null}
           </p>
-        ) : null}
-        {detail ? <p style={DATE_LINE}>{detail}</p> : null}
-      </div>
+        </div>
+      ) : null}
       {actionsShown ? (
       <div style={ACTIONS_BLOCK}>
       <div style={ACTIONS}>
@@ -294,7 +306,7 @@ export function AtlasCourseCardFigmaV2({
           ) : null}
         </div>
         ) : null}
-        {data.completed ? (
+        {data.completed && !data.certificatePending ? (
           /* VIEW CERTIFICATE (PRD section 3) — a live link in the button's clothes, NOT the disabled "Completed" the card
              before it drew. It goes to the course's certificate; a course with no issued certificate goes to the
              certificates page, because a dead button is the one thing the PRD forbids. `stopPropagation` so the click does
@@ -325,7 +337,8 @@ export function AtlasCourseCardFigmaV2({
               ...(!onAction && onOpen ? { pointerEvents: 'none' as const } : null),
             }}
           >
-            {data.actionLabel}
+            {/* A finished course whose certificate is pending has nothing to view — Review Course, as the sheet says (2026-11-24). */}
+            {data.completed ? 'Review Course' : data.actionLabel}
           </button>
         )}
       </div>
@@ -355,7 +368,15 @@ export function AtlasCourseCardFigmaV2({
           {expired || failed ? (
             <span data-testid="atlas-card-progress-marker" style={{ ...BAR_MARKER, left: `${progress}%` }} />
           ) : (
-            <span style={{ ...BAR_FILL, width: `${progress}%`, background: statusStrongFill(statusFor(data, progress)) }} />
+            <span
+              style={{
+                ...BAR_FILL,
+                width: `${progress}%`,
+                // The live course's bar in the PRIMARY blue — the Resume button's (2026-11-24, Jillienne: "should be the same
+                // blue color as the primary cta"; the Info ramp's 400 before). The last week keeps its amber, the rest their own.
+                background: pillStatus === 'in-progress' ? 'var(--color-primary-500)' : statusStrongFill(pillStatus),
+              }}
+            />
           )}
         </div>
       </div>
@@ -363,6 +384,30 @@ export function AtlasCourseCardFigmaV2({
           the Details link in the bottom right of the card, with a arrow icon pointing right") — the Course Details sheet
           (2026-11-18, Eric), the three labels and the package paragraph. It sat under the button, centred, the day before. */}
       <div style={DETAILS_FOOT}>
+        {/* On a FINISHED course, "Certificate" at the left of the foot — the award glyph and the text link's style — to the
+            same place View Certificate goes (2026-11-24, Jillienne: "when completed, add another link style cta, on the left
+            of this line. it will be Award icon + Certificate"). Stops propagation, like every control on the card. */}
+        {data.completed && data.certificatePending ? (
+          /* NOT YET ISSUED (2026-11-24, Jillienne): an hourglass and "Certificate Pending", not a link — in the status row's
+              own text style, so it reads as a state like "Completed - 03/18/2026" above it rather than as an action. */
+          <span style={PENDING} data-testid="card-certificate-pending">
+            <HourglassClock size={12} aria-hidden />
+            Certificate Pending
+          </span>
+        ) : data.completed ? (
+          <Link
+            to={certificateTo ?? data.certificateHref ?? '/my-learning/certificates'}
+            className="cre-atlas-card-review"
+            onClick={(e) => e.stopPropagation()}
+            style={{ ...REVIEW_LINK, textDecoration: 'none' }}
+            data-testid="card-certificate-link"
+          >
+            <Award size={12} aria-hidden />
+            Certificate
+          </Link>
+        ) : (
+          <span aria-hidden />
+        )}
         <button
           type="button"
           className="cre-atlas-card-review"
@@ -378,7 +423,17 @@ export function AtlasCourseCardFigmaV2({
       </div>
     </article>
     {/* Outside the article, so a click inside the sheet does not bubble (through the portal) to the card's open. */}
-    <AtlasCourseDetailsSheet data={data} open={detailsOpen} onClose={() => setDetailsOpen(false)} />
+    {/* The PRD card's own sheet (2026-11-24) — the facts on one line each, a Description sub-header, and under the title
+        THE SAME BUTTONS HOME'S COURSE HEAD OFFERS when this course is active (Jillienne, the same day): Purchase Extension
+        inside the warning window or once access has gone (drawn, not wired — Home's own rule), Course Overview and
+        Begin / Resume / Retake / Review Course on a live course (both `onAction`, the course page), View Certificate on a
+        finished one (`certificateTo`), and Purchase Extension ALONE once access has ended, as Home reshapes it. */}
+    <AtlasCourseDetailsSheetV2
+      data={data}
+      open={detailsOpen}
+      onClose={() => setDetailsOpen(false)}
+      actions={<SheetActions data={data} expired={expired} onAction={onAction} certificateTo={certificateTo} />}
+    />
     </>
   )
 }
@@ -431,7 +486,8 @@ const TITLE_BLOCK: CSSProperties = {
   gap: 8,
   paddingTop: 4,
   paddingBottom: 8,
-  borderBottom: '1px solid var(--color-primary-200)',
+  // Primary 100, the card's own edge (2026-11-24, Jillienne: "reduce the weight of the divider line"; Primary 200 for an hour).
+  borderBottom: '1px solid var(--color-primary-100)',
 }
 /* The title and its Course Details link (2026-11-18, Eric; a rule under them that day, then removed). The pair stretches to the foot of its share of the row, which is
    what holds the pills at one height across the row. */
@@ -443,18 +499,21 @@ const TITLE_HEAD: CSSProperties = {
   gap: 6,
   // The rule under it went the same day (2026-11-18, Eric) — and with it the 12 that held it off the title.
 }
-/* The title's fixed box: three lines of 22, the title at its TOP (2026-11-24, Jillienne — centred for a few minutes: "they
-   should not be centered - they should align to the top"). */
-const TITLE_BOX: CSSProperties = { alignSelf: 'stretch', height: 66, display: 'flex', alignItems: 'flex-start' }
+/* The title's fixed box: three lines of 20, the title at its TOP (2026-11-24, Jillienne — centred for a few minutes: "they
+   should not be centered - they should align to the top"; 66 for three lines of 22 until the lines tightened later that day). */
+const TITLE_BOX: CSSProperties = { alignSelf: 'stretch', height: 60, display: 'flex', alignItems: 'flex-start' }
 const TITLE: CSSProperties = {
   margin: 0,
   fontFamily: 'var(--font-heading-serif)',
   fontWeight: 700,
-  // 18 / 22 (2026-11-23, Jillienne, with the title selected: "reduce font size") — the Figma card's own 18, on a line
-  // height that lets the serif breathe. The 2026-11-18 card keeps My Certificates' 22 / 24.
+  // 18 / 20 (2026-11-23, Jillienne, with the title selected: "reduce font size" — the Figma card's own 18; then 2026-11-24,
+  // "reduce the spacing between these 3 lines", 22 → 20). The 2026-11-18 card keeps My Certificates' 22 / 24.
   fontSize: 18,
-  lineHeight: '22px',
-  color: 'var(--color-text-primary)',
+  lineHeight: '20px',
+  // Charcoal at rest, black when the card is hovered (2026-11-24, Jillienne: "reduce the black font weight to more of a
+  // charcoal gray, will show black on hover") — Neutral 800; `.cre-atlas-card-v2:hover .cre-atlas-card-v2-title` in
+  // tokens.css lifts it to the primary ink with the card's lift.
+  color: 'var(--color-neutral-800)',
   // Three lines at most, then an ellipsis (2026-11-23, the scan; the fixed box the day after). The full title is the
   // article's accessible name either way.
   display: '-webkit-box',
@@ -480,18 +539,95 @@ const FACTS: CSSProperties = {
 }
 /* `MetaRule`, verbatim: a 1 × 12 hairline in the subtle border colour. */
 const FACT_RULE: CSSProperties = { width: 1, height: 12, background: 'var(--color-border-subtle)', flex: 'none' }
-/** The trailing part of the date line — "13 days to complete" splits into the count at 600 and the rest at 500; anything
- *  else ("Score 92%") is drawn whole at 600, like the date. */
-function DateTrail({ text }: { text: string }) {
-  const m = /^(\d+ days?)\s+(.*)$/.exec(text)
-  return m ? (
-    <span style={DATE_PAIR}>
-      <span style={DATE_VALUE}>{m[1]}</span>
-      <span style={DATE_LABEL}>{m[2]}</span>
-    </span>
-  ) : (
-    <span style={DATE_VALUE}>{text}</span>
+/**
+ * HOME'S BUTTONS FOR THIS COURSE, in the sheet (2026-11-24). The rule is `AtlasHomeJillMain`'s course head: Purchase
+ * Extension from the warning tier on (`courseExpiryTier` — the Home's own span, 7 usable days amber, 2 red) and alone once
+ * expired; Course Overview and the course's own verb while it is live; View Certificate at 100%. Purchase Extension is
+ * drawn and not wired, exactly as on Home — see the xcel-purchase-extension handoff.
+ */
+function SheetActions({
+  data,
+  expired,
+  onAction,
+  certificateTo,
+}: {
+  data: AtlasCourseCardData
+  expired: boolean
+  onAction?: () => void
+  certificateTo?: string
+}) {
+  const tier = courseExpiryTier({ status: data.completed ? 'completed' : 'in-progress', expiresAt: data.expiresAt }, FIXTURE_TODAY)
+  const extension = !data.completed && tier !== 'normal'
+  const verb = data.completed ? 'Review Course' : data.actionLabel
+  if (expired) {
+    return (
+      <button type="button" className="cre-atlas-card-primary" style={SHEET_BUTTON} data-testid="sheet-action">
+        Purchase Extension
+      </button>
+    )
+  }
+  return (
+    <>
+      {extension ? (
+        <button type="button" className="cre-atlas-card-outline" style={{ ...SHEET_BUTTON, ...SHEET_BUTTON_OUTLINE }} data-testid="sheet-action">
+          Purchase Extension
+        </button>
+      ) : null}
+      {data.completed && !data.certificatePending ? (
+        <Link
+          to={certificateTo ?? data.certificateHref ?? '/my-learning/certificates'}
+          className="cre-atlas-card-outline"
+          style={{ ...SHEET_BUTTON, ...SHEET_BUTTON_OUTLINE, ...BUTTON_LINK }}
+          data-testid="sheet-action"
+        >
+          View Certificate
+        </Link>
+      ) : null}
+      <button
+        type="button"
+        className="cre-atlas-card-outline"
+        style={{ ...SHEET_BUTTON, ...SHEET_BUTTON_OUTLINE }}
+        onClick={onAction}
+        disabled={!onAction}
+        data-testid="sheet-action"
+      >
+        Course Overview
+      </button>
+      <button type="button" className="cre-atlas-card-primary" style={SHEET_BUTTON} onClick={onAction} disabled={!onAction} data-testid="sheet-action">
+        {verb}
+      </button>
+    </>
   )
+}
+/* The sheet's buttons: the card's own button at its natural width (35 tall, 9 corners, 13.5 Bold). */
+const SHEET_BUTTON: CSSProperties = {
+  height: 35,
+  paddingLeft: 14,
+  paddingRight: 14,
+  boxSizing: 'border-box',
+  borderStyle: 'solid',
+  borderWidth: 1,
+  borderColor: 'transparent',
+  borderRadius: 9,
+  background: 'var(--color-primary-500)',
+  color: 'var(--color-fixed-light, #fff)',
+  fontFamily: 'var(--font-body)',
+  fontWeight: 700,
+  fontSize: 13.5,
+  lineHeight: '20.25px',
+  whiteSpace: 'nowrap',
+  cursor: 'pointer',
+}
+const SHEET_BUTTON_OUTLINE: CSSProperties = {
+  background: 'var(--color-fixed-light, #fff)',
+  borderColor: 'var(--color-primary-500)',
+  color: 'var(--color-primary-500)',
+}
+
+/** The trailing part of the date line — "(5 days)", drawn at the date's weight. */
+function DateTrail({ text }: { text: string }) {
+  // "(293 days)" since 2026-11-24 — one run in the value's weight. ("293 days" + "to complete" in two weights before.)
+  return <span style={DATE_VALUE}>{text}</span>
 }
 /* The date line and the detail under it; 12 under them before the button. */
 const DATES: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 4, paddingBottom: 12 }
@@ -507,16 +643,9 @@ const DATE_ROW: CSSProperties = {
   fontSize: 11,
   lineHeight: '14px',
 }
-const DATE_PAIR: CSSProperties = { display: 'inline-flex', alignItems: 'center', gap: 4 }
-const DATE_LABEL: CSSProperties = { fontWeight: 500, color: 'var(--color-neutral-700)' }
+// The label at the status row's weight — 400, like "In Progress" over the bar (2026-11-24, Jillienne; Home's 500 before).
+const DATE_LABEL: CSSProperties = { fontWeight: 400, color: 'var(--color-neutral-700)' }
 const DATE_VALUE: CSSProperties = { fontWeight: 600, color: 'var(--color-text-primary)' }
-const DATE_LINE: CSSProperties = {
-  margin: 0,
-  fontFamily: 'var(--font-body)',
-  fontSize: 12, // the description's and the labels' 12 (2026-11-23, the scan: the most decision-bearing line was the smallest)
-  lineHeight: '18px',
-  color: 'var(--color-text-secondary)',
-}
 /* The progress: its row, then the bar 10 under it — at the card's foot (2026-11-23), `marginTop: auto` pinning it low, 8 clear
    of whatever is above; "Details →" sits under it since 2026-11-24. The 16 under it went: the card's 24 is the space below. */
 const PROGRESS: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 10, marginTop: 'auto', paddingTop: 8 }
@@ -571,7 +700,20 @@ const REVIEW_LINK: CSSProperties = {
    HORIZONTAL — it shrank the full-width button to its label and pushed it right. The block carries the grid-row alignment. */
 const ACTIONS: CSSProperties = { display: 'flex', gap: 6, alignItems: 'flex-end' }
 /** The card's foot row: "Details →" at the right (2026-11-24). */
-const DETAILS_FOOT: CSSProperties = { display: 'flex', justifyContent: 'flex-end', paddingTop: 4 }
+/* "Certificate Pending": the status row's text — 11, the secondary ink, no weight — with the hourglass before it. */
+const PENDING: CSSProperties = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: 4,
+  fontFamily: 'var(--font-body)',
+  fontSize: 11,
+  lineHeight: '16px',
+  color: 'var(--color-text-secondary)',
+  whiteSpace: 'nowrap',
+}
+/* "Details →" at the right; on a finished course "Certificate" at the left (2026-11-24) — `space-between`, with an empty
+   span holding the left slot otherwise so Details stays put. */
+const DETAILS_FOOT: CSSProperties = { display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: 4 }
 /* The button row and "Course Details ›" under it, 8 apart, at the foot of the subgrid row (2026-11-23). */
 const ACTIONS_BLOCK: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 8, alignSelf: 'end' }
 

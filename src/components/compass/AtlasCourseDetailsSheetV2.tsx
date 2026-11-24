@@ -1,0 +1,179 @@
+import type { CSSProperties, ReactNode } from 'react'
+import { X } from '@/icons'
+import { Sheet } from '@/components/ui/Sheet'
+import { useSheetInset, useSheetTitleSerif } from '@/components/learning/useSheetTitleSerif'
+import type { AtlasCourseCardData } from './AtlasCourseCard'
+import { STATE_ABBR } from '@/data/catalogFixtures'
+
+/**
+ * THE PRD CARD'S COURSE DETAILS SHEET — 2026-11-24, Jillienne, on a COPY of `AtlasCourseDetailsSheet` (Eric's, 2026-11-18,
+ * which the 2026-11-18 card keeps). Two changes, both hers that day: each fact on ONE LINE, the label at the left and the
+ * value at the right ("have the Topic on left, and the detail on the right so these display in one line"); and a
+ * "Description" sub-header over the package paragraph ("this needs a 'Description' sub-header"). Everything else is the
+ * original's, whose notes follow.
+ *
+ * A MY COURSES CARD'S COURSE DETAILS — 2026-11-18, Eric: "remove the state, category and line of authority copy … move the
+ * deleted sections into a right hand side slide out sheet with its appropriate styling", and a paragraph under them on the
+ * course's package.
+ *
+ * The Atlas side sheet's own head, matched to Exam Details (`ExamDetailsPanel`) on purpose: Close top left, the eyebrow,
+ * the title in the heading serif and the 32 inset on the Atlas versions (`useSheetTitleSerif` / `useSheetInset`). The body
+ * is the three facts the card used to carry, then `packageSummary`. A fact the course does not have is not drawn.
+ */
+export function AtlasCourseDetailsSheetV2({
+  data,
+  open,
+  onClose,
+  actions,
+}: {
+  data: AtlasCourseCardData
+  open: boolean
+  onClose: () => void
+  /** THE COURSE'S BUTTONS, under the title — the same ones Home's course head offers when this course is active
+   *  (2026-11-24, Jillienne: "that sheet view should give the user the same ctas that are currently available as if this
+   *  course was active in the atlas home"). The card builds them; the sheet only places them. */
+  actions?: ReactNode
+}) {
+  const titleSerif = useSheetTitleSerif()
+  const sheetInset = useSheetInset()
+  const facts = [
+    { label: 'State', value: data.state },
+    { label: 'Category', value: data.category },
+    { label: 'Line of authority', value: data.lineOfAuthority },
+  ].filter((f): f is { label: string; value: string } => Boolean(f.value))
+  return (
+    <Sheet open={open} onClose={onClose} title={`${data.title} details`} width={480}>
+      <div style={{ flexShrink: 0, padding: '18px 22px 0', ...sheetInset }}>
+        <button type="button" onClick={onClose} className="cre-link-action cre-cta-ink" style={CLOSE}>
+          <X size={14} aria-hidden />
+          Close
+        </button>
+        <p style={EYEBROW}>Course Details</p>
+        <h2 style={{ ...TITLE, ...titleSerif }}>{data.title}</h2>
+        {/* The card's ruled labels row — FL | Licensing | Health — under the title, then a little room, then the buttons
+            (2026-11-24, Jillienne: "add this same style of line under the course title, then a little padding, and then the
+            available ctas"). The same values the body lists in full below. */}
+        {facts.length ? (
+          <div style={LABELS} data-testid="sheet-labels">
+            {facts.map((f, i) => (
+              <span key={f.label} style={{ display: 'contents' }}>
+                {i > 0 ? <span aria-hidden style={LABEL_RULE} /> : null}
+                <span>{f.label === 'State' ? (STATE_ABBR[f.value] ?? f.value) : f.value}</span>
+              </span>
+            ))}
+          </div>
+        ) : null}
+        {actions ? <div style={ACTIONS}>{actions}</div> : null}
+      </div>
+      <div style={{ ...BODY, ...sheetInset }}>
+        {facts.length ? (
+          <dl style={FACTS}>
+            {facts.map((f) => (
+              <div key={f.label} style={FACT_ROW}>
+                <dt style={FACT_LABEL}>{f.label}</dt>
+                <dd style={FACT_VALUE}>{f.value}</dd>
+              </div>
+            ))}
+          </dl>
+        ) : null}
+        {data.packageSummary ? (
+          <>
+            <h3 style={SUMMARY_HEAD}>Description</h3>
+            <p style={SUMMARY}>{data.packageSummary}</p>
+          </>
+        ) : null}
+      </div>
+    </Sheet>
+  )
+}
+
+/* Exam Details' head, verbatim. */
+const CLOSE: CSSProperties = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: 6,
+  background: 'transparent',
+  border: 'none',
+  padding: 0,
+  cursor: 'pointer',
+  fontFamily: 'var(--font-body)',
+  fontSize: 13,
+  fontWeight: 700,
+}
+const EYEBROW: CSSProperties = {
+  margin: '14px 0 0',
+  fontFamily: 'var(--font-body)',
+  fontSize: 10,
+  fontWeight: 600,
+  letterSpacing: '0.18em',
+  textTransform: 'uppercase',
+  color: 'var(--color-text-tertiary)',
+}
+const TITLE: CSSProperties = {
+  margin: '6px 0 0',
+  fontFamily: 'var(--font-heading)',
+  fontWeight: 700,
+  fontSize: 21,
+  lineHeight: '27px',
+  color: 'var(--color-text-primary)',
+}
+/* The labels row under the title — the card's `FACTS` row verbatim: 12 / 500, hairlines between, the secondary ink. */
+const LABELS: CSSProperties = {
+  display: 'flex',
+  flexWrap: 'wrap',
+  alignItems: 'center',
+  gap: 8,
+  rowGap: 4,
+  marginTop: 8,
+  color: 'var(--color-text-secondary)',
+  fontFamily: 'var(--font-body)',
+  fontSize: 12,
+  fontWeight: 500,
+  lineHeight: '16px',
+}
+const LABEL_RULE: CSSProperties = { width: 1, height: 12, background: 'var(--color-border-subtle)', flex: 'none' }
+/* The buttons under the labels, 8 apart, wrapping — Home's course head's row (2026-11-24); 16 below the labels. */
+const ACTIONS: CSSProperties = { display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 16 }
+const BODY: CSSProperties = { flex: 1, overflowY: 'auto', padding: '18px 22px 24px' }
+/* The facts as rows on the Atlas hairline — the label at the left, the value at the right, one line (2026-11-24). */
+const FACTS: CSSProperties = { margin: 0, padding: 0, borderTop: '1px solid var(--color-primary-200)' }
+const FACT_ROW: CSSProperties = {
+  display: 'flex',
+  alignItems: 'baseline',
+  justifyContent: 'space-between',
+  gap: 16,
+  padding: '12px 0',
+  borderBottom: '1px solid var(--color-primary-200)',
+}
+const FACT_LABEL: CSSProperties = {
+  margin: 0,
+  fontFamily: 'var(--font-body)',
+  fontSize: 12,
+  lineHeight: '18px',
+  color: 'var(--color-text-secondary)',
+}
+const FACT_VALUE: CSSProperties = {
+  margin: 0,
+  fontFamily: 'var(--font-body)',
+  fontSize: 14,
+  lineHeight: '20px',
+  fontWeight: 700,
+  color: 'var(--color-text-primary)',
+  textAlign: 'right',
+}
+/* "Description" over the package paragraph (2026-11-24): the facts' label face, one weight up. */
+const SUMMARY_HEAD: CSSProperties = {
+  margin: '20px 0 0',
+  fontFamily: 'var(--font-body)',
+  fontSize: 12,
+  lineHeight: '18px',
+  fontWeight: 700,
+  color: 'var(--color-text-secondary)',
+}
+const SUMMARY: CSSProperties = {
+  margin: '4px 0 0',
+  fontFamily: 'var(--font-body)',
+  fontSize: 14,
+  lineHeight: '22px',
+  color: 'var(--color-text-primary)',
+}
