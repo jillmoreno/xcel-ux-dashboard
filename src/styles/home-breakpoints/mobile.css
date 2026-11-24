@@ -416,79 +416,85 @@
   padding-left: 0.18em;
 }
 
-/* MY COURSES ON A PHONE (2026-11-04, Eric's request): Home's margins — 16 at
-   the sides — and the cards in one column, each laid on its side: a small
-   image on the left, the title, dates and button to its right. */
+/* MY COURSES ON A PHONE — the PRD card (2026-11-24, Jillienne, no designs: "use your best judgement"), keyed on the card's
+   own class hooks. Eric's 2026-11-04 rules for the earlier card matched its inline `repeat(auto-fill, 255px)` grid, which
+   the page no longer draws; this replaces them. The shape is his: Home's 16 at the sides, the cards in ONE column, each on
+   its side — a 96 square image at the left with the title beside it, then the labels, the access line, the progress and
+   the foot running full width under both. A list, not a wall of tall cards. The sheet fits the phone through
+   `overlayFrameBounds`. */
 [data-home-bp='mobile'] header:has([data-cta-id='nav.back-home']) {
-  /* 24 at the sides — the phone's text inset (2026-11-05, below). */
   padding: 16px 24px 0 !important;
   max-width: none !important;
 }
-[data-home-bp='mobile'] section:has(div[style*='repeat(auto-fill, 255px)']) {
+/* The shell's page column is sized for three cards beside Quick Links (MY_COURSES_PAGE_W, with a −70 right margin to
+   centre it); on the phone it is the phone's width, like Home's. */
+[data-home-bp='mobile'] .cre-platform-shell-grid > div:has(.cre-atlas-courses-grid) {
+  width: auto !important;
+  max-width: none !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+[data-home-bp='mobile'] section:has(.cre-atlas-courses-grid) {
   padding: 0 16px 40px !important;
 }
-/* The desktop grid's 250 column held Quick Links, which the phone puts in
-   the three-bar menu — so one column, and no room kept for it. */
-[data-home-bp='mobile'] div[style*='grid-template-columns: 250px'] {
-  display: block !important;
+[data-home-bp='mobile'] .cre-atlas-courses-grid {
+  grid-template-columns: minmax(0, 1fr) !important;
+  gap: 12px !important;
   margin-top: 16px !important;
 }
-[data-home-bp='mobile'] div[style*='grid-template-columns: 250px'] > :has(nav[aria-label='Quick links']) {
-  display: none !important;
-}
-[data-home-bp='mobile'] div[style*='repeat(auto-fill, 255px)'] {
-  grid-template-columns: minmax(0, 1fr) !important;
-}
-[data-home-bp='mobile'] div[style*='repeat(auto-fill, 255px)'] > article {
-  grid-row: auto !important;
-  grid-template-rows: none !important;
+[data-home-bp='mobile'] .cre-atlas-card-v2 {
+  display: grid !important;
   grid-template-columns: 96px minmax(0, 1fr) !important;
   column-gap: 16px !important;
   row-gap: 8px !important;
-  padding: 16px !important;
   align-items: start !important;
+  padding: 16px !important;
 }
-/* A 96 square beside the title; the dates and the button run under both,
-   from the image's left edge (same day, Eric's request — they sat in the
-   right column beside a tall image). */
-[data-home-bp='mobile'] div[style*='repeat(auto-fill, 255px)'] > article > :first-child {
+/* The image, a 96 square at the left; its pill keeps straddling the corner. */
+[data-home-bp='mobile'] .cre-atlas-card-v2__image {
   grid-column: 1 !important;
-  grid-row: 1 / span 2 !important;
+  grid-row: 1 !important;
 }
-[data-home-bp='mobile'] div[style*='repeat(auto-fill, 255px)'] > article > :first-child img {
+[data-home-bp='mobile'] .cre-atlas-card-v2__image img {
   width: 96px !important;
   height: 96px !important;
 }
-[data-home-bp='mobile'] div[style*='repeat(auto-fill, 255px)'] > article > :not(:first-child) {
-  grid-column: 1 / -1 !important;
-}
-/* The title beside the image, its rule 8 under it. `:not(:first-child)` only
-   to outrank the full-width rule above. */
-[data-home-bp='mobile'] div[style*='repeat(auto-fill, 255px)'] > article > h3:not(:first-child) {
+/* The title beside it, its box as tall as the image, the rule under both. */
+[data-home-bp='mobile'] .cre-atlas-card-v2__title {
   grid-column: 2 !important;
   grid-row: 1 !important;
-  align-self: stretch !important;
-  padding: 0 !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
   border-bottom: none !important;
+  min-height: 96px !important;
+  justify-content: center !important;
 }
-/* The button under the title, beside the image (same day, Eric's request);
-   the dates run full width below both. */
-[data-home-bp='mobile'] div[style*='repeat(auto-fill, 255px)'] > article > button:not(:first-child) {
-  grid-column: 2 !important;
-  grid-row: 2 !important;
-  align-self: end !important;
+[data-home-bp='mobile'] .cre-atlas-card-v2__title [data-testid='atlas-card-title-box'] {
+  height: auto !important;
+  min-height: 0 !important;
 }
-[data-home-bp='mobile'] div[style*='repeat(auto-fill, 255px)'] > article > div:nth-child(3) {
-  grid-row: 3 !important;
-  /* THE RULE MOVES HERE (same day, Eric's request): under the image and the
-     button, across the card's whole content width, over the dates — the
-     title's own goes. 8 above it (the row gap) and 8 below. */
-  border-top: 1px solid var(--color-border-subtle) !important;
-  padding-top: 8px !important;
-  margin-top: 4px !important;
+/* Everything else full width under the pair — the rule the title block lost sits over the labels. */
+[data-home-bp='mobile'] .cre-atlas-card-v2__labels,
+[data-home-bp='mobile'] .cre-atlas-card-v2__dates,
+[data-home-bp='mobile'] .cre-atlas-card-v2__actions,
+[data-home-bp='mobile'] .cre-atlas-card-v2__progress,
+[data-home-bp='mobile'] .cre-atlas-card-v2__foot {
+  grid-column: 1 / -1 !important;
 }
-[data-home-bp='mobile'] div[style*='repeat(auto-fill, 255px)'] > article > div:nth-child(3) {
+[data-home-bp='mobile'] .cre-atlas-card-v2__labels {
+  padding-top: 12px !important;
+  padding-bottom: 8px !important;
+  border-top: 1px solid var(--color-primary-100) !important;
+}
+[data-home-bp='mobile'] .cre-atlas-card-v2__dates {
   padding-bottom: 4px !important;
+}
+[data-home-bp='mobile'] .cre-atlas-card-v2__progress {
+  margin-top: 0 !important;
+  padding-top: 4px !important;
+}
+[data-home-bp='mobile'] .cre-atlas-card-v2__foot {
+  padding-top: 0 !important;
 }
 
 /* MY CERTIFICATES ON A PHONE (2026-11-04, Eric's request): Home's 16 at the

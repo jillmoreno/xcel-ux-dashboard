@@ -16,7 +16,7 @@ import { isAtlasCompassNavVersion, resolveDashboardVersion } from '@/data/dashbo
 import { useAccount } from '@/context/AccountContext'
 import { BrowserWindow, MobileScreen, Monitor, TabletScreen } from '@/icons'
 import { isTestSession } from '@/data/gatewayMode'
-import { useFeatureFlag } from '@/context/FeatureFlagContext'
+import { useFeatureFlag, useFeatureFlags } from '@/context/FeatureFlagContext'
 import { homeBreakpointFor } from '@/data/homeBreakpoints'
 import '@/styles/home-breakpoints/index.css'
 
@@ -186,23 +186,39 @@ export function DeviceFrame({ chrome, children }: { chrome?: ReactNode; children
 /** Three-way device segmented toggle for the (dark) PrototypeBar. */
 export function DeviceFrameToggle() {
   const { device, setDevice } = useDeviceFrame()
+  /* THE MOBILE ICON IS THE 402 BREAKPOINT (2026-11-24, Jillienne: "when the mobile icon is selected in the top, lets show
+     the responsiveness"). It sets Eric's Breakpoint control (`home-breakpoint`) to Mobile Portrait, which is what draws the
+     phone frame and scopes the phone stylesheets — one system, not a second 390-wide frame beside it. Desktop and the Demo
+     frame put the control back to Live. Tablet stays off for now. */
+  const { setVariant } = useFeatureFlags()
+  const phone = useFeatureFlag('home-breakpoint').variant === 'mobile'
   return (
     <div role="group" aria-label="Preview device size" className="cre-device-toggle">
-      {DEVICE_OPTIONS.map(({ id, label, Icon, disabled }) => (
-        <button
-          key={id}
-          type="button"
-          className="cre-device-toggle-btn"
-          aria-pressed={device === id}
-          aria-label={disabled ? `${label} view (not yet available)` : `${label} view`}
-          title={disabled ? `${label} view — not yet responsive` : `${label} view`}
-          disabled={disabled}
-          onClick={() => !disabled && setDevice(id)}
-          style={disabled ? { opacity: 0.4, cursor: 'not-allowed' } : undefined}
-        >
-          <Icon size={15} aria-hidden />
-        </button>
-      ))}
+      {DEVICE_OPTIONS.map(({ id, label, Icon, disabled }) => {
+        const pressed = id === 'mobile' ? phone : device === id && !phone
+        return (
+          <button
+            key={id}
+            type="button"
+            className="cre-device-toggle-btn"
+            aria-pressed={pressed}
+            aria-label={disabled ? `${label} view (not yet available)` : `${label} view`}
+            title={disabled ? `${label} view — not yet responsive` : `${label} view`}
+            disabled={disabled}
+            onClick={() => {
+              if (disabled) return
+              if (id === 'mobile') setVariant('home-breakpoint', 'mobile')
+              else {
+                setVariant('home-breakpoint', 'live')
+                setDevice(id)
+              }
+            }}
+            style={disabled ? { opacity: 0.4, cursor: 'not-allowed' } : undefined}
+          >
+            <Icon size={15} aria-hidden />
+          </button>
+        )
+      })}
     </div>
   )
 }
@@ -218,7 +234,8 @@ const DEVICE_OPTIONS: {
   { id: 'desktop-framed', label: 'Demo frame', Icon: BrowserWindow },
   { id: 'desktop', label: 'Desktop', Icon: Monitor },
   { id: 'tablet', label: 'iPad / Tablet', Icon: TabletScreen, disabled: true },
-  { id: 'mobile', label: 'Mobile', Icon: MobileScreen, disabled: true },
+  // Live since 2026-11-24 — the 402 breakpoint frame; see DeviceFrameToggle.
+  { id: 'mobile', label: 'Mobile', Icon: MobileScreen },
 ]
 
 const CONTENTS: CSSProperties = { display: 'contents' }

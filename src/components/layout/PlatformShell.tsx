@@ -2899,7 +2899,7 @@ function MyCoursesSection() {
             actionTo="/catalog"
           />
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: `repeat(auto-fill, ${ATLAS_COURSE_CARD_W}px)`, gap: 16 }}>
+          <div className="cre-atlas-courses-grid" style={{ display: 'grid', gridTemplateColumns: `repeat(auto-fill, ${ATLAS_COURSE_CARD_W}px)`, gap: 16 }}>
             {cards.map((c, i) =>
               /* Figma 706:2416's card (2026-11-12, Eric: "rework the course cards to match") — `AtlasCourseCard`, the 213:3619
                  card, is kept unreferenced for the way back (White's Primary 100 fill was its `activeFill`; this card is Primary

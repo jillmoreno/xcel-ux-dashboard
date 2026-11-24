@@ -134,7 +134,7 @@ const feature: PrototypeFeature = {
         ],
         edgeCases: [
           'Long course titles clamp to two lines; rows stay level because every card reserves the same title height whether it wraps or not.',
-          'Below about 700px the page is untested — the learning shell has no narrow layout yet, and the tablet and mobile buttons in the review bar are disabled.',
+          'On a phone — the review bar’s Mobile icon, which draws the 402 × 874 breakpoint frame — the cards run in one column, each on its side: a 96px image at the left, the title beside it, the labels, access line, progress and foot full width under both; the sheet fills the phone. A design-time breakpoint stylesheet (src/styles/home-breakpoints/mobile.css), not a shipping media query; tablet is still off.',
         ],
         designSpec: {
           tokens: [
@@ -309,6 +309,12 @@ const feature: PrototypeFeature = {
           status: 'Decided',
         },
         {
+          question: 'Does the phone layout ship, or stay a design-time breakpoint?',
+          decision:
+            'Design-time, for now (2026-11-24). The review bar’s Mobile icon draws the 402 × 874 breakpoint frame and the phone stylesheet applies inside it; a real phone browser still gets the desktop page. Shipping it means a media query on the browser’s width, and that only makes sense once the header and Home are responsive too — one page in a desktop shell is a half-built phone. Mobile only, this page only, the card on its side as the earlier card was laid out, the side sheet at the phone’s full width. Revisit with Home and the header together.',
+          status: 'Decided',
+        },
+        {
           question: 'How does the sheet present a deadline and the extension?',
           decision:
             'In a message box of its own above the course buttons (2026-11-24). Home’s tiers exactly — amber inside seven usable days, red inside two, neutral once access has ended — the quiet copy (the deadline alone, until product writes a line), and Purchase Extension in the box only, not in the button row. The button opens the XCEL storefront in a new tab — an extension is bought there, not in the LMS (Jillienne, the same day: "it goes to ecomm site"). The storefront’s root for now; which page sells an extension is the xcel-purchase-extension handoff’s open question. Home’s and the card’s own Purchase Extension stay drawn and unwired.',
@@ -380,7 +386,7 @@ const feature: PrototypeFeature = {
         'Replace the certificatePdfUrl stub with the real certificate document, so View Certificate opens the course’s own certificate rather than the page (2026-11-23).',
         'Carry the course id into the course page, so a card opens the course it names.',
         'Decide whether My Courses and My Certificates need a direct link, now that the side rail is off both pages.',
-        'Lay the page out below 700px, with the rest of the learning shell.',
+        'Lay out the tablet, which is still off; the phone layout stays a design-time breakpoint until the shell goes responsive end to end (decided 2026-11-24).',
         'Confirm that archived courses are meant to be unreachable from this page, rather than simply left out.',
       ],
     },

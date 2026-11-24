@@ -8,6 +8,7 @@ import { LearningPathsPanelProvider } from '@/components/learning/LearningPathsP
 import { JumpBackInPanelProvider } from '@/components/dashboard/JumpBackInPanelContext'
 import { PlatformShell } from '@/components/layout/PlatformShell'
 import { AtlasCourseCardFigmaV2 } from '@/components/compass/AtlasCourseCardFigmaV2'
+import { DeviceFrame, DeviceFrameProvider, DeviceFrameToggle } from '@/components/layout/DeviceFrameContext'
 import { ATLAS_MY_COURSES, atlasCoursesFor, atlasHomeStateFor } from '@/data/atlasCourseCards'
 import { myCoursesFor } from '@/data/myCoursesFixtures'
 
@@ -374,6 +375,51 @@ describe('the countdown pill', () => {
     expect(within(within(nfip).getByTestId('atlas-card-image')).getByText('In Progress')).toBeTruthy()
     const suitability = screen.getByRole('article', { name: 'Annuity Suitability Update' }) // 14 days left
     expect(within(within(suitability).getByTestId('atlas-card-image')).getByText('In Progress')).toBeTruthy()
+  })
+})
+
+describe('the phone', () => {
+  /* 2026-11-24, Jillienne: "when the mobile icon is selected in the top, lets show the responsiveness". The Mobile icon sets
+     Eric's Breakpoint control to Mobile Portrait; the frame scopes src/styles/home-breakpoints/mobile.css, which keys on
+     the class hooks pinned here (jsdom does not run the stylesheet). */
+  it('carries the class hooks the phone stylesheet keys on', () => {
+    renderShell(DESIGN_CARDS)
+    const card = screen.getByRole('article', { name: 'Florida Life and Health Pre-licensing' })
+    expect(card.className).toContain('cre-atlas-card-v2')
+    for (const hook of ['__image', '__title', '__labels', '__dates', '__progress', '__foot']) {
+      expect(card.querySelector(`.cre-atlas-card-v2${hook}`), hook).toBeTruthy()
+    }
+    expect(card.parentElement!.className).toContain('cre-atlas-courses-grid')
+  })
+
+  it('draws the app inside the 402 frame when the Mobile icon is pressed, and clears it on Desktop', () => {
+    // The toggle and the frame are AppLayout's, not the shell's — rendered on their own here, around a marker.
+    window.history.replaceState({}, '', '/dashboard-rebrand?demo=1')
+    render(
+      <MemoryRouter initialEntries={['/dashboard-rebrand?demo=1']}>
+        <AccountProvider>
+          <FeatureFlagProvider>
+            <DeviceFrameProvider>
+              <DeviceFrameToggle />
+              <DeviceFrame>
+                <div data-testid="inside" />
+              </DeviceFrame>
+            </DeviceFrameProvider>
+          </FeatureFlagProvider>
+        </AccountProvider>
+      </MemoryRouter>,
+    )
+    const mobile = screen.getByRole('button', { name: 'Mobile view' })
+    expect(mobile.hasAttribute('disabled')).toBe(false)
+    fireEvent.click(mobile)
+    const frame = document.querySelector('[data-home-bp="mobile"]') as HTMLElement
+    expect(frame).toBeTruthy()
+    expect(frame.style.width).toBe('402px')
+    expect(frame.querySelector('[data-testid="inside"]')).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'Mobile view' }).getAttribute('aria-pressed')).toBe('true')
+    fireEvent.click(screen.getByRole('button', { name: 'Desktop view' }))
+    expect(document.querySelector('[data-home-bp="mobile"]')).toBeNull()
+    expect(screen.getByRole('button', { name: 'Mobile view' }).getAttribute('aria-pressed')).toBe('false')
   })
 })
 

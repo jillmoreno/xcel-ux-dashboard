@@ -93,7 +93,9 @@ function computeToastAnchor(): { top: number; right: number } {
 const FULL_VIEWPORT: CSSProperties = { position: 'fixed', inset: 0 }
 
 function computeBounds(): CSSProperties {
-  const el = typeof document !== 'undefined' && document.querySelector('.cre-demo-stage-window')
+  // The breakpoint frame first (2026-11-24): a sheet opened inside the 402 phone slides against the phone's edge, not the
+  // real viewport's. The demo window as before when no breakpoint is drawn.
+  const el = typeof document !== 'undefined' && document.querySelector('.cre-bp-viewport, .cre-demo-stage-window')
   if (!el) return FULL_VIEWPORT
   const r = el.getBoundingClientRect()
   // Start below the browser-chrome (traffic-light) title strip so the overlay

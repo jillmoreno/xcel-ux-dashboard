@@ -168,14 +168,15 @@ export function AtlasCourseCardFigmaV2({
       data-cta-id={onOpen ? 'my-courses.card-open-home' : undefined}
       // The whole card opens Home in this course; a hover lift and a focus ring say so (the scan's finding — the card was
       // clickable with nothing but a cursor to show it). `.cre-atlas-card-v2` in tokens.css.
-      className={onOpen ? 'cre-atlas-card-v2' : undefined}
+      // Always classed (2026-11-24): the phone stylesheet keys on it and on the block classes below.
+      className="cre-atlas-card-v2"
       // ONE FILL FOR EVERY CARD (2026-11-23, Jillienne, with the completed card selected: "all cards will have this background
       // color, slightly lighter") — the finished card no longer steps back; `steppedBack` still picks the links and the bar.
       style={{ ...CARD, ...(onOpen ? { cursor: 'pointer' } : null) }}
     >
       {/* The image, with the status pill over its top-left corner (2026-11-23, Jillienne — the shared card's badges sit the
           same way). One pill, the most pressing: the clock before the course's own state. Expired is charcoal here. */}
-      <div style={IMAGE_WRAP} data-testid="atlas-card-image">
+      <div className="cre-atlas-card-v2__image" style={IMAGE_WRAP} data-testid="atlas-card-image">
         <img src={data.imageUrl} alt="" aria-hidden style={IMAGE} />
         <span style={PILL_ON_IMAGE}>
           <AtlasStatusPill
@@ -188,7 +189,7 @@ export function AtlasCourseCardFigmaV2({
         </span>
       </div>
       {/* The title, then its pill under it — 10 apart, 4 above and below (Figma 710:2526). */}
-      <div style={TITLE_BLOCK}>
+      <div className="cre-atlas-card-v2__title" style={TITLE_BLOCK}>
         {/* The title, then "Course Details ›" under it, then the rule (2026-11-18, Eric) — the link in Review Course's style,
             opening the facts the card used to carry in a sheet from the right. */}
         {/* The title alone — "Course Details ›" moved to the foot of the card, under the button (2026-11-23, Jillienne:
@@ -239,7 +240,7 @@ export function AtlasCourseCardFigmaV2({
           2026-11-24 (Jillienne: "set this one as default, remove the other options and this flag"); a stacked icon-led
           block and one "State: Florida" line per fact were on the design bar beside it for a day (`atlas-courses-card-meta`,
           commit a3990f69 the last with them — an Archive row says how to bring them back). */}
-      <div style={FACTS} data-testid="atlas-card-facts">
+      <div className="cre-atlas-card-v2__labels" style={FACTS} data-testid="atlas-card-facts">
         {facts.map((v, i) => (
           <span key={v} style={{ display: 'contents' }}>
             {i > 0 ? <span aria-hidden style={FACT_RULE} /> : null}
@@ -253,7 +254,7 @@ export function AtlasCourseCardFigmaV2({
           Neutral 700, the date and the day count at 600 in the primary ink, "to complete" back at 500. (Its Primary 200 rules
           moved up under the title block the same hour.) Only on a LIVE course since the same day — see `showDates`. */}
       {showDates && data.availableDate ? (
-        <div style={DATES}>
+        <div className="cre-atlas-card-v2__dates" style={DATES}>
           <p style={DATE_ROW} data-testid="atlas-card-date">
             {data.dateLabel ? <span style={DATE_LABEL}>{data.dateLabel}</span> : null}
             <span style={DATE_VALUE}>
@@ -265,7 +266,7 @@ export function AtlasCourseCardFigmaV2({
         </div>
       ) : null}
       {actionsShown ? (
-      <div style={ACTIONS_BLOCK}>
+      <div className="cre-atlas-card-v2__actions" style={ACTIONS_BLOCK}>
       <div style={ACTIONS}>
         {/* The ⋮ and its menu, OFF for now (2026-11-17, Eric: "turn off the kebab menu for now") — built and kept; set
             SHOW_CARD_MENU true to bring it back. The main button takes the row. */}
@@ -358,13 +359,13 @@ export function AtlasCourseCardFigmaV2({
       {/* THE PROGRESS, AT THE FOOT OF THE CARD (2026-11-23, Jillienne: "move the progress bar to the bottom of the card") — the
           status row over the bar, pushed to the card's bottom edge, so across a row the bars sit level again whatever the
           titles above them do. The same block opens the sheet since 2026-11-24 (`ProgressBlock`). */}
-      <div style={PROGRESS}>
+      <div className="cre-atlas-card-v2__progress" style={PROGRESS}>
         <ProgressBlock title={data.title} status={status} progress={progress} pillStatus={pillStatus} finished={expired || failed} />
       </div>
       {/* "Details →" AT THE BOTTOM RIGHT, on every card whatever the actions control says (2026-11-24, Jillienne: "bring back
           the Details link in the bottom right of the card, with a arrow icon pointing right") — the Course Details sheet
           (2026-11-18, Eric), the three labels and the package paragraph. It sat under the button, centred, the day before. */}
-      <div style={DETAILS_FOOT}>
+      <div className="cre-atlas-card-v2__foot" style={DETAILS_FOOT}>
         {/* On a FINISHED course, "Certificate" at the left of the foot — the award glyph and the text link's style — to the
             same place View Certificate goes (2026-11-24, Jillienne: "when completed, add another link style cta, on the left
             of this line. it will be Award icon + Certificate"). Stops propagation, like every control on the card. */}
