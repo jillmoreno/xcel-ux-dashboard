@@ -335,7 +335,7 @@ describe('the actions toggle — atlas-courses-card-actions', () => {
     const cards = screen.getAllByRole('article')
     expect(cards).toHaveLength(ATLAS_MY_COURSES.length)
     for (const card of cards) {
-      expect(within(card).queryAllByRole('button')).toHaveLength(0)
+      expect(within(card).queryAllByRole('button').map((b) => b.textContent)).toEqual(['Details'])
       expect(within(card).queryAllByRole('link')).toHaveLength(0)
     }
   })
@@ -345,7 +345,8 @@ describe('the actions toggle — atlas-courses-card-actions', () => {
     const cards = screen.getAllByRole('article')
     expect(cards).toHaveLength(ATLAS_MY_COURSES.length)
     for (const card of cards) {
-      expect(within(card).queryAllByRole('button')).toHaveLength(0)
+      // The one control left is "Details →" (2026-11-24) — the sheet, not an action on the course.
+      expect(within(card).queryAllByRole('button').map((b) => b.textContent)).toEqual(['Details'])
       expect(within(card).queryAllByRole('link')).toHaveLength(0)
       expect(card.tabIndex).toBe(0)
       expect(card.className).toContain('cre-atlas-card-v2')
@@ -383,6 +384,11 @@ describe('the status pill on the image', () => {
     // …and the Completed pill carries the score (2026-11-24).
     const done = screen.getByRole('article', { name: 'FL Preferred Business Practices for the Insurance Producer' })
     expect(within(within(done).getByTestId('atlas-card-image')).getByText('Completed - Score: 92%')).toBeTruthy()
+    // The Failed pill too, when the score is known — and "Failed" alone when it is not (the CE package card has none).
+    const failedWithScore = screen.getByRole('article', { name: 'Florida Property & Casualty Practice Exam' })
+    expect(within(within(failedWithScore).getByTestId('atlas-card-image')).getByText('Failed - Score: 62%')).toBeTruthy()
+    const failedNoScore = screen.getByRole('article', { name: 'FL Property, Casualty, Life, and Health Refresher CE Package' })
+    expect(within(within(failedNoScore).getByTestId('atlas-card-image')).getByText('Failed')).toBeTruthy()
     expect(within(card).getByTestId('atlas-card-date').textContent).toContain('13 days left')
     expect(frame.compareDocumentPosition(within(card).getByRole('heading')) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
   })
@@ -393,7 +399,8 @@ describe('the status pill on the image', () => {
     const bar = within(card).getByRole('progressbar')
     const date = within(card).getByTestId('atlas-card-date')
     expect(date.compareDocumentPosition(bar) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
-    expect(card.lastElementChild!.contains(bar)).toBe(true)
+    // The progress is the second-to-last block; "Details →" closes the card (2026-11-24).
+    expect(card.lastElementChild!.previousElementSibling!.contains(bar)).toBe(true)
   })
 
   it('lays the card out as its own column — off the shared subgrid rows (2026-11-23)', () => {
@@ -401,6 +408,20 @@ describe('the status pill on the image', () => {
     const card = screen.getByRole('article', { name: 'Florida Life and Health Pre-licensing' })
     expect(card.style.display).toBe('flex')
     expect(card.style.gridTemplateRows).toBe('')
+  })
+
+  it('marks, rather than fills, the progress on an expired or failed card (2026-11-24)', () => {
+    renderShell(DESIGN_CARDS)
+    const expiredCard = screen.getByRole('article', { name: 'Florida Personal Lines Pre-licensing' })
+    const marker = within(expiredCard).getByTestId('atlas-card-progress-marker')
+    expect(marker.style.left).toBe('62%')
+    expect(marker.style.width).toBe('2px')
+    expect(within(expiredCard).getByRole('progressbar').querySelectorAll('span')).toHaveLength(1)
+    const failedCard = screen.getByRole('article', { name: 'Florida Property & Casualty Practice Exam' })
+    expect(within(failedCard).getByTestId('atlas-card-progress-marker').style.left).toBe('100%')
+    // A live card keeps its fill.
+    const live = screen.getByRole('article', { name: 'Florida Life and Health Pre-licensing' })
+    expect(within(live).queryByTestId('atlas-card-progress-marker')).toBeNull()
   })
 
   it('draws a light grey track under the fill', () => {
@@ -416,29 +437,40 @@ describe('the Expired pill', () => {
      catalog is unchanged, so the 2026-11-18 card keeps Error 100 (pinned under "the flag off"). */
   it('is charcoal — Neutral 800 with light ink — on the PRD card', () => {
     renderShell(DESIGN_CARDS)
-    const pill = screen.getByText('Expired', { selector: 'span' })
+    // The label sits in an inner span since 2026-11-24; the pill is its parent.
+    const pill = screen.getByText('Expired', { selector: 'span' }).parentElement!
     expect(pill.style.background).toContain('--color-neutral-800')
     expect(pill.style.color).toContain('--color-neutral-50')
   })
 
   it('leaves the other five pills on the catalog’s fills', () => {
     renderShell(DESIGN_CARDS)
-    expect(screen.getByText(/^Access Ends \d+ days?$/, { selector: 'span' }).style.background).toContain('--color-warning-300')
-    expect(screen.getAllByText('Failed', { selector: 'span' })[0].style.background).toContain('--color-error-100')
+    expect(screen.getByText(/^Access Ends \d+ days?$/, { selector: 'span' }).parentElement!.style.background).toContain('--color-warning-300')
+    expect(screen.getAllByText(/^Failed/, { selector: 'span' })[0].parentElement!.style.background).toContain('--color-error-100')
   })
 })
 
-describe('Course Details', () => {
-  /* 2026-11-23, Jillienne: "course details link should be under the primary cta at bottom of card". Under the title on
-     the card before — pinned under "the flag off". */
-  it('sits under the button, not under the title, on the PRD card', () => {
-    renderShell(DESIGN_CARDS)
+describe('Details →', () => {
+  /* 2026-11-24, Jillienne: "bring back the Details link in the bottom right of the card, with a arrow icon pointing right,
+     clicking it will trigger the sheet view". Under the title on the 2026-11-18 card, under the button for a day. */
+  it('is the last thing on the card, after the progress bar, whatever the actions control says', () => {
+    for (const q of [DESIGN_CARDS, `${DESIGN_CARDS},atlas-courses-card-actions:hidden`]) {
+      cleanup()
+      renderShell(q)
+      const card = screen.getByRole('article', { name: 'Florida Life and Health Pre-licensing' })
+      const details = within(card).getByRole('button', { name: 'Details' })
+      expect(details.querySelector('svg')).toBeTruthy()
+      expect(within(card).getByRole('progressbar').compareDocumentPosition(details) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+      expect(card.lastElementChild!.contains(details)).toBe(true)
+    }
+  })
+
+  it('opens the Course Details sheet, and does not open Home', () => {
+    renderShell(`${DESIGN_CARDS},atlas-courses-card-actions:hidden`)
     const card = screen.getByRole('article', { name: 'Florida Life and Health Pre-licensing' })
-    const button = within(card).getByRole('button', { name: 'Resume Course' })
-    const details = within(card).getByRole('button', { name: 'Course Details' })
-    // DOM order IS visual order here — the link follows the button, and both come after the title.
-    expect(button.compareDocumentPosition(details) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
-    expect(within(card).getByRole('heading').compareDocumentPosition(details) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    fireEvent.click(within(card).getByRole('button', { name: 'Details' }))
+    expect(screen.getByRole('dialog', { name: 'Florida Life and Health Pre-licensing details' })).toBeTruthy()
+    expect(screen.getByRole('article', { name: 'Florida Life and Health Pre-licensing' })).toBeTruthy()
   })
 })
 
@@ -457,7 +489,7 @@ describe('the flag off', () => {
     expect(screen.queryByTestId('atlas-card-date')).toBeNull()
   })
 
-  it('keeps Course Details under the title', () => {
+  it('keeps Course Details under the title (the 2026-11-18 card)', () => {
     renderShell(`section=courses&version=${BASELINE}&ff=atlas-courses-from-library:off,atlas-courses-card-prd-fields:off`)
     const card = screen.getByRole('article', { name: 'Florida Life and Health Pre-licensing' })
     const button = within(card).getByRole('button', { name: 'Resume Course' })
@@ -467,7 +499,7 @@ describe('the flag off', () => {
 
   it('keeps the Expired pill on Error 100 — the pill catalog is untouched', () => {
     renderShell(`section=courses&version=${BASELINE}&ff=atlas-courses-from-library:off,atlas-courses-card-prd-fields:off`)
-    const pill = screen.getByText('Expired', { selector: 'span' })
+    const pill = screen.getByText('Expired', { selector: 'span' }).parentElement!
     expect(pill.style.background).toContain('--color-error-100')
   })
 })

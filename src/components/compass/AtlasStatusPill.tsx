@@ -47,6 +47,7 @@ export function AtlasStatusPill({
   fill: fillOverride,
   ink,
   label: labelOverride,
+  iconNudge = 1,
 }: {
   status: AtlasCourseStatus
   /** A different fill for this one pill (2026-11-23, Jillienne: the PRD card's Expired pill in charcoal). ADDITIVE — a
@@ -57,14 +58,17 @@ export function AtlasStatusPill({
   /** A different label for this one pill (2026-11-23, Jillienne: the PRD card's Due Soon reads "Access Ends N days").
    *  Additive like `fill` — absent, the catalog's label. */
   label?: string
+  /** How far the icon sits below centre — 1 as drawn (2026-11-12, Eric); the PRD card passes 0 (2026-11-24, Jillienne:
+   *  "these 2 things should be centered vertically"). Additive: absent, the 1. */
+  iconNudge?: number
 }) {
   const { label: catalogLabel, fill, Icon } = PILLS[status]
   const label = labelOverride ?? catalogLabel
   return (
     <span style={{ ...PILL, background: fillOverride ?? fill, ...(ink ? { color: ink } : null) }}>
-      {/* 1 lower than centred (2026-11-12, Eric). */}
-      <Icon aria-hidden style={{ width: 10, height: 10, flex: 'none', position: 'relative', top: 1 }} />
-      {label}
+      {/* 1 lower than centred (2026-11-12, Eric) — unless the caller says otherwise. */}
+      <Icon aria-hidden style={{ width: 10, height: 10, flex: 'none', position: 'relative', top: iconNudge }} />
+      <span style={{ lineHeight: '10px' }}>{label}</span>
     </span>
   )
 }

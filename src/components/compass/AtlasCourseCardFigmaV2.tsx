@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import { Link } from 'react-router-dom'
-import { AngleRightSolid, EllipsisVerticalSolid, LocationDotRegular } from '@/icons'
+import { AngleRightSolid, ArrowRight, EllipsisVerticalSolid, LocationDotRegular } from '@/icons'
 import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { STATE_ABBR } from '@/data/catalogFixtures'
 import { formatMilestoneDate, usableDaysLeft } from '@/data/courseExpiry'
@@ -98,12 +98,13 @@ export function AtlasCourseCardFigmaV2({
      `usableDaysLeft` the date line prints, so the two never disagree. A card with no date keeps "Due Soon". */
   const pillStatus = statusFor(data, progress)
   const daysLeft = pillStatus === 'due-soon' ? usableDaysLeft(data.expiresAt, FIXTURE_TODAY) : null
-  // …and the Completed pill carries the score — "Completed - Score: 92%" (2026-11-24, Jillienne). No score, no suffix.
+  // …and the Completed and Failed pills carry the score — "Completed - Score: 92%", "Failed - Score: 62%" (2026-11-24,
+  // Jillienne). No score, no suffix: the platform does not always know one on a failed course.
   const pillLabel =
     daysLeft != null
       ? `Access Ends ${Math.max(0, daysLeft)} ${daysLeft === 1 ? 'day' : 'days'}`
-      : pillStatus === 'completed' && data.score != null
-        ? `Completed - Score: ${data.score}%`
+      : (pillStatus === 'completed' || pillStatus === 'failed') && data.score != null
+        ? `${pillStatus === 'completed' ? 'Completed' : 'Failed'} - Score: ${data.score}%`
         : undefined
   /* THE RULED ROW ABBREVIATES THE STATE — "FL", not "Florida" (2026-11-23, Jillienne: "use the ruled row, have the state be
      abbreviated to help with wrapping issues"). `STATE_ABBR` is the catalog's map; a name it does not know, or a record
@@ -163,6 +164,7 @@ export function AtlasCourseCardFigmaV2({
           <AtlasStatusPill
             status={pillStatus}
             label={pillLabel}
+            iconNudge={0}
             {...(pillStatus === 'expired' ? { fill: 'var(--color-neutral-800)', ink: 'var(--color-neutral-50)' } : null)}
           />
         </span>
@@ -352,20 +354,6 @@ export function AtlasCourseCardFigmaV2({
           </button>
         )}
       </div>
-      {/* "Course Details ›" under the button, centred (2026-11-23, Jillienne) — the sheet with the three labels and the
-          package paragraph. Under the title on the card before. */}
-      <button
-        type="button"
-        className="cre-atlas-card-review"
-        onClick={(e) => {
-          e.stopPropagation()
-          setDetailsOpen(true)
-        }}
-        style={DETAILS_LINK}
-      >
-        Course Details
-        <AngleRightSolid size={11} aria-hidden style={{ width: 6 }} />
-      </button>
       </div>
       ) : null}
       {/* THE PROGRESS, AT THE FOOT OF THE CARD (2026-11-23, Jillienne: "move the progress bar to the bottom of the card") — the
@@ -386,9 +374,32 @@ export function AtlasCourseCardFigmaV2({
           style={BAR_TRACK}
         >
           {/* The fill in the 400 of the card's status colour (2026-11-12, Eric; Primary 500, then the pill's own fill). */}
-          {/* …but Primary 200 on an expired or failed card (2026-11-12, Eric). */}
-          <span style={{ ...BAR_FILL, width: `${progress}%`, background: expired || failed ? 'var(--color-primary-200)' : statusStrongFill(statusFor(data, progress)) }} />
+          {/* …but on an expired or failed card — "Progress Made" — NO FILL: a 2-wide charcoal MARKER where the progress
+              reached, on the empty grey track (2026-11-24, Jillienne: "add a marker line where the 62% would be in the line,
+              do not fill it with color"). Primary 200 fill before (2026-11-12, Eric). */}
+          {expired || failed ? (
+            <span data-testid="atlas-card-progress-marker" style={{ ...BAR_MARKER, left: `${progress}%` }} />
+          ) : (
+            <span style={{ ...BAR_FILL, width: `${progress}%`, background: statusStrongFill(statusFor(data, progress)) }} />
+          )}
         </div>
+      </div>
+      {/* "Details →" AT THE BOTTOM RIGHT, on every card whatever the actions control says (2026-11-24, Jillienne: "bring back
+          the Details link in the bottom right of the card, with a arrow icon pointing right") — the Course Details sheet
+          (2026-11-18, Eric), the three labels and the package paragraph. It sat under the button, centred, the day before. */}
+      <div style={DETAILS_FOOT}>
+        <button
+          type="button"
+          className="cre-atlas-card-review"
+          onClick={(e) => {
+            e.stopPropagation()
+            setDetailsOpen(true)
+          }}
+          style={REVIEW_LINK}
+        >
+          Details
+          <ArrowRight size={11} aria-hidden />
+        </button>
       </div>
     </article>
     {/* Outside the article, so a click inside the sheet does not bubble (through the portal) to the card's open. */}
@@ -506,8 +517,8 @@ const DATE_LINE: CSSProperties = {
   lineHeight: '18px',
   color: 'var(--color-text-secondary)',
 }
-/* The progress: its row, then the bar 10 under it — at the card's foot (2026-11-23), `marginTop: auto` pinning it to the bottom
-   edge, 8 clear of whatever is above. The 16 under it went: the card's own 24 is the space below now. */
+/* The progress: its row, then the bar 10 under it — at the card's foot (2026-11-23), `marginTop: auto` pinning it low, 8 clear
+   of whatever is above; "Details →" sits under it since 2026-11-24. The 16 under it went: the card's 24 is the space below. */
 const PROGRESS: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 10, marginTop: 'auto', paddingTop: 8 }
 const PROGRESS_ROW: CSSProperties = {
   display: 'flex',
@@ -530,6 +541,9 @@ const BAR_TRACK: CSSProperties = {
   overflow: 'hidden',
 }
 const BAR_FILL: CSSProperties = { position: 'absolute', top: 0, bottom: 0, left: 0, borderRadius: 2.5, background: 'var(--color-primary-500)' }
+/* The Progress Made marker (2026-11-24): a 2-wide Neutral 800 tick the track's full height, centred on the progress point —
+   so 100% sits inside the right edge rather than past it. */
+const BAR_MARKER: CSSProperties = { position: 'absolute', top: 0, bottom: 0, width: 2, marginLeft: -1, background: 'var(--color-neutral-800)' }
 /* The ⋮ and the main button, 6 apart, 35 tall, 9 corners — at the foot of their subgrid row so the row's buttons line up. */
 /** The ⋮ beside the main button — off since 2026-11-17 (Eric). */
 const SHOW_CARD_MENU = false
@@ -556,8 +570,8 @@ const REVIEW_LINK: CSSProperties = {
 /* ⚠ NO `alignSelf: 'end'` HERE any more (2026-11-23): the row sits inside ACTIONS_BLOCK, a flex COLUMN, where align-self is
    HORIZONTAL — it shrank the full-width button to its label and pushed it right. The block carries the grid-row alignment. */
 const ACTIONS: CSSProperties = { display: 'flex', gap: 6, alignItems: 'flex-end' }
-/** "Course Details ›" in the text link's style, centred under the full-width button (2026-11-23). */
-const DETAILS_LINK: CSSProperties = { ...REVIEW_LINK, alignSelf: 'center' }
+/** The card's foot row: "Details →" at the right (2026-11-24). */
+const DETAILS_FOOT: CSSProperties = { display: 'flex', justifyContent: 'flex-end', paddingTop: 4 }
 /* The three label layouts (2026-11-23). STACKED: two lines, 2 apart, the shared compact card's `CourseMeta` block at the
    card's 12. LABELLED: the 2026-11-12 card's lines. */
 const FACTS_STACKED: CSSProperties = {
