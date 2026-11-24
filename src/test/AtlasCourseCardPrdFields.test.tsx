@@ -244,6 +244,25 @@ describe('the labels, the status and the progress', () => {
     expect((date.children[0] as HTMLElement).style.color).toBe('')
   })
 
+  /* The type audit's four (2026-11-24, "do all"): one body size and line, lighter links, the pill at the 11px floor. */
+  it('sets the body to one size and line — labels, date line and status row alike — with 600 links and an 11px pill', () => {
+    renderShell(DESIGN_CARDS)
+    const card = screen.getByRole('article', { name: 'Florida Life and Health Pre-licensing' })
+    const facts = within(card).getByTestId('atlas-card-facts')
+    const date = within(card).getByTestId('atlas-card-date')
+    const status = within(card).getByRole('progressbar').previousElementSibling as HTMLElement
+    for (const el of [facts, date, status]) {
+      expect(el.style.fontSize).toBe('11px')
+      expect(el.style.lineHeight).toBe('18px')
+    }
+    expect(facts.style.fontWeight).toBe('400')
+    const details = within(card).getByRole('button', { name: 'Details' })
+    expect(details.style.fontWeight).toBe('600')
+    expect(details.style.lineHeight).toBe('18px')
+    const pill = within(within(card).getByTestId('atlas-card-image')).getByText(/^Access Ends/).parentElement!
+    expect(pill.style.fontSize).toBe('11px')
+  })
+
   it('draws the hairline under the title block, not on the date line (2026-11-24)', () => {
     renderShell(DESIGN_CARDS)
     const card = screen.getByRole('article', { name: 'Florida Life and Health Pre-licensing' })
@@ -429,14 +448,15 @@ describe('Details →', () => {
       const dialog = screen.getByRole('dialog', { name: `${title} details` })
       expect(within(dialog).getAllByTestId('sheet-action').map((b) => b.textContent)).toEqual(labels)
     }
-    // Five usable days left — inside Home's amber week — so Purchase Extension joins the pair (2026-11-24).
-    expectActions('Florida Life and Health Pre-licensing', ['Purchase Extension', 'Course Overview', 'Resume Course'])
-    expectActions('Florida Health Insurance Pre-licensing', ['Course Overview', 'Resume Course'])
-    expectActions('Florida Property & Casualty', ['Course Overview', 'Begin Course'])
-    expectActions('Florida Property & Casualty Practice Exam', ['Course Overview', 'Retake Course'])
-    expectActions('FL Preferred Business Practices for the Insurance Producer', ['View Certificate', 'Course Overview', 'Review Course'])
+    // The primary verb leads, always (2026-11-24: "primary cta should always be at the top"); five usable days left on the
+    // first card — inside Home's amber week — so Purchase Extension joins it.
+    expectActions('Florida Life and Health Pre-licensing', ['Resume Course', 'Course Overview', 'Purchase Extension'])
+    expectActions('Florida Health Insurance Pre-licensing', ['Resume Course', 'Course Overview'])
+    expectActions('Florida Property & Casualty', ['Begin Course', 'Course Overview'])
+    expectActions('Florida Property & Casualty Practice Exam', ['Retake Course', 'Course Overview'])
+    expectActions('FL Preferred Business Practices for the Insurance Producer', ['Review Course', 'Course Overview', 'View Certificate'])
     // Not yet issued: nothing to view (2026-11-24).
-    expectActions('Florida Ethics for Insurance Producers', ['Course Overview', 'Review Course'])
+    expectActions('Florida Ethics for Insurance Producers', ['Review Course', 'Course Overview'])
     // Expired: Purchase Extension ALONE, as Home reshapes the head once access has gone.
     expectActions('Florida Personal Lines Pre-licensing', ['Purchase Extension'])
   })
@@ -466,19 +486,18 @@ describe('Details →', () => {
     expect(labels.compareDocumentPosition(first) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
   })
 
-  /* 2026-11-24, Jillienne, in the sheet: "have the Topic on left, and the detail on the right so these display in one line"
-     and "this needs a 'Description' sub-header". The PRD card's own copy of the sheet; the 2026-11-18 card's is untouched. */
-  it('lays each fact out on one line, label left and value right, with a Description sub-header', () => {
+  it('lists no fact rows in the body — the ruled row under the title says them once (2026-11-24) — with a Description sub-header', () => {
     renderShell(`${DESIGN_CARDS},atlas-courses-card-actions:hidden`)
     const card = screen.getByRole('article', { name: 'Florida Life and Health Pre-licensing' })
     fireEvent.click(within(card).getByRole('button', { name: 'Details' }))
     const dialog = screen.getByRole('dialog', { name: 'Florida Life and Health Pre-licensing details' })
-    const state = within(dialog).getByText('State')
-    const row = state.parentElement!
-    expect(row.style.display).toBe('flex')
-    expect(row.style.justifyContent).toBe('space-between')
-    expect(within(row).getByText('Florida').style.textAlign).toBe('right')
+    expect(dialog.querySelector('dl')).toBeNull()
+    expect(within(dialog).queryByText('State')).toBeNull()
     expect(within(dialog).getByRole('heading', { level: 3, name: 'Description' })).toBeTruthy()
+    // 24 above the buttons and a Primary 100 rule under them (2026-11-24).
+    const actions = within(dialog).getAllByTestId('sheet-action')[0].parentElement!
+    expect(actions.style.marginTop).toBe('24px')
+    expect((actions.nextElementSibling as HTMLElement).style.background).toContain('--color-primary-100')
   })
 })
 

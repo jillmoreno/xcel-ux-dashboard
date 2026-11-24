@@ -172,6 +172,7 @@ export function AtlasCourseCardFigmaV2({
             status={pillStatus}
             label={pillLabel}
             iconNudge={0}
+            fontSize={11}
             {...(pillStatus === 'expired' ? { fill: 'var(--color-neutral-800)', ink: 'var(--color-neutral-50)' } : null)}
           />
         </span>
@@ -533,9 +534,11 @@ const FACTS: CSSProperties = {
   paddingBottom: 12,
   color: 'var(--color-text-secondary)',
   fontFamily: 'var(--font-body)',
-  fontSize: 12,
-  fontWeight: 500,
-  lineHeight: '16px',
+  // The body's one size and line (2026-11-24, the type audit: "do all") — 11 / 18 at 400, like the date line and the status
+  // row. It was the shared card's 12 / 16 at 500, the only 12 on the card.
+  fontSize: 11,
+  fontWeight: 400,
+  lineHeight: '18px',
 }
 /* `MetaRule`, verbatim: a 1 × 12 hairline in the subtle border colour. */
 const FACT_RULE: CSSProperties = { width: 1, height: 12, background: 'var(--color-border-subtle)', flex: 'none' }
@@ -566,23 +569,15 @@ function SheetActions({
       </button>
     )
   }
+  /* THE PRIMARY FIRST, ALWAYS (2026-11-24, Jillienne: "primary cta should always be at the top") — the course's verb leads,
+     then Course Overview, then the outlined extras: View Certificate on a finished course, Purchase Extension inside the
+     warning week. Home's head runs the other way; in a wrapping row the primary has to lead or it lands alone on a second
+     line, as it did. */
   return (
     <>
-      {extension ? (
-        <button type="button" className="cre-atlas-card-outline" style={{ ...SHEET_BUTTON, ...SHEET_BUTTON_OUTLINE }} data-testid="sheet-action">
-          Purchase Extension
-        </button>
-      ) : null}
-      {data.completed && !data.certificatePending ? (
-        <Link
-          to={certificateTo ?? data.certificateHref ?? '/my-learning/certificates'}
-          className="cre-atlas-card-outline"
-          style={{ ...SHEET_BUTTON, ...SHEET_BUTTON_OUTLINE, ...BUTTON_LINK }}
-          data-testid="sheet-action"
-        >
-          View Certificate
-        </Link>
-      ) : null}
+      <button type="button" className="cre-atlas-card-primary" style={SHEET_BUTTON} onClick={onAction} disabled={!onAction} data-testid="sheet-action">
+        {verb}
+      </button>
       <button
         type="button"
         className="cre-atlas-card-outline"
@@ -593,9 +588,21 @@ function SheetActions({
       >
         Course Overview
       </button>
-      <button type="button" className="cre-atlas-card-primary" style={SHEET_BUTTON} onClick={onAction} disabled={!onAction} data-testid="sheet-action">
-        {verb}
-      </button>
+      {data.completed && !data.certificatePending ? (
+        <Link
+          to={certificateTo ?? data.certificateHref ?? '/my-learning/certificates'}
+          className="cre-atlas-card-outline"
+          style={{ ...SHEET_BUTTON, ...SHEET_BUTTON_OUTLINE, ...BUTTON_LINK }}
+          data-testid="sheet-action"
+        >
+          View Certificate
+        </Link>
+      ) : null}
+      {extension ? (
+        <button type="button" className="cre-atlas-card-outline" style={{ ...SHEET_BUTTON, ...SHEET_BUTTON_OUTLINE }} data-testid="sheet-action">
+          Purchase Extension
+        </button>
+      ) : null}
     </>
   )
 }
@@ -683,17 +690,18 @@ const REVIEW_LINK: CSSProperties = {
   display: 'inline-flex',
   alignItems: 'center',
   gap: 4,
-  // A 24-tall hit area on a 16-tall link (WCAG 2.2 target size, the scan's finding): 4 of padding above and below,
+  // A 24-tall hit area on an 18-tall link (WCAG 2.2 target size, the scan's finding): 3 of padding above and below,
   // pulled back out with the margin so the layout does not move.
-  padding: '4px 0',
-  marginTop: -4,
-  marginBottom: -4,
+  padding: '3px 0',
+  marginTop: -3,
+  marginBottom: -3,
   border: 'none',
   background: 'none',
   fontFamily: 'var(--font-body)',
-  fontWeight: 700,
+  // 600, not the 700 that made the two links the loudest text on the card; on the body's 18 line (2026-11-24, the audit).
+  fontWeight: 600,
   fontSize: 11,
-  lineHeight: '16px',
+  lineHeight: '18px',
   color: 'var(--color-primary-500)',
   whiteSpace: 'nowrap',
   cursor: 'pointer',
@@ -709,7 +717,7 @@ const PENDING: CSSProperties = {
   gap: 4,
   fontFamily: 'var(--font-body)',
   fontSize: 11,
-  lineHeight: '16px',
+  lineHeight: '18px',
   color: 'var(--color-text-secondary)',
   whiteSpace: 'nowrap',
 }

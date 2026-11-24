@@ -48,6 +48,7 @@ export function AtlasStatusPill({
   ink,
   label: labelOverride,
   iconNudge = 1,
+  fontSize = 10,
 }: {
   status: AtlasCourseStatus
   /** A different fill for this one pill (2026-11-23, Jillienne: the PRD card's Expired pill in charcoal). ADDITIVE — a
@@ -61,14 +62,17 @@ export function AtlasStatusPill({
   /** How far the icon sits below centre — 1 as drawn (2026-11-12, Eric); the PRD card passes 0 (2026-11-24, Jillienne:
    *  "these 2 things should be centered vertically"). Additive: absent, the 1. */
   iconNudge?: number
+  /** The label's size — 10 as drawn; the PRD card passes 11, the body's floor (2026-11-24, the type audit). The pill grows
+   *  with it: the line is size + 3, the icon size. Additive: absent, the 10. */
+  fontSize?: number
 }) {
   const { label: catalogLabel, fill, Icon } = PILLS[status]
   const label = labelOverride ?? catalogLabel
   return (
-    <span style={{ ...PILL, background: fillOverride ?? fill, ...(ink ? { color: ink } : null) }}>
+    <span style={{ ...PILL, fontSize, lineHeight: `${fontSize + 3}px`, background: fillOverride ?? fill, ...(ink ? { color: ink } : null) }}>
       {/* 1 lower than centred (2026-11-12, Eric) — unless the caller says otherwise. */}
-      <Icon aria-hidden style={{ width: 10, height: 10, flex: 'none', position: 'relative', top: iconNudge }} />
-      <span style={{ lineHeight: '10px' }}>{label}</span>
+      <Icon aria-hidden style={{ width: fontSize, height: fontSize, flex: 'none', position: 'relative', top: iconNudge }} />
+      <span style={{ lineHeight: `${fontSize}px` }}>{label}</span>
     </span>
   )
 }

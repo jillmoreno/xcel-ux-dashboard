@@ -10,7 +10,8 @@ import { STATE_ABBR } from '@/data/catalogFixtures'
  * which the 2026-11-18 card keeps). Two changes, both hers that day: each fact on ONE LINE, the label at the left and the
  * value at the right ("have the Topic on left, and the detail on the right so these display in one line"); and a
  * "Description" sub-header over the package paragraph ("this needs a 'Description' sub-header"). Everything else is the
- * original's, whose notes follow.
+ * original's, whose notes follow. The facts as rows left the body the same day ("remove these"): the ruled row under the
+ * title says them once.
  *
  * A MY COURSES CARD'S COURSE DETAILS — 2026-11-18, Eric: "remove the state, category and line of authority copy … move the
  * deleted sections into a right hand side slide out sheet with its appropriate styling", and a paragraph under them on the
@@ -64,18 +65,12 @@ export function AtlasCourseDetailsSheetV2({
           </div>
         ) : null}
         {actions ? <div style={ACTIONS}>{actions}</div> : null}
+        {/* A light rule between the buttons and the Description (2026-11-24, Jillienne). */}
+        <div aria-hidden style={DIVIDER} />
       </div>
       <div style={{ ...BODY, ...sheetInset }}>
-        {facts.length ? (
-          <dl style={FACTS}>
-            {facts.map((f) => (
-              <div key={f.label} style={FACT_ROW}>
-                <dt style={FACT_LABEL}>{f.label}</dt>
-                <dd style={FACT_VALUE}>{f.value}</dd>
-              </div>
-            ))}
-          </dl>
-        ) : null}
+        {/* The three facts as rows stood here until 2026-11-24 (Jillienne: "remove these") — the ruled row under the title
+            says them now, once. */}
         {data.packageSummary ? (
           <>
             <h3 style={SUMMARY_HEAD}>Description</h3>
@@ -127,43 +122,20 @@ const LABELS: CSSProperties = {
   marginTop: 8,
   color: 'var(--color-text-secondary)',
   fontFamily: 'var(--font-body)',
-  fontSize: 12,
-  fontWeight: 500,
-  lineHeight: '16px',
+  fontSize: 11,
+  fontWeight: 400,
+  lineHeight: '18px',
 }
 const LABEL_RULE: CSSProperties = { width: 1, height: 12, background: 'var(--color-border-subtle)', flex: 'none' }
-/* The buttons under the labels, 8 apart, wrapping — Home's course head's row (2026-11-24); 16 below the labels. */
-const ACTIONS: CSSProperties = { display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 16 }
+/* The buttons under the labels, 8 apart, wrapping — Home's course head's row (2026-11-24); 24 below the labels ("add padding
+   above the ctas"; 16 before). */
+const ACTIONS: CSSProperties = { display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 24 }
+/* The rule under the buttons, Primary 100 — the card's own edge — 20 below them; the body's 18 follows. */
+const DIVIDER: CSSProperties = { height: 1, marginTop: 20, background: 'var(--color-primary-100)' }
 const BODY: CSSProperties = { flex: 1, overflowY: 'auto', padding: '18px 22px 24px' }
-/* The facts as rows on the Atlas hairline — the label at the left, the value at the right, one line (2026-11-24). */
-const FACTS: CSSProperties = { margin: 0, padding: 0, borderTop: '1px solid var(--color-primary-200)' }
-const FACT_ROW: CSSProperties = {
-  display: 'flex',
-  alignItems: 'baseline',
-  justifyContent: 'space-between',
-  gap: 16,
-  padding: '12px 0',
-  borderBottom: '1px solid var(--color-primary-200)',
-}
-const FACT_LABEL: CSSProperties = {
-  margin: 0,
-  fontFamily: 'var(--font-body)',
-  fontSize: 12,
-  lineHeight: '18px',
-  color: 'var(--color-text-secondary)',
-}
-const FACT_VALUE: CSSProperties = {
-  margin: 0,
-  fontFamily: 'var(--font-body)',
-  fontSize: 14,
-  lineHeight: '20px',
-  fontWeight: 700,
-  color: 'var(--color-text-primary)',
-  textAlign: 'right',
-}
 /* "Description" over the package paragraph (2026-11-24): the facts' label face, one weight up. */
 const SUMMARY_HEAD: CSSProperties = {
-  margin: '20px 0 0',
+  margin: 0,
   fontFamily: 'var(--font-body)',
   fontSize: 12,
   lineHeight: '18px',
