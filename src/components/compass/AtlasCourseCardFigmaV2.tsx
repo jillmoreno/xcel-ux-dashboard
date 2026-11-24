@@ -631,8 +631,10 @@ function DateTrail({ text }: { text: string }) {
 }
 /* The date line and the detail under it; 12 under them before the button. */
 const DATES: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 4, paddingBottom: 12 }
-/* `WhiteCourseMeta`'s row (AtlasHomeEricE2E) — its type and inks; NOT its rules, which moved up under the title block the same
-   hour (2026-11-24, Jillienne). */
+/* THE DATE LINE IN THE STATUS ROW'S CLOTHES (2026-11-24, Jillienne, after the card's type audit: "update that please") —
+   11 / 18 in the secondary ink, the label at 400 and the date and count at 700, exactly as "In Progress" and "45%" sit over
+   the bar. It wore Home's meta row for an afternoon: Neutral 700 at 500 and the primary ink at 600, the only line on the
+   card with two inks and the only 600. Home's row is unchanged. */
 const DATE_ROW: CSSProperties = {
   margin: 0,
   display: 'flex',
@@ -641,11 +643,11 @@ const DATE_ROW: CSSProperties = {
   gap: 4,
   fontFamily: 'var(--font-body)',
   fontSize: 11,
-  lineHeight: '14px',
+  lineHeight: '18px',
+  color: 'var(--color-text-secondary)',
 }
-// The label at the status row's weight — 400, like "In Progress" over the bar (2026-11-24, Jillienne; Home's 500 before).
-const DATE_LABEL: CSSProperties = { fontWeight: 400, color: 'var(--color-neutral-700)' }
-const DATE_VALUE: CSSProperties = { fontWeight: 600, color: 'var(--color-text-primary)' }
+const DATE_LABEL: CSSProperties = { fontWeight: 400 }
+const DATE_VALUE: CSSProperties = { fontWeight: 700 }
 /* The progress: its row, then the bar 10 under it — at the card's foot (2026-11-23), `marginTop: auto` pinning it low, 8 clear
    of whatever is above; "Details →" sits under it since 2026-11-24. The 16 under it went: the card's 24 is the space below. */
 const PROGRESS: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 10, marginTop: 'auto', paddingTop: 8 }

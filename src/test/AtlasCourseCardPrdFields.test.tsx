@@ -230,6 +230,20 @@ describe('the labels, the status and the progress', () => {
     for (const box of screen.getAllByTestId('atlas-card-title-box')) expect(box.style.alignItems).toBe('center')
   })
 
+  /* The type audit (2026-11-24): the date line in the status row's clothes — one ink, 400 label, 700 figures, 11 / 18. */
+  it('draws the date line in the status row’s ink and weights', () => {
+    renderShell(DESIGN_CARDS)
+    const card = screen.getByRole('article', { name: 'Florida Life and Health Pre-licensing' })
+    const date = within(card).getByTestId('atlas-card-date')
+    const status = within(card).getByRole('progressbar').previousElementSibling as HTMLElement
+    expect(date.style.color).toBe(status.style.color)
+    expect(date.style.fontSize).toBe(status.style.fontSize)
+    expect(date.style.lineHeight).toBe(status.style.lineHeight)
+    expect((date.children[0] as HTMLElement).style.fontWeight).toBe('400')
+    expect((date.children[1] as HTMLElement).style.fontWeight).toBe('700')
+    expect((date.children[0] as HTMLElement).style.color).toBe('')
+  })
+
   it('draws the hairline under the title block, not on the date line (2026-11-24)', () => {
     renderShell(DESIGN_CARDS)
     const card = screen.getByRole('article', { name: 'Florida Life and Health Pre-licensing' })
