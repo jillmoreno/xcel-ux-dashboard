@@ -55,7 +55,10 @@ function renderCard(ui: React.ReactElement) {
   return render(
     <MemoryRouter initialEntries={['/dashboard-rebrand?demo=1&ff=atlas-courses-card-actions:shown']}>
       <AccountProvider>
-        <FeatureFlagProvider>{ui}</FeatureFlagProvider>
+        <FeatureFlagProvider>
+          {/* The sheet's Outline resolves its path through the Learning Paths panel, as Home does (2026-11-24). */}
+          <LearningPathsPanelProvider>{ui}</LearningPathsPanelProvider>
+        </FeatureFlagProvider>
       </AccountProvider>
     </MemoryRouter>,
   )
@@ -459,6 +462,45 @@ describe('Details →', () => {
     expectActions('Florida Ethics for Insurance Producers', ['Review Course', 'Course Overview'])
     // Expired: no row at all — the box's Purchase Extension is the whole sheet's action, as Home reshapes the head.
     expectActions('Florida Personal Lines Pre-licensing', [])
+  })
+
+  /* 2026-11-24, Jillienne: "add the progress bar in the sheet view, above the CTAs" — the card's own block, under the labels. */
+  it('carries the card’s status row and bar under the labels, above the buttons', () => {
+    renderShell(`${DESIGN_CARDS},atlas-courses-card-actions:hidden`)
+    const card = screen.getByRole('article', { name: 'Florida Life and Health Pre-licensing' })
+    fireEvent.click(within(card).getByRole('button', { name: 'Details' }))
+    const dialog = screen.getByRole('dialog', { name: 'Florida Life and Health Pre-licensing details' })
+    const block = within(dialog).getByTestId('sheet-progress')
+    expect(block.textContent).toContain('In Progress')
+    expect(block.textContent).toContain('45%')
+    const bar = within(block).getByRole('progressbar')
+    expect(bar.getAttribute('aria-valuenow')).toBe('45')
+    const labels = within(dialog).getByTestId('sheet-labels')
+    const first = within(dialog).getAllByTestId('sheet-action')[0]
+    expect(labels.compareDocumentPosition(block) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    expect(block.compareDocumentPosition(first) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+  })
+
+  /* 2026-11-24, Jillienne: "add an Outline section with whatever is showing in this section on the home page" — Step 1's six
+     rows, the lesson count from the card's percent, the ticks from the ladder rung nearest it. */
+  it('lists Step 1’s rows as Home draws them, after the Description', () => {
+    renderShell(`${DESIGN_CARDS},atlas-courses-card-actions:hidden`)
+    const card = screen.getByRole('article', { name: 'Florida Life and Health Pre-licensing' })
+    fireEvent.click(within(card).getByRole('button', { name: 'Details' }))
+    const dialog = screen.getByRole('dialog', { name: 'Florida Life and Health Pre-licensing details' })
+    const head = within(dialog).getByRole('heading', { level: 3, name: 'Outline' })
+    expect(within(dialog).getByRole('heading', { level: 3, name: 'Description' }).compareDocumentPosition(head) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    const rows = [...within(dialog).getByTestId('sheet-outline').querySelectorAll('li')]
+    expect(rows.map((r) => r.textContent)).toEqual([
+      expect.stringMatching(/^Pre-Licensing Education \(\d+ of \d+ completed\)$/),
+      'Certification Exam',
+      'Prep Review (23)',
+      'State Exam Simulators (3)',
+      'Affidavit',
+      'Survey & Certificate',
+    ])
+    // At 45% the lesson row is the current one; nothing above it to tick.
+    expect(rows.map((r) => r.getAttribute('data-state'))).toEqual(['current', 'later', 'later', 'later', 'later', 'later'])
   })
 
   /* 2026-11-24, Jillienne: the deadline and Purchase Extension "in its own message box". Home's tiers, the quiet copy,

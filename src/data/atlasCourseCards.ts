@@ -422,8 +422,9 @@ export function atlasHomeStateFor(card: AtlasCourseCardData): { progress: string
   return { progress, expiry }
 }
 
-/** The ladder rung whose percent is closest to the card's — the readiness band and the checks follow it. */
-function nearestRung(percent: number): string {
+/** The ladder rung whose percent is closest to the card's — the readiness band and the checks follow it. Exported for the
+ *  sheet's Outline (2026-11-24), which ticks the same rows Home would. */
+export function nearestRung(percent: number): string {
   let best = ATLAS_PROGRESS_LADDER[0]
   for (const rung of ATLAS_PROGRESS_LADDER) if (Math.abs(rung.percent - percent) < Math.abs(best.percent - percent)) best = rung
   return best.key

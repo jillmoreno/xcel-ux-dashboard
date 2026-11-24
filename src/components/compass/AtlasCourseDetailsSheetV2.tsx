@@ -27,6 +27,8 @@ export function AtlasCourseDetailsSheetV2({
   onClose,
   actions,
   notice,
+  progress,
+  outline,
 }: {
   data: AtlasCourseCardData
   open: boolean
@@ -38,6 +40,12 @@ export function AtlasCourseDetailsSheetV2({
   /** THE DEADLINE'S OWN BOX, above the buttons (2026-11-24, Jillienne) — the card builds it (`SheetExtensionBox`) when the
    *  course is inside its last week or past its date; absent otherwise. */
   notice?: ReactNode
+  /** The card's status row and bar, under the labels (2026-11-24, Jillienne: "add the progress bar in the sheet view, above
+   *  the CTAs") — the card builds it (`ProgressBlock`); the sheet only places it. */
+  progress?: ReactNode
+  /** Step 1's rows as Home draws them, after the Description (2026-11-24, Jillienne: "add an Outline section") — the card
+   *  builds it (`SheetOutline`). */
+  outline?: ReactNode
 }) {
   const titleSerif = useSheetTitleSerif()
   const sheetInset = useSheetInset()
@@ -68,6 +76,7 @@ export function AtlasCourseDetailsSheetV2({
             ))}
           </div>
         ) : null}
+        {progress ? <div style={PROGRESS} data-testid="sheet-progress">{progress}</div> : null}
         {notice ? <div style={NOTICE}>{notice}</div> : null}
         {actions ? <div style={ACTIONS}>{actions}</div> : null}
         {/* A light rule between the buttons and the Description (2026-11-24, Jillienne). */}
@@ -80,6 +89,12 @@ export function AtlasCourseDetailsSheetV2({
           <>
             <h3 style={SUMMARY_HEAD}>Description</h3>
             <p style={SUMMARY}>{data.packageSummary}</p>
+          </>
+        ) : null}
+        {outline ? (
+          <>
+            <h3 style={{ ...SUMMARY_HEAD, marginTop: 20 }}>Outline</h3>
+            {outline}
           </>
         ) : null}
       </div>
@@ -135,6 +150,8 @@ const LABEL_RULE: CSSProperties = { width: 1, height: 12, background: 'var(--col
 /* The buttons under the labels, 8 apart, wrapping — Home's course head's row (2026-11-24); 24 below the labels ("add padding
    above the ctas"; 16 before). */
 const ACTIONS: CSSProperties = { display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 24 }
+/* The progress block's slot: 16 below the labels, the row then the bar 10 apart (the card's own spacing). */
+const PROGRESS: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 10, marginTop: 16 }
 /* The deadline box's slot: 24 below the labels, like the buttons; the buttons then follow it at 16. */
 const NOTICE: CSSProperties = { marginTop: 24 }
 /* The rule under the buttons, Primary 100 — the card's own edge — 20 below them; the body's 18 follows. */

@@ -1,7 +1,14 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import { Link } from 'react-router-dom'
-import { AngleRightSolid, ArrowRight, Award, CalendarExclamation, EllipsisVerticalSolid, HourglassClock, TriangleExclamation } from '@/icons'
+import { AngleRightSolid, ArrowRight, Award, CalendarExclamation, CircleCheckRegular, EllipsisVerticalSolid, HourglassClock, TriangleExclamation } from '@/icons'
 import { accessCountLabel } from './atlasCourseAccess'
+import { atlasRungFor, isLessonRowTitle, journeyTitleFor } from './atlasProgressLadder'
+import { journeyStopsFor, whiteJourneyTitles } from '@/components/learning/studyJourneyUtil'
+import { activePathIdFor, learningPathsFor } from '@/data/learningFixtures'
+import { useLearningPathSummariesForBrand } from '@/data/learningPathsCountVariant'
+import { useLearningPathsPanel } from '@/components/learning/LearningPathsPanelContext'
+import { useAccount } from '@/context/AccountContext'
+import { nearestRung } from '@/data/atlasCourseCards'
 import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { STATE_ABBR } from '@/data/catalogFixtures'
 import { EXPIRY_SOON_DAYS, courseExpiryTier, formatMilestoneDate, usableDaysLeft } from '@/data/courseExpiry'
@@ -350,39 +357,9 @@ export function AtlasCourseCardFigmaV2({
       ) : null}
       {/* THE PROGRESS, AT THE FOOT OF THE CARD (2026-11-23, Jillienne: "move the progress bar to the bottom of the card") — the
           status row over the bar, pushed to the card's bottom edge, so across a row the bars sit level again whatever the
-          titles above them do. It sat between the labels and the date line before. */}
+          titles above them do. The same block opens the sheet since 2026-11-24 (`ProgressBlock`). */}
       <div style={PROGRESS}>
-        <div style={PROGRESS_ROW}>
-          {/* No gauge before it (2026-11-12, Eric). */}
-          <span style={{ flex: 1, minWidth: 0 }}>{status}</span>
-          <strong style={{ fontWeight: 700 }}>{progress}%</strong>
-        </div>
-        <div
-          role="progressbar"
-          aria-label={`${data.title} progress`}
-          aria-valuemin={0}
-          aria-valuemax={100}
-          aria-valuenow={progress}
-          style={BAR_TRACK}
-        >
-          {/* The fill in the 400 of the card's status colour (2026-11-12, Eric; Primary 500, then the pill's own fill). */}
-          {/* …but on an expired or failed card — "Progress Made" — NO FILL: a 2-wide charcoal MARKER where the progress
-              reached, on the empty grey track (2026-11-24, Jillienne: "add a marker line where the 62% would be in the line,
-              do not fill it with color"). Primary 200 fill before (2026-11-12, Eric). */}
-          {expired || failed ? (
-            <span data-testid="atlas-card-progress-marker" style={{ ...BAR_MARKER, left: `${progress}%` }} />
-          ) : (
-            <span
-              style={{
-                ...BAR_FILL,
-                width: `${progress}%`,
-                // The live course's bar in the PRIMARY blue — the Resume button's (2026-11-24, Jillienne: "should be the same
-                // blue color as the primary cta"; the Info ramp's 400 before). The last week keeps its amber, the rest their own.
-                background: pillStatus === 'in-progress' ? 'var(--color-primary-500)' : statusStrongFill(pillStatus),
-              }}
-            />
-          )}
-        </div>
+        <ProgressBlock title={data.title} status={status} progress={progress} pillStatus={pillStatus} finished={expired || failed} />
       </div>
       {/* "Details →" AT THE BOTTOM RIGHT, on every card whatever the actions control says (2026-11-24, Jillienne: "bring back
           the Details link in the bottom right of the card, with a arrow icon pointing right") — the Course Details sheet
@@ -436,6 +413,8 @@ export function AtlasCourseCardFigmaV2({
       data={data}
       open={detailsOpen}
       onClose={() => setDetailsOpen(false)}
+      progress={<ProgressBlock title={data.title} status={status} progress={progress} pillStatus={pillStatus} finished={expired || failed} />}
+      outline={<SheetOutline progress={progress} />}
       notice={extensionBox ? <SheetExtensionBox data={data} expired={expired} /> : null}
       actions={<SheetActions data={data} expired={expired} onAction={onAction} certificateTo={certificateTo} inBox={extensionBox} />}
     />
@@ -546,6 +525,105 @@ const FACTS: CSSProperties = {
 }
 /* `MetaRule`, verbatim: a 1 × 12 hairline in the subtle border colour. */
 const FACT_RULE: CSSProperties = { width: 1, height: 12, background: 'var(--color-border-subtle)', flex: 'none' }
+/**
+ * THE OUTLINE — Step 1's rows as Home draws them (2026-11-24, Jillienne: "add an Outline section with whatever is showing in
+ * this section on the home page"). Built from the same helpers as `AtlasHomeJillMain`'s journey: the demo path's stops
+ * (`journeyStopsFor`), the White home's six titles in the course's own order (`whiteJourneyTitles`, xcelFlow), the lesson
+ * row's count from the card's percent (`journeyTitleFor`), and the ticks from the ladder rung nearest that percent — so
+ * the sheet and Home check off the same rows for the same figure. The affidavit row is the course's own "Affidavit"; the
+ * pre-course one is the demo's default, off.
+ */
+function SheetOutline({ progress }: { progress: number }) {
+  /* THE PATH IS HOME'S, resolved the way `MembershipOverview` resolves it for the course head: the Learning Paths panel's
+     active path among the count-variant summaries (which the demo bar's Course control shapes), else the brand's default.
+     The first fixed path gave "42 of 42" beside a Home saying "14 of 36" — same rows, different course. */
+  const { brand } = useAccount()
+  const { activePathId } = useLearningPathsPanel()
+  const summaries = useLearningPathSummariesForBrand()
+  const path = summaries.find((s) => s.id === (activePathId ?? activePathIdFor(brand))) ?? learningPathsFor(brand)[0]
+  const stops = journeyStopsFor(path).filter((s) => s.id !== 'attestation-and-affidavit')
+  const titles = whiteJourneyTitles(stops[0], { stateExamSimulators: true, preCourseAffidavit: false, xcelFlow: true }).map((t) =>
+    journeyTitleFor(t, progress),
+  )
+  const rung = atlasRungFor(nearestRung(progress))
+  const lessonRowIdx = Math.max(0, titles.findIndex((t) => isLessonRowTitle(t)))
+  const doneRows = progress > 0 ? lessonRowIdx + rung.stepsDone : 0
+  const currentRowIdx = doneRows < titles.length ? doneRows : -1
+  return (
+    <ol style={OUTLINE} data-testid="sheet-outline">
+      {titles.map((t, i) => {
+        const done = i < doneRows
+        const current = i === currentRowIdx
+        return (
+          <li key={t} style={OUTLINE_ROW} data-state={done ? 'done' : current ? 'current' : 'later'}>
+            <span aria-hidden style={{ ...OUTLINE_MARK, ...(done ? OUTLINE_DONE : current ? OUTLINE_CURRENT : OUTLINE_LATER) }}>
+              {done ? <CircleCheckRegular size={14} aria-hidden /> : null}
+            </span>
+            <span style={{ ...OUTLINE_LABEL, ...(current ? { fontWeight: 600, color: 'var(--color-text-primary)' } : null) }}>{t}</span>
+          </li>
+        )
+      })}
+    </ol>
+  )
+}
+/* Home's journey rows, trimmed to the sheet: a 14 mark, the label at 13 / 18; done in the Success ramp's check, the current
+   one a ring in the stop colour and bold, the rest a hairline ring in the secondary ink. */
+const OUTLINE: CSSProperties = { listStyle: 'none', margin: '8px 0 0', padding: 0, display: 'flex', flexDirection: 'column', gap: 10 }
+const OUTLINE_ROW: CSSProperties = { display: 'flex', alignItems: 'center', gap: 10 }
+const OUTLINE_MARK: CSSProperties = { width: 14, height: 14, flex: 'none', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', boxSizing: 'border-box' }
+const OUTLINE_DONE: CSSProperties = { color: 'var(--color-success-400)' }
+const OUTLINE_CURRENT: CSSProperties = { border: '2px solid var(--color-atlas-home-current-stop, var(--color-compass-page-button))' }
+const OUTLINE_LATER: CSSProperties = { width: 12, height: 12, border: '1.5px solid var(--color-border-subtle)' }
+const OUTLINE_LABEL: CSSProperties = { fontFamily: 'var(--font-body)', fontSize: 13, lineHeight: '18px', color: 'var(--color-text-secondary)' }
+
+/**
+ * THE STATUS ROW AND THE BAR — the card's foot, and the sheet's head above the buttons (2026-11-24, Jillienne: "add the
+ * progress bar in the sheet view, above the CTAs"). One block, so the two cannot disagree about a course's figure.
+ */
+function ProgressBlock({
+  title,
+  status,
+  progress,
+  pillStatus,
+  finished,
+}: {
+  title: string
+  status: string
+  progress: number
+  pillStatus: AtlasCourseStatus
+  /** Expired or failed — "Progress Made": no fill, a marker where the progress reached. */
+  finished: boolean
+}) {
+  return (
+    <>
+      <div style={PROGRESS_ROW}>
+        {/* No gauge before it (2026-11-12, Eric). */}
+        <span style={{ flex: 1, minWidth: 0 }}>{status}</span>
+        <strong style={{ fontWeight: 700 }}>{progress}%</strong>
+      </div>
+      <div role="progressbar" aria-label={`${title} progress`} aria-valuemin={0} aria-valuemax={100} aria-valuenow={progress} style={BAR_TRACK}>
+        {/* The fill in the 400 of the card's status colour (2026-11-12, Eric; Primary 500, then the pill's own fill). */}
+        {/* …but on an expired or failed card — "Progress Made" — NO FILL: a 2-wide charcoal MARKER where the progress
+            reached, on the empty grey track (2026-11-24, Jillienne: "add a marker line where the 62% would be in the line,
+            do not fill it with color"). Primary 200 fill before (2026-11-12, Eric). */}
+        {finished ? (
+          <span data-testid="atlas-card-progress-marker" style={{ ...BAR_MARKER, left: `${progress}%` }} />
+        ) : (
+          <span
+            style={{
+              ...BAR_FILL,
+              width: `${progress}%`,
+              // The live course's bar in the PRIMARY blue — the Resume button's (2026-11-24, Jillienne: "should be the same
+              // blue color as the primary cta"; the Info ramp's 400 before). The last week keeps its amber, the rest their own.
+              background: pillStatus === 'in-progress' ? 'var(--color-primary-500)' : statusStrongFill(pillStatus),
+            }}
+          />
+        )}
+      </div>
+    </>
+  )
+}
+
 /**
  * THE DEADLINE AND THE EXTENSION IN THEIR OWN BOX (2026-11-24, Jillienne), above the sheet's buttons. Home's tiers, exactly
  * (`courseExpiryTier` — the Home course head's own span): amber inside seven usable days with the triangle, red inside two
