@@ -24,7 +24,7 @@ const feature: PrototypeFeature = {
   devStatus: 'not-ready',
   surface: 'invite',
   owner: 'Afsana',
-  lastUpdated: '2026-11-23T23:25:03Z',
+  lastUpdated: '2026-11-24T16:04:56Z',
   accent: 'gold',
   icon: 'flag',
   brands: ['xcel'],
@@ -404,7 +404,7 @@ const feature: PrototypeFeature = {
         tabLabel: 'Partner code',
         location: 'B2C guest, after Checkout is clicked: over the cart on the two OCD flows, over the checkout on the other B2C flows. src/components/e2e/PartnerCodeAsk.tsx.',
         summary:
-          '"Do you have a Partner Code?*", YES and NO, and the footnote: "*Partner Code, previously known as a Discount Code, allows access to your company’s dedicated Partner Site for exclusive pricing, products and to log in." An ✕ in the corner. Asked whether or not the learner is signed into XCEL (OCD).',
+          'XCEL’s own modal, not Atlas’s (2026-11-24): "Do you have a Partner Code?*" in the ruled header with the ✕, then YES and NO, a short rule, the footnote — "*Partner Code, previously known as a Discount Code, allows access to your company’s dedicated Partner Site for exclusive pricing, products and to log in." — and "Need help? Contact Us". Asked whether or not the learner is signed into XCEL (OCD).',
         variants: [
           { name: 'Asked', when: 'After Checkout on a B2C flow, before anything else.', why: 'A partner code changes what the learner is buying and where — the partner’s own site — so it is settled before the cart or the email.' },
         ],
@@ -412,17 +412,27 @@ const feature: PrototypeFeature = {
           { name: 'YES', does: 'Opens partner code entry. Out of scope for this handoff.' },
           { name: 'NO', does: 'Continues. On the OCD flows: a mixed cart → 1 item in your cart is not supported; an all-supported cart → Signing you out… if signed in, otherwise straight to the new Atlas checkout. On the other B2C flows → Enter your email to continue.' },
           { name: '✕', does: 'Closes without an answer and returns to the cart. Escape does the same.' },
+          { name: 'Contact Us', does: 'Opens XCEL’s contact page in a new tab.' },
         ],
         statesMatrix: [],
-        edgeCases: ['"Need help? Contact Us" under the footnote is out of scope for this handoff.'],
+        edgeCases: ['The question is a page headline on the live site (Amasis 24px serif); as a modal it takes XCEL’s modal title, Avenir Heavy 18px.'],
         designSpec: {
           tokens: [
-            { role: 'Question', token: '--color-text-primary' },
-            { role: 'YES / NO', token: '--color-xcel-brick-600' },
-            { role: 'Rule', token: '--color-e2e-form-outline' },
+            { role: 'Overlay', token: '--color-xcel-overlay' },
+            { role: 'Card — fill, shadow', token: '--color-fixed-light, --color-xcel-modal-shadow' },
+            { role: 'Header rule', token: '--color-e2e-card-outline' },
+            { role: 'Text', token: '--color-xcel-text' },
+            { role: '✕', token: '--color-xcel-close' },
+            { role: 'YES / NO — fill, hover', token: '--color-xcel-brick, --color-xcel-red-hover' },
+            { role: 'Rule under YES / NO', token: '--color-e2e-form-outline' },
+            { role: 'Contact Us — rest, hover', token: '--color-xcel-brick, --color-xcel-red-hover' },
             { role: 'Font', token: '--font-e2e-avenir' },
           ],
-          responsive: ['460px modal, centred text. Question 20px / 28px, 800 weight. YES and NO side by side, 12px apart, at least 72px wide.'],
+          responsive: [
+            'XCEL’s own modal, measured from the live “Select your state” modal (2026-11-24): 560px wide, 5px corners, shadow 0 0 12px 2px at 35%. Header 18px 30px 15px with a 1px rule under it; title Avenir Heavy 18px / 27px, weight 900. The ✕ is a thin 14px glyph, no box, 18px from the top and 30px from the right. Content 20px 30px 30px, Avenir 18px / 27px.',
+            'Body centred. YES and NO side by side, 30px apart, uppercase, padding 10px 19px (72 × 47px, as the live question page). Footnote and help line 14px / 21px.',
+            'Buttons: XCEL’s — Avenir Medium 18px / 25px, weight 500, white on --color-xcel-brick, 5px corners, 1px border in the same red; hover and focus --color-xcel-red-hover. The 2px focus ring is a proposed addition (the live site removes outlines, which fails WCAG 2.4.7).',
+          ],
           sources: [
             'The final prototype is the source of truth — the fourth and fifth Live Preview routes.',
             'Implemented in src/components/e2e/PartnerCodeAsk.tsx (PartnerCodeAskModal, v3).',
@@ -437,7 +447,7 @@ const feature: PrototypeFeature = {
         tabLabel: 'Not supported',
         location: 'Over the cart on the two OCD flows, after No to the partner code, when the cart mixes supported and unsupported SKUs. src/components/e2e/SignedInCartDialogs.tsx — UnsupportedItemDialog.',
         summary:
-          '"To support an ongoing platform update, the following will be removed from your cart if you continue to checkout:" and the unsupported items listed by name. Proceed to checkout, and an ✕ in the corner.',
+          'XCEL’s own modal (2026-11-24): the heading in the ruled header with the ✕, then "To support an ongoing platform update, the following will be removed from your cart if you continue to checkout:", the unsupported items listed by name in bold, and Proceed to checkout, centred.',
         variants: [
           { name: 'One item', when: 'One unsupported item. Heading: "1 item in your cart is not supported".' },
           { name: 'Several items', when: 'More than one. Heading: "2 items in your cart are not supported", and so on; each item listed.', detail: 'The prototype’s carts only ever hold one unsupported item, so this state has no picture — it is the One item modal with the heading pluralised and a line per item.' },
@@ -452,11 +462,18 @@ const feature: PrototypeFeature = {
         edgeCases: [],
         designSpec: {
           tokens: [
-            { role: 'Card', token: '--color-fixed-light' },
-            { role: 'Primary button', token: '--color-xcel-brick-600' },
-            { role: 'Scrim', token: '--color-e2e-scrim' },
+            { role: 'Overlay', token: '--color-xcel-overlay' },
+            { role: 'Card — fill, shadow', token: '--color-fixed-light, --color-xcel-modal-shadow' },
+            { role: 'Header rule', token: '--color-e2e-card-outline' },
+            { role: 'Text', token: '--color-xcel-text' },
+            { role: '✕', token: '--color-xcel-close' },
+            { role: 'Proceed to checkout — fill, hover', token: '--color-xcel-brick, --color-xcel-red-hover' },
           ],
-          responsive: ['460px modal; ✕ 32px, 12px from the top-right corner.'],
+          responsive: [
+            'XCEL’s own modal, measured from the live “Select your state” modal (2026-11-24): 560px wide, 5px corners, shadow 0 0 12px 2px at 35%. Header 18px 30px 15px with a 1px rule under it; title Avenir Heavy 18px / 27px, weight 900. The ✕ is a thin 14px glyph, no box, 18px from the top and 30px from the right. Content 20px 30px 30px, Avenir 18px / 27px.',
+            'The sentence, 12px to the bulleted list (bold), 30px to Proceed to checkout — centred, sized to its words (padding 13px 30px), as the live modal’s button.',
+            'Buttons: XCEL’s — Avenir Medium 18px / 25px, weight 500, white on --color-xcel-brick, 5px corners, 1px border in the same red; hover and focus --color-xcel-red-hover. The 2px focus ring is a proposed addition (the live site removes outlines, which fails WCAG 2.4.7).',
+          ],
           sources: [
             'The final prototype is the source of truth — the fourth Live Preview route.',
             'Implemented in src/components/e2e/SignedInCartDialogs.tsx.',
@@ -471,7 +488,7 @@ const feature: PrototypeFeature = {
         tabLabel: 'Signing you out',
         location: 'Over the cart, Signed into XCEL (OCD) only, after No to the partner code (and after Proceed on a mixed cart). src/components/e2e/SigningOutDialog.tsx.',
         summary:
-          'The XCEL logo, a notice — "To support an ongoing platform update, we need to sign you out." — and the spinner with "Signing you out…". Then the new Atlas checkout, as a guest.',
+          'XCEL’s own modal (2026-11-24): "Signing you out" in the ruled header, no ✕; then "To support an ongoing platform update, we need to sign you out." and the spinner. Then the new Atlas checkout, as a guest. (The XCEL logo, the grey notice box and the line under the spinner went with the Atlas-style card.)',
         variants: [
           { name: 'Holding', when: 'A signed-in XCEL (OCD) learner continues to the new checkout.', why: 'The learner did not ask to be signed out, so the modal has to stay up long enough to read why before the checkout replaces it.' },
         ],
@@ -482,11 +499,17 @@ const feature: PrototypeFeature = {
         edgeCases: [],
         designSpec: {
           tokens: [
-            { role: 'Notice', token: '--color-neutral-75' },
-            { role: 'Notice border', token: '--color-e2e-card-outline' },
+            { role: 'Overlay', token: '--color-xcel-overlay' },
+            { role: 'Card — fill, shadow', token: '--color-fixed-light, --color-xcel-modal-shadow' },
+            { role: 'Header rule', token: '--color-e2e-card-outline' },
+            { role: 'Text', token: '--color-xcel-text' },
+            { role: '✕', token: '--color-xcel-close' },
             { role: 'Spinner', token: '--color-xcel-brick-600' },
           ],
-          responsive: ['460px modal, padding 32px 32px 44px, 32px between logo, notice and spinner. Notice 14px / 20px, left-aligned, padding 12px 14px. Spinner 48px.'],
+          responsive: [
+            'XCEL’s own modal, measured from the live “Select your state” modal (2026-11-24): 560px wide, 5px corners, shadow 0 0 12px 2px at 35%. Header 18px 30px 15px with a 1px rule under it; title Avenir Heavy 18px / 27px, weight 900. Content 20px 30px 30px, Avenir 18px / 27px.',
+            'No ✕ — it holds and cannot be dismissed. The sentence left-aligned, 24px to the 48px spinner, centred. The spinner keeps "Signing you out" for screen readers only; the header already says it.',
+          ],
           sources: [
             'The final prototype is the source of truth — the fourth Live Preview route.',
             'Implemented in src/components/e2e/SigningOutDialog.tsx.',

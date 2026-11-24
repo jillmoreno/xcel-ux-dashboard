@@ -1,7 +1,8 @@
 import { useEffect, useState, type CSSProperties } from 'react'
 import { createPortal } from 'react-dom'
 import { useV3DialogLayer } from '@/components/e2e/useV3DialogLayer'
-import { XmarkRegular } from '@/icons'
+import { XcelModalV3 } from '@/components/e2e/XcelModalV3'
+import '@/pages/inviteFlow.css'
 
 /**
  * THE SIGNED-IN OCD CART'S TWO DIALOGS — Invite Flow V3, 2026-11-02, Afsana.
@@ -85,47 +86,34 @@ export function UnsupportedItemDialog({
   onProceed: () => void
   onCancel: () => void
 }) {
-  const layer = useV3DialogLayer()
   useEscape(onCancel)
   const count = items.length === 1 ? '1 item in your cart is' : `${items.length} items in your cart are`
-  return createPortal(
-    <div style={{ ...SCRIM, ...layer.scrim }} onClick={onCancel}>
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="v3-unsupported-title"
-        style={{ ...CARD, ...layer.card }}
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* An ✕ in the corner rather than Cancel under the button
-            (2026-11-03, Afsana) — the Partner Code question's. */}
-        <button type="button" aria-label="Close" onClick={onCancel} style={CLOSE}>
-          <XmarkRegular size={18} aria-hidden />
+  /* XCEL's own modal (2026-11-24, Afsana): ruled header, the thin ✕, 18px
+     body, and Proceed to checkout centred and sized to its words. */
+  return (
+    <XcelModalV3 titleId="v3-unsupported-title" title={`${count} not supported`} onClose={onCancel} onBackdrop={onCancel}>
+      <p style={XCEL_P}>
+        To support an ongoing platform update, the following will be removed from your cart if you continue to checkout:
+      </p>
+      <ul style={XCEL_LIST}>
+        {items.map((name) => (
+          <li key={name}>{name}</li>
+        ))}
+      </ul>
+      <div style={{ textAlign: 'center' }}>
+        <button type="button" onClick={onProceed} className="cre-xcel-btn" style={{ padding: '13px 30px' }}>
+          Proceed to checkout
         </button>
-        <div style={HEAD}>
-          <h2 id="v3-unsupported-title" style={TITLE}>
-            {count} not supported
-          </h2>
-          <p style={BODY}>
-            To support an ongoing platform update, the following will be removed from your cart if you continue to
-            checkout:
-          </p>
-          <ul style={LIST}>
-            {items.map((name) => (
-              <li key={name}>{name}</li>
-            ))}
-          </ul>
-        </div>
-        <div style={ACTIONS}>
-          <button type="button" onClick={onProceed} style={PRIMARY}>
-            Proceed to checkout
-          </button>
-        </div>
       </div>
-    </div>,
-    document.body,
+    </XcelModalV3>
   )
 }
+
+/* XCEL's modal body text (`XcelModalV3` sets the 18 / 27 Avenir). */
+const XCEL_P: CSSProperties = { margin: '0 0 12px' }
+
+/* Bulleted and bold, 30 above the button as the live modal's text. */
+const XCEL_LIST: CSSProperties = { margin: '0 0 30px', paddingLeft: 22, fontWeight: 800, listStyleType: 'disc' }
 
 /* ── Styles — the Change your course dialog's, without its band ──────────── */
 
@@ -138,24 +126,6 @@ const SCRIM: CSSProperties = {
   justifyContent: 'center',
   padding: 24,
   background: 'var(--color-e2e-scrim)',
-}
-
-/* The Partner Code question's ✕ (`PartnerCodeAsk`). */
-const CLOSE: CSSProperties = {
-  position: 'absolute',
-  top: 12,
-  right: 12,
-  width: 32,
-  height: 32,
-  display: 'inline-flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  padding: 0,
-  border: 'none',
-  borderRadius: 4,
-  background: 'transparent',
-  color: 'var(--color-text-secondary)',
-  cursor: 'pointer',
 }
 
 const CARD: CSSProperties = {
@@ -189,9 +159,6 @@ const BODY: CSSProperties = {
   lineHeight: '21px',
   color: 'var(--color-text-primary)',
 }
-
-/* Bulleted (2026-11-03, Afsana) — the base styles strip list markers. */
-const LIST: CSSProperties = { ...BODY, margin: 0, paddingLeft: 20, fontWeight: 800, listStyleType: 'disc' }
 
 const FIELD: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 6 }
 

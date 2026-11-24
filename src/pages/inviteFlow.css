@@ -418,3 +418,51 @@
   outline: 2px solid var(--color-fixed-dark);
   outline-offset: 2px;
 }
+
+/* XCEL'S BUTTONS ON THE XCEL-OWNED MODALS — measured from the live site
+   (2026-11-24): Avenir Medium 18 / 25, white on the brick, 5px corners; hover
+   and focus the lighter red. YES / NO add uppercase and 10px 19px; Proceed to
+   checkout is 13px 30px. The focus ring is a proposed addition — the live site
+   removes outlines, which fails WCAG 2.4.7. */
+.cre-xcel-btn {
+  display: inline-block;
+  border: 1px solid var(--color-xcel-brick);
+  border-radius: 5px;
+  background: var(--color-xcel-brick);
+  color: var(--color-fixed-light);
+  font-family: var(--font-e2e-avenir);
+  font-weight: 500;
+  font-size: 18px;
+  line-height: 25px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.cre-xcel-btn:hover,
+.cre-xcel-btn:focus-visible {
+  background: var(--color-xcel-red-hover);
+  border-color: var(--color-xcel-red-hover);
+}
+.cre-xcel-btn:focus-visible {
+  outline: 2px solid var(--color-xcel-brick);
+  outline-offset: 2px;
+}
+.cre-xcel-link {
+  color: var(--color-xcel-brick);
+  font-weight: 800;
+  text-decoration: none;
+}
+.cre-xcel-link:hover,
+.cre-xcel-link:focus-visible {
+  color: var(--color-xcel-red-hover);
+}
+.cre-xcel-close {
+  color: var(--color-xcel-close);
+}
+.cre-xcel-close:hover,
+.cre-xcel-close:focus-visible {
+  color: var(--color-xcel-text);
+}
+.cre-xcel-close:focus-visible {
+  outline: 2px solid var(--color-xcel-brick);
+  outline-offset: 2px;
+}

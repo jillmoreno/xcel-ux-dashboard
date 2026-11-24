@@ -240,6 +240,8 @@ class Walk {
   dialog(name) {
     return this.page.getByRole('dialog', { name })
   }
+  /* `name` may be a RegExp — YES / NO are "Yes" / "No" drawn in capitals on
+     the XCEL modal (2026-11-24), and "YES" / "NO" on the live-style pages. */
   async click(name, opts = {}) {
     const b = this.btn(name, opts)
     await b.scrollIntoViewIfNeeded()
@@ -672,10 +674,14 @@ async function b2c(page, flowId, cart, account, slug) {
   await w.shot('Do you have a Partner Code?', 'Question over the cart')
   if (cart === 'targeted' && !atlas) {
     /* YES does nothing — shown once per flow, on the first walk. */
-    await w.click('YES', { wait: 500 })
+    await w.click(/^yes$/i, { wait: 500 })
+    /* The pointer and focus off YES, so "nothing happens" is not a picture of
+       its hover colour (XCEL's buttons have one since 2026-11-24). */
+    await page.mouse.move(0, 0)
+    await page.evaluate(() => (document.activeElement)?.blur())
     await w.shot('Do you have a Partner Code?', 'After YES — nothing happens')
   }
-  await w.click('NO', { wait: 600 })
+  await w.click(/^no$/i, { wait: 600 })
   if (cart === 'mixed') {
     const notice = page.getByRole('dialog', { name: /not supported/ })
     await notice.waitFor()
@@ -745,8 +751,8 @@ async function logIn(page, account) {
   const w = new Walk(page)
   await go(page, startUrl('xcel-log-in', { logIn: account }))
   await w.click('Log In', { wait: 600 })
-  await w.click('NO', { wait: 600 })
-  await w.click('YES', { wait: 600 })
+  await w.click(/^no$/i, { wait: 600 })
+  await w.click(/^yes$/i, { wait: 600 })
   await page.waitForURL(/\/log-in\/sign-in/, { timeout: 10000 })
   const CARD = 'section[aria-label="Log in"]'
   const TITLE = 'OCD log in'

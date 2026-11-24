@@ -7717,6 +7717,16 @@ a.cre-library-card-title::after {
   /* The reset-password page's ground under its white header (2026-11-19,
      Afsana: "below the header the fill is a light grey"). */
   --color-e2e-reset-ground: #f3f4f6;
+  /* XCEL'S OWN MODAL — measured 2026-11-24 from the live "Select your state"
+     modal (xcelsolutions.com, Life & Health): the overlay, the card's shadow,
+     the button hover, the close glyph's grey and the text. For the three V3
+     modals the XCEL platform owns (Partner Code?, Not supported, Signing you
+     out), so they look like XCEL rather than Atlas (Afsana). */
+  --color-xcel-overlay: rgb(51 51 51 / 0.55);
+  --color-xcel-modal-shadow: rgb(0 0 0 / 0.35);
+  --color-xcel-red-hover: #bd373a;
+  --color-xcel-close: #757575;
+  --color-xcel-text: #3a3a3a;
   --color-e2e-summary: #f5f2ee;
   --color-e2e-detail-row: rgb(221 221 221 / 0.3);
   --color-e2e-header-shadow: rgb(0 0 0 / 0.1);

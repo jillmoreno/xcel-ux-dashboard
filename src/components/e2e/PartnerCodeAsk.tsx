@@ -2,6 +2,8 @@ import { useEffect, type CSSProperties } from 'react'
 import { createPortal } from 'react-dom'
 import { useV3DialogLayer } from '@/components/e2e/useV3DialogLayer'
 import { ChevronLeft, XmarkRegular } from '@/icons'
+import { XcelModalV3 } from '@/components/e2e/XcelModalV3'
+import '@/pages/inviteFlow.css'
 
 /**
  * "DO YOU HAVE A PARTNER CODE?" — 2026-10-22, and the question the guest
@@ -153,6 +155,36 @@ export function PartnerCodeAskModal({
     return () => window.removeEventListener('keydown', onKey)
   }, [onClose])
 
+  /* V3 is XCEL's own modal (2026-11-24, Afsana): the question in a ruled
+     header, then YES / NO, the note and Contact Us. V1/V2 keep theirs. */
+  if (v3) {
+    return (
+      <XcelModalV3 id="partner-code-modal" titleId="partner-code-question" title="Do you have a Partner Code?*" onClose={onClose}>
+        <div style={XCEL_BODY}>
+          <div style={XCEL_BUTTONS}>
+            <button type="button" className="cre-xcel-btn" style={XCEL_CHOICE} onClick={() => onAnswer('yes')}>
+              Yes
+            </button>
+            <button type="button" className="cre-xcel-btn" style={XCEL_CHOICE} onClick={() => onAnswer('no')}>
+              No
+            </button>
+          </div>
+          <span aria-hidden style={RULE} />
+          <p style={XCEL_NOTE}>
+            *Partner Code, previously known as a Discount Code, allows access to your company’s dedicated Partner Site for
+            exclusive pricing, products and to log in.
+          </p>
+          <p style={XCEL_NOTE}>
+            Need help?{' '}
+            <a href={XCEL_CONTACT_US} target="_blank" rel="noopener noreferrer" className="cre-xcel-link">
+              Contact Us
+            </a>
+          </p>
+        </div>
+      </XcelModalV3>
+    )
+  }
+
   return createPortal(
     <div style={{ ...SCRIM, ...layer.scrim }}>
       <div
@@ -176,6 +208,20 @@ export function PartnerCodeAskModal({
 }
 
 /* ── Styles ─────────────────────────────────────────────────────────────── */
+
+/* XCEL's contact page — the same address the Log In flow's Contact us opens. */
+const XCEL_CONTACT_US = 'https://www.xcelsolutions.com/contact'
+
+/* V3 — XCEL's modal body: centred, YES / NO 30 apart as on the live question
+   page, the note and help line at 14px (the system has no footnote size). */
+const XCEL_BODY: CSSProperties = { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 20, textAlign: 'center' }
+
+const XCEL_BUTTONS: CSSProperties = { display: 'flex', gap: 30, paddingTop: 6 }
+
+/* XCEL's "primary choice" button: uppercase, 10px 19px (the live page's YES). */
+const XCEL_CHOICE: CSSProperties = { padding: '10px 19px', textTransform: 'uppercase' }
+
+const XCEL_NOTE: CSSProperties = { margin: 0, fontSize: 14, lineHeight: '21px', color: 'var(--color-xcel-text)' }
 
 const BODY: CSSProperties = {
   display: 'flex',

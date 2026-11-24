@@ -1097,7 +1097,7 @@ describe('Invite Flow V3 — not signed into XCEL (OCD)', () => {
   it('goes straight to the checkout on No — no Signing you out', async () => {
     cartAt('targeted')
     await userEvent.click(screen.getByRole('button', { name: 'Checkout' }))
-    await userEvent.click(screen.getByRole('button', { name: 'NO' }))
+    await userEvent.click(screen.getByRole('button', { name: /^no$/i }))
     expect(screen.queryByRole('dialog', { name: 'Signing you out' })).not.toBeInTheDocument()
     expect(screen.getByText('Checkout page')).toBeInTheDocument()
     expect(screen.getByTestId('where').textContent).toContain('partner=no')
@@ -1108,7 +1108,7 @@ describe('Invite Flow V3 — not signed into XCEL (OCD)', () => {
     cartAt('mixed')
     expect(screen.getByText('New York Life and Health Flashcards')).toBeInTheDocument()
     await userEvent.click(screen.getByRole('button', { name: 'Checkout' }))
-    await userEvent.click(screen.getByRole('button', { name: 'NO' }))
+    await userEvent.click(screen.getByRole('button', { name: /^no$/i }))
     expect(screen.getByRole('dialog', { name: /not supported/ })).toHaveTextContent('New York Life and Health Flashcards')
     await userEvent.click(screen.getByRole('button', { name: 'Proceed to checkout' }))
     expect(screen.queryByRole('dialog', { name: 'Signing you out' })).not.toBeInTheDocument()
@@ -1130,9 +1130,9 @@ describe('Invite Flow V3 — not signed into XCEL (OCD)', () => {
   it('does nothing on Yes, as when signed in', async () => {
     cartAt('targeted')
     await userEvent.click(screen.getByRole('button', { name: 'Checkout' }))
-    await userEvent.click(screen.getByRole('button', { name: 'YES' }))
+    await userEvent.click(screen.getByRole('button', { name: /^yes$/i }))
     expect(screen.queryByRole('dialog', { name: 'Enter your Partner Code' })).not.toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'YES' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /^yes$/i })).toBeInTheDocument()
     expect(screen.queryByText('Checkout page')).not.toBeInTheDocument()
   })
 })
@@ -1220,7 +1220,7 @@ describe('Invite Flow V3 — the OCD flows’ checkout after an Atlas log-in', (
           `invite-flow-version:v3,invite-v3-model:b2c,invite-v3-flow-b2c:${id},invite-v3-cart:targeted,invite-v3-email-account:atlas`,
         )
         /* The cart answers the partner question on a real walk; here, No. */
-        const no = screen.queryByRole('button', { name: 'NO' })
+        const no = screen.queryByRole('button', { name: /^no$/i })
         if (no) await userEvent.click(no)
         await userEvent.type(within(screen.getByRole('dialog')).getByLabelText(/^Email\s*\*?$/), 'sam@example.com')
         await userEvent.click(screen.getByRole('button', { name: 'Continue' }))
@@ -1255,7 +1255,7 @@ describe('Invite Flow V3 — the OCD flows’ checkout after an Atlas log-in', (
         CHECKOUT,
         `invite-flow-version:v3,invite-v3-model:b2c,invite-v3-flow-b2c:${id},invite-v3-cart:${cart},invite-v3-email-account:atlas`,
       )
-      const no = screen.queryByRole('button', { name: 'NO' })
+      const no = screen.queryByRole('button', { name: /^no$/i })
       if (no) await userEvent.click(no)
       await userEvent.type(within(screen.getByRole('dialog')).getByLabelText(/^Email\s*\*?$/), 'sam@example.com')
       await userEvent.click(screen.getByRole('button', { name: 'Continue' }))
@@ -1349,9 +1349,9 @@ describe('Invite Flow V3 — signed into XCEL (OCD)', () => {
     for (const cart of ['targeted', 'mixed']) {
       const { unmount } = cartAt(`${SIGNED_IN},invite-v3-cart:${cart}`)
       await userEvent.click(screen.getByRole('button', { name: 'Checkout' }))
-      await userEvent.click(screen.getByRole('button', { name: 'YES' }))
+      await userEvent.click(screen.getByRole('button', { name: /^yes$/i }))
       expect(screen.queryByRole('dialog', { name: 'Enter your Partner Code' })).not.toBeInTheDocument()
-      expect(screen.getByRole('button', { name: 'YES' })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /^yes$/i })).toBeInTheDocument()
       expect(screen.queryByRole('dialog', { name: 'Signing you out' })).not.toBeInTheDocument()
       expect(screen.queryByText('Checkout page')).not.toBeInTheDocument()
       unmount()
@@ -1362,7 +1362,7 @@ describe('Invite Flow V3 — signed into XCEL (OCD)', () => {
     cartAt(`${SIGNED_IN},invite-v3-cart:${cart}`)
     await userEvent.click(screen.getByRole('button', { name: 'Checkout' }))
     expect(screen.getByRole('dialog')).toHaveTextContent('Do you have a Partner Code?')
-    await userEvent.click(screen.getByRole('button', { name: 'NO' }))
+    await userEvent.click(screen.getByRole('button', { name: /^no$/i }))
   }
 
   async function expectSignedOutToCheckout() {
@@ -1398,7 +1398,7 @@ describe('Invite Flow V3 — signed into XCEL (OCD)', () => {
       expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
 
       await userEvent.click(screen.getByRole('button', { name: 'Checkout' }))
-      await userEvent.click(screen.getByRole('button', { name: 'NO' }))
+      await userEvent.click(screen.getByRole('button', { name: /^no$/i }))
       await userEvent.click(screen.getByRole('button', { name: 'Proceed to checkout' }))
       await expectSignedOutToCheckout()
     } finally {
