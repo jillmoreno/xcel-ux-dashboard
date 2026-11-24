@@ -352,7 +352,7 @@ describe('atlasCoursesFor — the library as Atlas cards', () => {
       if (record.myStatus === 'completed') {
         expect(card.completed).toBe(true)
         expect(card.dateLabel).toBe('Completed:')
-      } else expect(['Access ends', 'Expired:']).toContain(card.dateLabel)
+      } else expect(['Access Ends:', 'Expired:']).toContain(card.dateLabel)
     }
   })
 

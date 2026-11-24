@@ -66,8 +66,16 @@ const DESIGN_CARDS = `section=courses&version=${BASELINE}&ff=atlas-courses-from-
 /** The learner's library — thirteen records, some with no description. */
 const LIBRARY = `section=courses&version=${BASELINE}&ff=atlas-courses-from-library:on`
 
+/* ⚠ ONE SPACE AT EVERY ELEMENT BOUNDARY — the row is spans on a flex `gap`, so `textContent` reads "Access Ends:05/25/2026,13
+   daysto complete" (the same trap AtlasCourseExpiry.test.tsx's metaRow names). */
 const dateLines = () =>
-  screen.getAllByTestId('atlas-card-date').map((el) => (el.textContent ?? '').replace(/\s+/g, ' ').trim())
+  screen.getAllByTestId('atlas-card-date').map((el) => {
+    // Text NODES, not leaf elements: the date and its comma share one span, so a leaf-element walk would drop the date.
+    const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT)
+    const parts: string[] = []
+    while (walker.nextNode()) parts.push(walker.currentNode.textContent ?? '')
+    return parts.join(' ').replace(/\s+/g, ' ').replace(/ ,/g, ',').trim()
+  })
 
 describe('the flag', () => {
   it('is in the catalog, on by default on this branch, and on the Widgets group of dashboard-rebrand', () => {
@@ -135,9 +143,10 @@ describe('the date line', () => {
   it('draws the PRD’s three shapes across the design cards — every status on screen at once', () => {
     renderShell(DESIGN_CARDS)
     const lines = dateLines()
-    expect(lines.some((l) => /^Access ends \w+ \d+, \d{4} · \d+ days? left$/.test(l))).toBe(true)
-    expect(lines.some((l) => /^Expired: \w+ \d+, \d{4}$/.test(l))).toBe(true)
-    expect(lines.some((l) => /^Completed: \w+ \d+, \d{4} · Score \d+%$/.test(l))).toBe(true)
+    // mm/dd/yyyy, in the Home course head's wording (2026-11-24).
+    expect(lines.some((l) => /^Access Ends: \d{2}\/\d{2}\/\d{4}, \d+ days? to complete$/.test(l))).toBe(true)
+    expect(lines.some((l) => /^Expired: \d{2}\/\d{2}\/\d{4}$/.test(l))).toBe(true)
+    expect(lines.some((l) => /^Completed: \d{2}\/\d{2}\/\d{4}, Score \d+%$/.test(l))).toBe(true)
   })
 
   it('gives each library record the line its status calls for, and never an Enrolled line', () => {
@@ -149,17 +158,17 @@ describe('the date line', () => {
       expect(card.availableDate).not.toBe('')
       if (record.myStatus === 'completed') {
         expect(card.dateLabel).toBe('Completed:')
-        expect(card.availableTime).toMatch(/^· Score \d+%$/)
+        expect(card.availableTime).toMatch(/^Score \d+%$/)
       } else if (card.badge === 'Expired') {
         expect(card.dateLabel).toBe('Expired:')
         expect(card.availableTime).toBeUndefined()
       } else {
-        expect(card.dateLabel).toBe('Access ends')
-        expect(card.availableTime).toMatch(/^· \d+ days? left$/)
+        expect(card.dateLabel).toBe('Access Ends:')
+        expect(card.availableTime).toMatch(/^\d+ days? to complete$/)
       }
       seen.add(card.dateLabel!)
     }
-    expect([...seen].sort()).toEqual(['Access ends', 'Completed:', 'Expired:'])
+    expect([...seen].sort()).toEqual(['Access Ends:', 'Completed:', 'Expired:'])
   })
 
   it('shows the failed card’s score and the expired card’s last progress under the line', () => {
@@ -170,17 +179,20 @@ describe('the date line', () => {
 })
 
 describe('the description', () => {
-  it('says "Description coming soon" when the course has none', () => {
+  /* Hidden, and the flag retired (2026-11-24, Jillienne: "keep description hidden, and remove this flag"). The records keep
+     their `description`; nothing on the card or on Home draws it. */
+  it('is not drawn on the card, and there is no flag for it', () => {
     renderShell(LIBRARY)
-    const without = myCoursesFor('xcel').filter((c) => !c.archived && !c.description)
-    expect(without.length).toBeGreaterThan(0)
-    expect(screen.getAllByText('Description coming soon')).toHaveLength(without.length)
+    expect(screen.queryByText('Description coming soon')).toBeNull()
+    const withOne = myCoursesFor('xcel').find((c) => !c.archived && c.description)!
+    expect(screen.queryByText(withOne.description!)).toBeNull()
+    expect(FEATURE_FLAGS.find((f) => f.key === 'atlas-course-description')).toBeUndefined()
   })
 
-  it('draws the course’s own when it has one', () => {
-    renderShell(LIBRARY)
-    const withOne = myCoursesFor('xcel').find((c) => !c.archived && c.description)!
-    expect(screen.getByText(withOne.description!)).toBeTruthy()
+  it('is not drawn under the course title on Home either', () => {
+    renderShell(`section=dashboard&version=${BASELINE}`)
+    expect(screen.getByRole('heading', { level: 2, name: /Life and Health Pre-licensing/ })).toBeTruthy()
+    expect(screen.queryByText(ATLAS_MY_COURSES[0].description!)).toBeNull()
   })
 })
 
@@ -206,6 +218,16 @@ describe('the labels, the status and the progress', () => {
     expect(screen.getAllByText('Property & Casualty').length).toBeGreaterThan(0) // the ampersand (2026-11-23)
   })
 
+  it('draws the hairline under the title block, not on the date line (2026-11-24)', () => {
+    renderShell(DESIGN_CARDS)
+    const card = screen.getByRole('article', { name: 'Florida Life and Health Pre-licensing' })
+    const titleBlock = within(card).getByTestId('atlas-card-title-box').parentElement!.parentElement!
+    expect(titleBlock.style.borderBottom).toContain('--color-primary-200')
+    const date = within(card).getByTestId('atlas-card-date')
+    expect(date.style.borderTop).toBe('')
+    expect(date.style.borderBottom).toBe('')
+  })
+
   it('gives every title the same 66px box, the title clamped at three lines and at the top (2026-11-24)', () => {
     renderShell(DESIGN_CARDS)
     const boxes = screen.getAllByTestId('atlas-card-title-box')
@@ -219,14 +241,7 @@ describe('the labels, the status and the progress', () => {
     }
   })
 
-  it('draws the description inside the title block, right under the heading', () => {
-    renderShell(DESIGN_CARDS)
-    const card = screen.getByRole('article', { name: 'Florida Life and Health Pre-licensing' })
-    const heading = within(card).getByRole('heading')
-    const description = within(card).getByText(ATLAS_MY_COURSES[0].description!)
-    // The heading sits in its fixed box; the description follows the box.
-    expect(heading.parentElement!.nextElementSibling).toBe(description)
-  })
+
 
   it('exposes the progress as a number — aria-valuenow between 0 and 100 — beside the status as text', () => {
     renderShell(DESIGN_CARDS)
@@ -246,189 +261,14 @@ describe('the labels, the status and the progress', () => {
   })
 })
 
-describe('the three label layouts — the design bar’s atlas-courses-card-meta', () => {
-  it('is a design-bar control on the Widgets group', () => {
-    const flag = FEATURE_FLAGS.find((f) => f.key === 'atlas-courses-card-meta')!
-    expect(flag.surface).toBe('design')
-    expect(flag.defaultVariant).toBe('ruled-row')
-    expect(flag.variants!.map((v) => v.value)).toEqual(['ruled-row', 'stacked', 'labelled'])
-  })
-
-  it('ruled row: a library record that already carries the code stays "FL"', () => {
-    renderShell(LIBRARY)
-    const row = screen.getAllByTestId('atlas-card-facts')[0]
-    expect([...row.querySelectorAll('span:not([aria-hidden])')].filter((s) => s.children.length === 0)[0].textContent).toBe('FL')
-  })
-
-  it('stacked: the state leads with its icon, category | line of authority under it', () => {
-    renderShell(`${DESIGN_CARDS},atlas-courses-card-meta:stacked`)
-    const row = screen.getAllByTestId('atlas-card-facts')[0]
-    expect(row.getAttribute('data-meta')).toBe('stacked')
-    expect(row.querySelector('svg')).toBeTruthy()
-    const lines = [...row.children].map((c) => c.textContent)
-    expect(lines[0]).toBe('Florida')
-    expect(lines[1]).toBe('LicensingLife and Health')
-    expect(row.querySelectorAll('span[aria-hidden]')).toHaveLength(1)
-  })
-
-  it('labelled: one "State: Florida" line per fact', () => {
-    renderShell(`${DESIGN_CARDS},atlas-courses-card-meta:labelled`)
-    const row = screen.getAllByTestId('atlas-card-facts')[0]
-    expect(row.getAttribute('data-meta')).toBe('labelled')
-    expect(within(row).getByText(/^State:/)).toBeTruthy()
-    expect(within(row).getByText(/^Line of authority:/)).toBeTruthy()
-  })
-})
-
-describe('the description toggle — atlas-course-description', () => {
-  /* 2026-11-23, Jillienne: "add a toggle to hide/show the description. Also add this description to the Home page for the
-     course, under the title, and Add/Hide toggle should be there too." One control, two places. */
-  it('is a design-bar control, shown by default', () => {
-    const flag = FEATURE_FLAGS.find((f) => f.key === 'atlas-course-description')!
-    expect(flag.surface).toBe('design')
-    expect(flag.defaultVariant).toBe('shown')
-  })
-
-  it('hides every card’s description when hidden', () => {
-    renderShell(`${DESIGN_CARDS},atlas-course-description:hidden`)
-    expect(screen.queryByText(ATLAS_MY_COURSES[0].description!)).toBeNull()
-    expect(screen.queryByText('Description coming soon')).toBeNull()
-    expect(screen.getAllByRole('progressbar')).toHaveLength(ATLAS_MY_COURSES.length)
-  })
-
-  it('draws the course’s description under the title on Home, and hides it with the same control', () => {
-    renderShell(`section=dashboard&version=${BASELINE}`)
-    const heading = screen.getByRole('heading', { level: 2, name: /Life and Health Pre-licensing/ })
-    const description = screen.getByText(ATLAS_MY_COURSES[0].description!)
-    expect(heading.compareDocumentPosition(description) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
-    cleanup()
-    renderShell(`section=dashboard&version=${BASELINE}&ff=atlas-course-description:hidden`)
-    expect(screen.queryByText(ATLAS_MY_COURSES[0].description!)).toBeNull()
-  })
-})
-
-describe('the actions toggle — atlas-courses-card-actions', () => {
-  /* 2026-11-23, Jillienne: "a toggle variant where all of the ctas and links are hidden. user clicks on card, it loads
-     course as the active course on atlas home, all the available ctas are right there." */
-  it('is a design-bar control, HIDDEN by default (2026-11-23: "set this current view as the default")', () => {
-    const flag = FEATURE_FLAGS.find((f) => f.key === 'atlas-courses-card-actions')!
-    expect(flag.surface).toBe('design')
-    expect(flag.defaultVariant).toBe('hidden')
-  })
-
-  it('draws no button and no link with nothing pinned — the committed default', () => {
-    // Every pin but the actions one, so this reads the flag's own default.
-    window.history.replaceState({}, '', `/dashboard-rebrand?demo=1&section=courses&version=${BASELINE}&ff=atlas-pages-quick-links:hidden,atlas-courses-card-style:atlas,atlas-courses-card-prd-fields:on,atlas-courses-from-library:off`)
-    render(
-      <MemoryRouter initialEntries={[window.location.pathname + window.location.search]}>
-        <AccountProvider>
-          <FeatureFlagProvider>
-            <LearningPathsPanelProvider>
-              <JumpBackInPanelProvider>
-                <PlatformShell />
-              </JumpBackInPanelProvider>
-            </LearningPathsPanelProvider>
-          </FeatureFlagProvider>
-        </AccountProvider>
-      </MemoryRouter>,
-    )
-    const cards = screen.getAllByRole('article')
-    expect(cards).toHaveLength(ATLAS_MY_COURSES.length)
-    for (const card of cards) {
-      expect(within(card).queryAllByRole('button').map((b) => b.textContent)).toEqual(['Details'])
-      expect(within(card).queryAllByRole('link')).toHaveLength(0)
-    }
-  })
-
-  it('hidden: no button, no link on any card — the card itself still opens Home', () => {
-    renderShell(`${DESIGN_CARDS},atlas-courses-card-actions:hidden`)
-    const cards = screen.getAllByRole('article')
-    expect(cards).toHaveLength(ATLAS_MY_COURSES.length)
-    for (const card of cards) {
-      // The one control left is "Details →" (2026-11-24) — the sheet, not an action on the course.
-      expect(within(card).queryAllByRole('button').map((b) => b.textContent)).toEqual(['Details'])
-      expect(within(card).queryAllByRole('link')).toHaveLength(0)
-      expect(card.tabIndex).toBe(0)
-      expect(card.className).toContain('cre-atlas-card-v2')
-    }
-    // The click goes through the router, not window.location: Home renders with this card's course in its head.
-    fireEvent.click(cards[0])
-    expect(screen.getByRole('heading', { level: 2, name: 'Florida Life and Health Pre-licensing' })).toBeTruthy()
-    expect(screen.queryByTestId('atlas-card-facts')).toBeNull()
-  })
-})
-
-describe('the card fill', () => {
-  /* 2026-11-23, Jillienne, with the completed card selected: "all cards will have this background color, slightly lighter".
-     One fill for every status — the finished card no longer steps back from the rest. */
-  it('is the same lightened Secondary 100 on an unfinished card and a finished one', () => {
+describe('the labels', () => {
+  /* The ruled row alone since 2026-11-24 (Jillienne: "set this one as default, remove the other options and this flag");
+     the stacked and labelled layouts are an Archive row. */
+  it('has no layout control any more, and no stacked or labelled markup', () => {
+    expect(FEATURE_FLAGS.find((f) => f.key === 'atlas-courses-card-meta')).toBeUndefined()
     renderShell(DESIGN_CARDS)
-    const inProgress = screen.getByRole('article', { name: 'Florida Life and Health Pre-licensing' })
-    const done = screen.getByRole('article', { name: 'FL Preferred Business Practices for the Insurance Producer' })
-    expect(inProgress.style.background).toContain('--color-secondary-100')
-    expect(inProgress.style.background).toContain('color-mix')
-    expect(done.style.background).toBe(inProgress.style.background)
-    expect(inProgress.style.boxShadow).toContain('--color-primary-100')
-  })
-})
-
-describe('the status pill on the image', () => {
-  /* 2026-11-23, Jillienne: "have the status badge be in the top left of the image area" — the shared card's badges. */
-  it('sits inside the image frame, before the title', () => {
-    renderShell(DESIGN_CARDS)
-    const card = screen.getByRole('article', { name: 'Florida Life and Health Pre-licensing' })
-    const frame = within(card).getByTestId('atlas-card-image')
-    expect(frame.querySelector('img')).toBeTruthy()
-    // The Due Soon pill counts down (2026-11-23): "Access Ends 13 days" — the date line's own figure.
-    expect(within(frame).getByText('Access Ends 13 days')).toBeTruthy()
-    // …and the Completed pill carries the score (2026-11-24).
-    const done = screen.getByRole('article', { name: 'FL Preferred Business Practices for the Insurance Producer' })
-    expect(within(within(done).getByTestId('atlas-card-image')).getByText('Completed - Score: 92%')).toBeTruthy()
-    // The Failed pill too, when the score is known — and "Failed" alone when it is not (the CE package card has none).
-    const failedWithScore = screen.getByRole('article', { name: 'Florida Property & Casualty Practice Exam' })
-    expect(within(within(failedWithScore).getByTestId('atlas-card-image')).getByText('Failed - Score: 62%')).toBeTruthy()
-    const failedNoScore = screen.getByRole('article', { name: 'FL Property, Casualty, Life, and Health Refresher CE Package' })
-    expect(within(within(failedNoScore).getByTestId('atlas-card-image')).getByText('Failed')).toBeTruthy()
-    expect(within(card).getByTestId('atlas-card-date').textContent).toContain('13 days left')
-    expect(frame.compareDocumentPosition(within(card).getByRole('heading')) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
-  })
-
-  it('puts the progress at the foot of the card, after the date line (2026-11-23)', () => {
-    renderShell(DESIGN_CARDS)
-    const card = screen.getByRole('article', { name: 'Florida Life and Health Pre-licensing' })
-    const bar = within(card).getByRole('progressbar')
-    const date = within(card).getByTestId('atlas-card-date')
-    expect(date.compareDocumentPosition(bar) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
-    // The progress is the second-to-last block; "Details →" closes the card (2026-11-24).
-    expect(card.lastElementChild!.previousElementSibling!.contains(bar)).toBe(true)
-  })
-
-  it('lays the card out as its own column — off the shared subgrid rows (2026-11-23)', () => {
-    renderShell(DESIGN_CARDS)
-    const card = screen.getByRole('article', { name: 'Florida Life and Health Pre-licensing' })
-    expect(card.style.display).toBe('flex')
-    expect(card.style.gridTemplateRows).toBe('')
-  })
-
-  it('marks, rather than fills, the progress on an expired or failed card (2026-11-24)', () => {
-    renderShell(DESIGN_CARDS)
-    const expiredCard = screen.getByRole('article', { name: 'Florida Personal Lines Pre-licensing' })
-    const marker = within(expiredCard).getByTestId('atlas-card-progress-marker')
-    expect(marker.style.left).toBe('62%')
-    expect(marker.style.width).toBe('2px')
-    expect(within(expiredCard).getByRole('progressbar').querySelectorAll('span')).toHaveLength(1)
-    const failedCard = screen.getByRole('article', { name: 'Florida Property & Casualty Practice Exam' })
-    expect(within(failedCard).getByTestId('atlas-card-progress-marker').style.left).toBe('100%')
-    // A live card keeps its fill.
-    const live = screen.getByRole('article', { name: 'Florida Life and Health Pre-licensing' })
-    expect(within(live).queryByTestId('atlas-card-progress-marker')).toBeNull()
-  })
-
-  it('draws a light grey track under the fill', () => {
-    renderShell(DESIGN_CARDS)
-    const bar = screen.getAllByRole('progressbar')[0]
-    expect(bar.style.background).toContain('--color-neutral-200')
-    expect(bar.style.backgroundImage).toBe('')
+    expect(screen.queryByText(/^State:/)).toBeNull()
+    for (const row of screen.getAllByTestId('atlas-card-facts')) expect(row.querySelector('svg')).toBeNull()
   })
 })
 
@@ -480,7 +320,6 @@ describe('the flag off', () => {
     expect(screen.getByRole('button', { name: 'Completed' }).hasAttribute('disabled')).toBe(true)
     expect(screen.queryByRole('link', { name: 'View Certificate' })).toBeNull()
     expect(screen.queryByTestId('atlas-card-date')).toBeNull()
-    expect(screen.queryByText('Description coming soon')).toBeNull()
   })
 
   it('is also reached by the bar’s Old card arm, not only by :off', () => {

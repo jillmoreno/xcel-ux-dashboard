@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import { Link } from 'react-router-dom'
-import { AngleRightSolid, ArrowRight, EllipsisVerticalSolid, LocationDotRegular } from '@/icons'
+import { AngleRightSolid, ArrowRight, EllipsisVerticalSolid } from '@/icons'
 import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { STATE_ABBR } from '@/data/catalogFixtures'
 import { formatMilestoneDate, usableDaysLeft } from '@/data/courseExpiry'
@@ -15,8 +15,7 @@ import { AtlasCourseDetailsSheet } from './AtlasCourseDetailsSheet'
  * `atlas-courses-card-prd-fields` chooses between the two in `MyCoursesSection`, so nobody collides with his card.
  *
  * WHAT THIS CARD ADDS, every one of them a field the PRD confirms:
- *   · the description under the title — "Description coming soon" when the course has none, never an empty row;
- *   · State · Category · Line of authority BACK ON THE CARD (the sheet still has them, with the package paragraph);
+ *   · FL | Category | Line of authority BACK ON THE CARD as one ruled row (the sheet still has them, with the package paragraph);
  *   · the status as text beside the 0–100 figure (it already was — nothing here is said by colour alone);
  *   · ONE DATE LINE per status, computed in `atlasCourseCards.ts` and only DRAWN here — "Access ends [date] · N days
  *     left", "Expired: [date]", "Completed: [date] · Score N%" — with a failed course's score and an expired course's
@@ -86,11 +85,6 @@ export function AtlasCourseCardFigmaV2({
   /* THE LINE UNDER THE DATE (PRD section 3): a failed course shows her score, an expired one her last progress. Nothing on
      the other three — the completed score is on the date line itself. */
   const detail = failed && data.score != null ? `Score: ${data.score}%` : expired ? `Last progress: ${progress}%` : null
-  /* HOW THE THREE LABELS ARE DRAWN — the design bar's `atlas-courses-card-meta` (2026-11-23, Jillienne: "lets explore some ui
-     variations"). See the flag for the three arms. */
-  const metaLayout = useFeatureFlag('atlas-courses-card-meta').variant ?? 'ruled-row'
-  // The description, shown or hidden — the design bar's `atlas-course-description` (2026-11-23); Home follows the same control.
-  const descriptionShown = useFeatureFlag('atlas-course-description').variant !== 'hidden'
   /* NO BUTTON, NO LINKS (2026-11-23, Jillienne) — the design bar's `atlas-courses-card-actions`: the card is the one action
      and Home has the buttons. The hover lift and focus ring (`.cre-atlas-card-v2`) are what is left to say so. */
   const actionsShown = useFeatureFlag('atlas-courses-card-actions').variant !== 'hidden'
@@ -182,10 +176,10 @@ export function AtlasCourseCardFigmaV2({
           <div style={TITLE_BOX} data-testid="atlas-card-title-box">
             <h3 style={TITLE}>{data.title}</h3>
           </div>
-          {/* The description RIGHT UNDER THE TITLE (2026-11-23, Jillienne: "should be right up against the title") — inside the
-              title's block, so the slack a short title leaves in the shared row falls below the description, not between.
-              Or its fallback; or nothing, under the design bar's Course description control. */}
-          {descriptionShown ? <p style={DESCRIPTION}>{data.description || 'Description coming soon'}</p> : null}
+          {/* NO DESCRIPTION (2026-11-24, Jillienne: "keep description hidden, and remove this flag"). It sat here under the title
+              for a day, with "Description coming soon" as its fallback, behind `atlas-course-description` — decided hidden
+              and the flag retired (commit a3990f69 is the last with it). The record keeps its `description`; the PRD's
+              section 3 asked for one on every card, and that is logged as a deviation on the handoff. */}
         </div>
         {/* One status pill (Figma 710:2531–2551, 2026-11-12, Eric), the most pressing: the clock before the course's own state. */}
         {/* At the foot of the title row, whatever the title's length, so every card's pills line up — 16 over the State line,
@@ -217,51 +211,32 @@ export function AtlasCourseCardFigmaV2({
           values alone, 12 / 500, hairline rules between them — `CourseMeta`'s row and `MetaRule`, not the 2026-11-12
           card's "State: Florida" lines. A fact the course does not have draws no rule. The sheet keeps the labelled
           version with the package paragraph. */}
-      {metaLayout === 'stacked' ? (
-        /* STACKED, ICON-LED — the shared compact card's shape: "Online" with its delivery icon over "Mandatory | 6 Hours".
-           Here the state leads with the location-dot (the 706:2416 design's own icon for it), then category | line of
-           authority on a hairline. */
-        <div style={FACTS_STACKED} data-testid="atlas-card-facts" data-meta="stacked">
-          {data.state ? (
-            <span style={FACT_LINE}>
-              <LocationDotRegular size={14} aria-hidden style={{ flex: 'none' }} />
-              <span>{data.state}</span>
-            </span>
-          ) : null}
-          {data.category || data.lineOfAuthority ? (
-            <span style={{ ...FACT_LINE, flexWrap: 'wrap' }}>
-              {data.category ? <span>{data.category}</span> : null}
-              {data.category && data.lineOfAuthority ? <span aria-hidden style={FACT_RULE} /> : null}
-              {data.lineOfAuthority ? <span>{data.lineOfAuthority}</span> : null}
-            </span>
-          ) : null}
-        </div>
-      ) : metaLayout === 'labelled' ? (
-        /* LABELLED LINES — the 2026-11-12 card's three lines, label in the secondary ink and the value bold. */
-        <div style={FACTS_LABELLED} data-testid="atlas-card-facts" data-meta="labelled">
-          {data.state ? <Fact label="State:" value={data.state} /> : null}
-          {data.category ? <Fact label="Category:" value={data.category} /> : null}
-          {data.lineOfAuthority ? <Fact label="Line of authority:" value={data.lineOfAuthority} /> : null}
-        </div>
-      ) : (
-        /* RULED ROW (default) — the three values on one line with the shared card's hairlines between. */
-        <div style={FACTS} data-testid="atlas-card-facts" data-meta="ruled-row">
-          {facts.map((v, i) => (
-            <span key={v} style={{ display: 'contents' }}>
-              {i > 0 ? <span aria-hidden style={FACT_RULE} /> : null}
-              <span>{v}</span>
-            </span>
-          ))}
-        </div>
-      )}
+      {/* THE RULED ROW — the three values on one line with the shared card's hairlines between. The one layout since
+          2026-11-24 (Jillienne: "set this one as default, remove the other options and this flag"); a stacked icon-led
+          block and one "State: Florida" line per fact were on the design bar beside it for a day (`atlas-courses-card-meta`,
+          commit a3990f69 the last with them — an Archive row says how to bring them back). */}
+      <div style={FACTS} data-testid="atlas-card-facts">
+        {facts.map((v, i) => (
+          <span key={v} style={{ display: 'contents' }}>
+            {i > 0 ? <span aria-hidden style={FACT_RULE} /> : null}
+            <span>{v}</span>
+          </span>
+        ))}
+      </div>
       {/* THE DATE LINE — one per status, computed in `atlasCourseCards.ts` (`dateLine`); the card only draws what it is
-          given. An empty `availableDate` draws nothing, which keeps the subgrid row rather than the sentence. */}
+          given. In the Home course head's meta-row style since 2026-11-24 (Jillienne, with "Course Access Ends: 06/10/2026,
+          29 days to complete" selected: "Update Access Ends to match this style. mm/dd/yyyy") — 11 / 14, the label at 500 in
+          Neutral 700, the date and the day count at 600 in the primary ink, "to complete" back at 500. (Its Primary 200 rules
+          moved up under the title block the same hour.) An empty `availableDate` draws nothing. */}
       <div style={DATES}>
         {data.availableDate ? (
-          <p style={DATE_LINE} data-testid="atlas-card-date">
-            {data.dateLabel ? `${data.dateLabel} ` : null}
-            <strong style={{ fontWeight: 700 }}>{data.availableDate}</strong>
-            {data.availableTime ? ` ${data.availableTime}` : null}
+          <p style={DATE_ROW} data-testid="atlas-card-date">
+            {data.dateLabel ? <span style={DATE_LABEL}>{data.dateLabel}</span> : null}
+            <span style={DATE_VALUE}>
+              {data.availableDate}
+              {data.availableTime ? <span style={DATE_LABEL}>,</span> : null}
+            </span>
+            {data.availableTime ? <DateTrail text={data.availableTime} /> : null}
           </p>
         ) : null}
         {detail ? <p style={DATE_LINE}>{detail}</p> : null}
@@ -446,9 +421,18 @@ const IMAGE: CSSProperties = { display: 'block', width: '100%', height: 120, obj
    sits on the card's ground and the photo at once. It was 8 in from the corner for an hour that day. */
 const IMAGE_WRAP: CSSProperties = { position: 'relative' }
 const PILL_ON_IMAGE: CSSProperties = { position: 'absolute', top: -10.5, left: -10, display: 'inline-flex', boxShadow: '0 1px 2px rgb(0 0 0 / 0.12)', borderRadius: 14 }
-// No padding under the title block (2026-11-24, Jillienne: "remove bottom padding"; 18 the day before, for 30 to the labels).
-// The column's 8 and the labels' own 4 are what remain between the description and the labels.
-const TITLE_BLOCK: CSSProperties = { display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 8, paddingTop: 4, paddingBottom: 0 }
+// A Primary 200 rule UNDER THE TITLE BLOCK, 8 below the title's box (2026-11-24, Jillienne: "have this divider line be under
+// the course title section, remove them from the access ends section" — the rules the date line wore for an hour). No
+// other padding under it ("remove bottom padding", the same day); the column's 8 and the labels' 4 follow the rule.
+const TITLE_BLOCK: CSSProperties = {
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'flex-start',
+  gap: 8,
+  paddingTop: 4,
+  paddingBottom: 8,
+  borderBottom: '1px solid var(--color-primary-200)',
+}
 /* The title and its Course Details link (2026-11-18, Eric; a rule under them that day, then removed). The pair stretches to the foot of its share of the row, which is
    what holds the pills at one height across the row. */
 const TITLE_HEAD: CSSProperties = {
@@ -478,18 +462,6 @@ const TITLE: CSSProperties = {
   WebkitBoxOrient: 'vertical',
   overflow: 'hidden',
 }
-/* The description: the facts' face at 12, three lines at most so a long blurb cannot push the row's buttons apart. */
-const DESCRIPTION: CSSProperties = {
-  margin: 0,
-  fontFamily: 'var(--font-body)',
-  fontSize: 12,
-  lineHeight: '18px',
-  color: 'var(--color-text-secondary)',
-  display: '-webkit-box',
-  WebkitLineClamp: 3,
-  WebkitBoxOrient: 'vertical',
-  overflow: 'hidden',
-}
 /* The facts as ONE ROW, the shared card's `CourseMeta` row verbatim — inline-flex, 8 apart, 12 / 500 — wrapping when a long
    line of authority needs it, in the card's secondary ink. */
 const FACTS: CSSProperties = {
@@ -508,8 +480,36 @@ const FACTS: CSSProperties = {
 }
 /* `MetaRule`, verbatim: a 1 × 12 hairline in the subtle border colour. */
 const FACT_RULE: CSSProperties = { width: 1, height: 12, background: 'var(--color-border-subtle)', flex: 'none' }
-/* The date line and the detail under it, in the facts' face; 12 under them before the button. */
-const DATES: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 2, paddingBottom: 12 }
+/** The trailing part of the date line — "13 days to complete" splits into the count at 600 and the rest at 500; anything
+ *  else ("Score 92%") is drawn whole at 600, like the date. */
+function DateTrail({ text }: { text: string }) {
+  const m = /^(\d+ days?)\s+(.*)$/.exec(text)
+  return m ? (
+    <span style={DATE_PAIR}>
+      <span style={DATE_VALUE}>{m[1]}</span>
+      <span style={DATE_LABEL}>{m[2]}</span>
+    </span>
+  ) : (
+    <span style={DATE_VALUE}>{text}</span>
+  )
+}
+/* The date line and the detail under it; 12 under them before the button. */
+const DATES: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 4, paddingBottom: 12 }
+/* `WhiteCourseMeta`'s row (AtlasHomeEricE2E) — its type and inks; NOT its rules, which moved up under the title block the same
+   hour (2026-11-24, Jillienne). */
+const DATE_ROW: CSSProperties = {
+  margin: 0,
+  display: 'flex',
+  flexWrap: 'wrap',
+  alignItems: 'center',
+  gap: 4,
+  fontFamily: 'var(--font-body)',
+  fontSize: 11,
+  lineHeight: '14px',
+}
+const DATE_PAIR: CSSProperties = { display: 'inline-flex', alignItems: 'center', gap: 4 }
+const DATE_LABEL: CSSProperties = { fontWeight: 500, color: 'var(--color-neutral-700)' }
+const DATE_VALUE: CSSProperties = { fontWeight: 600, color: 'var(--color-text-primary)' }
 const DATE_LINE: CSSProperties = {
   margin: 0,
   fontFamily: 'var(--font-body)',
@@ -572,41 +572,6 @@ const REVIEW_LINK: CSSProperties = {
 const ACTIONS: CSSProperties = { display: 'flex', gap: 6, alignItems: 'flex-end' }
 /** The card's foot row: "Details →" at the right (2026-11-24). */
 const DETAILS_FOOT: CSSProperties = { display: 'flex', justifyContent: 'flex-end', paddingTop: 4 }
-/* The three label layouts (2026-11-23). STACKED: two lines, 2 apart, the shared compact card's `CourseMeta` block at the
-   card's 12. LABELLED: the 2026-11-12 card's lines. */
-const FACTS_STACKED: CSSProperties = {
-  display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'flex-start',
-  gap: 4,
-  paddingTop: 4,
-  paddingBottom: 12,
-  color: 'var(--color-text-secondary)',
-  fontFamily: 'var(--font-body)',
-  fontSize: 12,
-  fontWeight: 500,
-  lineHeight: '16px',
-}
-const FACT_LINE: CSSProperties = { display: 'inline-flex', alignItems: 'center', gap: 8 }
-const FACTS_LABELLED: CSSProperties = {
-  display: 'flex',
-  flexDirection: 'column',
-  gap: 6,
-  paddingTop: 4,
-  paddingBottom: 12,
-  color: 'var(--color-text-secondary)',
-  fontFamily: 'var(--font-body)',
-}
-const FACT: CSSProperties = { display: 'block', fontSize: 11, lineHeight: '18px' }
-const FACT_VALUE: CSSProperties = { fontWeight: 700, fontSize: 10 }
-/* One run of text, so a long value wraps under its label inside the card rather than widening it (the 2026-11-12 card's). */
-function Fact({ label, value }: { label: string; value: string }) {
-  return (
-    <span style={FACT}>
-      {label} <strong style={FACT_VALUE}>{value}</strong>
-    </span>
-  )
-}
 /* The button row and "Course Details ›" under it, 8 apart, at the foot of the subgrid row (2026-11-23). */
 const ACTIONS_BLOCK: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 8, alignSelf: 'end' }
 

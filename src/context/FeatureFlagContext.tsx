@@ -4865,35 +4865,6 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
-    key: 'atlas-course-description',
-    /* THE COURSE'S DESCRIPTION, ON THE CARD AND ON HOME — 2026-11-23, Jillienne,
-       with the card's description selected: "add a toggle to hide/show the
-       description. Also add this description to the Home page for the course,
-       under the title, and Add/Hide toggle should be there too."
-
-       One control, two places: the PRD card's description row
-       (`AtlasCourseCardFigmaV2`) and a line under the course title in Jill/
-       Atlas-Main's course head (`AtlasHomeJillMain`, through the head row's
-       `meta` slot — the row itself is Eric's and is not edited). Home reads
-       the card the learner came from, else the picked course tab's, else the
-       demo course's; the same "Description coming soon" fallback as the card.
-
-       `hidden` removes the line in both places. The card's subgrid row stays
-       so neighbours still line up. Eric's End-to-End Home is untouched. */
-    group: 'Widgets',
-    label: 'Course description',
-    description:
-      'Whether the course\u2019s description is drawn \u2014 on the My Courses PRD card under the title, and on Home under the course title. Shown (default) or Hidden, both places at once.',
-    defaultEnabled: true,
-    defaultVariant: 'shown',
-    variants: [
-      { value: 'shown', label: 'Shown' },
-      { value: 'hidden', label: 'Hidden' },
-    ],
-    surface: 'design',
-    page: 'dashboard-rebrand',
-  },
-  {
     key: 'atlas-courses-card-actions',
     /* THE CARD'S ACTIONS, OR NONE — 2026-11-23, Jillienne: "add a toggle
        variant where all of the ctas and links are hidden. user clicks on
@@ -4921,39 +4892,6 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     variants: [
       { value: 'shown', label: 'Shown' },
       { value: 'hidden', label: 'Hidden — the card opens Home' },
-    ],
-    surface: 'design',
-    page: 'dashboard-rebrand',
-  },
-  {
-    key: 'atlas-courses-card-meta',
-    /* HOW THE PRD CARD DRAWS STATE · CATEGORY · LINE OF AUTHORITY — 2026-11-23,
-       Jillienne, with the shared card's compact meta block selected
-       ("Pharmacology Update 2026 / Online / Mandatory | 6 Hours / TX | CA |
-       NY | FL / ★ 4.8"): "use this style … lets explore some ui variations".
-       A DESIGN-BAR control on the PRD card only (`AtlasCourseCardFigmaV2`);
-       the 2026-11-18 card has its facts in the sheet and ignores this.
-
-       `ruled-row` (default): the three values on one line, 12 / 500, with
-       the shared card's 1 × 12 hairlines between — the style, not the shape.
-       `stacked`: the example's SHAPE — an icon-led first line (location-dot,
-       the state), then category | line of authority under it on a hairline,
-       the way the shared card stacks "Online" over "Mandatory | 6 Hours".
-       `labelled`: the 2026-11-12 card's three "State: Florida" lines, one per
-       fact, the label in the secondary ink and the value bold — the most
-       explicit of the three and the tallest.
-
-       Any arm keeps the card's subgrid rows; only the facts row changes. */
-    group: 'Widgets',
-    label: 'My Courses card — labels',
-    description:
-      'How the PRD card draws State, Category and Line of authority. Ruled row (default): one line, hairlines between the values. Stacked: the shared card\u2019s shape \u2014 an icon-led state line, then category | line of authority under it. Labelled: one "State: Florida" line per fact, label grey, value bold. PRD card only.',
-    defaultEnabled: true,
-    defaultVariant: 'ruled-row',
-    variants: [
-      { value: 'ruled-row', label: 'Ruled row' },
-      { value: 'stacked', label: 'Stacked, icon-led' },
-      { value: 'labelled', label: 'Labelled lines' },
     ],
     surface: 'design',
     page: 'dashboard-rebrand',
@@ -5059,26 +4997,6 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     description:
       'Every Atlas certificate card \u2014 and its \u22ee \u2014 opens the Certificate Details slide-over, which now covers issued and not-yet-earned certificates as well as action-required ones. Off, the card and the kebab do nothing, as before.',
     defaultEnabled: true,
-    page: 'dashboard-rebrand',
-  },
-  {
-    key: 'atlas-header-logo',
-    /* THE XCEL LOGO, OLD OR NEW (2026-11-19, Eric's request) — a Design-bar control for the Atlas header's logo. Old is the
-       lockup the header has drawn since 2026-09-09 (`/brand/xcel-logo.webp`); New is Figma "Atlas UX Design" 757:2138
-       (`/brand/xcel-logo-new.svg`), the two vector groups composed at their frame positions. Old by default, so nothing
-       moves until someone picks New. The header only — the other places the lockup appears are untouched. */
-    surface: 'design',
-    versions: ['eric-atlas-e2e'],
-    group: 'Layout',
-    label: 'XCEL logo',
-    description:
-      'Which XCEL logo the Atlas header draws. Old: the current lockup. New: the Figma 757:2138 logo — the mark and XCEL in brick over "Insurance Training by Colibri".',
-    defaultEnabled: true,
-    defaultVariant: 'old',
-    variants: [
-      { value: 'old', label: 'Old', description: 'The lockup the header has drawn since 2026-09-09.' },
-      { value: 'new', label: 'New', description: 'Figma 757:2138, drawn 110 wide like the old one.' },
-    ],
     page: 'dashboard-rebrand',
   },
   {

@@ -120,8 +120,9 @@ describe('the checkout audience flag', () => {
       /* The learner bar is Breakpoint alone since 2026-11-19 (Eric: "on the learner side hide all design controls, except
          for breakpoint") — Long title, Course tabs, Brand, Readiness, the Affidavit set, Exam date step and Pace card: Figma
          are all panel-only now. */
-      // …and Breakpoint left it too, "for now" (same day); the XCEL logo control (Old / New) is its one control since.
-      expect(onAtlas).toEqual(['atlas-header-logo'])
+      // …and Breakpoint left it too, "for now" (same day). The XCEL logo control (Old / New) was its one control from
+      // 2026-11-19 until Jillienne retired it on 2026-11-24; her own card controls carry `versions` of their own.
+      expect(onAtlas).toEqual([])
     })
 
     it('brings the whole flow\u2019s bar with it, not just this control', () => {

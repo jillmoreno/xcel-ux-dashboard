@@ -1,7 +1,7 @@
 import type { AtlasCourseCardData } from '@/components/compass/AtlasCourseCard'
 import type { Brand } from '@/context/AccountContext'
 import { certificateForCourse, certificatePdfUrl } from './certificateFixtures'
-import { courseExpiryState, usableDaysLeft } from './courseExpiry'
+import { courseExpiryState, formatMilestoneDate, usableDaysLeft } from './courseExpiry'
 import { FIXTURE_TODAY, myCoursesFor, type MyCourseRecord } from './myCoursesFixtures'
 
 /**
@@ -22,7 +22,8 @@ import { FIXTURE_TODAY, myCoursesFor, type MyCourseRecord } from './myCoursesFix
  * PRD shapes ("Access ends … · N days left", "Expired:", "Completed: … ·
  * Score") are on screen at once and cannot drift from the fixtures' shapes.
  * The authored "October 19, 2026 · 5:49 PM CDT" strings went with that: a
- * Due Soon card dated five months out contradicted its own pill.
+ * Due Soon card dated five months out contradicted its own pill. (mm/dd/yyyy
+ * since 2026-11-24.)
  *
  * ⚠ THE CE PACKAGE CARD (`demo-ny-pclh-refresher-ce`) IS OUT OF SCOPE FOR THE
  * JAN 12 RELEASE and is left exactly as it was — authored date string, no
@@ -35,20 +36,6 @@ import { FIXTURE_TODAY, myCoursesFor, type MyCourseRecord } from './myCoursesFix
  *  (the PRD's "No dead ends"). `certificatePdfUrl` returns the same page today; see its `TODO(data)`. */
 export const CERTIFICATES_PAGE = '/my-learning/certificates'
 
-const MONTHS = [
-  'January',
-  'February',
-  'March',
-  'April',
-  'May',
-  'June',
-  'July',
-  'August',
-  'September',
-  'October',
-  'November',
-  'December',
-]
 
 export const ATLAS_MY_COURSES: readonly AtlasCourseCardData[] = [
   {
@@ -297,11 +284,13 @@ export function atlasCourseCardFor(course: MyCourseRecord, today: Date = FIXTURE
 
 /**
  * THE DATE ROW — the PRD's five shapes (section 3, 2026-11-16), one per status,
- * and the Enrolled line that stood in for a missing clock is gone (2026-11-23):
+ * and the Enrolled line that stood in for a missing clock is gone (2026-11-23).
+ * In the Home course head's wording and mm/dd/yyyy since 2026-11-24
+ * (Jillienne: "Update Access Ends to match this style"):
  *
- *   Not Started · In Progress · Failed   Access ends [date] · N days left
- *   Expired                              Expired: [date]
- *   Completed                            Completed: [date] · Score N%
+ *   Not Started · In Progress · Failed   Access Ends: 05/25/2026, 13 days to complete
+ *   Expired                              Expired: 04/20/2026
+ *   Completed                            Completed: 03/18/2026, Score 92%
  *
  * The bold part is `availableDate`; `dateLabel` leads it and `availableTime`
  * trails it, which is the shape `AtlasCourseCardData` already had. The days are
@@ -319,19 +308,19 @@ function dateLine(
     // that forgot it falls back to the enrolment rather than rendering "undefined".
     return {
       dateLabel: 'Completed:',
-      availableDate: longDate(course.completedOn ?? course.enrolledAt),
-      availableTime: course.score != null ? `· Score ${course.score}%` : undefined,
+      availableDate: formatMilestoneDate(course.completedOn ?? course.enrolledAt),
+      availableTime: course.score != null ? `Score ${course.score}%` : undefined,
     }
   }
   if (!course.expiresAt) return { availableDate: '' }
   if (courseExpiryState({ ...course, status: course.status ?? course.myStatus }, today) === 'expired') {
-    return { dateLabel: 'Expired:', availableDate: longDate(course.expiresAt) }
+    return { dateLabel: 'Expired:', availableDate: formatMilestoneDate(course.expiresAt) }
   }
   const days = Math.max(0, usableDaysLeft(course.expiresAt, today) ?? 0)
   return {
-    dateLabel: 'Access ends',
-    availableDate: longDate(course.expiresAt),
-    availableTime: `· ${days} ${days === 1 ? 'day' : 'days'} left`,
+    dateLabel: 'Access Ends:',
+    availableDate: formatMilestoneDate(course.expiresAt),
+    availableTime: `${days} ${days === 1 ? 'day' : 'days'} to complete`,
   }
 }
 
@@ -353,13 +342,6 @@ function action(status: MyCourseRecord['myStatus']): Pick<AtlasCourseCardData, '
   }
 }
 
-/** `2026-10-19` → `October 19, 2026`, the long form the design's cards use. */
-function longDate(iso: string | undefined): string {
-  if (!iso) return ''
-  const [y, m, d] = iso.split('-').map(Number)
-  if (!y || !m || !d) return iso ?? ''
-  return `${MONTHS[m - 1]} ${d}, ${y}`
-}
 
 /**
  * A CARD OPENS HOME IN ITS OWN STATE — 2026-11-04, Eric's request: "add click

@@ -55,6 +55,31 @@ export type ArchivedItem = {
 }
 
 export const ARCHIVED_ITEMS: ArchivedItem[] = [
+  /* ── 2026-11-24, two design-bar controls retired from the PRD card work on feat/atlas-updates-11-23 ─────────── */
+  {
+    id: 'atlas-header-logo-new',
+    name: 'XCEL logo — the New lockup (design-bar control)',
+    what: 'A Design-bar control, `atlas-header-logo` (2026-11-19, Eric), offering Figma "Atlas UX Design" 757:2138\u2019s new XCEL logo in the Atlas header beside the lockup drawn since 2026-09-09. Old / New; Old by default.',
+    location:
+      'The file is untouched: `public/brand/xcel-logo-new.svg`. The call site was the logo `<a>` in `src/components/layout/AtlasHeader.tsx`, which draws `/brand/xcel-logo.webp` alone now; commit a3990f69 on feat/atlas-updates-11-23 is the last with the flag and the branch.',
+    flag: 'atlas-header-logo (removed from FEATURE_FLAGS and REBRAND_FLAGS)',
+    dateRemoved: '2026-11-24',
+    reason: 'Jillienne, on the design bar: "remove this flag". Old was the default and nothing had picked New; a control nobody turns over is a row of chrome.',
+    restoreNote:
+      'Put the `atlas-header-logo` entry back in `FEATURE_FLAGS` (`src/context/FeatureFlagContext.tsx` \u2014 `surface: design`, `versions: [eric-atlas-e2e]`, Old / New, Old default) and its key in `REBRAND_FLAGS` (`src/components/account/FeatureFlagPanel.tsx`); in `src/components/layout/AtlasHeader.tsx` read the flag\u2019s variant and draw `/brand/xcel-logo-new.svg` at 110 \u00d7 49.65, 1 lower than centred, when it is `new`; and `src/test/InviteFlows.test.tsx` expects the Atlas bar\u2019s design controls to be the logo flag again. All of it is in commit a3990f69.',
+  },
+  {
+    id: 'atlas-courses-card-meta-layouts',
+    name: 'My Courses PRD card — the stacked and labelled label layouts',
+    what: 'Two of the three ways the PRD card drew State \u00b7 Category \u00b7 Line of authority, on a Design-bar control `atlas-courses-card-meta` (2026-11-23): "Stacked, icon-led" \u2014 the shared card\u2019s shape, a location-dot state line over category | line of authority \u2014 and "Labelled lines" \u2014 one "State: Florida" line per fact. The ruled row won.',
+    location:
+      'No file of their own: both were branches inside `src/components/compass/AtlasCourseCardFigmaV2.tsx` (the facts block and the `FACTS_STACKED`, `FACT_LINE`, `FACTS_LABELLED`, `FACT`, `FACT_VALUE` styles and the `Fact` component). Commit a3990f69 on feat/atlas-updates-11-23 is the last with them; the ruled row that stayed is the same file\u2019s `FACTS` block.',
+    flag: 'atlas-courses-card-meta (removed from FEATURE_FLAGS and REBRAND_FLAGS)',
+    dateRemoved: '2026-11-24',
+    reason: 'Jillienne, with the ruled row selected: "set this one as default, remove the other options and this flag". The comparison was made; the two losing arms were only chrome after that.',
+    restoreNote:
+      'Take the `atlas-courses-card-meta` entry and the two facts branches from commit a3990f69 (`git show a3990f69:src/components/compass/AtlasCourseCardFigmaV2.tsx`): the flag back in `FEATURE_FLAGS` (`src/context/FeatureFlagContext.tsx`) and `REBRAND_FLAGS` (`src/components/account/FeatureFlagPanel.tsx`), the `metaLayout` read and the `stacked` / `labelled` branches back around the `FACTS` block in `src/components/compass/AtlasCourseCardFigmaV2.tsx`, the three style consts and `Fact`, and `LocationDotRegular` back in the icon import. The three tests under "the three label layouts" in `src/test/AtlasCourseCardPrdFields.test.tsx` are in the same commit.',
+  },
   /* ── THE SIMPLE HUB, 2026-11-21 — eight sections unwired in one day ──────
      Every row below names the same place: the `hub-advanced` branch (tag
      `hub-advanced-2026-11-21`, commit 7b83b7a5), which is `main` as it stood
