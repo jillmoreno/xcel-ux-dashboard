@@ -13,7 +13,8 @@ import '@/pages/inviteFlow.css'
  * Measured from the live "Select your state" modal on the Life & Health course
  * page (`.xcel-pkgcmp__modal-wrapper`): 560 wide, 5px corners, the 35% shadow
  * over a charcoal overlay; a header of 18px 30px 15px with a 1px #DDD rule
- * under it and the title in Avenir Heavy 18 / 27; Magento's thin close glyph,
+ * under it and the title in Avenir Heavy 18 / 27 (weight 800 here — see
+ * TITLE); Magento's thin close glyph,
  * 14px grey, 18 from the top and 30 from the right, with no box; and content
  * of 20px 30px 30px in Avenir 18 / 27.
  *
@@ -93,10 +94,14 @@ const HEADER: CSSProperties = {
   borderBottom: '1px solid var(--color-e2e-card-outline)',
 }
 
+/* ⚠ 800, NOT THE LIVE SITE'S 900. XCEL loads its own "Avenir Heavy" file and
+   labels it 900; here the face comes from the system's Avenir family, where
+   900 is Avenir BLACK and Avenir Heavy is 800 — so 900 drew a step too heavy
+   (2026-11-24, Afsana). */
 const TITLE: CSSProperties = {
   margin: 0,
   fontFamily: 'var(--font-e2e-avenir)',
-  fontWeight: 900,
+  fontWeight: 800,
   fontSize: 18,
   lineHeight: '27px',
   color: 'var(--color-xcel-text)',

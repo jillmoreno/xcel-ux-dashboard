@@ -655,6 +655,37 @@ describe('Invite Flow V3 — the email check', () => {
     }
   })
 
+  it('the checkout modals take XCEL’s type, buttons and card; the reset page keeps its own (2026-11-24)', async () => {
+    renderAt(CHECKOUT, `${V3_B2B},invite-v3-email-account:atlas`)
+    const dialog = screen.getByRole('dialog')
+    const title = within(dialog).getByRole('heading', { name: 'Enter your email to continue' })
+    /* Avenir Heavy 18 / 27 (800 in the system Avenir family). */
+    expect([title.style.fontWeight, title.style.fontSize, title.style.lineHeight]).toEqual(['800', '18px', '27px'])
+    const lead = dialog.querySelector<HTMLElement>('#verify-email-lead')!
+    expect([lead.style.fontWeight, lead.style.fontSize, lead.style.lineHeight]).toEqual(['400', '16px', '21px'])
+    const cont = within(dialog).getByRole('button', { name: 'Continue' })
+    /* The red and its hover live in the class; only "off" is inline. */
+    expect(cont).toHaveClass('cre-xcel-btn')
+    expect([cont.style.fontWeight, cont.style.fontSize, cont.style.lineHeight]).toEqual(['500', '18px', '25px'])
+    await userEvent.type(within(dialog).getByLabelText(/^Email\s*\*?$/), 'jordan@example.com')
+    expect(cont.style.background).toBe('')
+    expect(dialog.style.borderRadius).toBe('5px')
+    expect(dialog.style.boxShadow).toBe('0 0 12px 2px var(--color-xcel-modal-shadow)')
+    expect((dialog.parentElement as HTMLElement).style.background).toBe('var(--color-xcel-overlay)')
+  })
+
+  it('the reset page keeps its card, title and button as they were', () => {
+    render(
+      <MemoryRouter initialEntries={['/end-to-end-demo/reset-password?email=jordan@example.com']}>
+        <ResetPasswordPageV3 />
+      </MemoryRouter>,
+    )
+    const card = screen.getByRole('region', { name: 'Reset your password' })
+    expect(card.style.borderRadius).toBe('8px')
+    expect(within(card).getByRole('heading', { name: 'Reset your password' }).style.fontSize).toBe('22px')
+    expect(within(card).getByRole('button', { name: 'Reset password' })).toHaveClass('cre-e2e-cta')
+  })
+
   it('the reset page: header logo, the card centred, the rules and eyes, then Password reset', async () => {
     window.history.replaceState({}, '', '/end-to-end-demo/reset-password?email=jordan@example.com')
     render(

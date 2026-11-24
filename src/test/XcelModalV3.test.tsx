@@ -27,7 +27,8 @@ describe('XCEL modal — the three V3 modals the XCEL platform shows', () => {
     expect(dialog.style.borderRadius).toBe('5px')
     const { header, title } = frame(dialog)
     expect(header.style.borderBottom).toBe('1px solid var(--color-e2e-card-outline)')
-    expect(title.style.fontWeight).toBe('900')
+    /* Avenir Heavy: 800 in the system Avenir family (900 is Avenir Black). */
+    expect(title.style.fontWeight).toBe('800')
     expect(title.style.fontSize).toBe('18px')
     const yes = within(dialog).getByRole('button', { name: /^yes$/i })
     const no = within(dialog).getByRole('button', { name: /^no$/i })

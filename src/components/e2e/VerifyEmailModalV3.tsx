@@ -131,7 +131,7 @@ export function VerifyEmailModalV3({
         aria-describedby={step === 'signing-in' ? undefined : 'verify-email-lead'}
         aria-label={step === 'signing-in' ? 'Signing you in' : undefined}
         tabIndex={-1}
-        style={{ ...MODAL, ...layer.card }}
+        style={{ ...M_CARD, ...layer.card }}
       >
         {step === 'email' ? (
           <form
@@ -146,11 +146,11 @@ export function VerifyEmailModalV3({
           >
             <img src="/brand/xcel-logo.webp" alt="XCEL Insurance Training by Colibri" style={CODE_LOGO} />
             <div style={HEAD}>
-              <h2 id="verify-email-title" style={TITLE}>
+              <h2 id="verify-email-title" style={M_TITLE}>
                 Enter your email to continue
               </h2>
               <div aria-hidden style={RULE} />
-              <p id="verify-email-lead" style={LEAD}>
+              <p id="verify-email-lead" style={M_LEAD}>
                 {/* One line on every flow, whatever the account turns out to
                     be — it is only checked after Continue (2026-11-13, Afsana). */}
                 Provide your email address. We will use it to find your existing account or create one.
@@ -186,10 +186,10 @@ export function VerifyEmailModalV3({
             <div style={ACTIONS}>
               <button
                 type="submit"
-                className="cre-e2e-cta"
+                className="cre-xcel-btn"
                 disabled={!ready}
                 aria-disabled={!ready}
-                style={ready ? CTA : CTA_OFF}
+                style={ready ? M_CTA : M_CTA_OFF}
               >
                 Continue
               </button>
@@ -225,7 +225,7 @@ export function VerifyEmailModalV3({
         ) : (
           <div style={SIGNING_IN}>
             <img src="/brand/xcel-logo.webp" alt="XCEL Insurance Training by Colibri" style={CODE_LOGO} />
-            <XcelLoadingStatus message="Signing you in" size={SIGNING_SPINNER} />
+            <XcelLoadingStatus message="Signing you in" size={SIGNING_SPINNER} textStyle={M_LEAD} />
           </div>
         )}
       </div>
@@ -343,7 +343,7 @@ function CodeStep({
           (2026-11-03, Afsana). */}
       <img src="/brand/xcel-logo.webp" alt="XCEL Insurance Training by Colibri" style={CODE_LOGO} />
       <div style={HEAD}>
-        <h2 id="verify-email-title" style={TITLE}>
+        <h2 id="verify-email-title" style={M_TITLE}>
           Verify your email
         </h2>
         <div aria-hidden style={RULE} />
@@ -356,7 +356,7 @@ function CodeStep({
             <span>A new code has been sent.</span>
           </p>
         ) : null}
-        <p id="verify-email-lead" style={LEAD}>
+        <p id="verify-email-lead" style={M_LEAD}>
           {/* The expiry is part of it again, at the end (2026-11-23, Afsana);
               from 2026-11-13 it sat under the boxes. */}
           We sent a 6-digit code to <strong style={{ fontWeight: 800 }}>{identity.email.trim()}</strong>. Be sure to
@@ -404,10 +404,10 @@ function CodeStep({
       <div style={ACTIONS}>
         <button
           type="submit"
-          className="cre-e2e-cta"
+          className="cre-xcel-btn"
           disabled={!ready}
           aria-disabled={!ready}
-          style={ready ? CTA : CTA_OFF}
+          style={ready ? M_CTA : M_CTA_OFF}
         >
           Confirm
         </button>
@@ -471,10 +471,10 @@ function EmailVerified() {
         <Check size={24} style={{ stroke: 'currentColor', strokeWidth: 28 }} />
       </span>
       <div style={{ ...HEAD, alignItems: 'center', gap: 6 }}>
-        <h2 id="verify-email-title" style={TITLE}>
+        <h2 id="verify-email-title" style={M_TITLE}>
           Email verified
         </h2>
-        <p id="verify-email-lead" style={{ ...LEAD, color: 'var(--color-text-secondary)' }}>
+        <p id="verify-email-lead" style={{ ...M_LEAD, color: 'var(--color-text-secondary)' }}>
           Thanks! Continuing…
         </p>
       </div>
@@ -518,11 +518,11 @@ function NameStep({
     >
       <img src="/brand/xcel-logo.webp" alt="XCEL Insurance Training by Colibri" style={CODE_LOGO} />
       <div style={HEAD}>
-        <h2 id="verify-email-title" style={TITLE}>
+        <h2 id="verify-email-title" style={M_TITLE}>
           Enter your name to continue
         </h2>
         <div aria-hidden style={RULE} />
-        <p id="verify-email-lead" style={LEAD}>
+        <p id="verify-email-lead" style={M_LEAD}>
           Your email is verified. Enter your first and last name to continue to checkout.
         </p>
       </div>
@@ -565,10 +565,10 @@ function NameStep({
       <div style={ACTIONS}>
         <button
           type="submit"
-          className="cre-e2e-cta"
+          className="cre-xcel-btn"
           disabled={!ready}
           aria-disabled={!ready}
-          style={ready ? CTA : CTA_OFF}
+          style={ready ? M_CTA : M_CTA_OFF}
         >
           Continue
         </button>
@@ -678,11 +678,11 @@ function LoginStep({
         <V3CardBack onBack={() => setRequesting(false)} />
         <img src="/brand/xcel-logo.webp" alt="XCEL Insurance Training by Colibri" style={CODE_LOGO} />
         <div style={HEAD}>
-          <h2 id="verify-email-title" style={TITLE}>
+          <h2 id="verify-email-title" style={M_TITLE}>
             Reset your password
           </h2>
           <div aria-hidden style={RULE} />
-          <p id="verify-email-lead" style={LEAD}>
+          <p id="verify-email-lead" style={M_LEAD}>
             Enter your email and we’ll send you a link to reset your password.
           </p>
         </div>
@@ -712,7 +712,7 @@ function LoginStep({
             2026-11-23 (Afsana) for Contact us, and Back to sign in for ←
             Back. */}
         <div style={ACTIONS}>
-          <button type="submit" className="cre-e2e-cta" disabled={!valid} aria-disabled={!valid} style={valid ? CTA : CTA_OFF}>
+          <button type="submit" className="cre-xcel-btn" disabled={!valid} aria-disabled={!valid} style={valid ? M_CTA : M_CTA_OFF}>
             Send reset link
           </button>
         </div>
@@ -742,11 +742,11 @@ function LoginStep({
         <V3CardBack onBack={() => setResetSent(false)} />
         <img src="/brand/xcel-logo.webp" alt="XCEL Insurance Training by Colibri" style={CODE_LOGO} />
         <div style={HEAD}>
-          <h2 id="verify-email-title" style={TITLE}>
+          <h2 id="verify-email-title" style={M_TITLE}>
             Check your email
           </h2>
           <div aria-hidden style={RULE} />
-          <p id="verify-email-lead" style={LEAD}>
+          <p id="verify-email-lead" style={M_LEAD}>
             We sent a password reset link to <strong style={{ fontWeight: 800 }}>{resetEmail.trim()}</strong>. Follow the
             instructions in the email to reset your password. Be sure to check your spam or junk folders.
           </p>
@@ -758,10 +758,10 @@ function LoginStep({
         <div style={ACTIONS}>
           <button
             type="button"
-            className="cre-e2e-cta"
+            className="cre-xcel-btn"
             disabled={!canResend}
             aria-disabled={!canResend}
-            style={canResend ? CTA : CTA_OFF}
+            style={canResend ? M_CTA : M_CTA_OFF}
             onClick={() => setLinkWait(RESEND_LINK_AFTER_S)}
           >
             Resend link
@@ -800,7 +800,7 @@ function LoginStep({
       {onBack ? <V3CardBack onBack={onBack} /> : null}
       <img src="/brand/xcel-logo.webp" alt="XCEL Insurance Training by Colibri" style={CODE_LOGO} />
       <div style={HEAD}>
-        <h2 id="verify-email-title" style={TITLE}>
+        <h2 id="verify-email-title" style={M_TITLE}>
           {title}
         </h2>
         <div aria-hidden style={RULE} />
@@ -808,7 +808,7 @@ function LoginStep({
             (2026-11-18, Afsana). From 2026-11-03 it was bold in this sentence
             on all but Direct Email. */}
         {lead === null ? null : (
-          <p id="verify-email-lead" style={LEAD}>
+          <p id="verify-email-lead" style={M_LEAD}>
             {lead}
           </p>
         )}
@@ -891,10 +891,10 @@ function LoginStep({
       <div style={ACTIONS}>
         <button
           type="submit"
-          className="cre-e2e-cta"
+          className="cre-xcel-btn"
           disabled={!ready}
           aria-disabled={!ready}
-          style={ready ? CTA : CTA_OFF}
+          style={ready ? M_CTA : M_CTA_OFF}
         >
           Log in
         </button>
@@ -1154,7 +1154,8 @@ const SCRIM: CSSProperties = {
   alignItems: 'center',
   justifyContent: 'center',
   padding: 24,
-  background: 'var(--color-e2e-scrim)',
+  /* XCEL's charcoal backdrop (2026-11-24). */
+  background: 'var(--color-xcel-overlay)',
 }
 
 /* 460 wide and the buttons full width: the file's stylesheet overrides its
@@ -1170,6 +1171,15 @@ const MODAL: CSSProperties = {
   background: 'var(--color-fixed-light)',
   boxShadow: '0 10px 30px var(--color-e2e-form-shadow)',
   borderRadius: 8,
+}
+
+/* The modal's card in XCEL's corners and shadow (2026-11-24, Afsana: "card —
+   5px corners, stronger shadow over a charcoal backdrop"). The width and
+   padding stay; the reset PAGE keeps MODAL as it was. */
+const M_CARD: CSSProperties = {
+  ...MODAL,
+  borderRadius: 5,
+  boxShadow: '0 0 12px 2px var(--color-xcel-modal-shadow)',
 }
 
 const BODY: CSSProperties = {
@@ -1208,6 +1218,40 @@ const RESET_DONE_LINE: CSSProperties = {
   fontSize: 16,
   lineHeight: '24px',
   color: 'var(--color-text-primary)',
+}
+
+/* THE MODALS' TYPE AND BUTTONS IN XCEL'S (2026-11-24, Afsana): header Avenir
+   Heavy 18 / 27, text Avenir Book 16 / 21 (Afsana, the same day — 18 / 27
+   read too big in a 460 card; small notes stay 13), buttons Avenir Medium
+   18 / 25 in
+   XCEL red with the lighter red on hover (.cre-xcel-btn — the colour lives in
+   the class so the hover can work). Only the modals take these: the reset
+   page and the Log In page cards keep TITLE, LEAD and CTA. */
+const M_TITLE: CSSProperties = { margin: 0, fontFamily: 'var(--font-e2e-avenir)', fontWeight: 800, fontSize: 18, lineHeight: '27px', color: 'var(--color-xcel-text)' }
+
+const M_LEAD: CSSProperties = { margin: 0, fontFamily: 'var(--font-e2e-avenir)', fontWeight: 400, fontSize: 16, lineHeight: '21px', color: 'var(--color-xcel-text)' }
+
+/* The shape stays: full width, 3px corners, 12px 26px. */
+const M_CTA: CSSProperties = {
+  padding: '12px 26px',
+  borderRadius: 3,
+  border: 'none',
+  fontFamily: 'var(--font-e2e-avenir)',
+  fontWeight: 500,
+  fontSize: 18,
+  lineHeight: '25px',
+  cursor: 'pointer',
+  alignSelf: 'stretch',
+  width: '100%',
+  boxSizing: 'border-box',
+}
+
+/* Off: the grey, inline so the class's red and hover cannot show through. */
+const M_CTA_OFF: CSSProperties = {
+  ...M_CTA,
+  background: 'var(--color-e2e-form-locked)',
+  color: 'var(--color-text-secondary)',
+  cursor: 'not-allowed',
 }
 
 const LEAD: CSSProperties = {

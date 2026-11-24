@@ -10,11 +10,15 @@ export function XcelLoadingStatus({
   message,
   size = 72,
   messageHidden = false,
+  textStyle,
 }: {
   message: string
   /** Keep the message for screen readers only — when a heading above already
    *  says it (the XCEL "Signing you out" modal, 2026-11-24). */
   messageHidden?: boolean
+  /** Restyles the message — the checkout modals' Signing you in takes XCEL's
+   *  Avenir Book 16 / 21 (2026-11-24); the loading page keeps its own. */
+  textStyle?: CSSProperties
   /** The spinner's width in px — the drawing scales; 72 is the loading
    *  page's. V3's Signing you in / out dialogs draw it smaller (2026-11-03,
    *  Afsana: "a bit too large"). */
@@ -49,7 +53,7 @@ export function XcelLoadingStatus({
         />
         <circle className="cre-e2e-loading-pulse" cx={36} cy={36} r={5} style={{ fill: 'var(--color-xcel-brick-600)' }} />
       </svg>
-      <p style={messageHidden ? SR_ONLY : LOADING_TEXT}>
+      <p style={messageHidden ? SR_ONLY : { ...LOADING_TEXT, ...textStyle }}>
         {message}
         {/* ⚠ THE ELLIPSIS IS READ ONCE, NOT ANIMATED, for a screen reader:
             `aria-live` would otherwise re-announce the line every time a
