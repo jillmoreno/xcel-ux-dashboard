@@ -24,7 +24,7 @@ const feature: PrototypeFeature = {
   devStatus: 'not-ready',
   surface: 'invite',
   owner: 'Afsana',
-  lastUpdated: '2026-11-24T17:17:12Z',
+  lastUpdated: '2026-11-24T17:47:15Z',
   accent: 'gold',
   icon: 'flag',
   brands: ['xcel'],
@@ -121,7 +121,7 @@ const feature: PrototypeFeature = {
           states: ['Continue: disabled (grey) until valid, then the brick primary.'],
           responsive: [
             'Modal 460px wide, never wider than the viewport less 48px; padding 36px 36px 32px; 20px between blocks; 5px corners and XCEL’s shadow (0 0 12px 2px at 35%) over XCEL’s charcoal backdrop (2026-11-24). Logo 132 × 42, centred.',
-            'Type and buttons in XCEL’s (2026-11-24): heading Avenir Heavy 18px / 27px; body Avenir Book 16px / 21px, small notes 13px; field 38px tall; button full width, padding 12px 26px, 3px corners, Avenir Medium 18px / 25px, XCEL red with the lighter red on hover.',
+            'Type and buttons in XCEL’s (2026-11-24): heading Avenir Heavy 18px / 27px; body Avenir Book 14px / 21px, small notes 13px; field 38px tall; button full width, padding 12px 26px, 3px corners, Avenir Medium 18px / 25px, XCEL red with the lighter red on hover.',
           ],
           sources: [
             'The final prototype is the source of truth — the first Live Preview route.',
@@ -157,7 +157,7 @@ const feature: PrototypeFeature = {
           { name: 'Use a different email', does: 'Back to Enter your email to continue. Not shown on Direct Email.' },
         ],
         statesMatrix: [
-          { question: 'What if the code is wrong?', answer: '"Invalid code. Please try again." in red under the boxes, 12px (smaller than the 16px lead), with a 2px red stroke along the bottom of every box. Confirm stays on.' },
+          { question: 'What if the code is wrong?', answer: '"Invalid code. Please try again." in red under the boxes, 12px (smaller than the 14px lead), with a 2px red stroke along the bottom of every box. Confirm stays on.' },
           { question: 'What if the code has expired?', answer: '"The code has expired. Request another code." in the same treatment.' },
           { question: 'What if a pasted code has spaces or letters?', answer: 'Only the digits are kept, spread across the boxes from the one pasted into.' },
           { question: 'What if the email is very long?', answer: 'It wraps inside the sentence; the modal stays 460px wide.' },
@@ -188,7 +188,7 @@ const feature: PrototypeFeature = {
           ],
           responsive: [
             'Boxes 54 × 66, 12px apart, 28px digits, centred. 8px between the row, the error line and "The code expires in 10 minutes" (13px / 18px, left-aligned).',
-            'Email verified: centred; the XCEL logo (132 × 42), 20px to a 56px ring, 2px border, with a 24px check; 20px to "Email verified" (Avenir Heavy 18px / 27px) and 6px to "Thanks! Continuing…" (Avenir Book 16px / 21px, secondary). Holds 2 seconds.',
+            'Email verified: centred; the XCEL logo (132 × 42), 20px to a 56px ring, 2px border, with a 24px check; 20px to "Email verified" (Avenir Heavy 18px / 27px) and 6px to "Thanks! Continuing…" (Avenir Book 14px / 21px, secondary). Holds 2 seconds.',
             'Resend group: 13px notes, 10px apart, under Confirm.',
             'Code resent banner: between the heading’s rule and the lead, full width; padding 10px 12px, radius 6px, 1px border; 16px check icon, 8px gap; text 14px / 20px.',
           ],

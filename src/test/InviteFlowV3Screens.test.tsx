@@ -662,7 +662,7 @@ describe('Invite Flow V3 — the email check', () => {
     /* Avenir Heavy 18 / 27 (800 in the system Avenir family). */
     expect([title.style.fontWeight, title.style.fontSize, title.style.lineHeight]).toEqual(['800', '18px', '27px'])
     const lead = dialog.querySelector<HTMLElement>('#verify-email-lead')!
-    expect([lead.style.fontWeight, lead.style.fontSize, lead.style.lineHeight]).toEqual(['400', '16px', '21px'])
+    expect([lead.style.fontWeight, lead.style.fontSize, lead.style.lineHeight]).toEqual(['400', '14px', '21px'])
     const cont = within(dialog).getByRole('button', { name: 'Continue' })
     /* The red and its hover live in the class; only "off" is inline. */
     expect(cont).toHaveClass('cre-xcel-btn')

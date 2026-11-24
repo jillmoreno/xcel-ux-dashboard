@@ -1221,15 +1221,16 @@ const RESET_DONE_LINE: CSSProperties = {
 }
 
 /* THE MODALS' TYPE AND BUTTONS IN XCEL'S (2026-11-24, Afsana): header Avenir
-   Heavy 18 / 27, text Avenir Book 16 / 21 (Afsana, the same day — 18 / 27
-   read too big in a 460 card; small notes stay 13), buttons Avenir Medium
+   Heavy 18 / 27, text Avenir Book 14 / 21 (Afsana, the same day: 18 / 27
+   read too big in a 460 card, then 16 / 21, then 14 / 21; small notes stay
+   13), buttons Avenir Medium
    18 / 25 in
    XCEL red with the lighter red on hover (.cre-xcel-btn — the colour lives in
    the class so the hover can work). Only the modals take these: the reset
    page and the Log In page cards keep TITLE, LEAD and CTA. */
 const M_TITLE: CSSProperties = { margin: 0, fontFamily: 'var(--font-e2e-avenir)', fontWeight: 800, fontSize: 18, lineHeight: '27px', color: 'var(--color-xcel-text)' }
 
-const M_LEAD: CSSProperties = { margin: 0, fontFamily: 'var(--font-e2e-avenir)', fontWeight: 400, fontSize: 16, lineHeight: '21px', color: 'var(--color-xcel-text)' }
+const M_LEAD: CSSProperties = { margin: 0, fontFamily: 'var(--font-e2e-avenir)', fontWeight: 400, fontSize: 14, lineHeight: '21px', color: 'var(--color-xcel-text)' }
 
 /* The shape stays: full width, 3px corners, 12px 26px. */
 const M_CTA: CSSProperties = {
