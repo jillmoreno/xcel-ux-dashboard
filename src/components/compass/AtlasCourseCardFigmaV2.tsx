@@ -178,15 +178,20 @@ export function AtlasCourseCardFigmaV2({
           same way). One pill, the most pressing: the clock before the course's own state. Expired is charcoal here. */}
       <div className="cre-atlas-card-v2__image" style={IMAGE_WRAP} data-testid="atlas-card-image">
         <img src={data.imageUrl} alt="" aria-hidden style={IMAGE} />
-        <span style={PILL_ON_IMAGE}>
-          <AtlasStatusPill
-            status={pillStatus}
-            label={pillLabel}
-            iconNudge={0}
-            fontSize={11}
-            {...(pillStatus === 'expired' ? { fill: 'var(--color-neutral-800)', ink: 'var(--color-neutral-50)' } : null)}
-          />
-        </span>
+        {/* NO PILL ON A PLAIN IN-PROGRESS OR NOT-STARTED COURSE (2026-11-24, Jillienne: "in progress and not started do not
+            need badges") — the status row over the bar already says it. The pill is for what the row cannot say: the
+            countdown inside the last week, Completed with its score, Expired with its date, Failed. */}
+        {pillStatus === 'in-progress' || pillStatus === 'not-started' ? null : (
+          <span style={PILL_ON_IMAGE}>
+            <AtlasStatusPill
+              status={pillStatus}
+              label={pillLabel}
+              iconNudge={0}
+              fontSize={11}
+              {...PILL_TONES[pillStatus]}
+            />
+          </span>
+        )}
       </div>
       {/* The title, then its pill under it — 10 apart, 4 above and below (Figma 710:2526). */}
       <div className="cre-atlas-card-v2__title" style={TITLE_BLOCK}>
@@ -456,6 +461,16 @@ const CARD: CSSProperties = {
   minWidth: 0,
 }
 const IMAGE: CSSProperties = { display: 'block', width: '100%', height: 120, objectFit: 'cover', borderRadius: 6 }
+/* THE PILLS' FILLS ON THIS CARD (2026-11-24, Jillienne: "badges should be 50% lighter of the color they currently are.
+   Expired badge should have light gray background, and black text") — the catalog's fill mixed half with Neutral 50 (white
+   here; inverts with the ramp), so Due Soon, Completed and Failed are half-strength tints; Expired on Neutral 100 in the
+   primary ink, where it was charcoal with light text. The catalog itself is unchanged for every other caller. */
+const PILL_TONES: Partial<Record<AtlasCourseStatus, { fill: string; ink?: string }>> = {
+  'due-soon': { fill: 'color-mix(in srgb, var(--color-warning-300) 50%, var(--color-neutral-50))' },
+  completed: { fill: 'color-mix(in srgb, var(--color-success-200) 50%, var(--color-neutral-50))' },
+  failed: { fill: 'color-mix(in srgb, var(--color-error-100) 50%, var(--color-neutral-50))' },
+  expired: { fill: 'var(--color-neutral-100)', ink: 'var(--color-text-primary)' },
+}
 /* The image's frame, so the pill can straddle its top-left corner (2026-11-23, Jillienne: "overlap the top corner a bit so
    its 50/50 on background and image") — half the pill's 21 above the image's top edge, and 10 past its left edge, so it
    sits on the card's ground and the photo at once. It was 8 in from the corner for an hour that day. */

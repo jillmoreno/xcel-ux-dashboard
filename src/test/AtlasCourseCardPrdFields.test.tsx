@@ -1,4 +1,6 @@
 import type React from 'react'
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { afterEach, describe, expect, it, vi } from 'vitest'
@@ -358,7 +360,8 @@ describe('an in-progress course well outside the warning window', () => {
   it('wears the plain In Progress pill, the primary blue fill, and a long access line', () => {
     renderShell(DESIGN_CARDS)
     const card = screen.getByRole('article', { name: 'Florida Health Insurance Pre-licensing' })
-    expect(within(within(card).getByTestId('atlas-card-image')).getByText('In Progress')).toBeTruthy()
+    // No pill on a plain in-progress course (2026-11-24: "in progress and not started do not need badges").
+    expect(within(card).getByTestId('atlas-card-image').querySelector('span')).toBeNull()
     const fill = within(card).getByRole('progressbar').querySelector('span')!
     expect(fill.style.background).toContain('--color-primary-500') // the primary button's blue (2026-11-24; Info 400 before)
     expect(fill.style.width).toBe('30%')
@@ -369,12 +372,24 @@ describe('an in-progress course well outside the warning window', () => {
 describe('the countdown pill', () => {
   /* 2026-11-24, Jillienne: "Access ends indicator should only be showing if the course is ending in 7 days or less". The
      library's NFIP course has 21 days left and the record's sixty-day Due Soon badge — on this card it is plain In Progress. */
-  it('counts down only inside the last week; outside it the pill is In Progress', () => {
+  it('counts down only inside the last week; outside it there is no pill at all', () => {
     renderShell(LIBRARY)
     const nfip = screen.getByRole('article', { name: 'Flood Insurance (NFIP) Training' })
-    expect(within(within(nfip).getByTestId('atlas-card-image')).getByText('In Progress')).toBeTruthy()
+    expect(within(nfip).getByTestId('atlas-card-image').querySelector('span')).toBeNull()
     const suitability = screen.getByRole('article', { name: 'Annuity Suitability Update' }) // 14 days left
-    expect(within(within(suitability).getByTestId('atlas-card-image')).getByText('In Progress')).toBeTruthy()
+    expect(within(suitability).getByTestId('atlas-card-image').querySelector('span')).toBeNull()
+  })
+})
+
+describe('the hover', () => {
+  /* 2026-11-24, Jillienne: "on hover, the text should all go to a darker color, and the blue cta color should be the stroke
+     outline of the card". jsdom does not apply :hover, so the rules are pinned in the stylesheet itself. */
+  it('rings the card in the primary blue and darkens every line of text — in tokens.css', () => {
+    const css = readFileSync(resolve(process.cwd(), 'src/styles/tokens.css'), 'utf8')
+    const hover = css.match(/\.cre-atlas-card-v2:hover \{[^}]+\}/)?.[0] ?? ''
+    expect(hover).toContain('inset 0 0 0 1px color-mix(in srgb, var(--color-primary-500) 40%, var(--color-neutral-50))') // 40% (2026-11-24)
+    for (const hook of ['__labels', '__dates', '__progress']) expect(css).toMatch(new RegExp(`\\.cre-atlas-card-v2:hover \\.cre-atlas-card-v2${hook}`))
+    expect(css).toMatch(/\.cre-atlas-card-v2:hover \[data-testid='card-certificate-pending'\] \{ color: var\(--color-text-primary\) !important; \}/)
   })
 })
 
@@ -426,18 +441,20 @@ describe('the phone', () => {
 describe('the Expired pill', () => {
   /* 2026-11-23, Jillienne: "Expired badge should be a dark charcoal color". Charcoal on THIS card only — the shared pill's
      catalog is unchanged, so the 2026-11-18 card keeps Error 100 (pinned under "the flag off"). */
-  it('is charcoal — Neutral 800 with light ink — on the PRD card', () => {
+  it('is light grey — Neutral 100 with the primary ink — on the PRD card', () => {
     renderShell(DESIGN_CARDS)
     // The label sits in an inner span since 2026-11-24; the pill is its parent.
     const pill = screen.getByText('Expired - 04/20/2026', { selector: 'span' }).parentElement! // dated since 2026-11-24
-    expect(pill.style.background).toContain('--color-neutral-800')
-    expect(pill.style.color).toContain('--color-neutral-50')
+    // Light grey with the primary ink since later that day ("light gray background, and black text"; charcoal before).
+    expect(pill.style.background).toContain('--color-neutral-100')
+    expect(pill.style.color).toContain('--color-text-primary')
   })
 
-  it('leaves the other five pills on the catalog’s fills', () => {
+  it('draws the other pills as half-strength tints of the catalog’s fills', () => {
     renderShell(DESIGN_CARDS)
-    expect(screen.getByText(/^Access Ends \d+ days?$/, { selector: 'span' }).parentElement!.style.background).toContain('--color-warning-300')
-    expect(screen.getAllByText(/^Failed/, { selector: 'span' })[0].parentElement!.style.background).toContain('--color-error-100')
+    // Half-strength tints of the catalog's fills (2026-11-24: "50% lighter").
+    expect(screen.getByText(/^Access Ends \d+ days?$/, { selector: 'span' }).parentElement!.style.background).toContain('color-mix(in srgb, var(--color-warning-300) 50%')
+    expect(screen.getAllByText(/^Failed/, { selector: 'span' })[0].parentElement!.style.background).toContain('color-mix(in srgb, var(--color-error-100) 50%')
   })
 })
 

@@ -8223,11 +8223,21 @@ button.cre-admin-side-row {
 /* The PRD card (AtlasCourseCardFigmaV2, 2026-11-23): the whole card opens Home in its course, so it says so — a soft lift
    on hover and a 2px ring on keyboard focus (the scan: clickable, with only the cursor to show it). */
 .cre-atlas-card-v2 { transition: box-shadow 120ms ease, transform 120ms ease; }
-.cre-atlas-card-v2:hover { box-shadow: 0 4px 14px rgb(0 0 0 / 0.10); transform: translateY(-1px); }
+/* On hover the card's edge is the primary blue — the button's — at 40%, in place of the Primary 100 ring, with the lift
+   (2026-11-24, Jillienne: "the blue cta color should be the stroke outline of the card", then "a much lighter version of
+   that blue. lets try 40%"). Mixed over the card's ground so it stays a tint of the same blue in the dark theme. */
+.cre-atlas-card-v2:hover { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-primary-500) 40%, var(--color-neutral-50)), 0 4px 14px rgb(0 0 0 / 0.10) !important; transform: translateY(-1px); }
 .cre-atlas-card-v2:focus-visible { outline: 2px solid var(--color-primary-500); outline-offset: 2px; }
-/* The title: charcoal at rest, the primary ink on hover or focus (2026-11-24, Jillienne) — with the card's own lift. */
+/* …and every line of text goes to the primary ink (same ask: "the text should all go to a darker color") — the title
+   from its charcoal, the labels, access line, status row and Certificate Pending from the secondary grey. The links keep
+   their blue. `!important` because the blocks carry their colour inline. */
 .cre-atlas-card-v2-title { transition: color 120ms ease; }
 .cre-atlas-card-v2:hover .cre-atlas-card-v2-title, .cre-atlas-card-v2:focus-visible .cre-atlas-card-v2-title { color: var(--color-text-primary); }
+.cre-atlas-card-v2:hover .cre-atlas-card-v2__labels,
+.cre-atlas-card-v2:hover .cre-atlas-card-v2__dates p,
+.cre-atlas-card-v2:hover .cre-atlas-card-v2__dates p > span,
+.cre-atlas-card-v2:hover .cre-atlas-card-v2__progress > div:first-child,
+.cre-atlas-card-v2:hover [data-testid='card-certificate-pending'] { color: var(--color-text-primary) !important; }
 @media (prefers-reduced-motion: reduce) { .cre-atlas-card-v2 { transition: none; } .cre-atlas-card-v2:hover { transform: none; } }
 
 /* Quick Links pinned 40 under the header (2026-11-12, Eric: "stop scrolling vertically once it reaches 40 pixels below the
