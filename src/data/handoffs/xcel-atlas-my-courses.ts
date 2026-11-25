@@ -49,7 +49,7 @@ const feature: PrototypeFeature = {
   devStatus: 'not-ready',
   surface: 'atlas',
   owner: 'Jill',
-  lastUpdated: '2026-11-25T11:44:03Z',
+  lastUpdated: '2026-11-25T13:17:06Z',
   accent: 'blue',
   icon: 'grid',
   brands: ['xcel'],
