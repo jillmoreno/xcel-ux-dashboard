@@ -45,17 +45,25 @@ const STATE_IMAGES: Record<string, Record<string, string>> = {
     Empty: `${MODALS}/enter-name--empty.png`,
     Complete: `${MODALS}/enter-name--complete.png`,
   },
+  /* The reset page the email's link opens, in a new tab (2026-11-19). The
+     log-in--reset-*.png and log-in--password-reset.png pictures are the
+     in-modal reset it replaced, kept in the folder. */
+  'v3-reset-password-page': {
+    Empty: `${MODALS}/reset-page--empty.png`,
+    'Passwords don’t match': `${MODALS}/reset-page--mismatch.png`,
+    Ready: `${MODALS}/reset-page--ready.png`,
+    'Password reset': `${MODALS}/reset-page--done.png`,
+  },
   'v3-log-in': {
     'Empty password': `${MODALS}/log-in--empty.png`,
     'Password entered': `${MODALS}/log-in--entered.png`,
     'Direct Email — address pre-filled': `${MODALS}/log-in--direct-email.png`,
-    'Direct Email — not a valid email': `${MODALS}/log-in--direct-email-invalid.png`,
+    /* "Direct Email — not a valid email" went on 2026-11-18: the field is
+       locked now. Its picture is kept in the folder. */
     'Wrong password': `${MODALS}/log-in--wrong.png`,
+    'Reset your password — enter email': `${MODALS}/log-in--reset-request.png`,
     'Check your email': `${MODALS}/log-in--check-email.png`,
     'Resend link waiting': `${MODALS}/log-in--resend-waiting.png`,
-    'Reset your password': `${MODALS}/log-in--reset-password.png`,
-    'Passwords don’t match': `${MODALS}/log-in--reset-mismatch.png`,
-    'Password reset': `${MODALS}/log-in--password-reset.png`,
   },
   'v3-signing-in': { Holding: `${MODALS}/signing-in.png` },
   'v3-partner-code': { Asked: `${MODALS}/partner-code.png` },

@@ -3890,8 +3890,9 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
   {
     key: 'invite-v3-flow-b2b',
     /* V3's B2B flows: Direct Email (V2's "B2B2C with email", first and the
-       default since 2026-11-03), then the four QR flows from Afsana's
-       `xcel-b2b2c-email-flow.html`. Shown only
+       default since 2026-11-03), then QR Code — the QR flows from Afsana's
+       `xcel-b2b2c-email-flow.html`, one since 2026-11-17 with Email belongs
+       to choosing between them. Shown only
        while Model type is B2B — see `invite-v3-model`. The variants must
        match `INVITE_FLOWS_V3`'s B2B rows; `InviteFlowsV3.test.ts` holds them
        together. */
@@ -3901,14 +3902,75 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     group: 'Navigation',
     label: 'Invite flow',
     picker: 'sheet',
-    description: 'Invite Flow V3, B2B invite. Which invite flow the demo walks: Direct Email (the partner’s invitation, address supplied), or one of the three QR flows — net new, has OCD but no Atlas, or has Atlas with a log-in widget.',
+    description: 'Invite Flow V3, B2B invite. Which invite flow the demo walks: Direct Email (the partner’s invitation, address supplied) or QR Code (a partner’s QR code). Email belongs to picks the walk for both.',
     defaultEnabled: true,
     defaultVariant: 'direct-email',
     variants: [
       { value: 'direct-email', label: 'Direct Email', description: 'Partner invited them, address supplied. Locked at checkout.' },
-      { value: 'qr-net-new', label: 'QR: Net New: No OCD, No Atlas', description: 'New to XCEL. Verify email by code, full checkout, then create a password.' },
-      { value: 'qr-ocd', label: 'QR: OCD, but no Atlas', description: 'Has an OCD account, no Atlas. Same screens as Net New for now.' },
-      { value: 'qr-atlas-login', label: 'QR: Has Atlas: Open Log-In Widget', description: 'Already on Atlas. Email check opens a log-in widget; ends ready to log in.' },
+      { value: 'qr', label: 'QR Code', description: 'Scanned a partner’s QR code. Email belongs to decides the rest.' },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'invite-v3-eric-pdp',
+    /* ERIC'S PRODUCT PAGE IN V3's FLOWS — 2026-11-17, Afsana. On: V3's
+       `/end-to-end-demo` is his multi-product page (`ProductDetailPageV3Multi`,
+       copied from `erics-atlas-primary`), its Products control on the Design
+       bar, every Purchase going on into V3's checkout. Off: V3's own product
+       page (`InvitedProductDetailPageV3`), untouched. Not a Design bar control
+       — Products is the only one this adds; flip it with
+       `?ff=invite-v3-eric-pdp:off` or the Feature Flag panel. */
+    group: 'Navigation',
+    label: 'Eric’s product page (V3)',
+    description:
+      'Invite Flow V3 opens Eric’s multi-product page — Products picks Multi-product, Premier, Standard, California or Multi-product (Old) — and Purchase goes on into V3’s checkout. Off: V3’s own product page.',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
+    /* COPIED FROM `erics-atlas-primary` @ c9ec0ca2 (2026-11-17, Afsana: "after
+       a user clicks the purchase CTA on any of the variations … have it
+       continue our remaining checkout/invite logic"). Eric's flag, verbatim but
+       for its surfaces: here it names V3's B2B surfaces, where his page is the
+       product page (`ProductDetailPageV3Multi.tsx`); on his branch it names
+       V1/V2's `invite`. When his branch lands, keep ONE definition. */
+    key: 'pdp-products',
+    /* THE PDP'S PRODUCTS — 2026-10-28, Eric: "Duplicate this page based on a
+       single product … add a design control to be able to flip between the
+       single product page and the multi-product page."
+
+       multi  — Standard and Premier side by side, the comparison grid under
+                them. The default on Eric's branch.
+       single — Premier alone: one card, the comparison's Standard column
+                gone, and the grid captioned "Premier package includes:". The
+                top tray carries the one card too.
+
+       One page, not two files: everything but the cards and the grid is the
+       same page, and it is still being tuned a pixel at a time — two copies
+       would drift with every tweak. */
+    surface: 'design',
+    versions: ['eric-atlas-e2e'],
+    surfaces: ['invite:v3-b2b', 'invite:v3-b2b-direct-email'],
+    group: 'Layout',
+    label: 'Products',
+    description:
+      'The two-package PDP as a multi-product page \u2014 Standard and Premier side by side \u2014 or a single-product page for one of them: Standard (the default in V3), Premier, or California, each alone with its own \u201cincludes\u201d list.',
+    defaultEnabled: true,
+    /* STANDARD BY DEFAULT IN V3 (2026-11-17, Afsana: "let us default it to
+       where PRODUCTS is set to Standard"). Eric's branch opens on `multi`. */
+    defaultVariant: 'standard',
+    variants: [
+      /* MULTI-PRODUCT 2 (2026-11-11, Eric: "duplicate this multi product page and add it to the products drop down as Multi-product
+         2") — the multi page as it stands today, a second copy to change without touching the first. The page reads it as `multi2`. */
+      { value: 'multi-2', label: 'Multi-product' /* the 2 dropped (2026-11-12, Eric) */, description: 'A second multi-product page \u2014 a copy of Multi-product to try changes on.' },
+      /* `single` is the Premier page — its value kept so links pinned to it still open it; labelled Premier since 2026-11-05. */
+      { value: 'single', label: 'Premier', description: 'Premier alone, the grid captioned \u201cPackage includes:\u201d as a list of what it includes.' },
+      /* STANDARD (2026-11-05, Eric: "Duplicate this page and make it a Standard Product page in the product dropdown"). */
+      { value: 'standard', label: 'Standard', description: 'Standard alone — its card, the rows it includes, no crown and no Pass Guarantee.' },
+      /* CALIFORNIA (2026-11-06, Eric) — the Premier page, written for California. */
+      { value: 'california', label: 'California', description: 'The Premier page for California \u2014 Premier alone, the state California.' },
+      /* The first multi-product page, last in the list and marked Old (2026-11-12, Eric) — Multi-product 2 is the one being worked on. */
+      { value: 'multi', label: 'Multi-product (Old)', description: 'Standard and Premier side by side, with the comparison grid.' },
     ],
     page: 'dashboard-rebrand',
   },
@@ -3918,7 +3980,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        B2C. */
     surface: 'design',
     versions: ['eric-atlas-e2e'],
-    surfaces: ['invite:v3-b2c', 'invite:v3-b2c-signed-in'],
+    surfaces: ['invite:v3-b2c', 'invite:v3-b2c-signed-in', 'invite:v3-b2c-log-in'],
     group: 'Navigation',
     /* "Guest checkout", not "Invite flow" — 2026-10-30, Afsana: the B2C flows
        "are actually not invite flows, rather they pertain to guest checkout".
@@ -3930,29 +3992,58 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     defaultVariant: 'xcel-signed-out',
     variants: [
       /* Both descriptions in Afsana's words (2026-11-03). */
-      { value: 'xcel-signed-in', label: 'Signed in to XCEL (OCD)', description: 'Signed in to an existing XCEL account. Presence of a partner code dictates next steps. If they have a partner code, cart items affect next steps. If no partner code and all items are part of the 526 SKU list, or if they agree to drop unsupported items, they are signed out. The subsequent flow is affected by whether they have an Atlas account or not.' },
-      { value: 'xcel-signed-out', label: 'Not signed in to XCEL (OCD)', description: 'Presence of a partner code dictates next steps. If they have a partner code, cart items affect next steps. The subsequent flow is affected by whether they have an Atlas account or not.' },
+      { value: 'xcel-signed-in', label: 'Signed into XCEL (OCD)', description: 'Signed in to an existing XCEL account. Presence of a partner code dictates next steps. If they have a partner code, cart items affect next steps. If no partner code and all items are part of the 526 SKU list, or if they agree to drop unsupported items, they are signed out. The subsequent flow is affected by whether they have an Atlas account or not.' },
+      { value: 'xcel-signed-out', label: 'Not signed into XCEL (OCD)', description: 'Presence of a partner code dictates next steps. If they have a partner code, cart items affect next steps. The subsequent flow is affected by whether they have an Atlas account or not.' },
+      /* LOG IN — 2026-11-20, Afsana (PRD 5.7). Not a checkout, but the B2C
+         flow is where Swati asked for it: "if you have the B2C flow … just
+         plug in the login one". */
+      { value: 'xcel-log-in', label: 'Log In', description: 'A returning learner presses Log In. Partner Code? No → XCEL account? Yes → the OCD log-in page asks for the email alone, then Atlas’s log-in or OCD’s password depending on where the account is.' },
     ],
     page: 'dashboard-rebrand',
   },
   {
     key: 'invite-v3-cart',
     /* THE OCD LEARNER'S CART — 2026-11-02, Afsana. Which of the three cases
-       the "Signed in to XCEL (OCD)" flow walks — and, since 2026-11-03, "Not
-       signed in to XCEL (OCD)"; shown only on those two
+       the "Signed into XCEL (OCD)" flow walks — and, since 2026-11-03, "Not
+       signed into XCEL (OCD)"; shown only on those two
        (`invite:v3-b2c-signed-in`). See `signedInFlowV3`, `ocdCartFlowV3`. */
     surface: 'design',
     versions: ['eric-atlas-e2e'],
     surfaces: ['invite:v3-b2c-signed-in'],
     group: 'Navigation',
     label: 'Cart contents',
-    description: 'Invite Flow V3, signed in to XCEL or not. Checkout asks the Partner Code question first; Yes collects the code, whatever the cart. On No — targeted SKUs only: on to the new guest checkout (signed out first, if signed in). Mixed: a dialog says what will be dropped, then the same. No targeted SKUs: the existing checkout, which ends the walk.',
+    description: 'Invite Flow V3, signed in to XCEL or not. With any targeted SKU, Checkout asks the Partner Code question first; Yes does nothing. On No — targeted SKUs only: on to the new guest checkout (signed out first, if signed in). Mixed: a dialog says what will be dropped, then the same. No targeted SKUs: Checkout does nothing — the learner goes on to today’s OCD checkout, not mocked here.',
     defaultEnabled: true,
     defaultVariant: 'targeted',
     variants: [
       { value: 'targeted', label: 'Targeted only', description: 'Only targeted SKUs (Arizona Health Pre-licensing Premier). No partner code: the new guest checkout — signed out first, if signed in.' },
       { value: 'mixed', label: 'Mixed', description: 'A targeted SKU and one that is not (New York Life and Health Flashcards). No partner code: told it will be dropped, then on — signed out first, if signed in.' },
-      { value: 'none', label: 'None targeted', description: 'No targeted SKUs (New York Life and Health Flashcards). No partner code: the existing checkout — filled from the account if signed in — the last screen of the walk.' },
+      { value: 'none', label: 'None targeted', description: 'No targeted SKUs (New York Life and Health Flashcards). Checkout does nothing, Atlas account or not: the learner goes on to today’s OCD checkout, which this prototype does not mock.' },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'invite-v3-log-in-account',
+    /* WHERE THE LOG IN FLOW'S ACCOUNT IS — 2026-11-20, Afsana. The product
+       looks the email up in Keycloak; the demo cannot, so this says what the
+       lookup finds. ⚠ NOT FOUND ANYWHERE IS NOT ITS OWN SCREEN: OCD has no
+       service that says whether a username exists (Swati, 2026-11-18), so an
+       email Keycloak does not know is assumed to be OCD's and asked for its
+       password on OCD's own log-in page (2026-11-23) — `none` and `ocd` part
+       only after it: LOG IN does nothing for `ocd`, and says "The Username or
+       Password is incorrect" for `none` (Afsana). */
+    surface: 'design',
+    versions: ['eric-atlas-e2e'],
+    surfaces: ['invite:v3-b2c-log-in'],
+    group: 'Navigation',
+    label: 'Account found in',
+    description: 'Invite Flow V3, Log In. Where the email given on the OCD log-in page has an account: Atlas (Keycloak’s log-in, then Atlas Home), OCD only (OCD’s own log-in page, the Username filled; LOG IN does nothing), or neither (the same page; LOG IN says “The Username or Password is incorrect”). An empty password says “All fields are required”, as OCD’s page does.',
+    defaultEnabled: true,
+    defaultVariant: 'atlas',
+    variants: [
+      { value: 'atlas', label: 'Atlas (Keycloak)', description: 'Keycloak knows the email: Atlas’s log-in widget, then Atlas Home.' },
+      { value: 'ocd', label: 'OCD only', description: 'Keycloak does not know it: OCD’s own log-in page, the Username filled. LOG IN does nothing — OCD takes over.' },
+      { value: 'none', label: 'Neither', description: 'Not in Keycloak or OCD: OCD’s own log-in page, the Username filled. LOG IN says “The Username or Password is incorrect”.' },
     ],
     page: 'dashboard-rebrand',
   },
@@ -3960,13 +4051,15 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     key: 'invite-v3-email-account',
     /* Which way "Verify your email" goes for the signed-out OCD learner — a
        log-in when the email they give has Atlas, a code when it does not.
-       Direct Email too (2026-11-04): the supplied address, after Purchase. */
+       Direct Email too (2026-11-04): the supplied address, after Purchase.
+       QR Code too (2026-11-17): the address given at Verify your email —
+       `invite:v3-b2b` is the QR flow's surface. */
     surface: 'design',
     versions: ['eric-atlas-e2e'],
-    surfaces: ['invite:v3-b2b-direct-email', 'invite:v3-b2c-signed-in'],
+    surfaces: ['invite:v3-b2b', 'invite:v3-b2b-direct-email', 'invite:v3-b2c-signed-in'],
     group: 'Navigation',
     label: 'Email belongs to',
-    description: 'Invite Flow V3 — B2B Direct Email (the supplied address, after Purchase), and signed in to XCEL or not (targeted or mixed cart). The email given at Verify your email: an Atlas account (log in, then Start course) or no Atlas account (a code, then Create password).',
+    description: 'Invite Flow V3 — B2B Direct Email (the supplied address, after Purchase), B2B QR Code, and signed in to XCEL or not (targeted or mixed cart). The email given at Verify your email: an Atlas account (log in, then Start course) or no Atlas account (a code, then Create password).',
     defaultEnabled: true,
     defaultVariant: 'no-atlas',
     variants: [

@@ -5,6 +5,9 @@ import { CircleUser, ShoppingCart } from '@/icons'
 import { clearPartnerCodeAnswer, signedIn, useInviteFlow } from '@/data/inviteFlows'
 import { CART_PACKAGE_PARAM, GET_LICENSE_NAV, cartPackage } from '@/data/xcelCourseFinder'
 import { INVITE_LOA_PARAM, INVITE_STATE_PARAM } from '@/data/inviteMissingDetails'
+import { LOG_IN_PATHS, useInviteFlowV3 } from '@/data/inviteFlowsV3'
+import { INVITE_FLOW_VERSION_FLAG, resolveInviteFlowVersion } from '@/data/inviteFlowVersions'
+import { useFeatureFlag } from '@/context/FeatureFlagContext'
 
 /**
  * XCELSOLUTIONS.COM'S HEADER — 2026-10-22, with the guest journey's public
@@ -43,6 +46,12 @@ export function XcelSiteHeader({
      Training, which is what the real site draws (see the signed-in journey's
      screens). Both inert, like the rest of the bar. */
   const knownAccount = signedIn(useInviteFlow())
+  /* LOG IN IS WIRED ON V3'S LOG IN FLOW ONLY — 2026-11-20, Afsana. It opens
+     "Do you have a Partner Code?", as the live site's does. Every other flow
+     keeps it inert: it would walk off that flow's pages. */
+  const v3 = resolveInviteFlowVersion(useFeatureFlag(INVITE_FLOW_VERSION_FLAG).variant) === 'v3'
+  const v3FlowId = useInviteFlowV3().id
+  const logInFlow = v3 && v3FlowId === 'xcel-log-in'
   /* ⚠ THE COUNT COMES FROM THE CART ITSELF, not a prop. The cart is the
      address (see `cartPackage`), so the badge reads the same source the cart
      page does and cannot say "1" over an empty basket. */
@@ -178,7 +187,18 @@ export function XcelSiteHeader({
               <span style={MY_TRAINING}>My Training</span>
             </>
           ) : (
-            <span style={LOG_IN}>Log In</span>
+            logInFlow ? (
+              <button
+                type="button"
+                className="cre-e2e-cta"
+                style={{ ...LOG_IN, border: 'none', font: 'inherit', fontWeight: 800, cursor: 'pointer' }}
+                onClick={() => navigate({ pathname: LOG_IN_PATHS.partnerCode, search: params.toString() })}
+              >
+                Log In
+              </button>
+            ) : (
+              <span style={LOG_IN}>Log In</span>
+            )
           )}
         </div>
       </header>

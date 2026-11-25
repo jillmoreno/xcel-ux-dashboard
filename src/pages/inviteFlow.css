@@ -245,41 +245,81 @@
   outline-offset: 2px;
 }
 
-/* THE LINE-OF-AUTHORITY TOOLTIP — Invite Flow V3, 2026-10-30, from Afsana's
-   `xcel-b2b2c-email-flow.html` (`.loa-info` / `.loa-tip` there). Shown on
-   hover and on keyboard focus of the ⓘ beside the label. */
-.cre-e2e-loa-tip {
+/* XCEL'S TOOLTIP — 2026-11-23, Afsana, from the live storefront's: an icon in
+   dark grey, and above it a bubble with 12/16 text centred, 12px padding,
+   8px corners, a soft shadow and a caret pointing back at the icon. One look
+   for every V3 tooltip (the Log In email field's, the line of authority's),
+   so a purchase path does not mix styles.
+   ⚠ THREE PLACES IT IS NOT THE LIVE SITE'S, the same day: the icon is an "i"
+   (`CircleInfo`), not its "?"; it is 16px, not 20 ("too big"); and the
+   bubble is charcoal with white text, not white with black ("little
+   contrast") — the line of authority's tooltip's old fill.
+   ⚠ WHAT WE DO NOT COPY: the live one opens on hover only and its text sits
+   inside the button. Ours open on keyboard focus (and the email one on a
+   tap), and the button's tap area is 44 × 44 though the icon is 16. */
+.cre-xcel-help {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--color-e2e-help-icon);
+  cursor: pointer;
+}
+/* The tap area — invisible, so nothing on screen moves. */
+.cre-xcel-help::before {
+  content: '';
+  position: absolute;
+  inset: -14px;
+}
+.cre-xcel-tip {
   position: absolute;
   left: 50%;
-  bottom: calc(100% + 8px);
+  bottom: calc(100% + 10px);
   transform: translateX(-50%);
-  width: 260px;
-  padding: 10px 12px;
-  border-radius: 6px;
-  background: var(--color-text-primary);
+  width: max-content;
+  max-width: 300px;
+  padding: 12px;
+  border-radius: 8px;
+  background: var(--color-e2e-tooltip-fill);
   color: var(--color-fixed-light);
+  box-shadow: 0 8px 16px -2px var(--color-e2e-tooltip-shadow);
   font-family: var(--font-e2e-avenir);
   font-weight: 400;
   font-size: 12px;
-  line-height: 17px;
+  line-height: 16px;
+  text-align: center;
   letter-spacing: normal;
   text-transform: none;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 0.12s ease;
+  white-space: normal;
   pointer-events: none;
   z-index: 5;
-  white-space: normal;
 }
-.cre-e2e-loa-tip::after {
+/* The live site's 10px caret, in the bubble's fill. */
+.cre-xcel-tip::after {
   content: '';
   position: absolute;
   top: 100%;
   left: 50%;
   transform: translateX(-50%);
-  border: 6px solid transparent;
-  border-top-color: var(--color-text-primary);
+  border: 5px solid transparent;
+  border-top-color: var(--color-e2e-tooltip-fill);
+}
+
+/* THE LINE-OF-AUTHORITY TOOLTIP — Invite Flow V3, 2026-10-30, from Afsana's
+   `xcel-b2b2c-email-flow.html` (`.loa-info` / `.loa-tip` there). Shown on
+   hover and on keyboard focus of the icon beside the label. Its look is
+   `.cre-xcel-tip`'s since 2026-11-23; this keeps its width and its
+   show-and-hide. */
+.cre-e2e-loa-tip {
+  width: 260px;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.12s ease;
 }
 .cre-e2e-loa-info:hover .cre-e2e-loa-tip,
 .cre-e2e-loa-info:focus .cre-e2e-loa-tip {
@@ -303,3 +343,126 @@
    other its white outline and text, like Model type. Once they were the only
    B2C flows, the green set nothing apart. The `--color-e2e-ocd-flow*` tokens
    are still in `tokens.css`. */
+
+
+/* ── ERIC'S PRODUCT PAGE, copied from `erics-atlas-primary` @ c9ec0ca2 (2026-11-17) ──
+   The rules `ProductDetailPageV3Multi.tsx` reads, verbatim from his
+   `inviteFlow.css`. His branch keeps the originals; when it lands, these
+   are the duplicates to drop. */
+
+/* The two-package PDP's state / line selects (2026-10-28, Eric): no brick ring
+   — it showed on every click — but their Neutral 400 edge goes two steps
+   darker, to Neutral 600, while they have focus. The edge colour lives here,
+   not inline, or the focus rule could never win. */
+.cre-e2e-select {
+  border-color: var(--color-neutral-400);
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+.cre-e2e-select:focus {
+  border-color: var(--color-neutral-600);
+  /* 1 thick on focus (the edge is 0.5 at rest): the other half is an inset
+     shadow, so nothing in the row moves. */
+  box-shadow: inset 0 0 0 0.5px var(--color-neutral-600);
+  outline: none;
+}
+
+/* The two-package PDP's cards on the page (2026-10-29, Eric): no longer picked by a click — hovering one gives it the selected look,
+   white with the inset tan ring. !important over the inline resting style. The Purchase buttons' own hovers stand. */
+.cre-e2e-package-card {
+  transition: background-color 0.15s ease, box-shadow 0.15s ease;
+}
+/* Premier wore it at rest too (2026-10-29, Eric) — no longer: at rest it is Standard's single 1 stroke (2026-10-30, Eric).
+   Re-add `.cre-e2e-package-card--on,` to this selector to bring it back. */
+.cre-e2e-package-card:hover {
+  background: var(--color-fixed-light) !important;
+  /* The 1 outer stroke at half its strength (2026-10-29, Eric: gone, then back at 50%). No drop shadow (2026-10-30, Eric). */
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-e2e-card-outline) 50%, transparent), inset 0 0 0 7px var(--color-secondary-200) !important;
+}
+
+.cre-e2e-outline--quiet:not(:hover) {
+  background: transparent;
+}
+
+/* In brick — every text link on the two-package PDP (2026-10-29, Eric; the comparison table's first). Blue elsewhere. */
+.cre-e2e-textlink--brick {
+  color: var(--color-xcel-brick);
+}
+.cre-e2e-textlink--brick:hover {
+  color: color-mix(in srgb, var(--color-xcel-brick) 75%, black);
+}
+.cre-e2e-textlink--brick:focus-visible {
+  outline-color: var(--color-xcel-brick);
+}
+
+/* A text link whose words wrap to a second line drops its chevron
+   (2026-11-06, Eric) — TwoPackageProductDetailPage marks it. */
+.cre-e2e-textlink.is-multiline > svg {
+  /* !important: the icon carries an inline display of its own. */
+  display: none !important;
+}
+
+/* /invite-v3's Start buttons — secondary: white, black outline and text;
+   a light grey fill on hover (2026-11-18, Afsana). */
+.cre-v3-start {
+  background: var(--color-fixed-light);
+  color: var(--color-fixed-dark);
+  border: 1px solid var(--color-fixed-dark);
+  transition: background-color 0.15s ease;
+}
+.cre-v3-start:hover {
+  background: var(--color-neutral-100);
+}
+.cre-v3-start:focus-visible {
+  outline: 2px solid var(--color-fixed-dark);
+  outline-offset: 2px;
+}
+
+/* XCEL'S BUTTONS ON THE XCEL-OWNED MODALS — measured from the live site
+   (2026-11-24): Avenir Medium 18 / 25, white on the brick, 5px corners; hover
+   and focus the lighter red. YES / NO add uppercase and 10px 19px; Proceed to
+   checkout is 13px 30px. The focus ring is a proposed addition — the live site
+   removes outlines, which fails WCAG 2.4.7. */
+.cre-xcel-btn {
+  display: inline-block;
+  border: 1px solid var(--color-xcel-brick);
+  border-radius: 5px;
+  background: var(--color-xcel-brick);
+  color: var(--color-fixed-light);
+  font-family: var(--font-e2e-avenir);
+  font-weight: 500;
+  font-size: 18px;
+  line-height: 25px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.cre-xcel-btn:hover,
+.cre-xcel-btn:focus-visible {
+  background: var(--color-xcel-red-hover);
+  border-color: var(--color-xcel-red-hover);
+}
+.cre-xcel-btn:focus-visible {
+  outline: 2px solid var(--color-xcel-brick);
+  outline-offset: 2px;
+}
+.cre-xcel-link {
+  color: var(--color-xcel-brick);
+  font-weight: 800;
+  text-decoration: none;
+}
+.cre-xcel-link:hover,
+.cre-xcel-link:focus-visible {
+  color: var(--color-xcel-red-hover);
+}
+.cre-xcel-close {
+  color: var(--color-xcel-close);
+}
+.cre-xcel-close:hover,
+.cre-xcel-close:focus-visible {
+  color: var(--color-xcel-text);
+}
+.cre-xcel-close:focus-visible {
+  outline: 2px solid var(--color-xcel-brick);
+  outline-offset: 2px;
+}

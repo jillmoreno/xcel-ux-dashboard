@@ -72,6 +72,29 @@
  *     - The `invite:v3-b2c` surface is still declared, though no remaining
  *       B2C flow returns it — these were the flows that did.
  *
+ *   B2B'S THREE QR FLOWS, 2026-11-17 (`qr-net-new`, `qr-ocd`,
+ *   `qr-atlas-login`) — Afsana: "could we not just have 2 invite flows
+ *   ultimately: Direct Email, QR Code, where QR code has the 'email belongs
+ *   to' design control added?" They became ONE flow, `qr` (QR Code), whose
+ *   walk Email belongs to picks: No Atlas account is Net New's screens (and
+ *   OCD but no Atlas's, which were the same), Atlas account is Has Atlas:
+ *   Open Log-In Widget's. Nothing was lost on screen — what went is the
+ *   NAME for OCD but no Atlas, kept apart in case it ever walks differently.
+ *   The last commit that ran them is `105b23b0`.
+ *     - The rows and flag variants below, in place of `qr` in
+ *       `INVITE_FLOWS_V3`, `InviteFlowV3Id` and the `invite-v3-flow-b2b`
+ *       flag; `qrFlowV3` and its branch in `useInviteFlowV3` go.
+ *     - `RETIRED_QR_FLOWS` / `retiredQrEmail` in `inviteFlowsV3.ts`, which
+ *       send old links naming these ids to QR Code — and its use in
+ *       `resolveInviteFlowV3`.
+ *     - `invite:v3-b2b` off the `invite-v3-email-account` flag's `surfaces`,
+ *       and `qr` out of `ASKS_ACCOUNT` in `src/pages/InviteV3StartPage.tsx`.
+ *     - The handoff previews in `src/data/handoffs/xcel-invite-v3-checkout-modals.ts`
+ *       and `xcel-invite-v3-last-step.ts` named `qr-net-new` and
+ *       `qr-atlas-login` before they named `qr` with an email account.
+ *     - The tests at `105b23b0` that walk these ids (`InviteFlowsV3.test.ts`,
+ *       `InviteFlowV3Screens.test.tsx`).
+ *
  * ⚠ NOT ARCHIVED WITH THEM: `UnsupportedItemDialog`, "Signing you in" and the
  * Partner Code question are all still used by the flows that remain.
  * ⚠ NO `ARCHIVED_ITEMS` ROW YET — `archivedItems.ts` is the design lead's
@@ -96,6 +119,30 @@ export const ARCHIVED_INVITE_MODELS_V3 = [
 ]
 
 export const ARCHIVED_INVITE_FLOWS_V3 = [
+  {
+    id: 'qr-net-new',
+    model: 'b2b',
+    label: 'QR: Net New: No OCD, No Atlas',
+    description: 'New to XCEL. Verify email by code, full checkout, then create a password.',
+    base: 'qr-social',
+    screens: [...QR_START, ...VERIFY, ...CODE, 'checkout-1', ...CHECKOUT, 'placing', ...NEW_PASSWORD],
+  },
+  {
+    id: 'qr-ocd',
+    model: 'b2b',
+    label: 'QR: OCD, but no Atlas',
+    description: 'Has an OCD account, no Atlas. Same screens as Net New for now.',
+    base: 'qr-social',
+    screens: [...QR_START, ...VERIFY, ...CODE, 'checkout-1', ...CHECKOUT, 'placing', ...NEW_PASSWORD],
+  },
+  {
+    id: 'qr-atlas-login',
+    model: 'b2b',
+    label: 'QR: Has Atlas: Open Log-In Widget',
+    description: 'Already on Atlas. Email check opens a log-in widget; ends ready to log in.',
+    base: 'qr-social',
+    screens: [...QR_START, 'verify-login-1', 'verify-login-2', 'login-1', 'login-2', 'signing-in', ...CHECKOUT, 'placing', 'ready-login'],
+  },
   {
     id: 'net-new',
     model: 'b2c',
@@ -209,6 +256,9 @@ export const ARCHIVED_INVITE_V3_FLAG_VARIANTS = {
     { value: 'b2b-checkout', label: 'B2B → Invite → Checkout', description: 'A cart already holding a mixed order, then a partner’s invitation. Partner pricing; the unsupported item is dropped at checkout.' },
   ],
   'invite-v3-flow-b2b': [
+    { value: 'qr-net-new', label: 'QR: Net New: No OCD, No Atlas', description: 'New to XCEL. Verify email by code, full checkout, then create a password.' },
+    { value: 'qr-ocd', label: 'QR: OCD, but no Atlas', description: 'Has an OCD account, no Atlas. Same screens as Net New for now.' },
+    { value: 'qr-atlas-login', label: 'QR: Has Atlas: Open Log-In Widget', description: 'Already on Atlas. Email check opens a log-in widget; ends ready to log in.' },
     { value: 'qr-atlas-auto', label: 'QR: Has Atlas: Automatic Sign-in Post OTP', description: 'Already on Atlas. After the email, signed in automatically — the checkout arrives filled.' },
   ],
   'invite-v3-flow-b2c': [

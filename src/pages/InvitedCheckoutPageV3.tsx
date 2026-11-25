@@ -142,6 +142,20 @@ export function InvitedCheckoutPageV3() {
   const v3Flow = useInviteFlowV3()
   const verifiesFirst = verifiesEmailBeforeCheckout(flow) || verifiesEmailFirst(v3Flow)
   const typesEmailTwice = emailEnteredTwice(flow) && !verifiesFirst
+  /* V3's signed-in learner with no targeted SKUs checks out what their cart
+     holds — the non-targeted item, not the address's course (2026-11-02). */
+  const signedInCart = useV3SignedInCart()
+  const signedInLine = signedInCart?.line
+  /* ⚠ THE WALK ENDS HERE for a signed-in cart with nothing targeted —
+     2026-11-02, Afsana: "make the last screen just be the secure checkout
+     page". That is the existing checkout, outside the new flow, so Place your
+     order goes nowhere on this case. */
+  const endsAtCheckout = signedInCart?.cart === 'none'
+  /* ⚠ …AND THE EXISTING CHECKOUT ASKS FOR THE ADDRESS ONCE — 2026-11-18,
+     Afsana: "when cart contents = none targeted, there should not be a
+     're-enter email address' field". The twice-typed pair belongs to the new
+     guest checkout; a cart with nothing targeted never reaches it. */
+  const typesEmailOnce = typesEmailTwice && endsAtCheckout
   /* V3's Has Atlas flows sign in to an account the learner already has, so
      the checkout arrives with their details filled in (`checkout-1b`). */
   const v3Check = emailCheckV3(v3Flow)
@@ -238,7 +252,7 @@ export function InvitedCheckoutPageV3() {
   const [triedToSave, setTriedToSave] = useState(false)
   const emailFinished = confirmTouched || triedToSave
   /** What the email pair is wrong ABOUT, or null. */
-  const emailError: 'mismatch' | 'missing' | null = !typesEmailTwice
+  const emailError: 'mismatch' | 'missing' | null = !typesEmailTwice || typesEmailOnce
     ? null
     : !emailFinished
       ? null
@@ -261,7 +275,7 @@ export function InvitedCheckoutPageV3() {
      the learner had filled by hand. The disabled field IS the address being
      submitted, so it is what the gate checks. */
   const studentFormComplete = typesEmailTwice
-    ? studentInformationComplete({ ...student, phone, email, emailAgain })
+    ? studentInformationComplete({ ...student, phone, email, emailAgain: typesEmailOnce ? email : emailAgain })
     : studentInformationComplete({ ...student, phone, email: lockedEmail, emailAgain: lockedEmail })
   /* …and whether Payment is open. The invited arms arrive complete and saved;
      Guest has to press. */
@@ -305,15 +319,6 @@ export function InvitedCheckoutPageV3() {
     params.get(INVITE_LOA_PARAM) ?? '',
     params.get(CART_PACKAGE_PARAM),
   )
-  /* V3's signed-in learner with no targeted SKUs checks out what their cart
-     holds — the non-targeted item, not the address's course (2026-11-02). */
-  const signedInCart = useV3SignedInCart()
-  const signedInLine = signedInCart?.line
-  /* ⚠ THE WALK ENDS HERE for a signed-in cart with nothing targeted —
-     2026-11-02, Afsana: "make the last screen just be the secure checkout
-     page". That is the existing checkout, outside the new flow, so Place your
-     order goes nowhere on this case. */
-  const endsAtCheckout = signedInCart?.cart === 'none'
   const pkg = inCart && signedInLine ? signedInLine : inCart
   const courseTitle = pkg?.name ?? (inviteChoice ? inviteProductTitle(inviteChoice) : advertisedTitle)
   /* What is in the box. The cart's package where there is one — a learner who
@@ -528,6 +533,7 @@ export function InvitedCheckoutPageV3() {
                 afterName={
                   <EmailBlock
                     typesTwice={typesEmailTwice}
+                    typesOnce={typesEmailOnce}
                     locked={!verifiesFirst || emailVerified}
                     lockedEmail={lockedEmail}
                     lockedNote={
@@ -538,7 +544,12 @@ export function InvitedCheckoutPageV3() {
                           emailVerified && v3Check.second === 'code'
                           ? 'This is the address you verified. Your account will be created with it.'
                           : null
-                        : knownAccount
+                        : /* No note on the existing checkout — a cart with
+                             nothing targeted creates no learning dashboard
+                             account (2026-11-18, Afsana). */
+                          endsAtCheckout
+                          ? null
+                          : knownAccount
                           ? 'This is the email on your XCEL account. Your learning dashboard account will be created with it.'
                           : `This is the address ${E2E_PARTNER_NAME} sent your invitation to. Your account will be created with it.`
                     }
@@ -1011,6 +1022,7 @@ const STATES = ['Florida', 'Georgia', 'Illinois', 'New York', 'Texas']
 
 function EmailBlock({
   typesTwice,
+  typesOnce,
   locked,
   lockedEmail,
   lockedNote,
@@ -1023,6 +1035,9 @@ function EmailBlock({
 }: {
   /** Is the address typed twice here, or locked? V3 answers per flow. */
   typesTwice: boolean
+  /** …or typed ONCE, in the clear: the existing checkout, where a cart with
+   *  nothing targeted ends the walk (2026-11-18). */
+  typesOnce: boolean
   /** Locked yet? Not while the email check is still open over the page — the
    *  field is a plain, empty one until the code is confirmed or the learner
    *  logs in, and only then turns grey with the lock (2026-11-04, Afsana). */
@@ -1086,6 +1101,25 @@ function EmailBlock({
             {lockedNote}
           </p>
         ) : null}
+      </div>
+    )
+  }
+
+  if (typesOnce) {
+    return (
+      <div style={EMAIL_BLOCK}>
+        <label style={EMAIL_FIELD_GROUP}>
+          <span style={FIELD_LABEL}>Email address</span>
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => onEmailChange(e.target.value)}
+            placeholder="Enter your email address"
+            autoComplete="email"
+            style={{ ...FIELD, paddingRight: 10 }}
+          />
+        </label>
+        {/* No note under it (2026-11-18, Afsana). */}
       </div>
     )
   }

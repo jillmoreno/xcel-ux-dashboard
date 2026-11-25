@@ -7610,6 +7610,22 @@ a.cre-library-card-title::after {
      nearest slab the viewer has, then Georgia. */
   --font-e2e-serif: Rockwell, 'Rockwell Std', 'Roboto Slab', 'Courier New', Georgia, serif;
   --font-e2e-avenir: 'Avenir', 'Avenir Next', 'Nunito Sans', system-ui, sans-serif;
+  /* OCD'S LOG-IN PAGE (my.xcelsolutions.com/login.aspx), measured off the
+     live page 2026-11-20 for the Log In flow: the form's grey ground. On
+     2026-11-23 OCD's own page came back, unchanged, for an OCD account or
+     none — so its Arial, black labels, grey field text and link blue too. */
+  --color-e2e-ocd-ground: #f5f5f5;
+  --font-e2e-ocd: Arial, Helvetica, sans-serif;
+  --color-e2e-ocd-ink: #000000;
+  --color-e2e-ocd-field-text: #71747f;
+  --color-e2e-ocd-link: #4183c4;
+  /* XCEL'S TOOLTIP, measured off the live site 2026-11-23: the "?" icon's
+     dark grey, and the bubble's soft shadow. The bubble's own fill is the
+     same charcoal (Afsana, the same day: the live site's white "has little
+     contrast"), with white text. */
+  --color-e2e-help-icon: #3a3a3a;
+  --color-e2e-tooltip-fill: #3a3a3a;
+  --color-e2e-tooltip-shadow: rgb(27 33 44 / 0.12);
   /* ⚠ THE INVITE EMAIL'S MAIL CLIENT — 2026-10-19. A MOCK OF SOMEBODY
      ELSE'S PRODUCT, so these are fixed rather than brand tokens: the one
      thing that page has to say is "you are not in XCEL yet", and a webmail
@@ -7698,6 +7714,19 @@ a.cre-library-card-title::after {
      other payment methods' warm fill, the summary's detail rows (#DDD at
      30%), the header's shadow, and the reCAPTCHA badge's own colours. */
   --color-e2e-field: #f2f5f7;
+  /* The reset-password page's ground under its white header (2026-11-19,
+     Afsana: "below the header the fill is a light grey"). */
+  --color-e2e-reset-ground: #f3f4f6;
+  /* XCEL'S OWN MODAL — measured 2026-11-24 from the live "Select your state"
+     modal (xcelsolutions.com, Life & Health): the overlay, the card's shadow,
+     the button hover, the close glyph's grey and the text. For the three V3
+     modals the XCEL platform owns (Partner Code?, Not supported, Signing you
+     out), so they look like XCEL rather than Atlas (Afsana). */
+  --color-xcel-overlay: rgb(51 51 51 / 0.55);
+  --color-xcel-modal-shadow: rgb(0 0 0 / 0.35);
+  --color-xcel-red-hover: #bd373a;
+  --color-xcel-close: #757575;
+  --color-xcel-text: #3a3a3a;
   --color-e2e-summary: #f5f2ee;
   --color-e2e-detail-row: rgb(221 221 221 / 0.3);
   --color-e2e-header-shadow: rgb(0 0 0 / 0.1);

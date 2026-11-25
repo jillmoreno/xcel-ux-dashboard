@@ -1,0 +1,862 @@
+{
+  "capturedAt": "2026-11-25",
+  "components": [
+    {
+      "id": "modal-enter-your-email-to-continue",
+      "title": "Enter your email to continue",
+      "kind": "modal",
+      "flows": [
+        "Direct Email",
+        "QR Code",
+        "Not signed into XCEL (OCD)",
+        "Signed into XCEL (OCD)"
+      ],
+      "states": [
+        {
+          "file": "modals/enter-your-email-to-continue/01-pre-filled-with-the-invited-address.png",
+          "state": "Pre-filled with the invited address",
+          "seenIn": [
+            "Direct Email · No Atlas account",
+            "Direct Email · Has Atlas account"
+          ]
+        },
+        {
+          "file": "modals/enter-your-email-to-continue/02-invalid-email-address.png",
+          "state": "Invalid email address",
+          "seenIn": [
+            "Direct Email · Has Atlas account",
+            "QR Code · No Atlas account",
+            "QR Code · Has Atlas account",
+            "Not signed into XCEL (OCD) · Targeted only · No Atlas account",
+            "Not signed into XCEL (OCD) · Targeted only · Has Atlas account",
+            "Signed into XCEL (OCD) · Targeted only · No Atlas account",
+            "Signed into XCEL (OCD) · Targeted only · Has Atlas account"
+          ]
+        },
+        {
+          "file": "modals/enter-your-email-to-continue/03-empty-continue-disabled.png",
+          "state": "Empty, Continue disabled",
+          "seenIn": [
+            "QR Code · No Atlas account",
+            "QR Code · Has Atlas account",
+            "Not signed into XCEL (OCD) · Targeted only · No Atlas account",
+            "Not signed into XCEL (OCD) · Targeted only · Has Atlas account",
+            "Signed into XCEL (OCD) · Targeted only · No Atlas account",
+            "Signed into XCEL (OCD) · Targeted only · Has Atlas account"
+          ]
+        },
+        {
+          "file": "modals/enter-your-email-to-continue/04-filled.png",
+          "state": "Filled",
+          "seenIn": [
+            "QR Code · No Atlas account",
+            "QR Code · Has Atlas account",
+            "Not signed into XCEL (OCD) · Targeted only · No Atlas account",
+            "Not signed into XCEL (OCD) · Targeted only · Has Atlas account",
+            "Not signed into XCEL (OCD) · Mixed · No Atlas account",
+            "Not signed into XCEL (OCD) · Mixed · Has Atlas account",
+            "Signed into XCEL (OCD) · Targeted only · No Atlas account",
+            "Signed into XCEL (OCD) · Targeted only · Has Atlas account",
+            "Signed into XCEL (OCD) · Mixed · No Atlas account",
+            "Signed into XCEL (OCD) · Mixed · Has Atlas account"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "modal-verify-your-email",
+      "title": "Verify your email",
+      "kind": "modal",
+      "flows": [
+        "Direct Email",
+        "QR Code",
+        "Not signed into XCEL (OCD)",
+        "Signed into XCEL (OCD)"
+      ],
+      "states": [
+        {
+          "file": "modals/verify-your-email/01-empty-code-countdown-running.png",
+          "state": "Empty code, countdown running",
+          "seenIn": [
+            "Direct Email · No Atlas account",
+            "QR Code · No Atlas account",
+            "Not signed into XCEL (OCD) · Targeted only · No Atlas account",
+            "Not signed into XCEL (OCD) · Mixed · No Atlas account",
+            "Signed into XCEL (OCD) · Targeted only · No Atlas account",
+            "Signed into XCEL (OCD) · Mixed · No Atlas account"
+          ]
+        },
+        {
+          "file": "modals/verify-your-email/02-wrong-code-4-attempts-left.png",
+          "state": "Wrong code — 4 attempts left",
+          "seenIn": [
+            "Direct Email · No Atlas account",
+            "QR Code · No Atlas account",
+            "Not signed into XCEL (OCD) · Targeted only · No Atlas account",
+            "Signed into XCEL (OCD) · Targeted only · No Atlas account"
+          ]
+        },
+        {
+          "file": "modals/verify-your-email/03-expired-code-3-attempts-left.png",
+          "state": "Expired code — 3 attempts left",
+          "seenIn": [
+            "Direct Email · No Atlas account",
+            "QR Code · No Atlas account",
+            "Not signed into XCEL (OCD) · Targeted only · No Atlas account",
+            "Signed into XCEL (OCD) · Targeted only · No Atlas account"
+          ]
+        },
+        {
+          "file": "modals/verify-your-email/04-wrong-code-1-attempt-left.png",
+          "state": "Wrong code — 1 attempt left",
+          "seenIn": [
+            "Direct Email · No Atlas account",
+            "QR Code · No Atlas account",
+            "Not signed into XCEL (OCD) · Targeted only · No Atlas account",
+            "Signed into XCEL (OCD) · Targeted only · No Atlas account"
+          ]
+        },
+        {
+          "file": "modals/verify-your-email/05-ten-minutes-up-resend-code-available.png",
+          "state": "Ten minutes up — Resend code available",
+          "seenIn": [
+            "Direct Email · No Atlas account",
+            "QR Code · No Atlas account",
+            "Not signed into XCEL (OCD) · Targeted only · No Atlas account",
+            "Signed into XCEL (OCD) · Targeted only · No Atlas account"
+          ]
+        },
+        {
+          "file": "modals/verify-your-email/06-code-resent-banner-countdown-restarted.png",
+          "state": "Code resent — banner, countdown restarted",
+          "seenIn": [
+            "Direct Email · No Atlas account",
+            "QR Code · No Atlas account",
+            "Not signed into XCEL (OCD) · Targeted only · No Atlas account",
+            "Signed into XCEL (OCD) · Targeted only · No Atlas account"
+          ]
+        },
+        {
+          "file": "modals/verify-your-email/07-code-entered-confirm-enabled.png",
+          "state": "Code entered, Confirm enabled",
+          "seenIn": [
+            "Direct Email · No Atlas account",
+            "QR Code · No Atlas account",
+            "Not signed into XCEL (OCD) · Targeted only · No Atlas account",
+            "Not signed into XCEL (OCD) · Mixed · No Atlas account",
+            "Signed into XCEL (OCD) · Targeted only · No Atlas account",
+            "Signed into XCEL (OCD) · Mixed · No Atlas account"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "modal-email-verified",
+      "title": "Email verified",
+      "kind": "modal",
+      "flows": [
+        "Direct Email",
+        "QR Code",
+        "Not signed into XCEL (OCD)",
+        "Signed into XCEL (OCD)"
+      ],
+      "states": [
+        {
+          "file": "modals/email-verified/01-hold-continuing.png",
+          "state": "Hold — continuing",
+          "seenIn": [
+            "Direct Email · No Atlas account",
+            "QR Code · No Atlas account",
+            "Not signed into XCEL (OCD) · Targeted only · No Atlas account",
+            "Not signed into XCEL (OCD) · Mixed · No Atlas account",
+            "Signed into XCEL (OCD) · Targeted only · No Atlas account",
+            "Signed into XCEL (OCD) · Mixed · No Atlas account"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "modal-enter-your-name-to-continue",
+      "title": "Enter your name to continue",
+      "kind": "modal",
+      "flows": [
+        "Direct Email",
+        "QR Code",
+        "Not signed into XCEL (OCD)",
+        "Signed into XCEL (OCD)"
+      ],
+      "states": [
+        {
+          "file": "modals/enter-your-name-to-continue/01-empty-continue-disabled.png",
+          "state": "Empty, Continue disabled",
+          "seenIn": [
+            "Direct Email · No Atlas account",
+            "QR Code · No Atlas account",
+            "Not signed into XCEL (OCD) · Targeted only · No Atlas account",
+            "Not signed into XCEL (OCD) · Mixed · No Atlas account",
+            "Signed into XCEL (OCD) · Targeted only · No Atlas account",
+            "Signed into XCEL (OCD) · Mixed · No Atlas account"
+          ]
+        },
+        {
+          "file": "modals/enter-your-name-to-continue/02-filled.png",
+          "state": "Filled",
+          "seenIn": [
+            "Direct Email · No Atlas account",
+            "QR Code · No Atlas account",
+            "Not signed into XCEL (OCD) · Targeted only · No Atlas account",
+            "Not signed into XCEL (OCD) · Mixed · No Atlas account",
+            "Signed into XCEL (OCD) · Targeted only · No Atlas account",
+            "Signed into XCEL (OCD) · Mixed · No Atlas account"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "modal-placing-your-order",
+      "title": "Placing your order",
+      "kind": "modal",
+      "flows": [
+        "Direct Email",
+        "QR Code",
+        "Not signed into XCEL (OCD)",
+        "Signed into XCEL (OCD)"
+      ],
+      "states": [
+        {
+          "file": "modals/placing-your-order/01-hold.png",
+          "state": "Hold",
+          "seenIn": [
+            "Direct Email · No Atlas account",
+            "Direct Email · Has Atlas account",
+            "QR Code · No Atlas account",
+            "QR Code · Has Atlas account",
+            "Not signed into XCEL (OCD) · Targeted only · No Atlas account",
+            "Not signed into XCEL (OCD) · Targeted only · Has Atlas account",
+            "Not signed into XCEL (OCD) · Mixed · No Atlas account",
+            "Not signed into XCEL (OCD) · Mixed · Has Atlas account",
+            "Signed into XCEL (OCD) · Targeted only · No Atlas account",
+            "Signed into XCEL (OCD) · Targeted only · Has Atlas account",
+            "Signed into XCEL (OCD) · Mixed · No Atlas account",
+            "Signed into XCEL (OCD) · Mixed · Has Atlas account"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "card-finish-setting-up-your-account",
+      "title": "Finish setting up your account",
+      "kind": "card",
+      "flows": [
+        "Direct Email",
+        "QR Code",
+        "Not signed into XCEL (OCD)",
+        "Signed into XCEL (OCD)"
+      ],
+      "states": [
+        {
+          "file": "cards/finish-setting-up-your-account/01-empty-confirm-disabled.png",
+          "state": "Empty, Confirm disabled",
+          "seenIn": [
+            "Direct Email · No Atlas account",
+            "QR Code · No Atlas account",
+            "Not signed into XCEL (OCD) · Targeted only · No Atlas account",
+            "Not signed into XCEL (OCD) · Mixed · No Atlas account",
+            "Signed into XCEL (OCD) · Targeted only · No Atlas account",
+            "Signed into XCEL (OCD) · Mixed · No Atlas account"
+          ]
+        },
+        {
+          "file": "cards/finish-setting-up-your-account/02-passwords-do-not-match.png",
+          "state": "Passwords do not match",
+          "seenIn": [
+            "Direct Email · No Atlas account",
+            "QR Code · No Atlas account",
+            "Not signed into XCEL (OCD) · Targeted only · No Atlas account",
+            "Signed into XCEL (OCD) · Targeted only · No Atlas account"
+          ]
+        },
+        {
+          "file": "cards/finish-setting-up-your-account/03-filled-confirm-enabled.png",
+          "state": "Filled, Confirm enabled",
+          "seenIn": [
+            "Direct Email · No Atlas account",
+            "QR Code · No Atlas account",
+            "Not signed into XCEL (OCD) · Targeted only · No Atlas account",
+            "Not signed into XCEL (OCD) · Mixed · No Atlas account",
+            "Signed into XCEL (OCD) · Targeted only · No Atlas account",
+            "Signed into XCEL (OCD) · Mixed · No Atlas account"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "modal-setting-up-your-account",
+      "title": "Setting up your account",
+      "kind": "modal",
+      "flows": [
+        "Direct Email",
+        "QR Code",
+        "Not signed into XCEL (OCD)",
+        "Signed into XCEL (OCD)"
+      ],
+      "states": [
+        {
+          "file": "modals/setting-up-your-account/01-hold.png",
+          "state": "Hold",
+          "seenIn": [
+            "Direct Email · No Atlas account",
+            "Direct Email · Has Atlas account",
+            "QR Code · No Atlas account",
+            "QR Code · Has Atlas account",
+            "Not signed into XCEL (OCD) · Targeted only · No Atlas account",
+            "Not signed into XCEL (OCD) · Targeted only · Has Atlas account",
+            "Not signed into XCEL (OCD) · Mixed · No Atlas account",
+            "Not signed into XCEL (OCD) · Mixed · Has Atlas account",
+            "Signed into XCEL (OCD) · Targeted only · No Atlas account",
+            "Signed into XCEL (OCD) · Targeted only · Has Atlas account",
+            "Signed into XCEL (OCD) · Mixed · No Atlas account",
+            "Signed into XCEL (OCD) · Mixed · Has Atlas account"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "modal-log-in-to-continue",
+      "title": "Log in to continue",
+      "kind": "modal",
+      "flows": [
+        "Direct Email",
+        "QR Code",
+        "Not signed into XCEL (OCD)",
+        "Signed into XCEL (OCD)"
+      ],
+      "states": [
+        {
+          "file": "modals/log-in-to-continue/01-empty-password-log-in-disabled.png",
+          "state": "Empty password, Log in disabled",
+          "seenIn": [
+            "Direct Email · Has Atlas account",
+            "QR Code · Has Atlas account",
+            "Not signed into XCEL (OCD) · Targeted only · Has Atlas account",
+            "Not signed into XCEL (OCD) · Mixed · Has Atlas account",
+            "Signed into XCEL (OCD) · Targeted only · Has Atlas account",
+            "Signed into XCEL (OCD) · Mixed · Has Atlas account"
+          ]
+        },
+        {
+          "file": "modals/log-in-to-continue/02-wrong-password.png",
+          "state": "Wrong password",
+          "seenIn": [
+            "Direct Email · Has Atlas account",
+            "QR Code · Has Atlas account",
+            "Not signed into XCEL (OCD) · Targeted only · Has Atlas account",
+            "Signed into XCEL (OCD) · Targeted only · Has Atlas account"
+          ]
+        },
+        {
+          "file": "modals/log-in-to-continue/03-password-entered.png",
+          "state": "Password entered",
+          "seenIn": [
+            "Direct Email · Has Atlas account",
+            "QR Code · Has Atlas account",
+            "Not signed into XCEL (OCD) · Targeted only · Has Atlas account",
+            "Not signed into XCEL (OCD) · Mixed · Has Atlas account",
+            "Signed into XCEL (OCD) · Targeted only · Has Atlas account",
+            "Signed into XCEL (OCD) · Mixed · Has Atlas account"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "modal-reset-your-password-enter-email",
+      "title": "Reset your password — enter email",
+      "kind": "modal",
+      "flows": [
+        "Direct Email",
+        "QR Code",
+        "Not signed into XCEL (OCD)",
+        "Signed into XCEL (OCD)"
+      ],
+      "states": [
+        {
+          "file": "modals/reset-your-password-enter-email/01-empty-send-reset-link-disabled.png",
+          "state": "Empty, Send reset link disabled",
+          "seenIn": [
+            "Direct Email · Has Atlas account",
+            "QR Code · Has Atlas account",
+            "Not signed into XCEL (OCD) · Targeted only · Has Atlas account",
+            "Signed into XCEL (OCD) · Targeted only · Has Atlas account"
+          ]
+        },
+        {
+          "file": "modals/reset-your-password-enter-email/02-invalid-email-address.png",
+          "state": "Invalid email address",
+          "seenIn": [
+            "Direct Email · Has Atlas account",
+            "QR Code · Has Atlas account",
+            "Not signed into XCEL (OCD) · Targeted only · Has Atlas account",
+            "Signed into XCEL (OCD) · Targeted only · Has Atlas account"
+          ]
+        },
+        {
+          "file": "modals/reset-your-password-enter-email/03-filled-send-reset-link-enabled.png",
+          "state": "Filled, Send reset link enabled",
+          "seenIn": [
+            "Direct Email · Has Atlas account",
+            "QR Code · Has Atlas account",
+            "Not signed into XCEL (OCD) · Targeted only · Has Atlas account",
+            "Signed into XCEL (OCD) · Targeted only · Has Atlas account"
+          ]
+        }
+      ],
+      "tag": "Keycloak (Atlas) account only"
+    },
+    {
+      "id": "modal-check-your-email",
+      "title": "Check your email",
+      "kind": "modal",
+      "flows": [
+        "Direct Email",
+        "QR Code",
+        "Not signed into XCEL (OCD)",
+        "Signed into XCEL (OCD)"
+      ],
+      "states": [
+        {
+          "file": "modals/check-your-email/01-reset-link-sent-resend-link-counting-down.png",
+          "state": "Reset link sent, Resend link counting down",
+          "seenIn": [
+            "Direct Email · Has Atlas account",
+            "QR Code · Has Atlas account",
+            "Not signed into XCEL (OCD) · Targeted only · Has Atlas account",
+            "Signed into XCEL (OCD) · Targeted only · Has Atlas account"
+          ]
+        },
+        {
+          "file": "modals/check-your-email/02-resend-link-available.png",
+          "state": "Resend link available",
+          "seenIn": [
+            "Direct Email · Has Atlas account"
+          ]
+        }
+      ],
+      "tag": "Keycloak (Atlas) account only"
+    },
+    {
+      "id": "page-reset-your-password-page",
+      "title": "Reset your password (page)",
+      "kind": "page",
+      "flows": [
+        "Direct Email",
+        "QR Code",
+        "Not signed into XCEL (OCD)",
+        "Signed into XCEL (OCD)"
+      ],
+      "states": [
+        {
+          "file": "pages/reset-your-password-page/01-empty-reset-password-disabled.png",
+          "state": "Empty, Reset password disabled",
+          "seenIn": [
+            "Direct Email · Has Atlas account",
+            "QR Code · Has Atlas account",
+            "Not signed into XCEL (OCD) · Targeted only · Has Atlas account",
+            "Signed into XCEL (OCD) · Targeted only · Has Atlas account"
+          ]
+        },
+        {
+          "file": "pages/reset-your-password-page/02-passwords-do-not-match.png",
+          "state": "Passwords do not match",
+          "seenIn": [
+            "Direct Email · Has Atlas account",
+            "QR Code · Has Atlas account",
+            "Not signed into XCEL (OCD) · Targeted only · Has Atlas account",
+            "Signed into XCEL (OCD) · Targeted only · Has Atlas account"
+          ]
+        },
+        {
+          "file": "pages/reset-your-password-page/03-filled-reset-password-enabled.png",
+          "state": "Filled, Reset password enabled",
+          "seenIn": [
+            "Direct Email · Has Atlas account",
+            "QR Code · Has Atlas account",
+            "Not signed into XCEL (OCD) · Targeted only · Has Atlas account",
+            "Signed into XCEL (OCD) · Targeted only · Has Atlas account"
+          ]
+        },
+        {
+          "file": "pages/reset-your-password-page/04-password-reset.png",
+          "state": "Password reset",
+          "seenIn": [
+            "Direct Email · Has Atlas account",
+            "QR Code · Has Atlas account",
+            "Not signed into XCEL (OCD) · Targeted only · Has Atlas account",
+            "Signed into XCEL (OCD) · Targeted only · Has Atlas account"
+          ]
+        }
+      ],
+      "tag": "Keycloak (Atlas) account only"
+    },
+    {
+      "id": "modal-signing-you-in",
+      "title": "Signing you in",
+      "kind": "modal",
+      "flows": [
+        "Direct Email",
+        "QR Code",
+        "Not signed into XCEL (OCD)",
+        "Signed into XCEL (OCD)"
+      ],
+      "states": [
+        {
+          "file": "modals/signing-you-in/01-hold.png",
+          "state": "Hold",
+          "seenIn": [
+            "Direct Email · Has Atlas account",
+            "QR Code · Has Atlas account",
+            "Not signed into XCEL (OCD) · Targeted only · Has Atlas account",
+            "Not signed into XCEL (OCD) · Mixed · Has Atlas account",
+            "Signed into XCEL (OCD) · Targeted only · Has Atlas account",
+            "Signed into XCEL (OCD) · Mixed · Has Atlas account"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "page-start-learning",
+      "title": "Start learning",
+      "kind": "page",
+      "flows": [
+        "Direct Email",
+        "QR Code",
+        "Not signed into XCEL (OCD)",
+        "Signed into XCEL (OCD)"
+      ],
+      "states": [
+        {
+          "file": "pages/start-learning/01-ready-to-start-the-course.png",
+          "state": "Ready to start the course",
+          "seenIn": [
+            "Direct Email · Has Atlas account",
+            "QR Code · Has Atlas account",
+            "Not signed into XCEL (OCD) · Targeted only · Has Atlas account",
+            "Not signed into XCEL (OCD) · Mixed · Has Atlas account",
+            "Signed into XCEL (OCD) · Targeted only · Has Atlas account",
+            "Signed into XCEL (OCD) · Mixed · Has Atlas account"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "modal-select-your-state-and-line-of-authority",
+      "title": "Select your state and line of authority",
+      "kind": "modal",
+      "flows": [
+        "Direct Email"
+      ],
+      "states": [
+        {
+          "file": "modals/select-your-state-and-line-of-authority/01-opened-on-the-current-course.png",
+          "state": "Opened on the current course",
+          "seenIn": [
+            "Direct Email · Products"
+          ]
+        },
+        {
+          "file": "modals/select-your-state-and-line-of-authority/02-line-of-authority-tooltip-on-hover.png",
+          "state": "Line of authority tooltip on hover",
+          "seenIn": [
+            "Direct Email · Products"
+          ]
+        },
+        {
+          "file": "modals/select-your-state-and-line-of-authority/03-state-list-filtered-while-typing.png",
+          "state": "State list filtered while typing",
+          "seenIn": [
+            "Direct Email · Products"
+          ]
+        },
+        {
+          "file": "modals/select-your-state-and-line-of-authority/04-changed-continue-enabled.png",
+          "state": "Changed, Continue enabled",
+          "seenIn": [
+            "Direct Email · Products"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "card-select-your-state-and-line-of-authority",
+      "title": "Select your state and line of authority",
+      "kind": "card",
+      "flows": [
+        "QR Code"
+      ],
+      "states": [
+        {
+          "file": "cards/select-your-state-and-line-of-authority/01-empty-continue-disabled.png",
+          "state": "Empty, Continue disabled",
+          "seenIn": [
+            "QR Code · No Atlas account",
+            "QR Code · Has Atlas account"
+          ]
+        },
+        {
+          "file": "cards/select-your-state-and-line-of-authority/02-line-of-authority-tooltip-on-hover.png",
+          "state": "Line of authority tooltip on hover",
+          "seenIn": [
+            "QR Code · No Atlas account",
+            "QR Code · Has Atlas account"
+          ]
+        },
+        {
+          "file": "cards/select-your-state-and-line-of-authority/03-state-dropdown-open.png",
+          "state": "State dropdown open",
+          "seenIn": [
+            "QR Code · No Atlas account",
+            "QR Code · Has Atlas account"
+          ]
+        },
+        {
+          "file": "cards/select-your-state-and-line-of-authority/04-state-filtered-while-typing.png",
+          "state": "State filtered while typing",
+          "seenIn": [
+            "QR Code · No Atlas account",
+            "QR Code · Has Atlas account"
+          ]
+        },
+        {
+          "file": "cards/select-your-state-and-line-of-authority/05-state-chosen-line-of-authority-not-yet.png",
+          "state": "State chosen, line of authority not yet",
+          "seenIn": [
+            "QR Code · No Atlas account",
+            "QR Code · Has Atlas account"
+          ]
+        },
+        {
+          "file": "cards/select-your-state-and-line-of-authority/06-filled-continue-enabled.png",
+          "state": "Filled, Continue enabled",
+          "seenIn": [
+            "QR Code · No Atlas account",
+            "QR Code · Has Atlas account"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "modal-do-you-have-a-partner-code",
+      "title": "Do you have a Partner Code?",
+      "kind": "modal",
+      "flows": [
+        "Not signed into XCEL (OCD)",
+        "Signed into XCEL (OCD)"
+      ],
+      "states": [
+        {
+          "file": "modals/do-you-have-a-partner-code/01-question-over-the-cart.png",
+          "state": "Question over the cart",
+          "seenIn": [
+            "Not signed into XCEL (OCD) · Targeted only · No Atlas account",
+            "Not signed into XCEL (OCD) · Targeted only · Has Atlas account",
+            "Not signed into XCEL (OCD) · Mixed · No Atlas account",
+            "Not signed into XCEL (OCD) · Mixed · Has Atlas account",
+            "Signed into XCEL (OCD) · Targeted only · No Atlas account",
+            "Signed into XCEL (OCD) · Targeted only · Has Atlas account",
+            "Signed into XCEL (OCD) · Mixed · No Atlas account",
+            "Signed into XCEL (OCD) · Mixed · Has Atlas account"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "modal-1-item-in-your-cart-is-not-supported",
+      "title": "1 item in your cart is not supported",
+      "kind": "modal",
+      "flows": [
+        "Not signed into XCEL (OCD)",
+        "Signed into XCEL (OCD)"
+      ],
+      "states": [
+        {
+          "file": "modals/1-item-in-your-cart-is-not-supported/01-notice-over-the-cart.png",
+          "state": "Notice over the cart",
+          "seenIn": [
+            "Not signed into XCEL (OCD) · Mixed · No Atlas account",
+            "Not signed into XCEL (OCD) · Mixed · Has Atlas account",
+            "Signed into XCEL (OCD) · Mixed · No Atlas account",
+            "Signed into XCEL (OCD) · Mixed · Has Atlas account"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "modal-signing-you-out",
+      "title": "Signing you out",
+      "kind": "modal",
+      "flows": [
+        "Signed into XCEL (OCD)"
+      ],
+      "states": [
+        {
+          "file": "modals/signing-you-out/01-hold.png",
+          "state": "Hold",
+          "seenIn": [
+            "Signed into XCEL (OCD) · Targeted only · No Atlas account",
+            "Signed into XCEL (OCD) · Targeted only · Has Atlas account",
+            "Signed into XCEL (OCD) · Mixed · No Atlas account",
+            "Signed into XCEL (OCD) · Mixed · Has Atlas account"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "card-ocd-log-in",
+      "title": "OCD log in",
+      "kind": "card",
+      "flows": [
+        "Log In"
+      ],
+      "states": [
+        {
+          "file": "cards/ocd-log-in/01-email-empty-continue-disabled.png",
+          "state": "Email, empty — Continue disabled",
+          "seenIn": [
+            "Log In · Atlas account",
+            "Log In · OCD account",
+            "Log In · No account"
+          ]
+        },
+        {
+          "file": "cards/ocd-log-in/02-email-info-tooltip-on-hover.png",
+          "state": "Email, info tooltip on hover",
+          "seenIn": [
+            "Log In · Atlas account",
+            "Log In · OCD account",
+            "Log In · No account"
+          ]
+        },
+        {
+          "file": "cards/ocd-log-in/03-email-filled-continue-enabled.png",
+          "state": "Email, filled — Continue enabled",
+          "seenIn": [
+            "Log In · Atlas account",
+            "Log In · OCD account",
+            "Log In · No account"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "card-log-in-alternative-to-log-in-to-continue",
+      "title": "Log in — alternative to Log in to continue",
+      "kind": "card",
+      "flows": [
+        "Log In"
+      ],
+      "states": [
+        {
+          "file": "cards/log-in-alternative-to-log-in-to-continue/01-empty-password-log-in-disabled.png",
+          "state": "Empty password, Log in disabled",
+          "seenIn": [
+            "Log In · Atlas account"
+          ]
+        },
+        {
+          "file": "cards/log-in-alternative-to-log-in-to-continue/02-wrong-password.png",
+          "state": "Wrong password",
+          "seenIn": [
+            "Log In · Atlas account"
+          ]
+        },
+        {
+          "file": "cards/log-in-alternative-to-log-in-to-continue/03-password-entered-log-in-enabled.png",
+          "state": "Password entered, Log in enabled",
+          "seenIn": [
+            "Log In · Atlas account"
+          ]
+        },
+        {
+          "file": "cards/log-in-alternative-to-log-in-to-continue/04-signing-you-in.png",
+          "state": "Signing you in",
+          "seenIn": [
+            "Log In · Atlas account"
+          ]
+        }
+      ],
+      "tag": "Keycloak (Atlas) account only"
+    },
+    {
+      "id": "card-reset-your-password-log-in",
+      "title": "Reset your password — Log In",
+      "kind": "card",
+      "flows": [
+        "Log In"
+      ],
+      "states": [
+        {
+          "file": "cards/reset-your-password-log-in/01-empty-send-reset-link-disabled-back.png",
+          "state": "Empty, Send reset link disabled, ← Back",
+          "seenIn": [
+            "Log In · Atlas account"
+          ]
+        },
+        {
+          "file": "cards/reset-your-password-log-in/02-invalid-email-address.png",
+          "state": "Invalid email address",
+          "seenIn": [
+            "Log In · Atlas account"
+          ]
+        },
+        {
+          "file": "cards/reset-your-password-log-in/03-filled-send-reset-link-enabled.png",
+          "state": "Filled, Send reset link enabled",
+          "seenIn": [
+            "Log In · Atlas account"
+          ]
+        }
+      ],
+      "tag": "Keycloak (Atlas) account only"
+    },
+    {
+      "id": "page-ocd-log-in-page-existing-design",
+      "title": "OCD log-in page (existing design)",
+      "kind": "page",
+      "flows": [
+        "Log In"
+      ],
+      "states": [
+        {
+          "file": "pages/ocd-log-in-page-existing-design/01-username-filled-and-locked.png",
+          "state": "Username filled and locked",
+          "seenIn": [
+            "Log In · OCD account",
+            "Log In · No account"
+          ]
+        },
+        {
+          "file": "pages/ocd-log-in-page-existing-design/02-log-in-with-no-password-all-fields-are-required.png",
+          "state": "LOG IN with no password — All fields are required",
+          "seenIn": [
+            "Log In · OCD account",
+            "Log In · No account"
+          ]
+        },
+        {
+          "file": "pages/ocd-log-in-page-existing-design/03-password-entered.png",
+          "state": "Password entered",
+          "seenIn": [
+            "Log In · OCD account",
+            "Log In · No account"
+          ]
+        },
+        {
+          "file": "pages/ocd-log-in-page-existing-design/04-no-account-the-username-or-password-is-incorrect.png",
+          "state": "No account — The Username or Password is incorrect",
+          "seenIn": [
+            "Log In · No account"
+          ]
+        }
+      ]
+    }
+  ]
+}

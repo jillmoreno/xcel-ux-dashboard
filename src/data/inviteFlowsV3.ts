@@ -17,7 +17,8 @@ import { ALL_US_STATES } from './licensedStatesFixtures'
  * On V3 that control is not shown; these three are, instead:
  *
  *   invite-v3-model       B2B or B2C
- *   invite-v3-flow-b2b    the B2B flows — Direct Email, then the file's four QR flows
+ *   invite-v3-flow-b2b    the B2B flows — Direct Email, then QR Code (the file's
+ *                         QR flows, one since 2026-11-17)
  *   invite-v3-flow-b2c    the four B2C flows
  *
  * ⚠ ONE FLOW CONTROL PER MODEL, AND THAT IS HOW THE PICKER FILTERS. The Design
@@ -38,11 +39,10 @@ export type InviteModelId = 'b2b' | 'b2c'
 
 export type InviteFlowV3Id =
   | 'direct-email'
-  | 'qr-net-new'
-  | 'qr-ocd'
-  | 'qr-atlas-login'
+  | 'qr'
   | 'xcel-signed-in'
   | 'xcel-signed-out'
+  | 'xcel-log-in'
 
 export type InviteFlowV3 = {
   id: InviteFlowV3Id
@@ -90,28 +90,19 @@ export const INVITE_FLOWS_V3: InviteFlowV3[] = [
     screens: ['email', 'pdp', ...VERIFY, ...CODE, 'checkout-1', ...CHECKOUT, 'placing', ...NEW_PASSWORD],
   },
   {
-    id: 'qr-net-new',
+    /* ⚠ ONE QR FLOW SINCE 2026-11-17 — Afsana: "could we not just have 2
+       invite flows ultimately: Direct Email, QR Code, where QR code has the
+       'email belongs to' design control added?" The file's three QR flows
+       differed only by whose email it was — Net New and OCD-but-no-Atlas
+       walked the same screens — so Email belongs to now picks the walk, as
+       it does for Direct Email: `qrFlowV3`. These screens are the default,
+       No Atlas account. `archivedInviteFlowsV3.ts` keeps the three rows. */
+    id: 'qr',
     model: 'b2b',
-    label: 'QR: Net New: No OCD, No Atlas',
-    description: 'New to XCEL. Verify email by code, full checkout, then create a password.',
+    label: 'QR Code',
+    description: 'Scanned a partner’s QR code. Email belongs to decides the rest: a code then Create password, or a log-in widget then ready to log in.',
     base: 'qr-social',
     screens: [...QR_START, ...VERIFY, ...CODE, 'checkout-1', ...CHECKOUT, 'placing', ...NEW_PASSWORD],
-  },
-  {
-    id: 'qr-ocd',
-    model: 'b2b',
-    label: 'QR: OCD, but no Atlas',
-    description: 'Has an OCD account, no Atlas. Same screens as Net New for now.',
-    base: 'qr-social',
-    screens: [...QR_START, ...VERIFY, ...CODE, 'checkout-1', ...CHECKOUT, 'placing', ...NEW_PASSWORD],
-  },
-  {
-    id: 'qr-atlas-login',
-    model: 'b2b',
-    label: 'QR: Has Atlas: Open Log-In Widget',
-    description: 'Already on Atlas. Email check opens a log-in widget; ends ready to log in.',
-    base: 'qr-social',
-    screens: [...QR_START, 'verify-login-1', 'verify-login-2', 'login-1', 'login-2', 'signing-in', ...CHECKOUT, 'placing', 'ready-login'],
   },
   {
     /* SIGNED IN TO AN EXISTING XCEL (OCD) ACCOUNT — 2026-11-02, Afsana. Its
@@ -119,7 +110,7 @@ export const INVITE_FLOWS_V3: InviteFlowV3[] = [
        starting point: `signedInFlowV3` works out the walk. */
     id: 'xcel-signed-in',
     model: 'b2c',
-    label: 'Signed in to XCEL (OCD)',
+    label: 'Signed into XCEL (OCD)',
     description: 'Signed in to an existing XCEL account. Presence of a partner code dictates next steps. If they have a partner code, cart items affect next steps. If no partner code and all items are part of the 526 SKU list, or if they agree to drop unsupported items, they are signed out. The subsequent flow is affected by whether they have an Atlas account or not.',
     base: 'xcel-signed-in',
     screens: ['cart', ...CHECKOUT, 'placing', 'ready'],
@@ -132,10 +123,32 @@ export const INVITE_FLOWS_V3: InviteFlowV3[] = [
        account. `ocdCartFlowV3` works out the walk. */
     id: 'xcel-signed-out',
     model: 'b2c',
-    label: 'Not signed in to XCEL (OCD)',
+    label: 'Not signed into XCEL (OCD)',
     description: 'Presence of a partner code dictates next steps. If they have a partner code, cart items affect next steps. The subsequent flow is affected by whether they have an Atlas account or not.',
     base: 'b2c-guest',
     screens: ['cart', ...CHECKOUT, 'placing', 'ready'],
+  },
+  {
+    /* LOG IN — 2026-11-20, Afsana, from the eCommerce PRD's 5.7 and Swati's
+       call of 2026-11-18. A learner who has bought comes back to the public
+       site and presses Log In, and should not have to remember whether
+       their account is in OCD or Atlas. Log In → Do you have a Partner
+       Code? (Yes does nothing for now) → No → Do you have an XCEL account?
+       (No is not mocked) → Yes → the OCD log-in page, repurposed: the email
+       alone, looked up in Keycloak first. Found: Keycloak's log-in widget,
+       then Atlas Home. Not found: assumed to be OCD's, so OCD's own log-in
+       page, unchanged, the Username filled and locked (2026-11-23) — LOG IN
+       does nothing for an OCD account and says "The Username or Password is
+       incorrect" when OCD has none either. Which it is, the demo
+       cannot look up: Account found in (`invite-v3-log-in-account`) says.
+       It starts on the cart, as every B2C flow does — the live site's
+       Partner Code page is opened from there too (`referer` is the cart). */
+    id: 'xcel-log-in',
+    model: 'b2c',
+    label: 'Log In',
+    description: 'A returning learner presses Log In on the public site. The OCD log-in page asks for the email alone, then sends them to Atlas’s log-in when Keycloak knows it and to OCD’s password when it does not.',
+    base: 'b2c-guest',
+    screens: ['cart', 'log-in-partner-code', 'log-in-account', 'log-in-email', 'log-in-keycloak', 'signing-in'],
   },
 ]
 
@@ -148,7 +161,7 @@ export const INVITE_V3_FLOW_FLAGS: Record<InviteModelId, string> = {
 }
 
 /** V3 opens on B2B's first flow — Direct Email since 2026-11-03. B2C opens
- *  on Not signed in to XCEL (OCD), a guest from the start, since 2026-11-05. */
+ *  on Not signed into XCEL (OCD), a guest from the start, since 2026-11-05. */
 export const DEFAULT_INVITE_MODEL: InviteModelId = 'b2b'
 
 export const DEFAULT_INVITE_FLOW_V3: Record<InviteModelId, InviteFlowV3Id> = {
@@ -165,10 +178,14 @@ export function inviteV3Surface(
   | 'invite:v3-b2b'
   | 'invite:v3-b2b-direct-email'
   | 'invite:v3-b2c'
-  | 'invite:v3-b2c-signed-in' {
-  /* Direct Email carries Email belongs to (2026-11-04). */
+  | 'invite:v3-b2c-signed-in'
+  | 'invite:v3-b2c-log-in' {
+  /* Direct Email has a surface of its own (2026-11-04); Email belongs to
+     names both since QR Code joined it (2026-11-17). */
   if (model === 'b2b') return flowId === 'direct-email' ? 'invite:v3-b2b-direct-email' : 'invite:v3-b2b'
-  /* Both OCD flows carry Cart contents and Email belongs to. */
+  /* Both OCD flows carry Cart contents and Email belongs to; Log In carries
+     Account found in. */
+  if (flowId === 'xcel-log-in') return 'invite:v3-b2c-log-in'
   return isOcdCartFlow(flowId) ? 'invite:v3-b2c-signed-in' : 'invite:v3-b2c'
 }
 
@@ -179,8 +196,9 @@ export function resolveInviteModel(value: string | null | undefined): InviteMode
 /** A flow of THIS model, or the model's default — a stored id from the other
  *  model's list never leaks across. */
 export function resolveInviteFlowV3(model: InviteModelId, value: string | null | undefined): InviteFlowV3 {
+  const id = model === 'b2b' && retiredQrEmail(value) ? 'qr' : value
   return (
-    INVITE_FLOWS_V3.find((f) => f.model === model && f.id === value) ??
+    INVITE_FLOWS_V3.find((f) => f.model === model && f.id === id) ??
     INVITE_FLOWS_V3.find((f) => f.id === DEFAULT_INVITE_FLOW_V3[model])!
   )
 }
@@ -256,12 +274,24 @@ export function entryPathV3(flow: InviteFlowV3): string {
  *  first screen (2026-10-30, Afsana: "make sure that all the B2C flows start
  *  with this screen", the cart). */
 export function v3ScreensFor(model: InviteModelId): readonly string[] {
+  /* Reset your password, the page the reset email opens in a new tab, is
+     reachable from every flow's Log in (2026-11-19, Afsana). */
   return model === 'b2b'
-    ? ['/end-to-end-demo/email', '/end-to-end-demo/qr', '/end-to-end-demo', '/end-to-end-demo/checkout', '/end-to-end-demo/confirmation']
+    ? [
+        '/end-to-end-demo/email',
+        '/end-to-end-demo/qr',
+        '/end-to-end-demo',
+        '/end-to-end-demo/checkout',
+        '/end-to-end-demo/confirmation',
+        '/end-to-end-demo/reset-password',
+      ]
     : [
         '/end-to-end-demo/cart',
         '/end-to-end-demo/checkout',
         '/end-to-end-demo/confirmation',
+        '/end-to-end-demo/reset-password',
+        /* Log In's pages (2026-11-20). */
+        ...Object.values(LOG_IN_PATHS),
       ]
 }
 
@@ -286,13 +316,83 @@ export function useInviteFlowV3(): InviteFlowV3 {
   const b2c = useFeatureFlag(INVITE_V3_FLOW_FLAGS.b2c).variant
   const cart = resolveV3Cart(useFeatureFlag(INVITE_V3_CART_FLAG).variant)
   const email = resolveV3EmailAccount(useFeatureFlag(INVITE_V3_EMAIL_ACCOUNT_FLAG).variant)
+  const logIn = resolveV3LogInAccount(useFeatureFlag(INVITE_V3_LOG_IN_ACCOUNT_FLAG).variant)
   const [params] = useSearchParams()
   const flow = resolveInviteFlowV3(model, model === 'b2b' ? b2b : b2c)
   if (flow.id === 'direct-email') return directEmailFlowV3(flow, email)
+  /* An old link naming one of the three QR flows says whose email it is. */
+  if (flow.id === 'qr') return qrFlowV3(flow, retiredQrEmail(b2b) ?? email)
   if (flow.id === 'xcel-signed-out') return ocdCartFlowV3(flow, cart, email)
+  if (flow.id === 'xcel-log-in') return logInFlowV3(flow, logIn)
   return flow.id === 'xcel-signed-in'
     ? signedInFlowV3(flow, cart, email, params.get(V3_SIGNED_OUT_PARAM) === '1')
     : flow
+}
+
+/** QR Code's walk, by whether the email given has Atlas
+ *  (`invite-v3-email-account`) — 2026-11-17, the file's three QR flows as
+ *  one: no Atlas account walks Net New's screens (a code, the full checkout,
+ *  Create password), an Atlas account walks Has Atlas: Open Log-In Widget's
+ *  (the log-in widget, Signing you in, ready to log in). */
+export function qrFlowV3(flow: InviteFlowV3, email: V3EmailAccount): InviteFlowV3 {
+  return {
+    ...flow,
+    screens:
+      email === 'atlas'
+        ? [...QR_START, 'verify-login-1', 'verify-login-2', 'login-1', 'login-2', 'signing-in', ...CHECKOUT, 'placing', 'ready-login']
+        : [...QR_START, ...VERIFY, ...CODE, 'checkout-1', ...CHECKOUT, 'placing', ...NEW_PASSWORD],
+  }
+}
+
+/** The three QR flow ids retired on 2026-11-17, and the Email belongs to
+ *  each one meant — so a link or handoff preview still naming one opens QR
+ *  Code walking the same screens. `?ff=` passes them through unchecked. */
+const RETIRED_QR_FLOWS = new Map<string, V3EmailAccount>([
+  ['qr-net-new', 'no-atlas'],
+  ['qr-ocd', 'no-atlas'],
+  ['qr-atlas-login', 'atlas'],
+])
+
+export function retiredQrEmail(value: string | null | undefined): V3EmailAccount | undefined {
+  return value ? RETIRED_QR_FLOWS.get(value) : undefined
+}
+
+/** Where the Log In flow's account is, which the demo cannot look up
+ *  (2026-11-20): Keycloak, so Atlas; OCD only; or neither — which looks
+ *  exactly like OCD until the password is in. */
+export type V3LogInAccount = 'atlas' | 'ocd' | 'none'
+
+export const INVITE_V3_LOG_IN_ACCOUNT_FLAG = 'invite-v3-log-in-account'
+
+export function resolveV3LogInAccount(value: string | null | undefined): V3LogInAccount {
+  return value === 'ocd' || value === 'none' ? value : 'atlas'
+}
+
+/** The Log In flow's pages, in order. Keycloak's is its own page because it
+ *  is its own system; OCD's password is a second step of OCD's page. */
+export const LOG_IN_PATHS = {
+  partnerCode: '/end-to-end-demo/log-in',
+  account: '/end-to-end-demo/log-in/account',
+  ocd: '/end-to-end-demo/log-in/sign-in',
+  keycloak: '/end-to-end-demo/log-in/keycloak',
+  /* OCD's own log-in page, as it is (2026-11-23). */
+  ocdExisting: '/end-to-end-demo/log-in/ocd',
+} as const
+
+/** Log In's walk for where the account is. Every walk sees the email step;
+ *  Atlas goes on to Keycloak's Log in, the others to OCD's own log-in page
+ *  (2026-11-23), where LOG IN does nothing for OCD and fails for none. */
+export function logInFlowV3(flow: InviteFlowV3, account: V3LogInAccount): InviteFlowV3 {
+  const start = ['cart', 'log-in-partner-code', 'log-in-account', 'log-in-email']
+  return {
+    ...flow,
+    screens:
+      account === 'atlas'
+        ? [...start, 'log-in-keycloak', 'signing-in']
+        : account === 'ocd'
+          ? [...start, 'log-in-ocd-existing']
+          : [...start, 'log-in-ocd-existing', 'log-in-incorrect'],
+  }
 }
 
 /** The two OCD flows — signed in or not — whose cart decides the checkout. */
@@ -312,19 +412,22 @@ export function directEmailFlowV3(flow: InviteFlowV3, email: V3EmailAccount): In
     ...flow,
     screens:
       email === 'atlas'
-        ? [...start, 'login-1', 'login-2', ...CHECKOUT, 'placing', 'ready']
+        ? /* Enter your email first, filled with the invitation's address,
+             then Log in — as without Atlas (2026-11-18, Afsana). */
+          [...start, 'verify-login-1', 'verify-login-2', 'login-1', 'login-2', ...CHECKOUT, 'placing', 'ready']
         : [...start, ...VERIFY, ...CODE, 'checkout-1', ...CHECKOUT, 'placing', ...NEW_PASSWORD],
   }
 }
 
-/* ── Signed in to XCEL (OCD) — 2026-11-02 ─────────────────────────────────
+/* ── Signed into XCEL (OCD) — 2026-11-02 ─────────────────────────────────
 
    Afsana: a learner signed in to an existing XCEL account checks out from the
    cart, and what happens depends on what is in it —
 
      Checkout asks the Partner Code question first, whatever the cart holds
-     (2026-11-02). Yes collects the code — and a code leads to a partner
-     site this prototype does not have, so that is the end of the walk. No:
+     (2026-11-02). Yes does nothing (2026-11-18 — it opened "Enter your
+     Partner Code", which led to a partner site this prototype does not
+     have). No:
 
      targeted   only the 526 targeted SKUs: they are signed out ("Signing
                 you out", with a platform-update notice), then the new guest
@@ -374,8 +477,10 @@ export function signedInFlowV3(
   signedOut: boolean,
 ): InviteFlowV3 {
   if (cart === 'none') {
-    /* The existing checkout is the last screen (Afsana, 2026-11-02). */
-    return { ...flow, base: 'xcel-signed-in', screens: ['cart', 'pc-modal', ...CHECKOUT] }
+    /* The cart is the last screen — Checkout goes nowhere, to today's OCD
+       checkout, not mocked here (2026-11-18, Afsana; until then the walk went
+       on to the existing checkout). */
+    return { ...flow, base: 'xcel-signed-in', screens: ['cart'] }
   }
   const check = email === 'atlas' ? ['verify-login-1', 'login-1', 'login-2'] : [...VERIFY, ...CODE]
   const ending = email === 'atlas' ? ['ready'] : NEW_PASSWORD
@@ -402,7 +507,8 @@ export function signedInFlowV3(
  *  targeted it ends on the existing checkout, as signed in — but blank, since
  *  no account is signed in to fill it. */
 export function ocdCartFlowV3(flow: InviteFlowV3, cart: V3CartContents, email: V3EmailAccount): InviteFlowV3 {
-  if (cart === 'none') return { ...flow, base: 'b2c-guest', screens: ['cart', 'pc-modal', 'checkout-1', ...CHECKOUT] }
+  /* Nothing targeted: the cart is the last screen (2026-11-18), as signed in. */
+  if (cart === 'none') return { ...flow, base: 'b2c-guest', screens: ['cart'] }
   const check = email === 'atlas' ? ['verify-login-1', 'login-1', 'login-2'] : [...VERIFY, ...CODE]
   const ending = email === 'atlas' ? ['ready'] : NEW_PASSWORD
   /* Logged in to Atlas: the checkout arrives filled from the account (2026-11-04). */

@@ -1,4 +1,5 @@
-import type { CSSProperties } from 'react'
+import { useState, type CSSProperties } from 'react'
+import { CircleInfo } from '@/icons'
 import { FINDER_LINES_OF_AUTHORITY, type FinderLineOfAuthority } from '@/data/xcelCourseFinder'
 import { INVITE_STATES } from '@/data/inviteMissingDetails'
 
@@ -15,6 +16,12 @@ import { INVITE_STATES } from '@/data/inviteMissingDetails'
  * (`FINDER_LINES_OF_AUTHORITY`); the V1/V2 options modal also offers
  * Securities. Every one of the five is a valid `InviteLineOfAuthority`, so
  * `readInviteChoice` accepts the pick unchanged.
+ *
+ * ⚠ THE STATE LIST IS OURS, NOT A `<datalist>` — 2026-11-18, Afsana: the
+ * dropdown "appears out of place". A datalist's popup is drawn by the
+ * browser, which decides where it goes, and in the Hub's frame it opened
+ * beside the field instead of under it. This list is drawn under the field,
+ * as wide as it, filtered by what is typed; arrows, Enter and Escape work.
  */
 
 export function CourseChoiceFields({
@@ -36,6 +43,19 @@ export function CourseChoiceFields({
 }) {
   const stateId = `${idPrefix}-state`
   const listId = `${idPrefix}-states`
+  const [open, setOpen] = useState(false)
+  const [active, setActive] = useState(-1)
+  const typed = state.trim().toLowerCase()
+  /* Everything until something is typed, and everything again once a whole
+     state is — so picking a second time still shows the list. */
+  const exact = INVITE_STATES.some((s) => s.toLowerCase() === typed)
+  const options = typed && !exact ? INVITE_STATES.filter((s) => s.toLowerCase().includes(typed)) : INVITE_STATES
+  const showing = open && options.length > 0
+  const pick = (value: string) => {
+    onState(value)
+    setOpen(false)
+    setActive(-1)
+  }
   return (
     <>
       <div style={FIELD}>
@@ -47,11 +67,37 @@ export function CourseChoiceFields({
           <input
             id={stateId}
             type="text"
-            list={listId}
+            role="combobox"
+            aria-expanded={showing}
+            aria-controls={listId}
+            aria-autocomplete="list"
+            aria-activedescendant={showing && active >= 0 ? `${listId}-${active}` : undefined}
             autoComplete="off"
-            placeholder="Start typing your state…"
+            placeholder="Select State"
             value={state}
-            onChange={(e) => onState(e.target.value)}
+            onChange={(e) => {
+              onState(e.target.value)
+              setOpen(true)
+              setActive(-1)
+            }}
+            onFocus={() => setOpen(true)}
+            onClick={() => setOpen(true)}
+            onBlur={() => setOpen(false)}
+            onKeyDown={(e) => {
+              if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+                e.preventDefault()
+                setOpen(true)
+                const step = e.key === 'ArrowDown' ? 1 : -1
+                setActive((i) => (i + step + options.length) % options.length)
+              } else if (e.key === 'Enter' && showing && active >= 0) {
+                e.preventDefault()
+                pick(options[active])
+              } else if (e.key === 'Escape' && showing) {
+                /* Close the list, not the dialog it may sit in. */
+                e.stopPropagation()
+                setOpen(false)
+              }
+            }}
             className="cre-e2e-typeahead"
             style={INPUT}
           />
@@ -59,23 +105,44 @@ export function CourseChoiceFields({
             <circle cx="11" cy="11" r="7" />
             <path d="M20 20l-3.5-3.5" />
           </svg>
+          {showing ? (
+            <ul id={listId} role="listbox" aria-label={stateLabel} style={LIST}>
+              {options.map((s, i) => (
+                <li
+                  key={s}
+                  id={`${listId}-${i}`}
+                  role="option"
+                  aria-selected={s === state}
+                  /* mousedown, not click: a click lands after the field's
+                     blur has already closed the list. */
+                  onMouseDown={(e) => {
+                    e.preventDefault()
+                    pick(s)
+                  }}
+                  onMouseEnter={() => setActive(i)}
+                  style={i === active ? OPTION_ACTIVE : s === state ? OPTION_PICKED : OPTION}
+                >
+                  {s}
+                </li>
+              ))}
+            </ul>
+          ) : null}
         </div>
-        <datalist id={listId}>
-          {INVITE_STATES.map((s) => (
-            <option key={s} value={s} />
-          ))}
-        </datalist>
       </div>
       <fieldset style={FIELD}>
         <legend style={{ ...LABEL, marginBottom: 6 }}>
           {loaLabel}
           <span aria-hidden>*</span>
-          <span className="cre-e2e-loa-info" role="button" tabIndex={0} aria-label="What is a line of authority?" style={INFO}>
-            <svg aria-hidden viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="12" cy="12" r="10" />
-              <path d="M12 16v-4M12 8h.01" />
-            </svg>
-            <span className="cre-e2e-loa-tip" role="tooltip">
+          {/* The shared V3 tooltip (2026-11-23, Afsana) — see
+              `.cre-xcel-help` in inviteFlow.css. */}
+          <span
+            className="cre-xcel-help cre-e2e-loa-info"
+            role="button"
+            tabIndex={0}
+            aria-label="What is a line of authority?"
+          >
+            <CircleInfo size={16} aria-hidden />
+            <span className="cre-xcel-tip cre-e2e-loa-tip" role="tooltip">
               Your line of authority is the type of insurance your license will let you sell.
             </span>
           </span>
@@ -138,6 +205,36 @@ const INPUT: CSSProperties = {
   border: '1px solid var(--color-e2e-card-outline)',
 }
 
+const LIST: CSSProperties = {
+  position: 'absolute',
+  top: 'calc(100% + 4px)',
+  left: 0,
+  right: 0,
+  zIndex: 10,
+  margin: 0,
+  padding: '4px 0',
+  listStyle: 'none',
+  maxHeight: 240,
+  overflowY: 'auto',
+  background: 'var(--color-surface-card)',
+  border: '1px solid var(--color-e2e-card-outline)',
+  borderRadius: 4,
+  boxShadow: 'var(--shadow-popover)',
+}
+
+const OPTION: CSSProperties = {
+  padding: '8px 10px',
+  fontFamily: 'var(--font-e2e-avenir)',
+  fontSize: 14,
+  lineHeight: '19px',
+  color: 'var(--color-text-primary)',
+  cursor: 'pointer',
+}
+
+const OPTION_ACTIVE: CSSProperties = { ...OPTION, background: 'var(--color-neutral-100)' }
+
+const OPTION_PICKED: CSSProperties = { ...OPTION, fontWeight: 800 }
+
 const SEARCH_ICON: CSSProperties = {
   position: 'absolute',
   right: 12,
@@ -145,14 +242,6 @@ const SEARCH_ICON: CSSProperties = {
   transform: 'translateY(-50%)',
   color: 'var(--color-neutral-400)',
   pointerEvents: 'none',
-}
-
-const INFO: CSSProperties = {
-  position: 'relative',
-  display: 'inline-flex',
-  alignItems: 'center',
-  color: 'var(--color-text-secondary)',
-  cursor: 'help',
 }
 
 const PILLS: CSSProperties = { display: 'flex', flexWrap: 'wrap', gap: 8 }

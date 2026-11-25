@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest'
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 import { act, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom'
@@ -17,6 +17,7 @@ import { InviteFlowEntrySync } from '@/pages/EndToEndPageSync'
 import { LOADING_HANDOFF_MS } from '@/components/e2e/XcelLoadingPage'
 import { E2E_LEARNER_EMAIL } from '@/pages/endToEndDemo'
 import { SETTING_UP_MS } from '@/pages/InvitedConfirmationPageV3'
+import { ResetPasswordPageV3 } from '@/pages/ResetPasswordPageV3'
 import {
   INVITE_FLOWS_V3,
   emailCheckV3,
@@ -25,6 +26,7 @@ import {
   inviteV3Surface,
   SIGNING_OUT_MS,
   ocdCartFlowV3,
+  qrFlowV3,
   signedInFlowV3,
   verifiesEmailFirst,
 } from '@/data/inviteFlowsV3'
@@ -64,9 +66,10 @@ function Where() {
   return <output data-testid="where">{pathname + search}</output>
 }
 
-/* B2B's QR flows. Direct Email is B2B's default since 2026-11-03, so the QR
-   screens name a QR flow. */
-const V3_B2B = 'invite-flow-version:v3,invite-v3-model:b2b,invite-v3-flow-b2b:qr-net-new'
+/* B2B's QR Code flow, no Atlas account. Direct Email is B2B's default since
+   2026-11-03, so the QR screens name QR Code; a test that wants the Atlas
+   walk adds `invite-v3-email-account:atlas` after it. */
+const V3_B2B = 'invite-flow-version:v3,invite-v3-model:b2b,invite-v3-flow-b2b:qr,invite-v3-email-account:no-atlas'
 
 describe('Invite Flow V3 — B2B opening screens', () => {
   it('draws the QR code alone on V3, and the phone card on V2', () => {
@@ -91,16 +94,34 @@ describe('Invite Flow V3 — B2B opening screens', () => {
     renderAt('/end-to-end-demo', V3_B2B)
     const go = screen.getByRole('button', { name: 'Continue' })
     expect(go).toBeDisabled()
-    await userEvent.type(screen.getByLabelText(/Choose your state/), 'Flor')
+    await userEvent.type(screen.getByRole('combobox', { name: /State/ }), 'Flor')
     await userEvent.click(screen.getByRole('radio', { name: 'Life and Health' }))
     expect(go).toBeDisabled()
-    await userEvent.type(screen.getByLabelText(/Choose your state/), 'ida')
+    await userEvent.type(screen.getByRole('combobox', { name: /State/ }), 'ida')
     expect(go).toBeEnabled()
   })
 
-  it('Continue shows the chosen course, and Change can update it', async () => {
+  it('labels the fields State and Line of authority, and lists the states under the field', async () => {
     renderAt('/end-to-end-demo', V3_B2B)
-    await userEvent.type(screen.getByLabelText(/Choose your state/), 'florida')
+    const field = screen.getByRole('combobox', { name: /State/ })
+    expect(field).toHaveAttribute('placeholder', 'Select State')
+    expect(screen.getByRole('radiogroup', { name: 'Line of authority' })).toBeInTheDocument()
+    expect(screen.queryByText(/Choose your state|Pick your line of authority/)).not.toBeInTheDocument()
+    await userEvent.click(field)
+    expect(within(screen.getByRole('listbox')).getAllByRole('option')).toHaveLength(50)
+    await userEvent.type(field, 'ari')
+    const list = screen.getByRole('listbox')
+    expect(within(list).getAllByRole('option').map((o) => o.textContent)).toEqual(['Arizona'])
+    await userEvent.click(within(list).getByRole('option', { name: 'Arizona' }))
+    expect(field).toHaveValue('Arizona')
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument()
+  })
+
+  it('Continue shows the chosen course, and Change can update it — V3’s own product page', async () => {
+    /* The course band and Change are V3's own page's; Eric's page stands in
+       for it while `invite-v3-eric-pdp` is on (2026-11-17). */
+    renderAt('/end-to-end-demo', `${V3_B2B},invite-v3-eric-pdp:off`)
+    await userEvent.type(screen.getByRole('combobox', { name: /State/ }), 'florida')
     await userEvent.click(screen.getByRole('radio', { name: 'Life and Health' }))
     await userEvent.click(screen.getByRole('button', { name: 'Continue' }))
 
@@ -118,6 +139,85 @@ describe('Invite Flow V3 — B2B opening screens', () => {
 })
 
 const CHECKOUT = '/end-to-end-demo/checkout'
+
+describe('Invite Flow V3 — Eric’s product page (2026-11-17)', () => {
+  const DIRECT = 'invite-flow-version:v3,invite-v3-model:b2b,invite-v3-flow-b2b:direct-email'
+  /* His page measures wrapped lines with `Range.getClientRects`, which jsdom
+     does not implement — no lines is "fits on one", which is all these need. */
+  const original = Range.prototype.getClientRects
+  beforeAll(() => {
+    Range.prototype.getClientRects = () => [] as unknown as DOMRectList
+  })
+  afterAll(() => {
+    Range.prototype.getClientRects = original
+  })
+
+  it('asks the QR code’s course first, then opens Eric’s page on it', async () => {
+    renderAt('/end-to-end-demo', V3_B2B)
+    await userEvent.type(screen.getByRole('combobox', { name: /State/ }), 'texas')
+    await userEvent.click(screen.getByRole('radio', { name: 'Life and Health' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Continue' }))
+    expect(screen.getAllByRole('button', { name: /^Purchase / }).length).toBeGreaterThan(0)
+    expect(screen.queryByText('Showing the course for')).not.toBeInTheDocument()
+    expect(screen.getAllByText(/Texas/).length).toBeGreaterThan(0)
+  })
+
+  for (const [products, pkg] of [
+    ['multi-2', 'standard'],
+    ['multi', 'premier'],
+    ['single', 'premier'],
+    ['standard', 'standard'],
+    ['california', 'premier'],
+  ] as const) {
+    it(`Purchase on Products ${products} goes on into V3’s checkout with ${pkg}`, async () => {
+      renderAt('/end-to-end-demo', `${DIRECT},pdp-products:${products}`)
+      const buttons = screen.getAllByRole('button', { name: new RegExp(`^Purchase ${pkg}`, 'i') })
+      await userEvent.click(buttons[0])
+      const where = screen.getByTestId('where').textContent!
+      expect(where).toMatch(/^\/end-to-end-demo\/checkout\?/)
+      expect(where).toContain(`pkg=${pkg}`)
+      expect(where).toContain(`lstate=${products === 'california' ? 'California' : 'Florida'}`)
+      expect(where).toContain('invite-v3-flow-b2b%3Adirect-email')
+    })
+  }
+
+  it('opens on Standard — Products’ default in V3', () => {
+    renderAt('/end-to-end-demo', DIRECT)
+    expect(screen.getAllByRole('button', { name: /^Purchase standard/i }).length).toBeGreaterThan(0)
+    expect(screen.queryByRole('button', { name: /^Purchase premier/i })).not.toBeInTheDocument()
+  })
+
+  it('Direct Email: Purchase Standard opens the checkout’s email step', async () => {
+    renderAt('/end-to-end-demo', `${DIRECT},pdp-products:standard`)
+    await userEvent.click(screen.getAllByRole('button', { name: /^Purchase standard/i })[0])
+    expect(screen.getByRole('dialog', { name: /email/i })).toBeInTheDocument()
+  })
+
+  it('Change state/line of authority opens the QR step’s card, on the current course', async () => {
+    renderAt('/end-to-end-demo', DIRECT)
+    await userEvent.click(screen.getByRole('button', { name: /Change state\/line of authority/ }))
+    const dialog = screen.getByRole('dialog', { name: 'Select your state and line of authority' })
+    expect(screen.queryByRole('dialog', { name: 'What are you licensing for?' })).not.toBeInTheDocument()
+    const field = within(dialog).getByRole('combobox', { name: /State/ })
+    expect(field).toHaveValue('Florida')
+    expect(within(dialog).getByRole('radio', { name: 'Life and Health' })).toHaveAttribute('aria-checked', 'true')
+    await userEvent.clear(field)
+    await userEvent.type(field, 'Texas')
+    await userEvent.click(within(dialog).getByRole('radio', { name: 'Life' }))
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Continue' }))
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    expect(screen.getAllByText(/Texas Life Pre-licensing/).length).toBeGreaterThan(0)
+  })
+
+  it('Change state/line of authority closes on the ✕ without changing the course', async () => {
+    renderAt('/end-to-end-demo', DIRECT)
+    await userEvent.click(screen.getByRole('button', { name: /Change state\/line of authority/ }))
+    const dialog = screen.getByRole('dialog', { name: 'Select your state and line of authority' })
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Close' }))
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    expect(screen.getAllByText(/Florida Life and Health Pre-licensing/).length).toBeGreaterThan(0)
+  })
+})
 
 describe('Invite Flow V3 — the Direct Email invitation', () => {
   const DIRECT = 'invite-flow-version:v3,invite-v3-model:b2b,invite-v3-flow-b2b:direct-email'
@@ -147,12 +247,18 @@ describe('Invite Flow V3 — the Direct Email invitation', () => {
     const ask = screen.getByRole('dialog', { name: 'Enter your email to continue' })
     expect(ask).toHaveAccessibleDescription('Provide your email address. We will use it to find your existing account or create one.')
     /* Filled with the invitation's address. */
-    expect(within(ask).getByLabelText(/Email address/)).toHaveValue(E2E_LEARNER_EMAIL)
+    expect(within(ask).getByLabelText(/^Email\s*\*?$/)).toHaveValue(E2E_LEARNER_EMAIL)
     await userEvent.click(within(ask).getByRole('button', { name: 'Continue' }))
     const dialog = screen.getByRole('dialog', { name: 'Verify your email' })
     expect(dialog).toHaveTextContent(E2E_LEARNER_EMAIL)
-    /* The partner named the address, so there is no other to go back for. */
-    expect(within(dialog).queryByRole('button', { name: 'Use a different email' })).not.toBeInTheDocument()
+    /* Use a different email under Didn't receive the code?, here too since
+       2026-11-23 — back to the email step, the address still in it. */
+    const resend = within(dialog).getByText('Didn’t receive the code?')
+    const change = within(dialog).getByRole('button', { name: 'Use a different email' })
+    expect(resend.compareDocumentPosition(change) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    await userEvent.click(change)
+    const back = screen.getByRole('dialog', { name: 'Enter your email to continue' })
+    expect(within(back).getByLabelText(/^Email\s*\*?$/)).toHaveValue(E2E_LEARNER_EMAIL)
   })
 
   it('leaves the checkout’s email plain until the check is done, then locks it', async () => {
@@ -178,6 +284,7 @@ describe('Invite Flow V3 — the Direct Email invitation', () => {
     vi.useFakeTimers({ shouldAdvanceTime: true })
     try {
       renderAt(CHECKOUT, `${DIRECT},invite-v3-email-account:atlas`)
+      await userEvent.click(screen.getByRole('button', { name: 'Continue' }))
       await userEvent.type(screen.getByLabelText(/^Password/), 'anything')
       await userEvent.click(screen.getByRole('button', { name: 'Log in' }))
       await act(() => vi.advanceTimersByTimeAsync(LOADING_HANDOFF_MS))
@@ -188,14 +295,22 @@ describe('Invite Flow V3 — the Direct Email invitation', () => {
     }
   })
 
-  it('after Purchase, asks the learner to log in when the address has Atlas', () => {
+  it('after Purchase, asks for the email first when the address has Atlas, then Log in', async () => {
     renderAt(CHECKOUT, `${DIRECT},invite-v3-email-account:atlas`)
+    /* The email step first, filled with the invitation's address — as without
+       Atlas (2026-11-18). */
+    expect(screen.queryByRole('dialog', { name: 'Log in to continue' })).not.toBeInTheDocument()
+    const ask = screen.getByRole('dialog', { name: 'Enter your email to continue' })
+    expect(within(ask).getByLabelText(/^Email\s*\*?$/)).toHaveValue(E2E_LEARNER_EMAIL)
+    await userEvent.click(within(ask).getByRole('button', { name: 'Continue' }))
     const dialog = screen.getByRole('dialog', { name: 'Log in to continue' })
+    /* Log in keeps its design: the line, and the address pre-filled in the
+       Email field — locked, the checkout's grey, no lock icon (2026-11-18). */
     expect(dialog).toHaveAccessibleDescription('Welcome back, Jordan! Sign in to finish checking out.')
-    /* The supplied address, pre-filled and editable — no lock (2026-11-13). */
-    const field = within(dialog).getByLabelText(/Email address/)
+    const field = within(dialog).getByLabelText(/^Email\s*\*?$/)
     expect(field).toHaveValue(E2E_LEARNER_EMAIL)
-    expect(field).toBeEnabled()
+    expect(field).toBeDisabled()
+    expect(field.style.background).toBe('var(--color-e2e-form-locked-v3)')
     expect(within(dialog).queryByAltText('Locked')).not.toBeInTheDocument()
     expect(screen.queryByRole('dialog', { name: 'Verify your email' })).not.toBeInTheDocument()
   })
@@ -205,9 +320,8 @@ describe('Invite Flow V3 — the email check', () => {
   it('gives every flow the same line on the email step, whatever the account', () => {
     const b2c = 'invite-flow-version:v3,invite-v3-model:b2c,invite-v3-flow-b2c:xcel-signed-out'
     for (const ff of [
-      `${V3_B2B},invite-v3-flow-b2b:qr-net-new`,
-      `${V3_B2B},invite-v3-flow-b2b:qr-ocd`,
-      `${V3_B2B},invite-v3-flow-b2b:qr-atlas-login`,
+      V3_B2B,
+      `${V3_B2B},invite-v3-email-account:atlas`,
       `invite-flow-version:v3,invite-v3-model:b2b,invite-v3-flow-b2b:direct-email,invite-v3-email-account:no-atlas`,
       `${b2c},invite-v3-email-account:no-atlas,partner-code-ask:modal&partner=no`,
       `${b2c},invite-v3-email-account:atlas,partner-code-ask:modal&partner=no`,
@@ -221,7 +335,7 @@ describe('Invite Flow V3 — the email check', () => {
   })
 
   it('asks for the email only, and keeps Continue off until it is an address', async () => {
-    renderAt(CHECKOUT, `${V3_B2B},invite-v3-flow-b2b:qr-net-new`)
+    renderAt(CHECKOUT, V3_B2B)
     const dialog = screen.getByRole('dialog', { name: 'Enter your email to continue' })
     expect(dialog).toHaveAccessibleDescription('Provide your email address. We will use it to find your existing account or create one.')
     expect(screen.queryByLabelText(/First name/)).not.toBeInTheDocument()
@@ -232,42 +346,47 @@ describe('Invite Flow V3 — the email check', () => {
     expect(go).toBeDisabled()
     /* An empty field says nothing; a half-typed one says why Continue is off. */
     expect(screen.queryByText('Please enter a valid email address')).not.toBeInTheDocument()
-    const field = screen.getByLabelText(/Email address/)
+    const field = within(screen.getByRole('dialog')).getByLabelText(/^Email\s*\*?$/)
     await userEvent.type(field, 'sam@example')
     expect(go).toBeDisabled()
     expect(field).toHaveAccessibleDescription('Please enter a valid email address')
     expect(field).toHaveAttribute('aria-invalid', 'true')
+    /* The line is enough — no red stroke under the field (2026-11-18). */
+    expect(field.style.boxShadow).toBe('')
     await userEvent.type(field, '.com')
     expect(go).toBeEnabled()
     expect(screen.queryByText('Please enter a valid email address')).not.toBeInTheDocument()
   })
 
-  it('says when the Direct Email log-in address is not valid, and offers the help center', async () => {
+  it('carries an address changed on the email step into Direct Email’s locked log-in field, with no help-center line', async () => {
     renderAt(CHECKOUT, 'invite-flow-version:v3,invite-v3-model:b2b,invite-v3-flow-b2b:direct-email,invite-v3-email-account:atlas')
+    const ask = screen.getByRole('dialog', { name: 'Enter your email to continue' })
+    const given = within(ask).getByLabelText(/^Email\s*\*?$/)
+    await userEvent.clear(given)
+    await userEvent.type(given, 'jordan@example.com')
+    await userEvent.click(within(ask).getByRole('button', { name: 'Continue' }))
     const dialog = screen.getByRole('dialog', { name: 'Log in to continue' })
-    const field = within(dialog).getByLabelText(/Email address/)
-    await userEvent.clear(field)
-    await userEvent.type(field, 'jordan@')
-    expect(field).toHaveAccessibleDescription('Please enter a valid email address')
-    await userEvent.type(field, 'example.com')
-    expect(within(dialog).queryByText('Please enter a valid email address')).not.toBeInTheDocument()
-    expect(dialog).toHaveTextContent('Can’t log in? Visit our help center')
-    expect(within(dialog).getByRole('button', { name: 'Visit our help center' })).toBeInTheDocument()
+    const field = within(dialog).getByLabelText(/^Email\s*\*?$/)
+    expect(field).toHaveValue('jordan@example.com')
+    expect(field).toBeDisabled()
+    /* "Can't log in? Visit our help center" went on 2026-11-23. */
+    expect(dialog).not.toHaveTextContent('Can’t log in?')
   })
 
   it('shows the one-time code step with the logo, and unlocks Resend after 10 minutes', async () => {
     vi.useFakeTimers({ shouldAdvanceTime: true })
     try {
-      renderAt(CHECKOUT, `${V3_B2B},invite-v3-flow-b2b:qr-net-new`)
-      await userEvent.type(screen.getByLabelText(/Email address/), 'sam@example.com')
+      renderAt(CHECKOUT, V3_B2B)
+      await userEvent.type(within(screen.getByRole('dialog')).getByLabelText(/^Email\s*\*?$/), 'sam@example.com')
       await userEvent.click(screen.getByRole('button', { name: 'Continue' }))
 
       const dialog = screen.getByRole('dialog')
       expect(within(dialog).getByAltText(/XCEL/)).toBeInTheDocument()
-      expect(dialog).toHaveTextContent('We sent a 6-digit code to sam@example.com. Be sure to check your spam or junk folders.')
+      /* The expiry ends the lead (2026-11-23; under the boxes from 11-13). */
+      expect(within(dialog).getByText(/^We sent a 6-digit code to/)).toHaveTextContent(
+        'We sent a 6-digit code to sam@example.com. Be sure to check your spam or junk folders. The code expires in 10 minutes.',
+      )
       expect(within(dialog).getByText('sam@example.com').tagName).toBe('STRONG')
-      /* The expiry, under the boxes (2026-11-13). */
-      expect(dialog).toHaveTextContent('The code expires in 10 minutes')
       expect(dialog).toHaveTextContent('Didn’t receive the code? Resend code in 10:00')
       expect(within(dialog).queryByRole('button', { name: 'Resend code' })).not.toBeInTheDocument()
       expect(within(dialog).getByRole('button', { name: 'Use a different email' })).toBeInTheDocument()
@@ -286,8 +405,8 @@ describe('Invite Flow V3 — the email check', () => {
   })
 
   it('takes any six digits, then locks the verified address on the checkout', async () => {
-    renderAt(CHECKOUT, `${V3_B2B},invite-v3-flow-b2b:qr-net-new`)
-    await userEvent.type(screen.getByLabelText(/Email address/), 'sam@example.com')
+    renderAt(CHECKOUT, V3_B2B)
+    await userEvent.type(within(screen.getByRole('dialog')).getByLabelText(/^Email\s*\*?$/), 'sam@example.com')
     await userEvent.click(screen.getByRole('button', { name: 'Continue' }))
 
     expect(screen.getByRole('heading', { name: 'Verify your email' })).toBeInTheDocument()
@@ -326,8 +445,8 @@ describe('Invite Flow V3 — the email check', () => {
   it('never asks for the name after a log-in — the account has it', async () => {
     vi.useFakeTimers({ shouldAdvanceTime: true })
     try {
-      renderAt(CHECKOUT, `${V3_B2B},invite-v3-flow-b2b:qr-atlas-login`)
-      await userEvent.type(screen.getByLabelText(/Email address/), 'sam@example.com')
+      renderAt(CHECKOUT, `${V3_B2B},invite-v3-email-account:atlas`)
+      await userEvent.type(within(screen.getByRole('dialog')).getByLabelText(/^Email\s*\*?$/), 'sam@example.com')
       await userEvent.click(screen.getByRole('button', { name: 'Continue' }))
       await userEvent.type(screen.getByLabelText(/^Password/), 'anything')
       await userEvent.click(screen.getByRole('button', { name: 'Log in' }))
@@ -340,14 +459,16 @@ describe('Invite Flow V3 — the email check', () => {
   })
 
   it('turns down the demo’s wrong code under the boxes, and clears it when a digit changes', async () => {
-    renderAt(CHECKOUT, `${V3_B2B},invite-v3-flow-b2b:qr-net-new`)
-    await userEvent.type(screen.getByLabelText(/Email address/), 'sam@example.com')
+    renderAt(CHECKOUT, V3_B2B)
+    await userEvent.type(within(screen.getByRole('dialog')).getByLabelText(/^Email\s*\*?$/), 'sam@example.com')
     await userEvent.click(screen.getByRole('button', { name: 'Continue' }))
     await userEvent.type(screen.getByLabelText('Digit 1 of 6'), '000000')
     await userEvent.click(screen.getByRole('button', { name: 'Confirm' }))
 
+    /* Red text under the boxes, the attempts counted down (2026-11-23). */
     const error = screen.getByRole('alert')
-    expect(error).toHaveTextContent('Invalid code. Please try again.')
+    expect(error).toHaveTextContent('Incorrect code. 4 attempts left.')
+    expect(error.style.color).toBe('var(--color-error-600)')
     expect(screen.getByRole('heading', { name: 'Verify your email' })).toBeInTheDocument()
     expect(screen.getByLabelText('Digit 1 of 6')).toHaveAttribute('aria-describedby', 'code-invalid')
     /* The red stroke along the bottom of every box. */
@@ -360,15 +481,27 @@ describe('Invite Flow V3 — the email check', () => {
     expect(screen.queryByRole('alert')).not.toBeInTheDocument()
   })
 
+  it('counts the attempts down with each wrong code — 4, 3, 2, then 1 attempt', async () => {
+    renderAt(CHECKOUT, V3_B2B)
+    await userEvent.type(within(screen.getByRole('dialog')).getByLabelText(/^Email\s*\*?$/), 'sam@example.com')
+    await userEvent.click(screen.getByRole('button', { name: 'Continue' }))
+    for (const left of ['4 attempts', '3 attempts', '2 attempts', '1 attempt']) {
+      await userEvent.type(screen.getByLabelText('Digit 1 of 6'), '000000')
+      await userEvent.click(screen.getByRole('button', { name: 'Confirm' }))
+      expect(screen.getByRole('alert')).toHaveTextContent(`Incorrect code. ${left} left.`)
+    }
+  })
+
   it('says an expired code has expired — the demo’s 999999, or any code after the 10 minutes', async () => {
     vi.useFakeTimers({ shouldAdvanceTime: true })
     try {
-      renderAt(CHECKOUT, `${V3_B2B},invite-v3-flow-b2b:qr-net-new`)
-      await userEvent.type(screen.getByLabelText(/Email address/), 'sam@example.com')
+      renderAt(CHECKOUT, V3_B2B)
+      await userEvent.type(within(screen.getByRole('dialog')).getByLabelText(/^Email\s*\*?$/), 'sam@example.com')
       await userEvent.click(screen.getByRole('button', { name: 'Continue' }))
       await userEvent.type(screen.getByLabelText('Digit 1 of 6'), '999999')
       await userEvent.click(screen.getByRole('button', { name: 'Confirm' }))
-      expect(screen.getByRole('alert')).toHaveTextContent('The code has expired. Request another code.')
+      /* An expired code is a used attempt (2026-11-23). */
+      expect(screen.getByRole('alert')).toHaveTextContent('The code has expired. Request another code. 4 attempts left.')
       expect(screen.getByLabelText('Digit 1 of 6').style.boxShadow).toBe('inset 0 -2px 0 var(--color-error-600)')
 
       /* A good code after the countdown has run out is expired too. */
@@ -376,7 +509,7 @@ describe('Invite Flow V3 — the email check', () => {
       expect(screen.queryByRole('alert')).not.toBeInTheDocument()
       for (let i = 0; i < 600; i++) await act(() => vi.advanceTimersByTimeAsync(1000))
       await userEvent.click(screen.getByRole('button', { name: 'Confirm' }))
-      expect(screen.getByRole('alert')).toHaveTextContent('The code has expired. Request another code.')
+      expect(screen.getByRole('alert')).toHaveTextContent('The code has expired. Request another code. 3 attempts left.')
 
       /* Resend clears it and starts a fresh 10 minutes. */
       await userEvent.click(screen.getByRole('button', { name: 'Resend code' }))
@@ -387,8 +520,8 @@ describe('Invite Flow V3 — the email check', () => {
   })
 
   it('turns down the demo’s wrong password on Log in, and clears it when the password changes', async () => {
-    renderAt(CHECKOUT, `${V3_B2B},invite-v3-flow-b2b:qr-atlas-login`)
-    await userEvent.type(screen.getByLabelText(/Email address/), 'jordan@example.com')
+    renderAt(CHECKOUT, `${V3_B2B},invite-v3-email-account:atlas`)
+    await userEvent.type(within(screen.getByRole('dialog')).getByLabelText(/^Email\s*\*?$/), 'jordan@example.com')
     await userEvent.click(screen.getByRole('button', { name: 'Continue' }))
     const password = screen.getByLabelText(/^Password/)
     await userEvent.type(password, 'wrong')
@@ -397,31 +530,73 @@ describe('Invite Flow V3 — the email check', () => {
     expect(screen.getByRole('alert')).toHaveTextContent('We couldn’t log you in. Please try again.')
     expect(screen.getByRole('heading', { name: 'Log in to continue' })).toBeInTheDocument()
     expect(password).toHaveAttribute('aria-describedby', 'login-failed')
-    expect(password.style.boxShadow).toBe('inset 0 -2px 0 var(--color-error-600)')
+    /* The line is enough — no red stroke under the field (2026-11-18). */
+    expect(password.style.boxShadow).toBe('')
 
     await userEvent.type(password, '!')
     expect(screen.queryByRole('alert')).not.toBeInTheDocument()
   })
 
-  it('Forgot password? says a reset link went to the address; Resend link waits; Back to sign in returns', async () => {
+  /* Forgot password? asks for the address first (2026-11-19, Afsana). */
+  async function requestReset(address: string) {
+    await userEvent.click(screen.getByRole('button', { name: 'Forgot password?' }))
+    const ask = screen.getByRole('dialog', { name: 'Reset your password' })
+    await userEvent.type(within(ask).getByLabelText(/^Email\s*\*?$/), address)
+    await userEvent.click(within(ask).getByRole('button', { name: 'Send reset link' }))
+  }
+
+  it('Forgot password? asks for an email first; Send reset link waits for a valid one; Back to sign in returns', async () => {
+    renderAt(CHECKOUT, `${V3_B2B},invite-v3-email-account:atlas`)
+    await userEvent.type(within(screen.getByRole('dialog')).getByLabelText(/^Email\s*\*?$/), 'jordan@example.com')
+    await userEvent.click(screen.getByRole('button', { name: 'Continue' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Forgot password?' }))
+
+    const dialog = screen.getByRole('dialog', { name: 'Reset your password' })
+    expect(within(dialog).getByAltText('XCEL Insurance Training by Colibri')).toBeInTheDocument()
+    expect(dialog).toHaveTextContent('Enter your email and we’ll send you a link to reset your password.')
+    /* ← Back first, then Send reset link and "Need help? Contact us" —
+       Forgot Email? and Back to sign in went on 2026-11-23. */
+    expect(within(dialog).queryByText('Forgot Email?')).not.toBeInTheDocument()
+    expect(within(dialog).queryByRole('button', { name: 'Back to sign in' })).not.toBeInTheDocument()
+    const contact = within(dialog).getByRole('link', { name: /Contact us/ })
+    expect(contact.closest('p')).toHaveTextContent(/^Need help\? Contact us/)
+    expect(dialog).not.toHaveTextContent('Can’t log in?')
+    expect(contact).toHaveAttribute('href', 'https://www.xcelsolutions.com/contact-us')
+    expect(contact).toHaveAttribute('target', '_blank')
+    const order = [...dialog.querySelectorAll('button:not([aria-label]), a')].map((e) =>
+      e.textContent?.replace(' (opens in a new tab)', ''),
+    )
+    expect(order).toEqual(['Back', 'Send reset link', 'Contact us'])
+    const field = within(dialog).getByLabelText(/^Email\s*\*?$/)
+    expect(field).toHaveValue('')
+    expect(field).toBeEnabled()
+    const send = within(dialog).getByRole('button', { name: 'Send reset link' })
+    expect(send).toBeDisabled()
+    await userEvent.type(field, 'jordan@')
+    expect(within(dialog).getByRole('alert')).toHaveTextContent('Please enter a valid email address')
+    expect(send).toBeDisabled()
+
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Back' }))
+    expect(screen.getByRole('heading', { name: 'Log in to continue' })).toBeInTheDocument()
+  })
+
+  it('Send reset link says a reset link went to the address; Resend link waits; ← Back returns', async () => {
     vi.useFakeTimers({ shouldAdvanceTime: true })
     try {
-      renderAt(CHECKOUT, `${V3_B2B},invite-v3-flow-b2b:qr-atlas-login`)
-      await userEvent.type(screen.getByLabelText(/Email address/), 'jordan@example.com')
+      renderAt(CHECKOUT, `${V3_B2B},invite-v3-email-account:atlas`)
+      await userEvent.type(within(screen.getByRole('dialog')).getByLabelText(/^Email\s*\*?$/), 'jordan@example.com')
       await userEvent.click(screen.getByRole('button', { name: 'Continue' }))
-      await userEvent.click(screen.getByRole('button', { name: 'Forgot password?' }))
+      await requestReset('pat@example.com')
 
       const dialog = screen.getByRole('dialog', { name: 'Check your email' })
       expect(dialog).toHaveTextContent(
-        'We sent a password reset link to jordan@example.com. Follow the instructions in the email to reset your password. Be sure to check your spam or junk folders.',
+        'We sent a password reset link to pat@example.com. Follow the instructions in the email to reset your password. Be sure to check your spam or junk folders.',
       )
-      expect(within(dialog).getByText('jordan@example.com').tagName).toBe('STRONG')
+      /* The address the learner typed, not the log-in's. */
+      expect(within(dialog).getByText('pat@example.com').tagName).toBe('STRONG')
       expect(within(dialog).queryByLabelText(/^Password/)).not.toBeInTheDocument()
-
-      /* The address, in a field nobody can change (2026-11-13). */
-      const field = within(dialog).getByLabelText('Email address')
-      expect(field).toHaveValue('jordan@example.com')
-      expect(field).toBeDisabled()
+      /* No Email field — the lead names it (2026-11-19). */
+      expect(within(dialog).queryByLabelText(/^Email/)).not.toBeInTheDocument()
 
       /* A link just went out, so Resend link waits, counting down under the
          button — and again after each resend. */
@@ -438,46 +613,132 @@ describe('Invite Flow V3 — the email check', () => {
       expect(within(dialog).getByRole('timer')).toHaveTextContent('You can resend the link in 0:30')
       expect(within(dialog).queryByRole('status')).not.toBeInTheDocument()
 
-      await userEvent.click(within(dialog).getByRole('button', { name: 'Back to sign in' }))
+      expect(within(dialog).queryByRole('button', { name: 'Back to sign in' })).not.toBeInTheDocument()
+      await userEvent.click(within(dialog).getByRole('button', { name: 'Back' }))
       expect(screen.getByRole('heading', { name: 'Log in to continue' })).toBeInTheDocument()
     } finally {
       vi.useRealTimers()
     }
   })
 
-  it('a click on Check your email opens Reset your password; Reset password returns to Log in with a banner', async () => {
-    renderAt(CHECKOUT, `${V3_B2B},invite-v3-flow-b2b:qr-atlas-login`)
-    await userEvent.type(screen.getByLabelText(/Email address/), 'jordan@example.com')
-    await userEvent.click(screen.getByRole('button', { name: 'Continue' }))
-    await userEvent.click(screen.getByRole('button', { name: 'Forgot password?' }))
+  it('a click on Check your email opens the reset page in a new tab; the checkout tab stays put', async () => {
+    const open = vi.spyOn(window, 'open').mockImplementation(() => null)
+    try {
+      renderAt(CHECKOUT, `${V3_B2B},invite-v3-email-account:atlas`)
+      await userEvent.type(within(screen.getByRole('dialog')).getByLabelText(/^Email\s*\*?$/), 'jordan@example.com')
+      await userEvent.click(screen.getByRole('button', { name: 'Continue' }))
+      await requestReset('pat@example.com')
 
-    /* Its two buttons keep their jobs: Back to sign in still goes back. */
-    await userEvent.click(screen.getByRole('button', { name: 'Back to sign in' }))
-    expect(screen.getByRole('heading', { name: 'Log in to continue' })).toBeInTheDocument()
-    await userEvent.click(screen.getByRole('button', { name: 'Forgot password?' }))
+      /* Its buttons keep their jobs: ← Back still goes back. */
+      await userEvent.click(screen.getByRole('button', { name: 'Back' }))
+      expect(screen.getByRole('heading', { name: 'Log in to continue' })).toBeInTheDocument()
+      await requestReset('pat@example.com')
+      expect(open).not.toHaveBeenCalled()
 
-    /* Anywhere else on the modal stands in for following the link. */
-    await userEvent.click(screen.getByText(/We sent a password reset link/))
-    const dialog = screen.getByRole('dialog', { name: 'Reset your password' })
-    expect(within(dialog).getByText('jordan@example.com').tagName).toBe('STRONG')
-    expect(within(dialog).getByRole('meter', { name: 'Password strength' })).toHaveAttribute('aria-valuenow', '0')
-    expect(within(dialog).getByText(/^be different from email/)).toBeInTheDocument()
-    const reset = within(dialog).getByRole('button', { name: 'Reset password' })
+      /* Anywhere else on the modal — or its demo link — stands in for the
+         email's link: the reset page, in a new tab, for that address. */
+      await userEvent.click(screen.getByText(/We sent a password reset link/))
+      await userEvent.click(screen.getByRole('button', { name: 'open the reset link in a new tab' }))
+      expect(open).toHaveBeenCalledTimes(2)
+      const [url, target] = open.mock.calls[0]
+      expect(String(url)).toMatch(/^\/end-to-end-demo\/reset-password\?/)
+      expect(new URLSearchParams(String(url).split('?')[1]).get('email')).toBe('pat@example.com')
+      expect(target).toBe('_blank')
+
+      /* This tab stays on Check your email; no reset here, and no banner on
+         Log in afterwards (2026-11-19). */
+      expect(screen.getByRole('dialog', { name: 'Check your email' })).toBeInTheDocument()
+      await userEvent.click(screen.getByRole('button', { name: 'Back' }))
+      expect(within(screen.getByRole('dialog', { name: 'Log in to continue' })).queryByRole('status')).not.toBeInTheDocument()
+    } finally {
+      open.mockRestore()
+    }
+  })
+
+  it('the checkout modals take XCEL’s type, buttons and card; the reset page keeps its own (2026-11-24)', async () => {
+    renderAt(CHECKOUT, `${V3_B2B},invite-v3-email-account:atlas`)
+    const dialog = screen.getByRole('dialog')
+    const title = within(dialog).getByRole('heading', { name: 'Enter your email to continue' })
+    /* Avenir Heavy (800 in the system Avenir family) — 24 / 28 since
+       2026-11-25. */
+    expect([title.style.fontWeight, title.style.fontSize, title.style.lineHeight]).toEqual(['800', '24px', '28px'])
+    const lead = dialog.querySelector<HTMLElement>('#verify-email-lead')!
+    expect([lead.style.fontWeight, lead.style.fontSize, lead.style.lineHeight]).toEqual(['400', '14px', '21px'])
+    const cont = within(dialog).getByRole('button', { name: 'Continue' })
+    /* The red and its hover live in the class; only "off" is inline. */
+    expect(cont).toHaveClass('cre-xcel-btn')
+    expect([cont.style.fontWeight, cont.style.fontSize, cont.style.lineHeight]).toEqual(['500', '16px', '24px'])
+    expect(dialog.style.padding).toBe('32px')
+    const field = within(dialog).getByLabelText(/^Email\s*\*?$/)
+    await userEvent.type(field, 'jordan@')
+    const error = within(dialog).getByRole('alert')
+    expect([error.style.fontSize, error.style.lineHeight]).toEqual(['13px', '18px'])
+    await userEvent.clear(field)
+    await userEvent.type(field, 'jordan@example.com')
+    expect(cont.style.background).toBe('')
+    expect(dialog.style.borderRadius).toBe('5px')
+    expect(dialog.style.boxShadow).toBe('0 0 12px 2px var(--color-xcel-modal-shadow)')
+    expect((dialog.parentElement as HTMLElement).style.background).toBe('var(--color-xcel-overlay)')
+  })
+
+  it('the reset page keeps its card and button, with the 2026-11-25 sizes', () => {
+    render(
+      <MemoryRouter initialEntries={['/end-to-end-demo/reset-password?email=jordan@example.com']}>
+        <ResetPasswordPageV3 />
+      </MemoryRouter>,
+    )
+    const card = screen.getByRole('region', { name: 'Reset your password' })
+    expect(card.style.borderRadius).toBe('8px')
+    expect(card.style.padding).toBe('32px')
+    const title = within(card).getByRole('heading', { name: 'Reset your password' })
+    expect([title.style.fontSize, title.style.lineHeight]).toEqual(['24px', '28px'])
+    const button = within(card).getByRole('button', { name: 'Reset password' })
+    /* XCEL red and its lighter hover, from the class (2026-11-25). */
+    expect(button).toHaveClass('cre-xcel-btn')
+    expect([button.style.fontSize, button.style.lineHeight]).toEqual(['16px', '24px'])
+  })
+
+  it('the reset page: header logo, the card centred, the rules and eyes, then Password reset', async () => {
+    window.history.replaceState({}, '', '/end-to-end-demo/reset-password?email=jordan@example.com')
+    render(
+      <MemoryRouter initialEntries={['/end-to-end-demo/reset-password?email=jordan@example.com']}>
+        <ResetPasswordPageV3 />
+      </MemoryRouter>,
+    )
+    expect(within(screen.getByRole('banner')).getByAltText('XCEL Insurance Training by Colibri')).toBeInTheDocument()
+    const card = screen.getByRole('region', { name: 'Reset your password' })
+    /* The logo is the header's alone (2026-11-19). */
+    expect(within(card).queryByAltText('XCEL Insurance Training by Colibri')).not.toBeInTheDocument()
+    expect(within(card).getByText('jordan@example.com').tagName).toBe('STRONG')
+    expect(within(card).getByRole('meter', { name: 'Password strength' })).toHaveAttribute('aria-valuenow', '0')
+    expect(within(card).getByText(/^be different from email/)).toBeInTheDocument()
+    const reset = within(card).getByRole('button', { name: 'Reset password' })
     expect(reset).toBeDisabled()
 
-    await userEvent.type(dialog.querySelector<HTMLInputElement>('#reset-password')!, 'Navarro#2027')
-    await userEvent.type(within(dialog).getByLabelText(/^Confirm new password/), 'Navarro#20')
-    expect(within(dialog).getByRole('alert')).toHaveTextContent('Passwords do not match.')
+    expect(within(card).getByLabelText(/^New Password/)).toHaveAttribute('id', 'reset-password')
+    /* The eye is Keycloak's — an outline and a hollow ring, no filled pupil,
+       no slash while hidden — not an image (2026-11-19). */
+    const eye = within(card).getByRole('button', { name: 'Show new password' })
+    expect(eye.querySelector('img')).toBeNull()
+    expect(eye.querySelector('svg')).toHaveAttribute('fill', 'none')
+    expect(eye.querySelector('svg circle')).not.toHaveAttribute('fill')
+    expect(eye.querySelectorAll('svg path')).toHaveLength(1)
+    await userEvent.click(eye)
+    expect(within(card).getByRole('button', { name: 'Hide new password' }).querySelectorAll('svg path')).toHaveLength(2)
+    await userEvent.click(within(card).getByRole('button', { name: 'Hide new password' }))
+    await userEvent.type(card.querySelector<HTMLInputElement>('#reset-password')!, 'Navarro#2027')
+    await userEvent.type(within(card).getByLabelText(/^Confirm New Password/), 'Navarro#20')
+    expect(within(card).getByRole('alert')).toHaveTextContent('Passwords do not match.')
     expect(reset).toBeDisabled()
-    await userEvent.type(within(dialog).getByLabelText(/^Confirm new password/), '27')
+    expect(within(card).getByLabelText(/^Confirm New Password/).style.boxShadow).toBe('')
+    await userEvent.type(within(card).getByLabelText(/^Confirm New Password/), '27')
     expect(reset).toBeEnabled()
 
     await userEvent.click(reset)
-    expect(screen.getByRole('heading', { name: 'Log in to continue' })).toBeInTheDocument()
-    expect(within(screen.getByRole('dialog', { name: 'Log in to continue' })).getByRole('status')).toHaveTextContent(
-      'Your password has been reset.',
-    )
-    expect(document.querySelector('#login-password')).toHaveValue('')
+    const done = screen.getByRole('status')
+    expect(within(done).getByRole('heading', { name: 'Your password has been successfully reset!' })).toBeInTheDocument()
+    expect(within(done).queryByAltText('XCEL Insurance Training by Colibri')).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Reset password' })).not.toBeInTheDocument()
   })
 
   it('asks after the partner question on a B2C flow, never both at once', async () => {
@@ -491,7 +752,7 @@ describe('Invite Flow V3 — the email check', () => {
 
 describe('Invite Flow V3 — the checkout', () => {
   const VERIFIED = CHECKOUT
-  const FF = `${V3_B2B},invite-v3-flow-b2b:qr-net-new`
+  const FF = V3_B2B
 
   function renderVerified() {
     /* `verified=1` — past the email check, on the checkout itself. */
@@ -533,7 +794,7 @@ describe('Invite Flow V3 — the endings', () => {
   const CONFIRMATION = '/end-to-end-demo/confirmation'
 
   it('asks a new learner to create a password, gated on the rules', async () => {
-    renderAt(CONFIRMATION, `${V3_B2B},invite-v3-flow-b2b:qr-net-new`)
+    renderAt(CONFIRMATION, V3_B2B)
     expect(screen.getByRole('heading', { name: 'Thank you for your order, Jordan!' })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Finish setting up your account' })).toBeInTheDocument()
     const save = screen.getByRole('button', { name: 'Confirm' })
@@ -543,7 +804,7 @@ describe('Invite Flow V3 — the endings', () => {
   })
 
   it('asks for the password twice, and holds Save until they match', async () => {
-    renderAt(CONFIRMATION, `${V3_B2B},invite-v3-flow-b2b:qr-net-new`)
+    renderAt(CONFIRMATION, V3_B2B)
     const save = screen.getByRole('button', { name: 'Confirm' })
     await userEvent.type(screen.getByPlaceholderText('Enter password...'), 'Navarro#2026')
     expect(save).toBeDisabled()
@@ -551,13 +812,15 @@ describe('Invite Flow V3 — the endings', () => {
     await userEvent.type(confirm, 'Navarro#20')
     expect(screen.getByRole('alert')).toHaveTextContent('Passwords do not match.')
     expect(save).toBeDisabled()
+    /* The text is enough — no red outline on the field (2026-11-18). */
+    expect(confirm.parentElement!.style.border).not.toContain('error')
     await userEvent.type(confirm, '26')
     expect(screen.queryByRole('alert')).not.toBeInTheDocument()
     expect(save).toBeEnabled()
   })
 
   it('lists V3’s seven rules under "Password must:", with a strength meter', async () => {
-    renderAt(CONFIRMATION, `${V3_B2B},invite-v3-flow-b2b:qr-net-new`)
+    renderAt(CONFIRMATION, V3_B2B)
     expect(screen.getByText('Password must:')).toBeInTheDocument()
     expect(screen.queryByText('Password requirements')).not.toBeInTheDocument()
     expect(screen.getByText(/^be 9-15 characters/)).toBeInTheDocument()
@@ -570,7 +833,7 @@ describe('Invite Flow V3 — the endings', () => {
   })
 
   it('frames the password step as finishing the account, with the address in bold', () => {
-    renderAt(CONFIRMATION, `${V3_B2B},invite-v3-flow-b2b:qr-net-new`)
+    renderAt(CONFIRMATION, V3_B2B)
     expect(screen.getByRole('heading', { name: 'Finish setting up your account' })).toBeInTheDocument()
     const line = screen.getByText(/^Create a password to set up your account for/)
     expect(line.querySelector('strong')).toHaveTextContent(/@/)
@@ -587,7 +850,7 @@ describe('Invite Flow V3 — the endings', () => {
   it('opens "Setting up your account" from Start Course and Confirm; a click outside closes it', async () => {
     for (const [ff, cta] of [
       ['invite-flow-version:v3,invite-v3-model:b2c,invite-v3-flow-b2c:xcel-signed-out,invite-v3-email-account:atlas', 'Start Course'],
-      [`${V3_B2B},invite-v3-flow-b2b:qr-net-new`, 'Confirm'],
+      [V3_B2B, 'Confirm'],
     ] as const) {
       const { unmount } = renderAt(CONFIRMATION, ff)
       if (cta === 'Confirm') await userEvent.click(screen.getByRole('button', { name: /demo learner’s password/ }))
@@ -609,7 +872,7 @@ describe('Invite Flow V3 — the endings', () => {
   it('lands on Atlas learner Home after the demo’s four seconds of Setting up your account', async () => {
     vi.useFakeTimers({ shouldAdvanceTime: true })
     try {
-      renderAt(CONFIRMATION, `${V3_B2B},invite-v3-flow-b2b:qr-net-new`)
+      renderAt(CONFIRMATION, V3_B2B)
       await userEvent.click(screen.getByRole('button', { name: /demo learner’s password/ }))
       await userEvent.click(screen.getByRole('button', { name: 'Confirm' }))
       await act(() => vi.advanceTimersByTimeAsync(SETTING_UP_MS - 500))
@@ -622,7 +885,7 @@ describe('Invite Flow V3 — the endings', () => {
   })
 
   it('draws V2 guest checkout’s light receipt', () => {
-    renderAt(CONFIRMATION, `${V3_B2B},invite-v3-flow-b2b:qr-net-new`)
+    renderAt(CONFIRMATION, V3_B2B)
     const receipt = screen.getByRole('region', { name: 'Thank you for your order, Jordan!' })
     for (const term of ['Confirmation number', 'Product', 'Order total']) {
       expect(within(receipt).getByText(term)).toBeInTheDocument()
@@ -631,8 +894,8 @@ describe('Invite Flow V3 — the endings', () => {
   })
 
   it('never shows V2’s "Confirm your email" ending on V3', () => {
-    for (const flow of ['qr-net-new', 'qr-ocd', 'qr-atlas-login']) {
-      const { unmount } = renderAt(CONFIRMATION, `${V3_B2B},invite-v3-flow-b2b:${flow}`)
+    for (const account of ['no-atlas', 'atlas']) {
+      const { unmount } = renderAt(CONFIRMATION, `${V3_B2B},invite-v3-email-account:${account}`)
       expect(screen.queryByText(/Confirm your email|Check your email/)).not.toBeInTheDocument()
       unmount()
     }
@@ -643,17 +906,17 @@ describe('Invite Flow V3 — the Has Atlas sign-in', () => {
   it('logs in on the log-in widget flow, holds on Signing you in, and fills the checkout', async () => {
     vi.useFakeTimers({ shouldAdvanceTime: true })
     try {
-      renderAt(CHECKOUT, `${V3_B2B},invite-v3-flow-b2b:qr-atlas-login`)
-      await userEvent.type(screen.getByLabelText(/Email address/), 'jordan@example.com')
+      renderAt(CHECKOUT, `${V3_B2B},invite-v3-email-account:atlas`)
+      await userEvent.type(within(screen.getByRole('dialog')).getByLabelText(/^Email\s*\*?$/), 'jordan@example.com')
       await userEvent.click(screen.getByRole('button', { name: 'Continue' }))
 
       expect(screen.getByRole('heading', { name: 'Log in to continue' })).toBeInTheDocument()
-      /* The address in the sentence, bold — no email field, only the password. */
+      /* The address in a locked Email field under Welcome back — every flow
+         since 2026-11-18; the password is the one thing to type. */
       const dialog = screen.getByRole('dialog')
-      expect(dialog).toHaveTextContent('Welcome back, Jordan! Sign in to jordan@example.com to finish checking out.')
-      expect(within(dialog).getByText('jordan@example.com').tagName).toBe('STRONG')
-      expect(within(dialog).queryByLabelText(/Email address/)).not.toBeInTheDocument()
-      expect(within(dialog).queryAllByRole('textbox')).toHaveLength(0)
+      expect(dialog).toHaveTextContent('Welcome back, Jordan! Sign in to finish checking out.')
+      expect(within(dialog).getByLabelText(/^Email\s*\*?$/)).toHaveValue('jordan@example.com')
+      expect(within(dialog).getByLabelText(/^Email\s*\*?$/)).toBeDisabled()
       const logIn = screen.getByRole('button', { name: 'Log in' })
       expect(logIn).toBeDisabled()
       await userEvent.type(screen.getByLabelText(/^Password/), 'anything')
@@ -672,7 +935,7 @@ describe('Invite Flow V3 — the Has Atlas sign-in', () => {
     vi.useFakeTimers({ shouldAdvanceTime: true })
     try {
       renderAt(CHECKOUT, 'invite-flow-version:v3,invite-v3-model:b2c,invite-v3-flow-b2c:xcel-signed-out,invite-v3-email-account:atlas,partner-code-ask:modal&partner=no')
-      await userEvent.type(screen.getByLabelText(/Email address/), 'jordan@example.com')
+      await userEvent.type(within(screen.getByRole('dialog')).getByLabelText(/^Email\s*\*?$/), 'jordan@example.com')
       await userEvent.click(screen.getByRole('button', { name: 'Continue' }))
       await userEvent.type(screen.getByLabelText(/^Password/), 'anything')
       await userEvent.click(screen.getByRole('button', { name: 'Log in' }))
@@ -686,12 +949,16 @@ describe('Invite Flow V3 — the Has Atlas sign-in', () => {
   })
 
   it('asks every flow’s email, and knows which sign in', () => {
-    /* The OCD flows' check depends on the cart — see their own tests. */
-    for (const flow of INVITE_FLOWS_V3.filter((f) => f.id !== 'xcel-signed-in' && f.id !== 'xcel-signed-out')) {
+    /* The OCD flows' check depends on the cart — see their own tests. Log In
+       buys nothing, so it has no checkout to check an email over
+       (`LogInFlowV3.test.tsx`). */
+    const checksOut = (id: string) => id !== 'xcel-signed-in' && id !== 'xcel-signed-out' && id !== 'xcel-log-in'
+    for (const flow of INVITE_FLOWS_V3.filter((f) => checksOut(f.id))) {
       expect(verifiesEmailFirst(flow)).toBe(true)
     }
-    const check = (id: string) => emailCheckV3(INVITE_FLOWS_V3.find((f) => f.id === id)!)
-    expect(check('qr-atlas-login')).toEqual({ second: 'login', signsIn: true, accountKnown: true })
+    const qr = INVITE_FLOWS_V3.find((f) => f.id === 'qr')!
+    expect(emailCheckV3(qrFlowV3(qr, 'atlas'))).toEqual({ second: 'login', signsIn: true, accountKnown: true })
+    expect(emailCheckV3(qrFlowV3(qr, 'no-atlas'))).toEqual({ second: 'code', signsIn: false, accountKnown: false })
     const ocd = INVITE_FLOWS_V3.find((f) => f.id === 'xcel-signed-out')!
     expect(emailCheckV3(ocdCartFlowV3(ocd, 'targeted', 'atlas'))).toEqual({ second: 'login', signsIn: false, accountKnown: true })
     expect(emailCheckV3(ocdCartFlowV3(ocd, 'targeted', 'no-atlas'))).toEqual({ second: 'code', signsIn: false, accountKnown: false })
@@ -700,7 +967,7 @@ describe('Invite Flow V3 — the Has Atlas sign-in', () => {
 
 describe('Invite Flow V3 — the B2C cart', () => {
   it('starts B2B at the QR code and B2C at the cart', () => {
-    expect(entryPathV3(INVITE_FLOWS_V3.find((f) => f.id === 'qr-ocd')!)).toBe('/end-to-end-demo/qr')
+    expect(entryPathV3(INVITE_FLOWS_V3.find((f) => f.id === 'qr')!)).toBe('/end-to-end-demo/qr')
     expect(entryPathV3(INVITE_FLOWS_V3.find((f) => f.id === 'xcel-signed-out')!)).toBe('/end-to-end-demo/cart')
   })
 
@@ -754,14 +1021,14 @@ describe('Invite Flow V3 — dialogs leave the bars usable', () => {
   /* The scrim sits under the bars' menus (60) and sheets (100), not at the
      1000 that covered them (`useBelowDemoBars`). */
   it('layers the email check under the Demo and Design bars’ menus', () => {
-    renderAt(CHECKOUT, `${V3_B2B},invite-v3-flow-b2b:qr-net-new`)
+    renderAt(CHECKOUT, V3_B2B)
     const scrim = screen.getByRole('dialog', { name: 'Enter your email to continue' }).parentElement!
     expect(scrim.style.zIndex).toBe('55')
   })
 
   /* The file's stylesheet: every dialog 460 wide, its gated button full width. */
   it('draws the email check 460 wide with a full-width button', () => {
-    renderAt(CHECKOUT, `${V3_B2B},invite-v3-flow-b2b:qr-net-new`)
+    renderAt(CHECKOUT, V3_B2B)
     const dialog = screen.getByRole('dialog', { name: 'Enter your email to continue' })
     expect(dialog.style.width).toBe('460px')
     expect(screen.getByRole('button', { name: 'Continue' }).style.width).toBe('100%')
@@ -774,7 +1041,7 @@ describe('Invite Flow V3 — dialogs leave the bars usable', () => {
     stage.getBoundingClientRect = () =>
       ({ top: 200, bottom: 800, left: 40, right: 1240, width: 1200, height: 600 }) as DOMRect
     document.body.appendChild(stage)
-    const { unmount } = renderAt(CHECKOUT, `${V3_B2B},invite-v3-flow-b2b:qr-net-new`)
+    const { unmount } = renderAt(CHECKOUT, V3_B2B)
     const scrim = screen.getByRole('dialog', { name: 'Enter your email to continue' }).parentElement!
     expect(scrim.style.top).toBe('200px')
     expect(scrim.style.left).toBe('40px')
@@ -813,7 +1080,7 @@ describe('Invite Flow V3 — every B2C flow starts at the cart', () => {
   }
 
   it('sends a B2B walk arriving at the cart to the QR code', () => {
-    arriveAt('/end-to-end-demo/cart', 'invite-flow-version:v3,invite-v3-model:b2b,invite-v3-flow-b2b:qr-ocd')
+    arriveAt('/end-to-end-demo/cart', 'invite-flow-version:v3,invite-v3-model:b2b,invite-v3-flow-b2b:qr')
     expect(screen.getByTestId('where').textContent).toMatch(/^\/end-to-end-demo\/qr\?/)
   })
 
@@ -823,17 +1090,19 @@ describe('Invite Flow V3 — every B2C flow starts at the cart', () => {
   })
 })
 
-describe('Invite Flow V3 — not signed in to XCEL (OCD)', () => {
+describe('Invite Flow V3 — not signed into XCEL (OCD)', () => {
   const SIGNED_OUT = 'invite-flow-version:v3,invite-v3-model:b2c,invite-v3-flow-b2c:xcel-signed-out'
   const base = INVITE_FLOWS_V3.find((f) => f.id === 'xcel-signed-out')!
 
   it('walks as the signed-in flow, a guest throughout and never signed out', () => {
-    for (const cart of ['targeted', 'mixed', 'none'] as const) {
+    for (const cart of ['targeted', 'mixed'] as const) {
       const flow = ocdCartFlowV3(base, cart, 'no-atlas')
       expect(flow.base).toBe('b2c-guest')
       expect(flow.screens).not.toContain('signing-out')
       expect(flow.screens.slice(0, 2)).toEqual(['cart', 'pc-modal'])
     }
+    /* Nothing targeted ends at the cart (2026-11-18). */
+    expect(ocdCartFlowV3(base, 'none', 'atlas').screens).toEqual(['cart'])
     expect(ocdCartFlowV3(base, 'mixed', 'atlas').screens).toContain('drop-notice')
     expect(emailCheckV3(ocdCartFlowV3(base, 'targeted', 'atlas'))).toEqual({ second: 'login', signsIn: false, accountKnown: true })
     expect(emailCheckV3(ocdCartFlowV3(base, 'mixed', 'atlas')).accountKnown).toBe(true)
@@ -871,7 +1140,7 @@ describe('Invite Flow V3 — not signed in to XCEL (OCD)', () => {
   it('goes straight to the checkout on No — no Signing you out', async () => {
     cartAt('targeted')
     await userEvent.click(screen.getByRole('button', { name: 'Checkout' }))
-    await userEvent.click(screen.getByRole('button', { name: 'NO' }))
+    await userEvent.click(screen.getByRole('button', { name: /^no$/i }))
     expect(screen.queryByRole('dialog', { name: 'Signing you out' })).not.toBeInTheDocument()
     expect(screen.getByText('Checkout page')).toBeInTheDocument()
     expect(screen.getByTestId('where').textContent).toContain('partner=no')
@@ -882,7 +1151,7 @@ describe('Invite Flow V3 — not signed in to XCEL (OCD)', () => {
     cartAt('mixed')
     expect(screen.getByText('New York Life and Health Flashcards')).toBeInTheDocument()
     await userEvent.click(screen.getByRole('button', { name: 'Checkout' }))
-    await userEvent.click(screen.getByRole('button', { name: 'NO' }))
+    await userEvent.click(screen.getByRole('button', { name: /^no$/i }))
     expect(screen.getByRole('dialog', { name: /not supported/ })).toHaveTextContent('New York Life and Health Flashcards')
     await userEvent.click(screen.getByRole('button', { name: 'Proceed to checkout' }))
     expect(screen.queryByRole('dialog', { name: 'Signing you out' })).not.toBeInTheDocument()
@@ -890,11 +1159,24 @@ describe('Invite Flow V3 — not signed in to XCEL (OCD)', () => {
     expect(screen.getByTestId('where').textContent).toContain('dropped=1')
   })
 
-  it('collects a partner code on Yes, as when signed in', async () => {
-    cartAt('none')
+  it('does nothing at Checkout when nothing is targeted — not even the Partner Code question', async () => {
+    for (const account of ['no-atlas', 'atlas']) {
+      const { unmount } = cartAt(`none,invite-v3-email-account:${account}`)
+      await userEvent.click(screen.getByRole('button', { name: 'Checkout' }))
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+      expect(screen.queryByText('Checkout page')).not.toBeInTheDocument()
+      expect(screen.getByRole('button', { name: 'Checkout' })).toBeInTheDocument()
+      unmount()
+    }
+  })
+
+  it('does nothing on Yes, as when signed in', async () => {
+    cartAt('targeted')
     await userEvent.click(screen.getByRole('button', { name: 'Checkout' }))
-    await userEvent.click(screen.getByRole('button', { name: 'YES' }))
-    expect(screen.getByRole('dialog', { name: 'Enter your Partner Code' })).toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: /^yes$/i }))
+    expect(screen.queryByRole('dialog', { name: 'Enter your Partner Code' })).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /^yes$/i })).toBeInTheDocument()
+    expect(screen.queryByText('Checkout page')).not.toBeInTheDocument()
   })
 })
 
@@ -953,9 +1235,9 @@ describe('Invite Flow V3 — picking another flow restarts the walk', () => {
   }
 
   it('B2B: from the checkout to the new flow’s QR code, with nothing carried over', async () => {
-    midWalk(CHECKOUT, 'invite-flow-version:v3,invite-v3-model:b2b', 'invite-v3-flow-b2b', 'qr-atlas-login')
+    midWalk(CHECKOUT, 'invite-flow-version:v3,invite-v3-model:b2b', 'invite-v3-flow-b2b', 'qr')
     expect(screen.getByTestId('where').textContent).toMatch(/^\/end-to-end-demo\/checkout/)
-    await userEvent.click(screen.getByRole('button', { name: 'pick qr-atlas-login' }))
+    await userEvent.click(screen.getByRole('button', { name: 'pick qr' }))
     const where = screen.getByTestId('where').textContent!
     expect(where).toMatch(/^\/end-to-end-demo\/qr\?/)
     expect(where).not.toContain('verified=1')
@@ -981,9 +1263,9 @@ describe('Invite Flow V3 — the OCD flows’ checkout after an Atlas log-in', (
           `invite-flow-version:v3,invite-v3-model:b2c,invite-v3-flow-b2c:${id},invite-v3-cart:targeted,invite-v3-email-account:atlas`,
         )
         /* The cart answers the partner question on a real walk; here, No. */
-        const no = screen.queryByRole('button', { name: 'NO' })
+        const no = screen.queryByRole('button', { name: /^no$/i })
         if (no) await userEvent.click(no)
-        await userEvent.type(screen.getByLabelText(/Email address/), 'sam@example.com')
+        await userEvent.type(within(screen.getByRole('dialog')).getByLabelText(/^Email\s*\*?$/), 'sam@example.com')
         await userEvent.click(screen.getByRole('button', { name: 'Continue' }))
         await userEvent.type(screen.getByLabelText(/^Password/), 'anything')
         await userEvent.click(screen.getByRole('button', { name: 'Log in' }))
@@ -1002,9 +1284,46 @@ describe('Invite Flow V3 — the OCD flows’ checkout after an Atlas log-in', (
       }
     })
   }
+
+  /* B2C's Log in, as Direct Email's: "Welcome back…" and the address in a
+     locked Email field, the checkout's grey (2026-11-18). */
+  for (const [id, cart] of [
+    ['xcel-signed-out', 'targeted'],
+    ['xcel-signed-out', 'mixed'],
+    ['xcel-signed-in', 'targeted'],
+    ['xcel-signed-in', 'mixed'],
+  ]) {
+    it(`${id}, ${cart}: Log in shows the given address locked under Welcome back`, async () => {
+      renderAt(
+        CHECKOUT,
+        `invite-flow-version:v3,invite-v3-model:b2c,invite-v3-flow-b2c:${id},invite-v3-cart:${cart},invite-v3-email-account:atlas`,
+      )
+      const no = screen.queryByRole('button', { name: /^no$/i })
+      if (no) await userEvent.click(no)
+      await userEvent.type(within(screen.getByRole('dialog')).getByLabelText(/^Email\s*\*?$/), 'sam@example.com')
+      await userEvent.click(screen.getByRole('button', { name: 'Continue' }))
+      const dialog = screen.getByRole('dialog', { name: 'Log in to continue' })
+      expect(dialog).toHaveAccessibleDescription('Welcome back, Jordan! Sign in to finish checking out.')
+      const field = within(dialog).getByLabelText(/^Email\s*\*?$/)
+      expect(field).toHaveValue('sam@example.com')
+      expect(field).toBeDisabled()
+      expect(field.style.background).toBe('var(--color-e2e-form-locked-v3)')
+    })
+  }
+
+  it('QR Code’s Log in matches: Welcome back, and the address locked', async () => {
+    renderAt(CHECKOUT, 'invite-flow-version:v3,invite-v3-model:b2b,invite-v3-flow-b2b:qr,invite-v3-email-account:atlas')
+    await userEvent.type(within(screen.getByRole('dialog')).getByLabelText(/^Email\s*\*?$/), 'sam@example.com')
+    await userEvent.click(screen.getByRole('button', { name: 'Continue' }))
+    const dialog = screen.getByRole('dialog', { name: 'Log in to continue' })
+    expect(dialog).toHaveAccessibleDescription('Welcome back, Jordan! Sign in to finish checking out.')
+    const field = within(dialog).getByLabelText(/^Email\s*\*?$/)
+    expect(field).toHaveValue('sam@example.com')
+    expect(field).toBeDisabled()
+  })
 })
 
-describe('Invite Flow V3 — signed in to XCEL (OCD)', () => {
+describe('Invite Flow V3 — signed into XCEL (OCD)', () => {
   const SIGNED_IN = 'invite-flow-version:v3,invite-v3-model:b2c,invite-v3-flow-b2c:xcel-signed-in'
   const base = INVITE_FLOWS_V3.find((f) => f.id === 'xcel-signed-in')!
 
@@ -1053,10 +1372,11 @@ describe('Invite Flow V3 — signed in to XCEL (OCD)', () => {
   })
 
   it('asks the Partner Code question before anything else', () => {
-    for (const cart of ['targeted', 'mixed', 'none'] as const) {
+    for (const cart of ['targeted', 'mixed'] as const) {
       const flow = signedInFlowV3(base, cart, 'no-atlas', false)
       expect(flow.screens.slice(0, 2)).toEqual(['cart', 'pc-modal'])
     }
+    expect(signedInFlowV3(base, 'none', 'no-atlas', false).screens).toEqual(['cart'])
     expect(signedInFlowV3(base, 'mixed', 'atlas', false).screens).toContain('drop-notice')
     expect(signedInFlowV3(base, 'targeted', 'atlas', false).screens).not.toContain('drop-notice')
   })
@@ -1068,17 +1388,15 @@ describe('Invite Flow V3 — signed in to XCEL (OCD)', () => {
     expect(screen.queryByText(/have been removed from your cart/)).not.toBeInTheDocument()
   })
 
-  it('collects a partner code on Yes, whatever the cart holds', async () => {
-    for (const cart of ['targeted', 'mixed', 'none']) {
+  it('does nothing on Yes, whatever targeted cart it holds — no code to enter', async () => {
+    for (const cart of ['targeted', 'mixed']) {
       const { unmount } = cartAt(`${SIGNED_IN},invite-v3-cart:${cart}`)
       await userEvent.click(screen.getByRole('button', { name: 'Checkout' }))
-      await userEvent.click(screen.getByRole('button', { name: 'YES' }))
-      const entry = screen.getByRole('dialog', { name: 'Enter your Partner Code' })
-      const go = within(entry).getByRole('button', { name: 'Go to Partner Site' })
-      expect(go).toBeDisabled()
-      await userEvent.type(within(entry).getByLabelText('Partner code'), 'ACME')
-      expect(go).toBeEnabled()
+      await userEvent.click(screen.getByRole('button', { name: /^yes$/i }))
+      expect(screen.queryByRole('dialog', { name: 'Enter your Partner Code' })).not.toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /^yes$/i })).toBeInTheDocument()
       expect(screen.queryByRole('dialog', { name: 'Signing you out' })).not.toBeInTheDocument()
+      expect(screen.queryByText('Checkout page')).not.toBeInTheDocument()
       unmount()
     }
   })
@@ -1087,7 +1405,7 @@ describe('Invite Flow V3 — signed in to XCEL (OCD)', () => {
     cartAt(`${SIGNED_IN},invite-v3-cart:${cart}`)
     await userEvent.click(screen.getByRole('button', { name: 'Checkout' }))
     expect(screen.getByRole('dialog')).toHaveTextContent('Do you have a Partner Code?')
-    await userEvent.click(screen.getByRole('button', { name: 'NO' }))
+    await userEvent.click(screen.getByRole('button', { name: /^no$/i }))
   }
 
   async function expectSignedOutToCheckout() {
@@ -1123,7 +1441,7 @@ describe('Invite Flow V3 — signed in to XCEL (OCD)', () => {
       expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
 
       await userEvent.click(screen.getByRole('button', { name: 'Checkout' }))
-      await userEvent.click(screen.getByRole('button', { name: 'NO' }))
+      await userEvent.click(screen.getByRole('button', { name: /^no$/i }))
       await userEvent.click(screen.getByRole('button', { name: 'Proceed to checkout' }))
       await expectSignedOutToCheckout()
     } finally {
@@ -1146,6 +1464,7 @@ describe('Invite Flow V3 — signed in to XCEL (OCD)', () => {
       </MemoryRouter>,
     )
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    expect(screen.queryByText(/This is the email on your XCEL account/)).not.toBeInTheDocument()
     await userEvent.click(screen.getByRole('button', { name: 'Save and continue' }))
     await userEvent.click(screen.getAllByRole('button', { name: /click to fill/i })[0])
     await userEvent.click(screen.getByRole('button', { name: 'Confirm Payment Method' }))
@@ -1153,9 +1472,33 @@ describe('Invite Flow V3 — signed in to XCEL (OCD)', () => {
     expect(screen.queryByRole('dialog', { name: 'Placing your order' })).not.toBeInTheDocument()
   })
 
-  it('takes a cart with nothing targeted to the existing checkout on No', async () => {
-    await answerNo('none')
-    expect(screen.getByText('Checkout page')).toBeInTheDocument()
-    expect(screen.getByTestId('where').textContent).not.toContain('signedout=1')
+  it('asks a signed-out cart with nothing targeted for its email once — no Re-enter field', async () => {
+    const ff = 'invite-flow-version:v3,invite-v3-model:b2c,invite-v3-flow-b2c:xcel-signed-out,invite-v3-cart:none'
+    window.history.replaceState({}, '', `${CHECKOUT}?ff=${ff}`)
+    render(
+      <MemoryRouter initialEntries={[`${CHECKOUT}?ff=${ff}&lstate=Arizona&loa=Health&pkg=premier&partner=no`]}>
+        <AccountProvider>
+          <FeatureFlagProvider>
+            <Routes>
+              <Route path="/end-to-end-demo/checkout" element={<InvitedCheckoutRoute />} />
+            </Routes>
+          </FeatureFlagProvider>
+        </AccountProvider>
+      </MemoryRouter>,
+    )
+    expect(screen.getByText('Email address')).toBeInTheDocument()
+    expect(screen.queryByText('Re-enter email address')).not.toBeInTheDocument()
+    expect(screen.queryByText(/Your order confirmation will be sent here|Enter it twice/)).not.toBeInTheDocument()
+  })
+
+  it('does nothing at Checkout when nothing is targeted, Atlas or not', async () => {
+    for (const account of ['no-atlas', 'atlas']) {
+      const { unmount } = cartAt(`${SIGNED_IN},invite-v3-cart:none,invite-v3-email-account:${account}`)
+      await userEvent.click(screen.getByRole('button', { name: 'Checkout' }))
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+      expect(screen.queryByText('Checkout page')).not.toBeInTheDocument()
+      expect(screen.getByTestId('where').textContent).not.toContain('signedout=1')
+      unmount()
+    }
   })
 })

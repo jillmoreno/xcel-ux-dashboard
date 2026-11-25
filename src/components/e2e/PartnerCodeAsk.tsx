@@ -1,7 +1,9 @@
 import { useEffect, type CSSProperties } from 'react'
 import { createPortal } from 'react-dom'
 import { useV3DialogLayer } from '@/components/e2e/useV3DialogLayer'
-import { XmarkRegular } from '@/icons'
+import { ChevronLeft, XmarkRegular } from '@/icons'
+import { XcelModalV3 } from '@/components/e2e/XcelModalV3'
+import '@/pages/inviteFlow.css'
 
 /**
  * "DO YOU HAVE A PARTNER CODE?" — 2026-10-22, and the question the guest
@@ -65,6 +67,53 @@ export function PartnerCodeAskPage({ onAnswer }: { onAnswer: (a: PartnerCodeAnsw
 }
 
 /**
+ * "DO YOU HAVE AN XCEL ACCOUNT?" — 2026-11-20, Afsana: the page the live
+ * site's No on the Partner Code question opens (`/customer/account/question`),
+ * on the Log In flow. Here, beside the Partner Code question, because it is
+ * the same page with a different question: one set of styles, so the two
+ * cannot drift apart. Back, the question, Yes / No, then "How do I know?" and
+ * its answer in the live site's words.
+ */
+export function XcelAccountAskPage({
+  onAnswer,
+  onBack,
+}: {
+  onAnswer: (answer: PartnerCodeAnswer) => void
+  onBack: () => void
+}) {
+  return (
+    <section aria-labelledby="xcel-account-question" style={{ ...PAGE_WRAP, position: 'relative' }}>
+      <button type="button" onClick={onBack} style={BACK}>
+        <ChevronLeft size={12} aria-hidden />
+        Back
+      </button>
+      <div style={BODY}>
+        <h1 id="xcel-account-question" style={QUESTION}>
+          Do you have an XCEL account?
+        </h1>
+        <div style={BUTTONS}>
+          <button type="button" className="cre-e2e-cta" style={ANSWER} onClick={() => onAnswer('yes')}>
+            YES
+          </button>
+          <button type="button" className="cre-e2e-cta" style={ANSWER} onClick={() => onAnswer('no')}>
+            NO
+          </button>
+        </div>
+        <span aria-hidden style={RULE} />
+        <h2 style={HOW}>How do I know?</h2>
+        <p style={NOTE}>
+          You have an XCEL account if you’ve created one, someone created one for you, or you’ve purchased from our site
+          before.
+        </p>
+        <p style={HELP}>
+          Need help? <span style={HELP_LINK}>Contact Us</span>
+        </p>
+      </div>
+    </section>
+  )
+}
+
+/**
  * The question as a modal over the checkout — the arm being explored.
  *
  * ⚠ NO DISMISS. Unlike every other modal in this flow there is no ✕ and no
@@ -106,6 +155,36 @@ export function PartnerCodeAskModal({
     return () => window.removeEventListener('keydown', onKey)
   }, [onClose])
 
+  /* V3 is XCEL's own modal (2026-11-24, Afsana): the question in a ruled
+     header, then YES / NO, the note and Contact Us. V1/V2 keep theirs. */
+  if (v3) {
+    return (
+      <XcelModalV3 id="partner-code-modal" titleId="partner-code-question" title="Do you have a Partner Code?*" onClose={onClose}>
+        <div style={XCEL_BODY}>
+          <div style={XCEL_BUTTONS}>
+            <button type="button" className="cre-xcel-btn" style={XCEL_CHOICE} onClick={() => onAnswer('yes')}>
+              Yes
+            </button>
+            <button type="button" className="cre-xcel-btn" style={XCEL_CHOICE} onClick={() => onAnswer('no')}>
+              No
+            </button>
+          </div>
+          <span aria-hidden style={RULE} />
+          <p style={XCEL_NOTE}>
+            *Partner Code, previously known as a Discount Code, allows access to your company’s dedicated Partner Site for
+            exclusive pricing, products and to log in.
+          </p>
+          <p style={XCEL_NOTE}>
+            Need help?{' '}
+            <a href={XCEL_CONTACT_US} target="_blank" rel="noopener noreferrer" className="cre-xcel-link">
+              Contact Us
+            </a>
+          </p>
+        </div>
+      </XcelModalV3>
+    )
+  }
+
   return createPortal(
     <div style={{ ...SCRIM, ...layer.scrim }}>
       <div
@@ -129,6 +208,20 @@ export function PartnerCodeAskModal({
 }
 
 /* ── Styles ─────────────────────────────────────────────────────────────── */
+
+/* XCEL's contact page — the same address the Log In flow's Contact us opens. */
+const XCEL_CONTACT_US = 'https://www.xcelsolutions.com/contact'
+
+/* V3 — XCEL's modal body: centred, YES / NO 30 apart as on the live question
+   page, the note and help line at 14px (the system has no footnote size). */
+const XCEL_BODY: CSSProperties = { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 20, textAlign: 'center' }
+
+const XCEL_BUTTONS: CSSProperties = { display: 'flex', gap: 30, paddingTop: 6 }
+
+/* XCEL's "primary choice" button: uppercase, 10px 19px (the live page's YES). */
+const XCEL_CHOICE: CSSProperties = { padding: '10px 19px', textTransform: 'uppercase' }
+
+const XCEL_NOTE: CSSProperties = { margin: 0, fontSize: 14, lineHeight: '21px', color: 'var(--color-xcel-text)' }
 
 const BODY: CSSProperties = {
   display: 'flex',
@@ -192,6 +285,33 @@ const HELP: CSSProperties = {
 const HELP_LINK: CSSProperties = {
   color: 'var(--color-xcel-brick-600)',
   fontWeight: 800,
+}
+
+/* The live page's Back: outlined in the brick, top left of the page. */
+const BACK: CSSProperties = {
+  position: 'absolute',
+  top: 24,
+  left: 24,
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: 8,
+  padding: '7px 14px',
+  borderRadius: 3,
+  border: '1px solid var(--color-xcel-brick-600)',
+  background: 'var(--color-fixed-light)',
+  color: 'var(--color-xcel-brick-600)',
+  fontFamily: 'var(--font-e2e-avenir)',
+  fontSize: 14,
+  cursor: 'pointer',
+}
+
+const HOW: CSSProperties = {
+  margin: 0,
+  fontFamily: 'var(--font-e2e-avenir)',
+  fontWeight: 800,
+  fontSize: 16,
+  lineHeight: '24px',
+  color: 'var(--color-text-primary)',
 }
 
 const PAGE_WRAP: CSSProperties = {

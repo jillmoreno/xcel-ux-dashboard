@@ -220,9 +220,12 @@ const REBRAND_FLAGS = [
   /* Invite Flow V3's model type and its two flow lists — 2026-10-30. */
   'invite-v3-model',
   'invite-v3-flow-b2b',
+  'invite-v3-eric-pdp',
+  'pdp-products',
   'invite-v3-flow-b2c',
   'invite-v3-cart',
   'invite-v3-email-account',
+  'invite-v3-log-in-account',
   'partner-code-ask',
   'order-confirmation-style',
   'split-journey-rail',

@@ -23,7 +23,7 @@ const feature: PrototypeFeature = {
   devStatus: 'not-ready',
   surface: 'invite',
   owner: 'Afsana',
-  lastUpdated: '2026-11-11T21:23:24Z',
+  lastUpdated: '2026-11-25T19:38:22Z',
   accent: 'gold',
   icon: 'flag',
   brands: ['xcel'],
@@ -36,12 +36,12 @@ const feature: PrototypeFeature = {
     {
       label: 'Version B — Finish setting up your account',
       note: 'A learner new to Atlas. The hidden corner bottom-right of the card fills a valid password into both fields; Confirm opens Setting up your account…, which lands on Atlas learner Home after four seconds (demo timing); a click outside closes it first (demo only).',
-      to: '/end-to-end-demo/confirmation?demo=1&ff=invite-flow-version:v3,invite-v3-model:b2b,invite-v3-flow-b2b:qr-net-new',
+      to: '/end-to-end-demo/confirmation?demo=1&ff=invite-flow-version:v3,invite-v3-model:b2b,invite-v3-flow-b2b:qr,invite-v3-email-account:no-atlas',
     },
     {
       label: 'Version A — Start learning',
       note: 'A learner whose email already has Atlas. Start Course opens Setting up your account….',
-      to: '/end-to-end-demo/confirmation?demo=1&ff=invite-flow-version:v3,invite-v3-model:b2b,invite-v3-flow-b2b:qr-atlas-login',
+      to: '/end-to-end-demo/confirmation?demo=1&ff=invite-flow-version:v3,invite-v3-model:b2b,invite-v3-flow-b2b:qr,invite-v3-email-account:atlas',
     },
     {
       label: 'Atlas learner Home — where the learner lands',
@@ -50,8 +50,8 @@ const feature: PrototypeFeature = {
     },
   ],
   featureFlags: [
-    { id: 'invite-v3-flow-b2b', label: 'Invite flow', note: 'Which version the page shows: the Has Atlas flows end on Start learning, the others on Finish setting up your account.' },
-    { id: 'invite-v3-email-account', label: 'Email belongs to', note: 'On Direct Email and the OCD flows: Atlas account → Start learning; No Atlas account → Finish setting up your account.' },
+    { id: 'invite-v3-flow-b2b', label: 'Invite flow', note: 'Direct Email or QR Code. Both end the same way, by Email belongs to.' },
+    { id: 'invite-v3-email-account', label: 'Email belongs to', note: 'On Direct Email, QR Code and the OCD flows: Atlas account → Start learning; No Atlas account → Finish setting up your account.' },
   ],
   devHandoff: {
     flagsNote: 'Design bar controls for reaching each version in the prototype, not product settings.',
@@ -138,11 +138,11 @@ const feature: PrototypeFeature = {
             { role: 'Card', token: '--color-fixed-light' },
             { role: 'Card shadow', token: '--color-e2e-form-shadow' },
             { role: 'Eyebrow', token: '--color-xcel-brick-600' },
-            { role: 'Heading font', token: '--font-e2e-serif' },
-            { role: 'Body', token: '--color-text-secondary' },
-            { role: 'Button', token: '--color-xcel-brick-600' },
+            { role: 'Heading font', token: '--font-e2e-avenir (Avenir Heavy, 800)' },
+            { role: 'Body', token: '--color-xcel-text' },
+            { role: 'Button — fill, hover', token: '--color-xcel-brick, --color-xcel-red-hover' },
           ],
-          responsive: ['Card 440px wide, padding 28px, 16px between blocks. Eyebrow 11px, heading 20px, body 14px, button 15px with padding 12px 20px.'],
+          responsive: ['Card 440px wide, padding 32px (2026-11-25), 16px between blocks. Eyebrow 11px; heading Avenir Heavy 24px / 28px (the serif until 2026-11-25); body 14px / 21px in the modals’ text colour (grey until 2026-11-25); button Avenir Medium 16px / 24px with padding 12px 20px, XCEL red with the lighter red on hover.'],
           sources: [
             'The final prototype is the source of truth — the second Live Preview route.',
             'Implemented in src/pages/InvitedConfirmationPageV3.tsx.',
@@ -161,12 +161,12 @@ const feature: PrototypeFeature = {
         variants: [
           { name: 'Empty', when: 'On arrival. No rule is met; Confirm is off.' },
           { name: 'Typing', when: 'Each rule ticks as it is met, and the meter fills — Weak, Fair, Good, Strong.' },
-          { name: 'Passwords don’t match', when: 'Confirm password has something in it and differs from the password. Its border turns red and "Passwords do not match." appears under it.', why: 'It waits for the second field to have something in it, so the learner is not told off before they have typed.' },
+          { name: 'Passwords don’t match', when: 'Confirm Password has something in it and differs from the password. "Passwords do not match." appears under it; the field keeps its usual outline.', why: 'It waits for the second field to have something in it, so the learner is not told off before they have typed.' },
           { name: 'Ready', when: 'All seven rules are met and both fields match. Confirm turns on.' },
         ],
         ctas: [
-          { name: 'Password eye', does: 'Shows or hides the password.' },
-          { name: 'Confirm password eye', does: 'Shows or hides the confirmation.' },
+          { name: 'Password eye', does: 'Shows or hides the password. Always shown. Keycloak’s eye, as on Change Password in Account Details: an outline round a hollow ring, no pupil; open while hidden, slashed once shown.' },
+          { name: 'Confirm Password eye', does: 'Shows or hides the confirmation. Always shown. Keycloak’s eye, as on Change Password in Account Details: an outline round a hollow ring, no pupil; open while hidden, slashed once shown.' },
           { name: 'Confirm', does: 'Off until all seven rules are met and both fields match. Then creates the account and opens Setting up your account….' },
         ],
         statesMatrix: [
@@ -181,19 +181,19 @@ const feature: PrototypeFeature = {
         ],
         designSpec: {
           tokens: [
-            { role: 'Line under the heading', token: '--color-text-secondary' },
+            { role: 'Line under the heading', token: '--color-xcel-text' },
             { role: 'Email in that line (bold)', token: '--color-text-primary' },
             { role: 'Field', token: '--color-e2e-field' },
             { role: 'Field border', token: '--color-e2e-form-outline' },
             { role: 'Rule met', token: '--color-success-700' },
             { role: 'Rule pending', token: '--color-text-secondary' },
             { role: 'Meter — weak / fair', token: '--color-error-600, --color-warning-600' },
-            { role: 'Mismatch border and text', token: '--color-error-600' },
-            { role: 'Confirm, on', token: '--color-xcel-brick-600' },
+            { role: 'Mismatch text', token: '--color-error-600' },
+            { role: 'Confirm, on — fill, hover', token: '--color-xcel-brick, --color-xcel-red-hover' },
             { role: 'Confirm, off', token: '--color-e2e-form-locked' },
           ],
-          states: ['Confirm: disabled (grey) until ready, then the brick primary.'],
-          responsive: ['The same 440px card as Start learning. Field labels 11px, fields 14px, mismatch line 13px.'],
+          states: ['Confirm: disabled (grey) until ready, then XCEL red, the lighter red on hover.'],
+          responsive: ['The same 440px card as Start learning. Field names "Password *" and "Confirm Password *" as on the modals: Avenir Heavy 14px / 19px in the text colour (2026-11-25; 11px uppercase grey before). Fields 14px, mismatch line 13px / 18px.'],
           sources: [
             'The final prototype is the source of truth — the first Live Preview route.',
             'Implemented in src/pages/InvitedConfirmationPageV3.tsx, with the rules in src/data/invitePasswordRulesV3.ts.',

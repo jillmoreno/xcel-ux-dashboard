@@ -32,6 +32,7 @@ import { PartnerHeader } from '@/components/e2e/PartnerHeader'
 import { TopoBackground } from '@/components/e2e/TopoBackground'
 import { TakingYouToCourseDialog } from '@/components/e2e/TakingYouToCourseDialog'
 import { InvitePasswordChecklistV3 } from '@/components/e2e/InvitePasswordChecklistV3'
+import { PasswordEyeV3 } from '@/components/e2e/PasswordEyeV3'
 import { ConfirmationReceiptV3 } from '@/components/e2e/ConfirmationReceiptV3'
 import { CART_PACKAGE_PARAM, cartPackage } from '@/data/xcelCourseFinder'
 import { usePartnerAttribution } from '@/data/inviteFlows'
@@ -79,15 +80,19 @@ export function InvitedConfirmationPageV3() {
      account. A click outside still closes it first. */
   const [signingIn, setSigningIn] = useState(false)
   const navigate = useNavigate()
+  /* Opened from `/invite-v3` (2026-11-17): the walk is the flow alone, so
+     Setting up your account is where it ends — it holds rather than going on
+     into Atlas Home. */
+  const standalone = params.get('standalone') === '1'
   useEffect(() => {
-    if (!signingIn) return
+    if (!signingIn || standalone) return
     const t = window.setTimeout(() => {
       navigate(`/dashboard-rebrand?demo=1&version=${END_TO_END_VERSION}&${E2E_JOURNEY_PARAM}=${E2E_JOURNEY_FULL}`, {
         replace: true,
       })
     }, SETTING_UP_MS)
     return () => window.clearTimeout(t)
-  }, [signingIn, navigate])
+  }, [signingIn, standalone, navigate])
 
   /* What was bought, and for how much — V2's ending's reading of the same
      address, so the receipt agrees with the checkout. */
@@ -138,7 +143,9 @@ export function InvitedConfirmationPageV3() {
                   Create a password to set up your account for <strong style={BODY_EMAIL}>{learnerEmail}</strong>.
                 </p>
                 <label style={FIELD_GROUP}>
-                  <span style={FIELD_LABEL}>Password</span>
+                  <span style={FIELD_LABEL}>
+                    Password <span aria-hidden>*</span>
+                  </span>
                   <span style={INPUT_SHELL}>
                     <input
                       type={shown ? 'text' : 'password'}
@@ -155,21 +162,19 @@ export function InvitedConfirmationPageV3() {
                       aria-pressed={shown}
                       style={EYE}
                     >
-                      <img
-                        src={shown ? '/brand/confirmation/eye.svg' : '/brand/confirmation/eye-off.svg'}
-                        alt=""
-                        width={18}
-                        height={18}
-                        style={{ display: 'block' }}
-                      />
+                      <PasswordEyeV3 slashed={shown} />
                     </button>
                   </span>
                 </label>
                 <InvitePasswordChecklistV3 password={password} username={learnerEmail} />
                 <div style={FIELD_GROUP}>
                   <label style={FIELD_GROUP}>
-                    <span style={FIELD_LABEL}>Confirm password</span>
-                    <span style={mismatch ? { ...INPUT_SHELL, border: '1px solid var(--color-error-600)' } : INPUT_SHELL}>
+                    <span style={FIELD_LABEL}>
+                      Confirm Password <span aria-hidden>*</span>
+                    </span>
+                    {/* No red outline on a mismatch — "Passwords do not match." under
+                        it is enough (2026-11-18, Afsana). */}
+                    <span style={INPUT_SHELL}>
                       <input
                         type={confirmShown ? 'text' : 'password'}
                         value={confirm}
@@ -187,13 +192,7 @@ export function InvitedConfirmationPageV3() {
                         aria-pressed={confirmShown}
                         style={EYE}
                       >
-                        <img
-                          src={confirmShown ? '/brand/confirmation/eye.svg' : '/brand/confirmation/eye-off.svg'}
-                          alt=""
-                          width={18}
-                          height={18}
-                          style={{ display: 'block' }}
-                        />
+                        <PasswordEyeV3 slashed={confirmShown} />
                       </button>
                     </span>
                   </label>
@@ -206,7 +205,7 @@ export function InvitedConfirmationPageV3() {
                 <button
                   type="button"
                   disabled={!ready}
-                  className={ready ? 'cre-e2e-cta' : undefined}
+                  className={ready ? 'cre-xcel-btn' : undefined}
                   style={ready ? CTA_ON : CTA_OFF}
                   onClick={() => setSigningIn(true)}
                 >
@@ -231,7 +230,7 @@ export function InvitedConfirmationPageV3() {
                 </h2>
                 <div aria-hidden style={CARD_RULE} />
                 <p style={CARD_BODY}>Begin your learning journey today.</p>
-                <button type="button" className="cre-e2e-cta" style={CTA_ON} onClick={() => setSigningIn(true)}>
+                <button type="button" className="cre-xcel-btn" style={CTA_ON} onClick={() => setSigningIn(true)}>
                   Start Course
                 </button>
               </>
@@ -292,7 +291,8 @@ const CARD: CSSProperties = {
   display: 'flex',
   flexDirection: 'column',
   gap: 16,
-  padding: 28,
+  /* 28 until 2026-11-25 (Afsana), then 32 with the modals. */
+  padding: 32,
   borderRadius: 6,
   background: 'var(--color-fixed-light)',
   boxShadow: '0 6px 20px var(--color-e2e-form-shadow)',
@@ -310,9 +310,11 @@ const CARD_EYEBROW: CSSProperties = {
 
 const CARD_TITLE: CSSProperties = {
   margin: 0,
-  fontFamily: 'var(--font-e2e-serif)',
-  fontWeight: 700,
-  fontSize: 20,
+  /* Avenir Heavy, as the modals' titles (2026-11-25, Afsana — the serif
+     until then); 20 / 28 until the same day, then 24 / 28. */
+  fontFamily: 'var(--font-e2e-avenir)',
+  fontWeight: 800,
+  fontSize: 24,
   lineHeight: '28px',
   color: 'var(--color-text-primary)',
 }
@@ -330,7 +332,8 @@ const CARD_BODY: CSSProperties = {
   fontFamily: 'var(--font-e2e-avenir)',
   fontSize: 14,
   lineHeight: '21px',
-  color: 'var(--color-text-secondary)',
+  /* The modals' paragraph colour (2026-11-25, Afsana — grey until then). */
+  color: 'var(--color-xcel-text)',
 }
 
 /* The address in the subtext, bold and allowed to break — a long
@@ -339,13 +342,15 @@ const BODY_EMAIL: CSSProperties = { fontWeight: 800, color: 'var(--color-text-pr
 
 const FIELD_GROUP: CSSProperties ={ display: 'flex', flexDirection: 'column', gap: 6 }
 
+/* The modals' field name (2026-11-25, Afsana): Avenir Heavy 14 / 19 in the
+   text colour, title case with the asterisk — no longer 11px uppercase grey
+   with letter spacing. */
 const FIELD_LABEL: CSSProperties = {
   fontFamily: 'var(--font-e2e-avenir)',
   fontWeight: 800,
-  fontSize: 11,
-  letterSpacing: '0.06em',
-  textTransform: 'uppercase',
-  color: 'var(--color-text-secondary)',
+  fontSize: 14,
+  lineHeight: '19px',
+  color: 'var(--color-text-primary)',
 }
 
 const INPUT_SHELL: CSSProperties = {
@@ -374,8 +379,11 @@ const PASSWORD_INPUT: CSSProperties = {
   color: 'var(--color-text-primary)',
 }
 
+/* Keycloak's eye, no pupil — `PasswordEyeV3`, the same as every V3 password
+   field and Change Password in Account Details (2026-11-19, Afsana). */
 const EYE: CSSProperties = {
   flex: 'none',
+  color: 'var(--color-text-secondary)',
   display: 'inline-flex',
   padding: 0,
   border: 'none',
@@ -391,7 +399,8 @@ const MISMATCH: CSSProperties = {
   color: 'var(--color-error-600)',
 }
 
-/* No `background` when on: `cre-e2e-cta` carries the brick and its hover and
+/* No `background` when on: `cre-xcel-btn` carries XCEL red and its lighter
+   hover (2026-11-25, Afsana; `cre-e2e-cta`'s darkening hover before) and
    focus states, as on V2's ending. */
 const CTA_ON: CSSProperties = {
   padding: '12px 20px',
@@ -399,8 +408,11 @@ const CTA_ON: CSSProperties = {
   border: 'none',
   color: 'var(--color-fixed-light)',
   fontFamily: 'var(--font-e2e-avenir)',
-  fontWeight: 700,
-  fontSize: 15,
+  /* Avenir Medium, as every CTA (2026-11-25, Afsana — 700, which drew
+     Avenir Heavy, until then). 15 until the same day, then 16 / 24. */
+  fontWeight: 500,
+  fontSize: 16,
+  lineHeight: '24px',
   cursor: 'pointer',
 }
 

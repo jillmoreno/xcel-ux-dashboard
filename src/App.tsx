@@ -10,6 +10,15 @@ import { ComponentReviewPage } from '@/pages/ComponentReviewPage'
 import { VariantDeckPage } from '@/pages/VariantDeckPage'
 import { AtlasHeaderPreviewPage } from '@/pages/AtlasHeaderPreviewPage'
 import { ComparePage } from '@/pages/ComparePage'
+import { InviteV3StartPage } from '@/pages/InviteV3StartPage'
+import {
+  XcelKeycloakLogInPage,
+  XcelLogInAccountPage,
+  XcelLogInPartnerCodePage,
+  XcelOcdExistingLogInPage,
+  XcelOcdLogInPage,
+} from '@/pages/XcelLogInPages'
+import { ResetPasswordPageV3 } from '@/pages/ResetPasswordPageV3'
 /* THE INVITE FLOW IS VERSIONED SINCE 2026-10-22, so these four routes name a
    SWITCH rather than a page — each picks V1's page or its V2 fork from the
    `invite-flow-version` flag. The paths, and everything that depends on them,
@@ -205,6 +214,10 @@ export default function App() {
           than their whole branch. Takes its entire definition from the URL, so
           it needs no per-component code. See `ComponentReviewPage`. */}
       <Route path="/review" element={<TestingGate><ComponentReviewPage /></TestingGate>} />
+      {/* The V3 invite flow on its own — the link a Jira ticket carries
+          (2026-11-17, Afsana). One Start per flow, no Hub or demo chrome, and
+          the walk stops at Setting up your account. See `InviteV3StartPage`. */}
+      <Route path="/invite-v3" element={<TestingGate><InviteV3StartPage /></TestingGate>} />
       {/* Variants & Copy decks — every state of a model, on every surface it
           feeds, with the exact strings it produces (carried from the Common
           LMS hub 2026-10-26; no deck is registered here yet). The one handoff
@@ -256,6 +269,18 @@ export default function App() {
         <Route path="/end-to-end-demo/checkout" element={<TestingGate><InvitedCheckoutRoute /></TestingGate>} />
         {/* …then Confirmation & Password, which Place your order opens. */}
         <Route path="/end-to-end-demo/confirmation" element={<TestingGate><InvitedConfirmationRoute /></TestingGate>} />
+        {/* …and Reset your password, the page the reset email's link opens in a
+            new tab — not a step of the checkout's modal (2026-11-19, Afsana). */}
+        <Route path="/end-to-end-demo/reset-password" element={<TestingGate><ResetPasswordPageV3 /></TestingGate>} />
+        {/* …and V3's Log In flow (2026-11-20, Afsana — PRD 5.7): the header's
+            Log In, the live site's two questions, then OCD's log-in page asking
+            for the email alone, and Keycloak's when it knows it. See
+            `XcelLogInPages`. */}
+        <Route path="/end-to-end-demo/log-in" element={<TestingGate><XcelLogInPartnerCodePage /></TestingGate>} />
+        <Route path="/end-to-end-demo/log-in/account" element={<TestingGate><XcelLogInAccountPage /></TestingGate>} />
+        <Route path="/end-to-end-demo/log-in/sign-in" element={<TestingGate><XcelOcdLogInPage /></TestingGate>} />
+        <Route path="/end-to-end-demo/log-in/keycloak" element={<TestingGate><XcelKeycloakLogInPage /></TestingGate>} />
+        <Route path="/end-to-end-demo/log-in/ocd" element={<TestingGate><XcelOcdExistingLogInPage /></TestingGate>} />
       </Route>
       <Route
         path="/prototype/:featureId/handoff/:componentId"
