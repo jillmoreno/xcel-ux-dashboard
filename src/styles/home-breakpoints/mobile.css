@@ -590,11 +590,15 @@
 }
 
 /* The Study Journey's step titles ("Complete Coursework", "Pass State Exam"…)
-   at 27/29 on the phone (2026-11-05, Eric's request; 24 first) — the same
-   size as the progress module's values. */
+   at the desktop's own H8 — 22/24 under the Atlas palette (2026-11-25,
+   Jillienne, from the type audit). They were 27/29 on the phone from
+   2026-11-05 (Eric's request; 24 first), matched to the tabbed progress
+   module's figures — which the phone no longer draws — and that 27 became the
+   course title's own size the day the title came down, so a step heading
+   outranked nothing. */
 [data-home-bp='mobile'] p.cre-atlas-step-title[style] {
-  font-size: 27px !important;
-  line-height: 29px !important;
+  font-size: var(--type-atlas-h8-base-size, 22px) !important;
+  line-height: var(--type-atlas-h8-base-line, 24px) !important;
 }
 
 /* THE TABBED PROGRESS MODULE'S TYPE, from Figma (Atlas UX Design, node 659:585 —
@@ -621,11 +625,16 @@
 }
 
 /* The Study Journey's row labels ("Pre-Licensing Education…", "Certification
-   Exam"…) at 16/18 on the phone (2026-11-05, Eric's request), from 14 / 18.
-   The current row's longer label can wrap to two lines at this size. */
-[data-home-bp='mobile'] span.cre-atlas-journey-label[style] {
+   Exam"…) at 16 on the phone (2026-11-05, Eric's request), from 14 / 18.
+   The current row's longer label can wrap to two lines at this size — on a
+   22 line since 2026-11-25 (Jillienne, from the type audit): 16 on 18 was a
+   1.1 ratio, cramped once it wrapped. And Step 2's and 3's rows ("Exam
+   Information", "Applying for a License" — `cre-atlas-journey-link` buttons,
+   14 by the page's +1) take the same 16/22: they are the same kind of row. */
+[data-home-bp='mobile'] span.cre-atlas-journey-label[style],
+[data-home-bp='mobile'] button.cre-atlas-journey-link[style] {
   font-size: 16px !important;
-  line-height: 18px !important;
+  line-height: 22px !important;
 }
 
 /* ⚠ THE PHONE'S SMALLEST TYPE IS 13px (2026-11-05, Eric's request), except
