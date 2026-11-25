@@ -27,10 +27,16 @@ import {
  */
 afterEach(cleanup)
 
+/* ⚠ THE 2026-11-19 PAGE, PINNED. Since 2026-11-25 the flag `transcripts-certificate-statuses` draws the PRD page
+   (`TranscriptsPanelV2`) at both call sites by default; everything in this file describes the original — its disclaimer,
+   search, filters and export — so the flag is held off here. The PRD page has its own suite, `TranscriptsV2.test.tsx`. */
+const ORIGINAL = 'ff=transcripts-certificate-statuses:off'
+
 function renderSection(query = 'section=transcripts') {
-  window.history.replaceState({}, '', `/dashboard-rebrand?demo=1&${query}`)
+  const q = `${query}&${ORIGINAL}`
+  window.history.replaceState({}, '', `/dashboard-rebrand?demo=1&${q}`)
   return render(
-    <MemoryRouter initialEntries={[`/dashboard-rebrand?demo=1&${query}`]}>
+    <MemoryRouter initialEntries={[`/dashboard-rebrand?demo=1&${q}`]}>
       <AccountProvider>
         <FeatureFlagProvider>
           <LearningPathsPanelProvider>

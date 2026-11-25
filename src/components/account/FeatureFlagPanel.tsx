@@ -271,6 +271,7 @@ const REBRAND_FLAGS = [
   'atlas-certificates-card-style',
   'atlas-certificates-open-detail',
   'atlas-certificates-transcripts-body',
+  'transcripts-certificate-statuses', // 2026-11-25 — the Certificates & Transcripts page to the PRD, on a copy of the panel
   'atlas-rail-account-group',
   'atlas-header-my-courses',
   'atlas-account-profile-nav',

@@ -128,6 +128,30 @@ export const ARCHIVED_ITEMS: ArchivedItem[] = [
     restoreNote:
       'Set `alignItems: \'flex-start\'` on `TITLE_BOX` in `src/components/compass/AtlasCourseCardFigmaV2.tsx` to see the Top arm again. For the control itself, take the `atlas-courses-card-title-align` entry from commit 26a30bc1 (`git show 26a30bc1:src/context/FeatureFlagContext.tsx`) back into `FEATURE_FLAGS` (`src/context/FeatureFlagContext.tsx`) and `REBRAND_FLAGS` (`src/components/account/FeatureFlagPanel.tsx`), and the `titleCentred` read back into the card. Its test ("centres a short title in its box by default, and tops it when the title control says so") is in `src/test/AtlasCourseCardPrdFields.test.tsx` at that commit.',
   },
+  {
+    id: 'transcripts-search-filters-export',
+    name: 'Certificates & Transcripts — the search, the year filters and Download Transcript',
+    what: 'Three controls over the transcript table on the 2026-11-19 page: the search box ("Search by Course Name, License Type, State"), the All \u00b7 Completed This Year \u00b7 Completed Previous Years pills with their "No results" empty state, and the Download Transcript button that opened the export sheet (`ExportTranscriptSheet`) or the print route (`/print/transcript`). All three are "Later or elsewhere" in the Certificates and Transcripts PRD (Chi Wang) for 12 January. The count ("Showing N Results") stays.',
+    location:
+      'Still drawn by the unforked original, `src/components/account/TranscriptsPanel.tsx`, which `transcripts-certificate-statuses` Off renders at both call sites in `src/components/layout/PlatformShell.tsx`. The PRD page, `src/components/account/TranscriptsPanelV2.tsx`, carries none of the three. The print route (`src/pages/TranscriptPrintPage.tsx`) and the sheet (`src/components/account/ExportTranscriptSheet.tsx`) stand and keep working; `filterTranscripts`, `searchTranscripts`, `transcriptGroups` and `inGroups` in `src/data/transcriptFixtures.ts` stay exported for them.',
+    flag: 'transcripts-certificate-statuses (Off brings the three back)',
+    dateRemoved: '2026-11-25',
+    reason: 'The PRD lists search and export under "Later or elsewhere"; the year filters went with them. With the filters gone there is one emptiness, not two.',
+    restoreNote:
+      'Turn `transcripts-certificate-statuses` off (`src/context/FeatureFlagContext.tsx`) to draw `src/components/account/TranscriptsPanel.tsx` again, search, filters and Download Transcript included. To carry one of them onto the PRD page, lift its block from that file into `src/components/account/TranscriptsPanelV2.tsx`; the data helpers it needs are still exported from `src/data/transcriptFixtures.ts`.',
+  },
+  {
+    id: 'transcripts-not-official-disclaimer',
+    name: 'Certificates & Transcripts — the "not official" disclaimer',
+    what: 'The paragraph that led the 2026-11-19 page, verbatim: "Transcripts are not \u201cofficial\u201d and shouldn\u2019t be used in place of signed course completion certificates. If you have completed courses that are not showing, try printing them individually to see if you need to submit any required documents, affidavits, etc." (Figma 2009:28298; "official" in SemiBold.) Chi\u2019s sub-heading stands in its place: "See how you did in every program you\u2019ve completed, and download the certificates you need for your state exam or license."',
+    location:
+      'Still drawn by the unforked original, `src/components/account/TranscriptsPanel.tsx` (`disclaimerStyle`), which `transcripts-certificate-statuses` Off renders. Not on `src/components/account/TranscriptsPanelV2.tsx`.',
+    flag: 'transcripts-certificate-statuses (Off brings it back)',
+    dateRemoved: '2026-11-25',
+    reason: 'Jillienne, 2026-11-25: removed, not reworded \u2014 it told a learner this page was no substitute for a signed certificate, on a page that now hands her the signed certificate. Keeping it would contradict the thing beside it.',
+    restoreNote:
+      'The copy is quoted in full above. Turn `transcripts-certificate-statuses` off to see it on the 2026-11-19 page, or paste the paragraph (with `disclaimerStyle` from `src/components/account/TranscriptsPanel.tsx`) above the sub-heading in `src/components/account/TranscriptsPanelV2.tsx`.',
+  },
   /* ── THE SIMPLE HUB, 2026-11-21 — eight sections unwired in one day ──────
      Every row below names the same place: the `hub-advanced` branch (tag
      `hub-advanced-2026-11-21`, commit 7b83b7a5), which is `main` as it stood

@@ -5023,6 +5023,23 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'transcripts-certificate-statuses',
+    /* CERTIFICATES & TRANSCRIPTS TO THE PRD (2026-11-25, Jillienne) — the
+       Certificates and Transcripts PRD (Chi Wang): no search, filters or
+       Download Transcript; the program a link to its course; one empty state;
+       five certificate statuses derived from the states' own expiry rules;
+       Chi's sub-heading in place of the "not official" disclaimer. On a COPY,
+       `TranscriptsPanelV2`; the 2026-11-19 page is untouched and is what Off
+       draws. Chosen at BOTH call sites in `PlatformShell` — the nav row's
+       `?section=certificates` and the profile dropdown's `?section=transcripts`. */
+    group: 'Navigation',
+    label: 'Certificates & Transcripts — the PRD statuses',
+    description:
+      'The Certificates & Transcripts page to the PRD: the pre-licensing history with a certificate status on every row (Ready, Expired, Not required, Address required, Voided), the program linking to its course, Chi\u2019s sub-heading, and no search, filters or Download Transcript. Off draws the 2026-11-19 page.',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'e2e-session-keeps-atlas-header',
     /* THE WALK'S LESSON KEEPS A WAY HOME (2026-10-16, Jillienne: "this course
        needs to have a header that matches Atlas header so user can get back

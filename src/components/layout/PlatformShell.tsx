@@ -58,6 +58,7 @@ import {
 } from '@/components/account/AccountSectionLayout'
 import { isAccountSection, type AccountSectionId } from '@/components/account/accountSections'
 import { TranscriptsPanel } from '@/components/account/TranscriptsPanel'
+import { TranscriptsPanelV2 } from '@/components/account/TranscriptsPanelV2'
 import { AtlasProfileNav, PROFILE_NAV_ROWS } from '@/components/account/AtlasProfileNav'
 import { NotificationsPanel } from '@/components/notifications/NotificationsPanel'
 import { GiftRecipientsPanel } from '@/components/account/purchases/GiftRecipientsPanel'
@@ -3079,11 +3080,21 @@ const WIP_QUICK_LINKS_LIFTED: CSSProperties = { ...WIP_QUICK_LINKS, marginTop: -
    column and gap, the same `.cre-atlas-account-body` scope. So the table is
    exactly as wide, and starts exactly where, it does on the Transcripts page
    the profile dropdown opens. */
+/* The profile dropdown's Transcripts page: the same two panels as the Certificates row's body, chosen by the same flag
+   (2026-11-25) — the page is reached two ways and must be the same page both ways. */
+function TranscriptsSection() {
+  const prdStatuses = useFeatureFlag('transcripts-certificate-statuses').enabled
+  return prdStatuses ? <TranscriptsPanelV2 /> : <TranscriptsPanel />
+}
+
 function CertificatesOrTranscripts() {
   const [params] = useSearchParams()
   const { brand } = useAccount()
   const sectionVersion = resolveDashboardVersion(params.get('version'), brand)
   const transcriptsBody = useFeatureFlag('atlas-certificates-transcripts-body').enabled
+  /* THE PRD'S PAGE OR THE 2026-11-19 ONE (2026-11-25) — `transcripts-certificate-statuses`, read here so neither panel
+     knows about the other. The same choice is made under `?section=transcripts` below. */
+  const prdStatuses = useFeatureFlag('transcripts-certificate-statuses').enabled
   // As `CertificatesSection` decides its rail — read unconditionally, ANDed after (the hook-count trap).
   const quickLinksRight = useFeatureFlag('atlas-wip-quick-links-side').variant === 'right'
   const quickLinksMode = useFeatureFlag('atlas-pages-quick-links').variant
@@ -3114,7 +3125,7 @@ function CertificatesOrTranscripts() {
     >
       {links && !quickLinksRight ? links : null}
       <div style={{ minWidth: 0 }}>
-        <TranscriptsPanel />
+        {prdStatuses ? <TranscriptsPanelV2 /> : <TranscriptsPanel />}
       </div>
       {links && quickLinksRight ? links : null}
     </div>
@@ -3296,8 +3307,10 @@ function renderBody(
       ) : active === 'transcripts' ? (
         /* The course history (2026-11-02), from Figma 2009:28153. It was an
            `AccountSectionPlaceholder` reading "Transcripts — not built yet",
-           which is what the TODO below used to cover. */
-        <TranscriptsPanel />
+           which is what the TODO below used to cover. The PRD's page or the
+           2026-11-19 one — `TranscriptsSection` reads the flag (2026-11-25),
+           because this function is not a component. */
+        <TranscriptsSection />
       ) : active === 'notifications' ? (
         // The header bell's "View all" lands here. It was an
         // `AccountSectionPlaceholder` until the bell shipped, which made the

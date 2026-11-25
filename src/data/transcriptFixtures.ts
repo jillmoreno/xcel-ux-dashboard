@@ -4,6 +4,7 @@
 
 import type { Brand } from '@/context/AccountContext'
 import { FIXTURE_TODAY } from './myCoursesFixtures'
+import { HOME_ADDRESS_STATES, certificateValidUntil, isoDateOf, stateCertificateRule } from './stateCertificateRules'
 
 /**
  * THE TRANSCRIPT — a learner's course history, 2026-11-02.
@@ -72,6 +73,27 @@ export type TranscriptRecord = {
   /** ISO yyyy-mm-dd. Every row has one — an incomplete course has no
    *  completion and so has no row. */
   completedDate: string
+  /* ── The PRD's fields (2026-11-25), on the pre-licensing rows only ──────
+     `TranscriptsPanelV2` reads these; the 2026-11-19 page and the print route
+     never see them. All optional, so the CE history above is untouched. */
+  /** PRD §3a field 3 — the licence line the hours count toward ("Life",
+   *  "Health", "Property & Casualty"). A course covering two lines is two
+   *  rows, one per line, each with its own completion date. */
+  licenseLine?: string
+  /** PRD §3a — the state-approved hours for the line, when they differ from
+   *  the course's own `hours`. */
+  approvedHours?: number
+  /** Final score, whole percent. ⚠ INVENTED on every demo row, listed on the
+   *  handoff for Product; the 2026-11-19 page hashes one from the id instead. */
+  score?: number
+  /** PRD §3b — whether the learner's home address is on file. Only read in
+   *  the five states that ask for one (`HOME_ADDRESS_STATES`); `false` there
+   *  is "Address required". Absent counts as on file. A learner-level fact
+   *  carried per row for the demo's sake — see the handoff. */
+  homeAddressOnFile?: boolean
+  /** The certificate has been voided. ⚠ THE PRD DOES NOT SAY WHAT VOIDS ONE;
+   *  this is a demo switch for the cell treatment, nothing more. */
+  voided?: boolean
 }
 
 const PRELICENSE = 'Insurance Pre-Licensing'
@@ -240,6 +262,152 @@ const _XCEL_TRANSCRIPT: readonly TranscriptRecord[] = [
     completedDate: '2024-10-21',
   },
 ]
+
+/**
+ * THE PRE-LICENSING HISTORY — the PRD's page (2026-11-25), a sibling list.
+ *
+ * ⚠ THE PRD IS PRE-LICENSING ONLY. Continuing education, prep review and
+ * livestream exam review are out of its scope, which is most of the list
+ * above — so `TranscriptsPanelV2` reads this list and the 2026-11-19 page and
+ * the print route keep reading `_XCEL_TRANSCRIPT`, untouched.
+ *
+ * Seven rows, every certificate status at least once: Ready with an expiry
+ * (Florida, four years), Ready with none (New York), Expired (Ohio Health, 180
+ * days gone), Not required (Texas, unregulated), Address required (Georgia, no
+ * home address on file) and Voided (Florida P&C, the demo switch). The Ohio
+ * pair is PRD §3a field 3 — one course, two licence lines, two rows, two
+ * completion dates.
+ *
+ * ⚠ EVERY DATE, HOUR COUNT AND SCORE BELOW IS INVENTED. They are listed, row
+ * by row, on the dev handoff for Product to confirm; nothing here should
+ * reach a customer before that. The titles follow the library's own
+ * ("Life & Health Pre-License Course"); only the Florida Life & Health row
+ * has a course in the library to link to (`mc-xcel-lh-prelicense`).
+ */
+const PL_FL_LH = 'Life & Health'
+const _XCEL_TRANSCRIPT_PRELICENSING: readonly TranscriptRecord[] = [
+  {
+    id: 't-xcel-pl-ga-lh',
+    title: 'Life & Health Pre-License Course',
+    profession: PRELICENSE,
+    licenseLine: PL_FL_LH,
+    state: 'Georgia',
+    hours: 40,
+    enrolledDate: '2026-01-12',
+    completedDate: '2026-03-02',
+    score: 86,
+    homeAddressOnFile: false, // → Address required (Georgia is one of the five)
+  },
+  {
+    id: 't-xcel-pl-fl-pc',
+    title: 'Property & Casualty Pre-License Course',
+    profession: PRELICENSE,
+    licenseLine: 'Property & Casualty',
+    state: 'Florida',
+    hours: 40,
+    enrolledDate: '2025-11-03',
+    completedDate: '2026-02-10',
+    score: 81,
+    homeAddressOnFile: true,
+    voided: true, // → Voided (DRAFT — the PRD does not define the trigger)
+  },
+  {
+    id: 't-xcel-pl-tx-pc',
+    title: 'Property & Casualty Pre-License Course',
+    profession: PRELICENSE,
+    licenseLine: 'Property & Casualty',
+    state: 'Texas',
+    hours: 20,
+    enrolledDate: '2025-12-02',
+    completedDate: '2026-01-24',
+    score: 90, // → Not required (Texas is unregulated)
+  },
+  {
+    id: 't-xcel-pl-oh-life',
+    title: 'Life & Health Pre-License Course',
+    profession: PRELICENSE,
+    licenseLine: 'Life',
+    state: 'Ohio',
+    hours: 20,
+    enrolledDate: '2025-12-01',
+    completedDate: '2026-01-15',
+    score: 88, // → Ready, valid till 7/14/2026 (180 days)
+  },
+  {
+    id: 't-xcel-pl-ny-lah',
+    title: 'Life, Accident & Health Pre-License Course',
+    profession: PRELICENSE,
+    licenseLine: 'Life, Accident & Health',
+    state: 'New York',
+    hours: 40,
+    enrolledDate: '2025-09-29',
+    completedDate: '2025-11-12',
+    score: 95, // → Ready, no expiry
+  },
+  {
+    id: 't-xcel-pl-oh-health',
+    title: 'Life & Health Pre-License Course',
+    profession: PRELICENSE,
+    licenseLine: 'Health',
+    state: 'Ohio',
+    hours: 20,
+    enrolledDate: '2025-09-02',
+    completedDate: '2025-10-20',
+    score: 84, // → Expired 4/18/2026 (180 days)
+  },
+  {
+    id: 't-xcel-pl-fl-lh',
+    courseId: 'mc-xcel-lh-prelicense',
+    title: 'Life & Health Pre-License Course',
+    profession: PRELICENSE,
+    licenseLine: PL_FL_LH,
+    state: 'Florida',
+    hours: 40,
+    enrolledDate: '2024-08-19',
+    completedDate: '2024-10-04',
+    score: 92,
+    homeAddressOnFile: true, // → Ready, valid till 10/4/2028 (four years)
+  },
+]
+
+const _PRELICENSING_BY_BRAND: Record<Brand, readonly TranscriptRecord[]> = {
+  xcel: _XCEL_TRANSCRIPT_PRELICENSING,
+}
+
+/** The PRD page's rows, newest completion first — see `transcriptsFor` for why the order is set here. */
+export function prelicensingTranscriptsFor(brand: Brand): TranscriptRecord[] {
+  return [...(_PRELICENSING_BY_BRAND[brand] ?? [])].sort((a, b) => b.completedDate.localeCompare(a.completedDate))
+}
+
+/**
+ * THE FIVE CERTIFICATE STATUSES (PRD §3b, plus two) — derived, never stored.
+ *
+ *   ready             a regulated state, on or before the valid-until day (or no expiry)
+ *   expired           the day after valid-until
+ *   not-required      an unregulated state: no certificate; the row is the record
+ *   address-required  one of the five home-address states, and no address on file
+ *   voided            ⚠ the PRD does not define this; a demo switch on the row
+ *
+ * `today` defaults to `FIXTURE_TODAY` — never `new Date()`, or the Demo bar's
+ * day control would move the course cards and leave this page behind. The PRD's
+ * "Pacific Time" is the day boundary; a calendar-date comparison cannot land
+ * on the wrong side of it.
+ */
+export type CertificateStatus = 'ready' | 'expired' | 'not-required' | 'address-required' | 'voided'
+
+export function certificateStatus(row: TranscriptRecord, today: Date = FIXTURE_TODAY): CertificateStatus {
+  if (row.voided) return 'voided'
+  if (!stateCertificateRule(row.state)) return 'not-required'
+  if (HOME_ADDRESS_STATES.has(row.state) && row.homeAddressOnFile === false) return 'address-required'
+  const until = certificateValidUntil(row.state, row.completedDate)
+  if (until && isoDateOf(today) > until) return 'expired'
+  return 'ready'
+}
+
+/** The row's valid-until day, ISO — `null` for no expiry or an unregulated state. */
+export function certificateValidUntilFor(row: TranscriptRecord): string | null {
+  return certificateValidUntil(row.state, row.completedDate)
+}
 
 /**
  * Per-brand transcripts, keyed exactly as `_MY_COURSES_BY_BRAND` and
