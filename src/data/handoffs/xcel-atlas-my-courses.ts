@@ -187,8 +187,8 @@ const feature: PrototypeFeature = {
           { name: 'Every status', when: 'Always.', detail: 'One fill for every card — a lightened Secondary 100 with a 1px Primary 100 rule inside the edge. The finished card no longer steps back to a different ground (it did on the card before this one).', why: 'Asked for with the finished card selected: one material, so status is said by the pill and the line, not by the card’s colour.' },
           { name: 'Not Started', when: 'The learner has not opened the course.', detail: 'No pill — the status row says it. "Access Ends: mm/dd/yyyy, (N days)"; the sheet offers Begin Course.' },
           { name: 'In Progress', when: 'The learner has begun.', detail: 'The same date line, the filled bar; the sheet offers Resume Course. No pill outside the last week — the status row says it and the bar is the primary blue; inside the last week (seven usable days, Home’s own amber tier) the pill appears, counting down — "Access Ends 5 days" — and the bar goes amber.' },
-          { name: 'Failed', when: 'Finished, not passed.', detail: 'The Failed pill — "Failed - Score: 62%" when the platform knows the score, "Failed" when it does not — the progress bar unfilled with a charcoal marker at the progress point, "Access Ends: mm/dd/yyyy, (N days)" since the learner can still retake; the sheet offers Retake Course. No separate score line: the pill carries it. The status text still reads "Progress Made" — see the decisions.' },
-          { name: 'Expired', when: 'Access ended before the learner finished.', detail: 'The pill reads "Expired - mm/dd/yyyy" on a light grey fill in the primary ink, where the other pills keep their tinted fills; the status row reads "Progress Made" beside the last percentage; the bar is unfilled with a charcoal marker where the progress reached. No access line — the pill says the date, the marker says the progress. The sheet’s deadline box carries Purchase Extension — see the decisions.', why: 'A pale pink pill read as a warning still in play; grey reads as over, and the date on it says when.' },
+          { name: 'Failed', when: 'Finished, not passed.', detail: 'The Failed pill — "Failed - Score: 62%" when the platform knows the score, "Failed" when it does not — the progress bar unfilled with a charcoal marker at the progress point, "Access Ends: mm/dd/yyyy, (N days)" since the learner can still retake; the sheet offers Retake Course. No separate score line: the pill carries it. The status row reads "Failed" beside the last percentage (2026-11-25; "Progress Made" before).' },
+          { name: 'Expired', when: 'Access ended before the learner finished.', detail: 'The pill reads "Expired - mm/dd/yyyy" on a light grey fill in the primary ink, where the other pills keep their tinted fills; the status row reads "Expired" beside the last percentage (2026-11-25; "Progress Made" before); the bar is unfilled with a charcoal marker where the progress reached. No access line — the pill says the date, the marker says the progress. The sheet’s deadline box carries Purchase Extension — see the decisions.', why: 'A pale pink pill read as a warning still in play; grey reads as over, and the date on it says when.' },
           { name: 'Completed', when: 'The course is finished.', detail: 'The pill reads "Completed - Score: 92%"; the status row reads "Completed - mm/dd/yyyy" over the full bar; then "Access Ends: mm/dd/yyyy, (N days)", since access ends whether or not the course is finished; at the foot, "Certificate" with the award glyph — a link to the course’s certificate, the certificates page when none is issued — or "Certificate Pending" with the hourglass, not a link, while one is still owed; the sheet offers View Certificate too.', why: 'The PRD’s "No dead ends": a disabled button on a finished course was the one dead end on the page.' },
         ],
         ctas: [
@@ -351,9 +351,8 @@ const feature: PrototypeFeature = {
         {
           question: 'Does the status text read "Failed" and "Expired", or "Progress Made"?',
           decision:
-            'Open. The card reads "Progress Made" for both (since 2026-11-12); the PRD wants the status itself. Left as it is on purpose, 2026-11-23 — a copy change under a flag is cheap, but it reverses a named decision and is Jillienne’s to make.',
-          status: 'Needs weigh-in',
-          owner: 'Jillienne',
+            '"Failed" and "Expired" (2026-11-25), as the PRD asks. The pill on the same card already says "Failed - Score: 62%" or "Expired - 04/20/2026", so a status row reading "Progress Made" beside it was a second label for one state that disagreed with the first. The case for "Progress Made" was that the bar shows how far the learner got; the marker on the unfilled track makes that point now, and the percentage beside the status still does. The card read "Progress Made" for both from 2026-11-12 to 2026-11-25; the sheet inherits the row.',
+          status: 'Decided',
         },
         {
           question: 'Does Purchase Extension use the expired button style?',
@@ -421,7 +420,6 @@ const feature: PrototypeFeature = {
         },
       ],
       openItems: [
-        'Decide "Progress Made" against "Failed" / "Expired" for the status text (2026-11-23).',
         'Decide whether Purchase Extension takes the expired button style (2026-11-23).',
         'Replace the certificatePdfUrl stub with the real certificate document, so View Certificate opens the course’s own certificate rather than the page (2026-11-23).',
         'Carry the course id into the course page, so a card opens the course it names.',

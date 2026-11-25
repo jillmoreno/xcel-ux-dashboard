@@ -35,9 +35,9 @@ import { AtlasCourseDetailsSheetV2 } from './AtlasCourseDetailsSheetV2'
  *   · the Expired pill in dark charcoal — Neutral 800, Neutral 50 ink (2026-11-23, Jillienne) — where the catalog's pill
  *     is Error 100. Only this card; the pill itself is unchanged for every other caller.
  *
- * ⚠ TWO THINGS DELIBERATELY NOT CHANGED, both raised with Jillienne rather than decided here (2026-11-23):
- *   1. The status text still reads "Progress Made" for an expired or failed course (Eric, 2026-11-12); the PRD wants the
- *      status itself — Failed, Expired.
+ * ⚠ TWO THINGS DELIBERATELY NOT CHANGED on 2026-11-23, both raised with Jillienne rather than decided here:
+ *   1. The status text read "Progress Made" for an expired or failed course (Eric, 2026-11-12) while the PRD wanted the
+ *      status itself — DECIDED 2026-11-25: it reads "Failed" and "Expired", matching the pill (see `status` below).
  *   2. Purchase Extension still borrows the `secondary` outline; `actionStyle: 'expired'` (BUTTON_EXPIRED) stays unused.
  *
  * ⚠ THE CE PACKAGE CARD (`demo-ny-pclh-refresher-ce`) was out of scope for the Jan 12 release and is off the page since
@@ -76,18 +76,22 @@ export function AtlasCourseCardFigmaV2({
   // …and a FAILED one (same day, Eric).
   const steppedBack = data.completed || data.badge === 'Expired' || data.actionLabel === 'Retake Course'
   const expired = data.badge === 'Expired' && !data.completed
-  // An expired course reads "Progress Made" — it is not in progress any more (2026-11-12, Eric; "Progress" first).
   const failed = data.actionLabel === 'Retake Course'
-  // A failed course reads "Progress Made" too — finished, not passed, not "in progress" (2026-11-12).
+  /* THE STATUS ROW SAYS THE STATUS (2026-11-25, Jillienne, from the handoff's open question): "Expired" and "Failed", the
+     words the pill already carries — the two labels on one card used to disagree ("Expired - 04/20/2026" over "Progress
+     Made"). "Progress Made" was the 2026-11-12 card's word for both (Eric), on the thought that the bar shows how far the
+     learner got; the marker on the unfilled track says that now, and the percentage beside the status still does. */
   // A finished course's status row carries its date — "Completed - 03/18/2026" (2026-11-24, Jillienne), in the milestone
   // format `formatMilestoneDate` gives every Completed: / Expired: line. A record with no `completedOn` says "Completed" alone.
   const status = data.completed
     ? data.completedOn
       ? `Completed - ${formatMilestoneDate(data.completedOn)}`
       : 'Completed'
-    : expired || failed
-      ? 'Progress Made'
-      : progress > 0
+    : expired
+      ? 'Expired'
+      : failed
+        ? 'Failed'
+        : progress > 0
         ? 'In Progress'
         : 'Not Started'
   /* NO DATE BLOCK ON A FINISHED CARD (2026-11-24, Jillienne, with the expired and completed lines selected: "dont need
@@ -608,7 +612,7 @@ function ProgressBlock({
   status: string
   progress: number
   pillStatus: AtlasCourseStatus
-  /** Expired or failed — "Progress Made": no fill, a marker where the progress reached. */
+  /** Expired or failed: no fill, a marker where the progress reached. */
   finished: boolean
 }) {
   return (
@@ -620,7 +624,7 @@ function ProgressBlock({
       </div>
       <div role="progressbar" aria-label={`${title} progress`} aria-valuemin={0} aria-valuemax={100} aria-valuenow={progress} style={BAR_TRACK}>
         {/* The fill in the 400 of the card's status colour (2026-11-12, Eric; Primary 500, then the pill's own fill). */}
-        {/* …but on an expired or failed card — "Progress Made" — NO FILL: a 2-wide charcoal MARKER where the progress
+        {/* …but on an expired or failed card — NO FILL: a 2-wide charcoal MARKER where the progress
             reached, on the empty grey track (2026-11-24, Jillienne: "add a marker line where the 62% would be in the line,
             do not fill it with color"). Primary 200 fill before (2026-11-12, Eric). */}
         {finished ? (
@@ -829,7 +833,7 @@ const BAR_TRACK: CSSProperties = {
   overflow: 'hidden',
 }
 const BAR_FILL: CSSProperties = { position: 'absolute', top: 0, bottom: 0, left: 0, borderRadius: 2.5, background: 'var(--color-primary-500)' }
-/* The Progress Made marker (2026-11-24): a 2-wide Neutral 800 tick the track's full height, centred on the progress point —
+/* The finished card's marker (2026-11-24): a 2-wide Neutral 800 tick the track's full height, centred on the progress point —
    so 100% sits inside the right edge rather than past it. */
 const BAR_MARKER: CSSProperties = { position: 'absolute', top: 0, bottom: 0, width: 2, marginLeft: -1, background: 'var(--color-neutral-800)' }
 /* The ⋮ and the main button, 6 apart, 35 tall, 9 corners — at the foot of their subgrid row so the row's buttons line up. */
