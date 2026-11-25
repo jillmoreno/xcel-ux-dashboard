@@ -92,6 +92,30 @@ export const ARCHIVED_ITEMS: ArchivedItem[] = [
     restoreNote:
       'Take the `atlas-courses-card-meta` entry and the two facts branches from commit a3990f69 (`git show a3990f69:src/components/compass/AtlasCourseCardFigmaV2.tsx`): the flag back in `FEATURE_FLAGS` (`src/context/FeatureFlagContext.tsx`) and `REBRAND_FLAGS` (`src/components/account/FeatureFlagPanel.tsx`), the `metaLayout` read and the `stacked` / `labelled` branches back around the `FACTS` block in `src/components/compass/AtlasCourseCardFigmaV2.tsx`, the three style consts and `Fact`, and `LocationDotRegular` back in the icon import. The three tests under "the three label layouts" in `src/test/AtlasCourseCardPrdFields.test.tsx` are in the same commit.',
   },
+  {
+    id: 'atlas-my-courses-card-actions',
+    name: 'My Courses PRD card — its own button and links (the Shown arm)',
+    what: 'The PRD card drawing the status\u2019s full-width button (Begin / Resume / Retake Course, View Certificate in the button\u2019s clothes, Purchase Extension on an expired course) and "Review Course \u203a" under the title, on a Design-bar control `atlas-courses-card-actions` (Shown / Hidden, 2026-11-23). Hidden \u2014 no button, no links, the card opens Home and the sheet carries the buttons \u2014 was the default from that day and the decision on 2026-11-25.',
+    location:
+      'No file of its own: the block is still in `src/components/compass/AtlasCourseCardFigmaV2.tsx` behind the constant `SHOW_CARD_ACTIONS` (false) \u2014 the `actionsShown` branches around the `ACTIONS_BLOCK` and the "Review Course" span. Commit 63ca46ed on feat/atlas-updates-11-23 is the last with the control.',
+    flag: 'atlas-courses-card-actions (removed from FEATURE_FLAGS and REBRAND_FLAGS)',
+    dateRemoved: '2026-11-25',
+    reason: 'Jillienne, with the control selected: "decision made, ctas will be hidden, remove the flag". The comparison was made on 2026-11-23 and held for two days.',
+    restoreNote:
+      'Set `SHOW_CARD_ACTIONS` true in `src/components/compass/AtlasCourseCardFigmaV2.tsx` to see the block again. For the control itself, take the `atlas-courses-card-actions` entry from commit 63ca46ed (`git show 63ca46ed:src/context/FeatureFlagContext.tsx`) back into `FEATURE_FLAGS` (`src/context/FeatureFlagContext.tsx`) and `REBRAND_FLAGS` (`src/components/account/FeatureFlagPanel.tsx`), and read it in place of the constant. The tests that pinned the Shown arm (`atlas-courses-card-actions:shown` in `src/test/AtlasCourseCardPrdFields.test.tsx` and `src/test/AtlasLearningPages.test.tsx`) are in the same commit.',
+  },
+  {
+    id: 'atlas-my-courses-sheet-extension-row',
+    name: 'My Courses sheet — Purchase Extension in the button row (the box Off arm)',
+    what: 'The Course Details sheet with Purchase Extension among the course buttons \u2014 outlined from the warning tier on, primary and alone once expired \u2014 as it drew before the deadline box, on a Design-bar control `atlas-courses-sheet-extension-box` (On / Off, 2026-11-24). On \u2014 the deadline and Purchase Extension in their own box above the buttons, toned by Home\u2019s tiers \u2014 was the default and is the decision (2026-11-25).',
+    location:
+      'No file of its own: `SheetActions` in `src/components/compass/AtlasCourseCardFigmaV2.tsx` still carries the `inBox` false branches, reached through the constant `SHEET_EXTENSION_IN_BOX` (true). Commit 63ca46ed on feat/atlas-updates-11-23 is the last with the control.',
+    flag: 'atlas-courses-sheet-extension-box (removed from FEATURE_FLAGS and REBRAND_FLAGS)',
+    dateRemoved: '2026-11-25',
+    reason: 'Jillienne, with the control selected: "have this on always, remove the flag".',
+    restoreNote:
+      'Set `SHEET_EXTENSION_IN_BOX` false in `src/components/compass/AtlasCourseCardFigmaV2.tsx` to see the row again. For the control itself, take the `atlas-courses-sheet-extension-box` entry from commit 63ca46ed (`git show 63ca46ed:src/context/FeatureFlagContext.tsx`) back into `FEATURE_FLAGS` (`src/context/FeatureFlagContext.tsx`) and `REBRAND_FLAGS` (`src/components/account/FeatureFlagPanel.tsx`), and read it in place of the constant. The test "with the box control off, Purchase Extension is back in the row" in `src/test/AtlasCourseCardPrdFields.test.tsx` is in the same commit.',
+  },
   /* ── THE SIMPLE HUB, 2026-11-21 — eight sections unwired in one day ──────
      Every row below names the same place: the `hub-advanced` branch (tag
      `hub-advanced-2026-11-21`, commit 7b83b7a5), which is `main` as it stood

@@ -266,9 +266,7 @@ const REBRAND_FLAGS = [
   'atlas-pages-quick-links',
   'atlas-courses-card-style',
   'atlas-courses-card-prd-fields', // 2026-11-23 — the card to the My Courses PRD (section 3)
-  'atlas-courses-card-actions', // 2026-11-23 — the PRD card's button and links, shown / hidden (the card opens Home)
   'atlas-courses-card-title-align', // 2026-11-24 — a short title at the top of its box, or centred (to decide)
-  'atlas-courses-sheet-extension-box', // 2026-11-24 — the deadline and Purchase Extension in a box in the sheet
   'atlas-courses-from-library',
   'atlas-courses-open-course',
   'atlas-certificates-card-style',

@@ -4865,75 +4865,24 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
-    key: 'atlas-courses-sheet-extension-box',
-    /* THE DEADLINE AND THE EXTENSION IN THEIR OWN BOX, in the PRD card's Course
-       Details sheet — 2026-11-24, Jillienne: "for this specific sheet view
-       where there is a deadline and extension situation, the messaging and
-       purchase extension should be in its own message box". Her four answers
-       the same day: follow Home's tiers (amber inside seven usable days, red
-       inside two, neutral once access has ended); the quiet copy, the
-       deadline alone; the box ABOVE the course buttons; Purchase Extension in
-       the box only, not in the button row. Drawn, not wired, as everywhere.
-
-       Off: the sheet as of that morning — Purchase Extension as an outlined
-       button in the row, and alone once expired. */
-    group: 'Widgets',
-    label: 'My Courses sheet — extension box',
-    description:
-      'In the PRD card\u2019s Course Details sheet, when a course is inside its last week or past its date: the deadline and Purchase Extension in a message box above the course buttons, toned by Home\u2019s tiers \u2014 amber, red, neutral. Off: Purchase Extension sits in the button row as before.',
-    defaultEnabled: true,
-    surface: 'design',
-    page: 'dashboard-rebrand',
-  },
-  {
     key: 'atlas-courses-card-title-align',
     /* WHERE A SHORT TITLE SITS IN ITS 60-TALL BOX — 2026-11-24, Jillienne:
        "add a toggle that moves the title to the center of this section
-       vertically so i can show someone and make a decision". `top` (default,
-       her call earlier that day: "they should align to the top"); `center`,
-       which the box was for a few minutes before that. A design-bar control
-       on the PRD card only; the three-line clamp is the same either way. */
+       vertically so i can show someone and make a decision". `center` is the
+       default since 2026-11-25 (Jillienne: "have centered on default"); `top`
+       was the default for a day, her call on 2026-11-24 ("they should align
+       to the top"), and stays as the control's other choice. A design-bar
+       control on the PRD card only; the three-line clamp is the same either
+       way. */
     group: 'Widgets',
     label: 'My Courses card — title',
     description:
-      'Where a short title sits in the PRD card\u2019s fixed 60px title box. Top (default): the first line at the top, the slack below. Centred: the title in the middle of the box, the slack split above and below. Three-line titles fill the box either way.',
+      'Where a short title sits in the PRD card\u2019s fixed 60px title box. Centred (default): the title in the middle of the box, the slack split above and below. Top: the first line at the top, the slack below. Three-line titles fill the box either way.',
     defaultEnabled: true,
-    defaultVariant: 'top',
+    defaultVariant: 'center',
     variants: [
       { value: 'top', label: 'Top' },
       { value: 'center', label: 'Centred' },
-    ],
-    surface: 'design',
-    page: 'dashboard-rebrand',
-  },
-  {
-    key: 'atlas-courses-card-actions',
-    /* THE CARD'S ACTIONS, OR NONE — 2026-11-23, Jillienne: "add a toggle
-       variant where all of the ctas and links are hidden. user clicks on
-       card, it loads course as the active course on atlas home, all the
-       available ctas are right there."
-
-       `shown` (default): the PRD card as section 3 draws it — one button per
-       status, "Course Details ›" under it, "Review Course ›" on a finished
-       card. `hidden`: none of them. The card is the one action — a click
-       anywhere opens Home with this course active (`onOpen`, as before), and
-       Home's course head carries Begin / Resume / Purchase Extension / View
-       Certificate. The hover lift and the focus ring stay, which is what says
-       the card is clickable with nothing else on it. The answer to the scan's
-       "four ways to act on one card", as a variant to compare. PRD card only.
-
-       ⚠ HIDDEN IS THE DEFAULT (2026-11-23, Jillienne, the same hour, with the
-       hidden arm in front of her: "set this current view as the default").
-       Shown stays on the bar for the comparison. */
-    group: 'Widgets',
-    label: 'My Courses card — actions',
-    description:
-      'Whether the PRD card carries its own button and links. Hidden (default, 2026-11-23): none \u2014 the card is the one action, opening Home with this course active, where the buttons are. Shown: the status\u2019s button, "Course Details \u203a" under it, "Review Course \u203a" on a finished card. PRD card only.',
-    defaultEnabled: true,
-    defaultVariant: 'hidden',
-    variants: [
-      { value: 'shown', label: 'Shown' },
-      { value: 'hidden', label: 'Hidden — the card opens Home' },
     ],
     surface: 'design',
     page: 'dashboard-rebrand',

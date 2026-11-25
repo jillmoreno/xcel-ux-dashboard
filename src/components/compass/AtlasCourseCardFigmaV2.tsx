@@ -95,11 +95,12 @@ export function AtlasCourseCardFigmaV2({
      on the pill, the last progress on the bar's marker. The failed card's "Score: 62%" line went with them for the same
      reason — its pill carries the score. What is left is the access line on a live course, which nothing else says. */
   const showDates = !expired // the completed card keeps its access line too (2026-11-24: "also add this to the completed cards")
-  /* NO BUTTON, NO LINKS (2026-11-23, Jillienne) — the design bar's `atlas-courses-card-actions`: the card is the one action
-     and Home has the buttons. The hover lift and focus ring (`.cre-atlas-card-v2`) are what is left to say so. */
-  const actionsShown = useFeatureFlag('atlas-courses-card-actions').variant !== 'hidden'
-  // The sheet's deadline box — the design bar's `atlas-courses-sheet-extension-box` (2026-11-24).
-  const extensionBox = useFeatureFlag('atlas-courses-sheet-extension-box').enabled
+  /* NO BUTTON, NO LINKS (2026-11-23, Jillienne): the card is the one action and Home has the buttons. The hover lift and
+     focus ring (`.cre-atlas-card-v2`) are what is left to say so. The design bar's Shown / Hidden control was retired on
+     2026-11-25 ("decision made, ctas will be hidden, remove the flag") — `SHOW_CARD_ACTIONS`, below, with an Archive row. */
+  const actionsShown = SHOW_CARD_ACTIONS
+  // The sheet's deadline box, always (2026-11-24; its On / Off control retired 2026-11-25) — `SHEET_EXTENSION_IN_BOX`.
+  const extensionBox = SHEET_EXTENSION_IN_BOX
   // A short title at the top of its box, or centred — the design bar's `atlas-courses-card-title-align` (2026-11-24), to decide.
   const titleCentred = useFeatureFlag('atlas-courses-card-title-align').variant === 'center'
   /* THE DUE SOON PILL COUNTS DOWN (2026-11-23, Jillienne, with the pill selected: "Access Ends <##> days") — the same
@@ -834,6 +835,16 @@ const BAR_MARKER: CSSProperties = { position: 'absolute', top: 0, bottom: 0, wid
 /* The ⋮ and the main button, 6 apart, 35 tall, 9 corners — at the foot of their subgrid row so the row's buttons line up. */
 /** The ⋮ beside the main button — off since 2026-11-17 (Eric). */
 const SHOW_CARD_MENU = false
+/** THE CARD'S OWN BUTTON AND LINKS — off, decided (2026-11-23; the design bar's control retired 2026-11-25, Jillienne:
+ *  "decision made, ctas will be hidden, remove the flag"). The whole actions block — the status's button, View Certificate
+ *  in the button's clothes, "Review Course ›" under the title — is kept behind this, like the ⋮ menu, for the record
+ *  (Archive row `atlas-my-courses-card-actions`). The sheet carries the buttons; the card opens Home. */
+const SHOW_CARD_ACTIONS = false
+/** THE DEADLINE AND PURCHASE EXTENSION IN THEIR OWN BOX in the sheet — on, always (2026-11-24; the design bar's On / Off
+ *  control retired 2026-11-25, Jillienne: "have this on always, remove the flag"). `SheetActions`' own Purchase Extension
+ *  (`inBox` false — in the button row, as the sheet drew it before the box) is kept behind this for the record (Archive row
+ *  `atlas-my-courses-sheet-extension-row`). */
+const SHEET_EXTENSION_IN_BOX = true
 /** "Review Course ›" — the Atlas text link (the exam-date step's "Not Yet ›"), at the facts' 11. */
 const REVIEW_LINK: CSSProperties = {
   display: 'inline-flex',

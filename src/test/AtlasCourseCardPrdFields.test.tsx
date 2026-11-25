@@ -28,10 +28,9 @@ afterEach(cleanup)
 
 const BASELINE = 'jill-atlas-main'
 /* The Atlas card, the PRD copy of it. Library on or off is each test's own. */
-/* ⚠ `atlas-courses-card-actions:shown` IS PINNED HERE because the default became Hidden on 2026-11-23 ("set this current
-   view as the default"), and most of this file describes the button, the links and the date line beside them. The default
-   itself is pinned under "the actions toggle". */
-const PINS = 'atlas-pages-quick-links:hidden,atlas-courses-card-style:atlas,atlas-courses-card-prd-fields:on,atlas-courses-card-actions:shown'
+/* The card has no button and no links — the decision of 2026-11-23, and the only state since the Shown / Hidden control was
+   retired on 2026-11-25 ("decision made, ctas will be hidden, remove the flag"). Its Certificate link lives at the foot. */
+const PINS = 'atlas-pages-quick-links:hidden,atlas-courses-card-style:atlas,atlas-courses-card-prd-fields:on'
 
 function renderShell(rawQuery: string) {
   const query = rawQuery.includes('ff=') ? rawQuery.replace('ff=', `ff=${PINS},`) : `${rawQuery}&ff=${PINS}`
@@ -52,11 +51,11 @@ function renderShell(rawQuery: string) {
   )
 }
 
-/** The card on its own, actions SHOWN (the default is Hidden since 2026-11-23) — for the tests about its link and its click. */
+/** The card on its own — for the tests about its link and its click. */
 function renderCard(ui: React.ReactElement) {
-  window.history.replaceState({}, '', '/dashboard-rebrand?demo=1&ff=atlas-courses-card-actions:shown')
+  window.history.replaceState({}, '', '/dashboard-rebrand?demo=1')
   return render(
-    <MemoryRouter initialEntries={['/dashboard-rebrand?demo=1&ff=atlas-courses-card-actions:shown']}>
+    <MemoryRouter initialEntries={['/dashboard-rebrand?demo=1']}>
       <AccountProvider>
         <FeatureFlagProvider>
           {/* The sheet's Outline resolves its path through the Learning Paths panel, as Home does (2026-11-24). */}
@@ -102,10 +101,10 @@ describe('the flag', () => {
 })
 
 describe('the Completed card', () => {
-  it('draws View Certificate as a live link, not a disabled Completed button', () => {
+  it('draws Certificate as a live link at the foot, not a disabled Completed button', () => {
     renderShell(DESIGN_CARDS)
     // One issued certificate among the design cards; the other completed card's is pending and draws no link.
-    const link = screen.getByRole('link', { name: 'View Certificate' })
+    const link = screen.getByTestId('card-certificate-link')
     /* INSIDE THE SHELL the link is the shell's own certificates page, not /my-learning/certificates: AppLayout blocks that
        route from inside the rebrand with a toast, so the product route would be a dead end here. Found by clicking it. */
     expect(link.getAttribute('href')).toContain('section=certificates')
@@ -118,7 +117,7 @@ describe('the Completed card', () => {
   it('links to the product route when nothing re-points it', () => {
     const done = ATLAS_MY_COURSES.find((c) => c.completed)!
     renderCard(<AtlasCourseCardFigmaV2 data={done} />)
-    expect(screen.getByRole('link', { name: 'View Certificate' }).getAttribute('href')).toBe('/my-learning/certificates')
+    expect(screen.getByTestId('card-certificate-link').getAttribute('href')).toBe('/my-learning/certificates')
   })
 
   /* "No dead ends": every completed card has somewhere to go, and only a
@@ -141,7 +140,7 @@ describe('the Completed card', () => {
     const onOpen = vi.fn()
     const done = ATLAS_MY_COURSES.find((c) => c.completed)!
     renderCard(<AtlasCourseCardFigmaV2 data={done} onOpen={onOpen} />)
-    fireEvent.click(screen.getByRole('link', { name: 'View Certificate' }))
+    fireEvent.click(screen.getByTestId('card-certificate-link'))
     expect(onOpen).not.toHaveBeenCalled()
     fireEvent.click(screen.getByRole('article', { name: done.title }))
     expect(onOpen).toHaveBeenCalledTimes(1)
@@ -227,13 +226,14 @@ describe('the labels, the status and the progress', () => {
   })
 
   /* 2026-11-24, Jillienne: "add a toggle that moves the title to the center of this section vertically so i can show someone
-     and make a decision". Top is the default; the control is on the design bar. */
-  it('centres a short title in its box when the title control says so', () => {
+     and make a decision". Centred is the default since 2026-11-25 ("have centered on default"); Top is the control's other
+     choice, on the design bar. */
+  it('centres a short title in its box by default, and tops it when the title control says so', () => {
     const flag = FEATURE_FLAGS.find((f) => f.key === 'atlas-courses-card-title-align')!
     expect(flag.surface).toBe('design')
-    expect(flag.defaultVariant).toBe('top')
-    renderShell(`${DESIGN_CARDS},atlas-courses-card-title-align:center`)
-    for (const box of screen.getAllByTestId('atlas-card-title-box')) expect(box.style.alignItems).toBe('center')
+    expect(flag.defaultVariant).toBe('center')
+    renderShell(`${DESIGN_CARDS},atlas-courses-card-title-align:top`)
+    for (const box of screen.getAllByTestId('atlas-card-title-box')) expect(box.style.alignItems).toBe('flex-start')
   })
 
   /* The type audit (2026-11-24): the date line in the status row's clothes — one ink, 400 label, 700 figures, 11 / 18. */
@@ -290,7 +290,7 @@ describe('the labels, the status and the progress', () => {
       // Charcoal at rest; tokens.css lifts it to the primary ink on the card's hover (2026-11-24).
       expect(h.style.color).toContain('--color-neutral-800')
       expect(h.className).toContain('cre-atlas-card-v2-title')
-      expect(box.style.alignItems).toBe('flex-start')
+      expect(box.style.alignItems).toBe('center') // the default since 2026-11-25; flex-start the day before
       expect(h.style.webkitLineClamp).toBe('3')
       expect(h.style.overflow).toBe('hidden')
     }
@@ -331,7 +331,7 @@ describe('Home follows the card it was opened from', () => {
   /* 2026-11-24, Jillienne: "when clicking on a card from the my courses page, it needs to update accordingly on this atlas
      home page, the access ends should match logic, as well as the course progress should match logic". */
   it('shows the card’s own access date, day count and progress on Home', () => {
-    renderShell(`${DESIGN_CARDS},atlas-courses-card-actions:hidden`)
+    renderShell(`${DESIGN_CARDS}`)
     fireEvent.click(screen.getByRole('article', { name: 'Florida Health Insurance Pre-licensing' }))
     expect(screen.getByRole('heading', { level: 2, name: 'Florida Health Insurance Pre-licensing' })).toBeTruthy()
     const access = screen.getByText(/Course Access Ends:/).closest('div')!.textContent!.replace(/\s+/g, ' ')
@@ -461,22 +461,22 @@ describe('the Expired pill', () => {
 describe('Details →', () => {
   /* 2026-11-24, Jillienne: "bring back the Details link in the bottom right of the card, with a arrow icon pointing right,
      clicking it will trigger the sheet view". Under the title on the 2026-11-18 card, under the button for a day. */
-  it('is the last thing on the card, after the progress bar, whatever the actions control says', () => {
-    for (const q of [DESIGN_CARDS, `${DESIGN_CARDS},atlas-courses-card-actions:hidden`]) {
-      cleanup()
-      renderShell(q)
-      const card = screen.getByRole('article', { name: 'Florida Life and Health Pre-licensing' })
-      const details = within(card).getByRole('button', { name: 'Details' })
-      expect(details.querySelector('svg')).toBeTruthy()
-      expect(within(card).getByRole('progressbar').compareDocumentPosition(details) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
-      expect(card.lastElementChild!.contains(details)).toBe(true)
-    }
+  it('is the last thing on the card, after the progress bar', () => {
+    renderShell(DESIGN_CARDS)
+    const card = screen.getByRole('article', { name: 'Florida Life and Health Pre-licensing' })
+    const details = within(card).getByRole('button', { name: 'Details' })
+    expect(details.querySelector('svg')).toBeTruthy()
+    expect(within(card).getByRole('progressbar').compareDocumentPosition(details) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    expect(card.lastElementChild!.contains(details)).toBe(true)
+    // No button and no links on the card itself — decided 2026-11-23, the control retired 2026-11-25.
+    expect(within(card).queryByRole('button', { name: /Resume Course|Begin Course|Retake Course|Review Course/ })).toBeNull()
+    expect(within(card).queryByRole('link', { name: 'View Certificate' })).toBeNull()
   })
 
   /* 2026-11-24, Jillienne: "when completed, add another link style cta, on the left of this line. it will be Award icon +
      Certificate". Only on a finished course; to the same place View Certificate goes. */
   it('puts an Award + Certificate link at the left of the foot on a completed card, and nowhere else', () => {
-    renderShell(`${DESIGN_CARDS},atlas-courses-card-actions:hidden`)
+    renderShell(`${DESIGN_CARDS}`)
     const done = screen.getByRole('article', { name: 'FL Preferred Business Practices for the Insurance Producer' })
     const cert = within(done).getByTestId('card-certificate-link')
     expect(cert.textContent).toBe('Certificate')
@@ -496,7 +496,7 @@ describe('Details →', () => {
   })
 
   it('opens the Course Details sheet, and does not open Home', () => {
-    renderShell(`${DESIGN_CARDS},atlas-courses-card-actions:hidden`)
+    renderShell(`${DESIGN_CARDS}`)
     const card = screen.getByRole('article', { name: 'Florida Life and Health Pre-licensing' })
     fireEvent.click(within(card).getByRole('button', { name: 'Details' }))
     expect(screen.getByRole('dialog', { name: 'Florida Life and Health Pre-licensing details' })).toBeTruthy()
@@ -508,7 +508,7 @@ describe('Details →', () => {
   it('offers Home’s buttons for the course, per status', () => {
     const expectActions = (title: string, labels: string[]) => {
       cleanup()
-      renderShell(`${DESIGN_CARDS},atlas-courses-card-actions:hidden`)
+      renderShell(`${DESIGN_CARDS}`)
       const card = screen.getByRole('article', { name: title })
       fireEvent.click(within(card).getByRole('button', { name: 'Details' }))
       const dialog = screen.getByRole('dialog', { name: `${title} details` })
@@ -529,7 +529,7 @@ describe('Details →', () => {
 
   /* 2026-11-24, Jillienne: "add the progress bar in the sheet view, above the CTAs" — the card's own block, under the labels. */
   it('carries the card’s status row and bar under the labels, above the buttons', () => {
-    renderShell(`${DESIGN_CARDS},atlas-courses-card-actions:hidden`)
+    renderShell(`${DESIGN_CARDS}`)
     const card = screen.getByRole('article', { name: 'Florida Life and Health Pre-licensing' })
     fireEvent.click(within(card).getByRole('button', { name: 'Details' }))
     const dialog = screen.getByRole('dialog', { name: 'Florida Life and Health Pre-licensing details' })
@@ -547,7 +547,7 @@ describe('Details →', () => {
   /* 2026-11-24, Jillienne: "add an Outline section with whatever is showing in this section on the home page" — Step 1's six
      rows, the lesson count from the card's percent, the ticks from the ladder rung nearest it. */
   it('lists Step 1’s rows as Home draws them, after the Description', () => {
-    renderShell(`${DESIGN_CARDS},atlas-courses-card-actions:hidden`)
+    renderShell(`${DESIGN_CARDS}`)
     const card = screen.getByRole('article', { name: 'Florida Life and Health Pre-licensing' })
     fireEvent.click(within(card).getByRole('button', { name: 'Details' }))
     const dialog = screen.getByRole('dialog', { name: 'Florida Life and Health Pre-licensing details' })
@@ -571,7 +571,7 @@ describe('Details →', () => {
   it('boxes the deadline and Purchase Extension above the buttons, toned by Home’s tiers', () => {
     const open = (title: string) => {
       cleanup()
-      renderShell(`${DESIGN_CARDS},atlas-courses-card-actions:hidden`)
+      renderShell(`${DESIGN_CARDS}`)
       fireEvent.click(within(screen.getByRole('article', { name: title })).getByRole('button', { name: 'Details' }))
       return screen.getByRole('dialog', { name: `${title} details` })
     }
@@ -599,14 +599,6 @@ describe('Details →', () => {
     expect(within(dialog).queryByTestId('sheet-extension-box')).toBeNull()
   })
 
-  it('with the box control off, Purchase Extension is back in the row', () => {
-    renderShell(`${DESIGN_CARDS},atlas-courses-card-actions:hidden,atlas-courses-sheet-extension-box:off`)
-    fireEvent.click(within(screen.getByRole('article', { name: 'Florida Life and Health Pre-licensing' })).getByRole('button', { name: 'Details' }))
-    const dialog = screen.getByRole('dialog', { name: 'Florida Life and Health Pre-licensing details' })
-    expect(within(dialog).queryByTestId('sheet-extension-box')).toBeNull()
-    expect(within(dialog).getAllByTestId('sheet-action').map((b) => b.textContent)).toEqual(['Resume Course', 'Course Overview', 'Purchase Extension'])
-  })
-
   it('wires the course verb to the card’s action, and View Certificate to the shell’s certificates page', () => {
     const onAction = vi.fn()
     const live = ATLAS_MY_COURSES.find((c) => c.actionLabel === 'Resume Course')!
@@ -622,7 +614,7 @@ describe('Details →', () => {
   })
 
   it('draws the ruled labels row under the sheet title, before the buttons', () => {
-    renderShell(`${DESIGN_CARDS},atlas-courses-card-actions:hidden`)
+    renderShell(`${DESIGN_CARDS}`)
     const card = screen.getByRole('article', { name: 'Florida Life and Health Pre-licensing' })
     fireEvent.click(within(card).getByRole('button', { name: 'Details' }))
     const dialog = screen.getByRole('dialog', { name: 'Florida Life and Health Pre-licensing details' })
@@ -633,7 +625,7 @@ describe('Details →', () => {
   })
 
   it('lists no fact rows in the body — the ruled row under the title says them once (2026-11-24) — with a Description sub-header', () => {
-    renderShell(`${DESIGN_CARDS},atlas-courses-card-actions:hidden`)
+    renderShell(`${DESIGN_CARDS}`)
     const card = screen.getByRole('article', { name: 'Florida Life and Health Pre-licensing' })
     fireEvent.click(within(card).getByRole('button', { name: 'Details' }))
     const dialog = screen.getByRole('dialog', { name: 'Florida Life and Health Pre-licensing details' })

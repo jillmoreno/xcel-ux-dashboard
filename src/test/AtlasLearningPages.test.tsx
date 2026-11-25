@@ -111,10 +111,10 @@ describe('My Courses on the Atlas baseline', () => {
   /* `getAllBy`, not `getBy`: the Atlas arm reads the LIBRARY by default
      (`atlas-courses-from-library`), and the XCEL fixtures hold several
      in-progress courses — one button each. */
-  it('draws the Atlas card when the flag says atlas — with its button', () => {
-    // The PRD card's actions are Hidden by default since 2026-11-23; this test is about the card ARM, so it pins them shown.
-    renderShell(`section=courses&version=${BASELINE}&ff=atlas-courses-card-style:atlas,atlas-courses-card-actions:shown`)
-    expect(screen.getAllByRole('button', { name: 'Resume Course' }).length).toBeGreaterThan(0)
+  it('draws the Atlas card when the flag says atlas — with its Details link', () => {
+    // The PRD card has no button of its own (decided 2026-11-23, the control retired 2026-11-25); "Details →" is its mark.
+    renderShell(`section=courses&version=${BASELINE}&ff=atlas-courses-card-style:atlas`)
+    expect(screen.getAllByRole('button', { name: 'Details' }).length).toBeGreaterThan(0)
   })
 
   /* Both arms off: the Atlas card drawing the design's own three cards, which
