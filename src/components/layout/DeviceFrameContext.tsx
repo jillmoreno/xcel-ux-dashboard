@@ -18,6 +18,7 @@ import { BrowserWindow, MobileScreen, Monitor, TabletScreen } from '@/icons'
 import { isTestSession } from '@/data/gatewayMode'
 import { useFeatureFlag, useFeatureFlags } from '@/context/FeatureFlagContext'
 import { homeBreakpointFor } from '@/data/homeBreakpoints'
+import { usePhoneLayout } from './usePhoneLayout'
 import '@/styles/home-breakpoints/index.css'
 
 /**
@@ -136,6 +137,10 @@ export function DeviceFrame({ chrome, children }: { chrome?: ReactNode; children
     resolveDashboardVersion(new URLSearchParams(useLocation().search).get('version'), brand),
   )
   const homeBreakpoint = homeBreakpointFor(useFeatureFlag('home-breakpoint').variant)
+  /* THE LIVE PAGE AS A PHONE (2026-11-25, Jillienne: "when user shrinks it down, this mobile version will autotrigger") —
+     with no frame picked and the window at `PHONE_MAX_WIDTH` or under, the plain page is stamped `data-home-bp="mobile"`
+     like the frame is, so the phone stylesheet applies to it. See `usePhoneLayout`. */
+  const phoneLayout = usePhoneLayout()
   /* THE BREAKPOINT FRAME (2026-10-30, Eric) — the design bar's Breakpoint control. When one is picked it wins over the
      device toggle: the app is drawn in a viewport of exactly that width and height, scrolling inside it, with its size
      captioned. `data-home-bp` is what scopes each breakpoint's own stylesheet (src/styles/home-breakpoints/).
@@ -165,7 +170,7 @@ export function DeviceFrame({ chrome, children }: { chrome?: ReactNode; children
                   ? 'cre-demo-stage-window cre-demo-stage-window--atlas'
                   : 'cre-demo-stage-window'
           }
-          data-home-bp={breakpoint?.id}
+          data-home-bp={breakpoint?.id ?? (plain && phoneLayout ? 'mobile' : undefined)}
           style={breakpoint ? { width: breakpoint.width, height: breakpoint.height } : plain ? CONTENTS : undefined}
         >
           {children}

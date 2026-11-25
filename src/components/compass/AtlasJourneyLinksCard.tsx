@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom'
 import { useMyCoursesCount } from './useMyCoursesCount'
 import { useAccount } from '@/context/AccountContext'
 import { useFeatureFlag } from '@/context/FeatureFlagContext'
+import { usePhoneLayout } from '@/components/layout/usePhoneLayout'
 import { accountSectionsFor, isAccountSection, type AccountSectionId } from '@/components/account/accountSections'
 import {
   AngleRightRegular,
@@ -132,7 +133,7 @@ export function AtlasJourneyLinksCard({ onOpenStep, onOpenRequirements, style, w
   /* OFF HOME, THE SHEET OPENS WHERE YOU ARE (2026-11-10, Eric: "do not reload to the homepage") — the request goes on the
      current page's URL and `AtlasInfoSheets` answers it there. On Home, and on the phone (where these are Home's own pages),
      it still goes Home. */
-  const phone = useFeatureFlag('home-breakpoint').variant === 'mobile'
+  const phone = usePhoneLayout()
   const homeAndOpen = (what: string) => () =>
     params.get('section') && !phone
       ? go(params.get('section'), { [ATLAS_OPEN_PARAM]: what, ...(coursePage ? { coursePage } : null) }, false)

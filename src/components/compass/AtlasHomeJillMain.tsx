@@ -75,6 +75,7 @@ import { AtlasPaceRingCard } from './AtlasPaceRingCard'
 import { AtlasPaceRingCardFigma } from './AtlasPaceRingCardFigma'
 import { AtlasReadinessCard } from './AtlasReadinessCard'
 import { useFeatureFlag, useFeatureFlags, useCourseDemo } from '@/context/FeatureFlagContext'
+import { usePhoneLayout } from '@/components/layout/usePhoneLayout'
 import { AtlasCourseTabs, type AtlasCourseTab } from './AtlasCourseTabs'
 import { WHITE_COURSE_PARAM } from '@/data/atlasWhiteCourses'
 import { ATLAS_HOME_COURSE_PARAM, ATLAS_MY_COURSES, atlasHomeCourseFor, atlasHomeStateFor } from '@/data/atlasCourseCards'
@@ -372,7 +373,8 @@ export function AtlasHomeJillMain({
   /* The list copy of the progress panel is drawn at the Mobile breakpoint
      only — see `ringListCopy` below. Rendered, not hidden: a hidden copy is
      still a second copy of every figure on the card. */
-  const phoneFrame = useFeatureFlag('home-breakpoint').variant === 'mobile'
+  // …or the live page in a phone-wide window (2026-11-25) — `usePhoneLayout`.
+  const phoneFrame = usePhoneLayout()
   // Above the card or in it — the design bar's Course tabs (2026-11-10, Eric).
   const coursePlace = useFeatureFlag('atlas-course-tabs-place').variant ?? 'off'
   const coursePickerAbove = coursePlace === 'above'
@@ -889,7 +891,7 @@ export function AtlasHomeJillMain({
   const homeRail = useFeatureFlag('atlas-pages-quick-links').variant === 'shown'
   // Desktop, i.e. not the tablet or phone frame (2026-11-18) — see the row's left padding below.
   const homeBreakpointVariant = useFeatureFlag('home-breakpoint').variant
-  const homeBreakpointDesktop = homeBreakpointVariant !== 'mobile' && homeBreakpointVariant !== 'tablet'
+  const homeBreakpointDesktop = !phoneFrame && homeBreakpointVariant !== 'tablet'
   // COMPLETED (Design bar's Progress = Completed 100%, 2026-10-09, Eric): no
   // Course progress card, and Step 1 becomes the Congratulations block.
   // Clicking the Course progress card steps the Design bar's Progress itself

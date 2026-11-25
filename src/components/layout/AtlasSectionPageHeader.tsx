@@ -1,7 +1,7 @@
 import type { CSSProperties } from 'react'
 import { AngleLeftRegular } from '@/icons'
 import { pageHeaderWrapStyle } from './pageHeaderStyles'
-import { useFeatureFlag } from '@/context/FeatureFlagContext'
+import { usePhoneLayout } from './usePhoneLayout'
 
 /**
  * The ATLAS copy of `SectionPageHeader` — 2026-10-06, Eric's request: "change
@@ -48,7 +48,7 @@ export function AtlasSectionPageHeader({
   /* ON A PHONE THE CRUMB IS A PATH (2026-11-04, Eric's request): "Home /
      Profile / Transcripts" — Home and the pages between are links, the page
      you are on is plain text, and "Back to Home" reads "Home". */
-  const phonePath = useFeatureFlag('home-breakpoint').variant === 'mobile' || path
+  const phonePath = usePhoneLayout() || path
   return (
     // No bottom padding (2026-10-06, Eric's request) — main's header style is 16;
     // the page's own 24 above its first row is the only gap left.
