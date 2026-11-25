@@ -38,7 +38,8 @@ import { AtlasCourseDetailsSheetV2 } from './AtlasCourseDetailsSheetV2'
  * ⚠ TWO THINGS DELIBERATELY NOT CHANGED on 2026-11-23, both raised with Jillienne rather than decided here:
  *   1. The status text read "Progress Made" for an expired or failed course (Eric, 2026-11-12) while the PRD wanted the
  *      status itself — DECIDED 2026-11-25: it reads "Failed" and "Expired", matching the pill (see `status` below).
- *   2. Purchase Extension still borrows the `secondary` outline; `actionStyle: 'expired'` (BUTTON_EXPIRED) stays unused.
+ *   2. Purchase Extension still borrows the `secondary` outline; `actionStyle: 'expired'` (BUTTON_EXPIRED) stays unused —
+ *      moot since the card lost its button (2026-11-25); the sheet's box has its own treatment. Off the handoff's open list.
  *
  * ⚠ THE CE PACKAGE CARD (`demo-ny-pclh-refresher-ce`) was out of scope for the Jan 12 release and is off the page since
  * 2026-11-24 (Jillienne: "remove this version") — `ATLAS_CE_PACKAGE_CARD` in atlasCourseCards.ts, read by nothing.

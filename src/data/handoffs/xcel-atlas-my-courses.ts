@@ -355,13 +355,6 @@ const feature: PrototypeFeature = {
           status: 'Decided',
         },
         {
-          question: 'Does Purchase Extension use the expired button style?',
-          decision:
-            'Open. AtlasCourseCardData declares actionStyle "expired" (the pink outline, BUTTON_EXPIRED) and no card uses it — the expired card borrows the Begin Course outline. Left as it is, 2026-11-23.',
-          status: 'Needs weigh-in',
-          owner: 'Jillienne',
-        },
-        {
           question: 'Does the page keep the Quick Links rail?',
           decision:
             'No. It is hidden, so the cards run the full width of the page. The rail is kept in the code behind a control rather than removed.',
@@ -395,9 +388,8 @@ const feature: PrototypeFeature = {
         {
           question: 'How does a learner move between My Courses and My Certificates?',
           decision:
-            'Open. Quick Links was the one-click route and it is now hidden, so the trip is Back to Home, then the Quick Links row. Accepted knowingly, but whether these two pages deserve a direct link of their own is not settled.',
-          status: 'Needs weigh-in',
-          owner: 'Design',
+            'Not an issue (2026-11-25). There are three ways to the certificates: Home’s own My Certificates link, the Certificate link at the foot of a finished card on this page (and View Certificate in its sheet), and the header’s menu on the phone. A direct link between the two pages would be a fourth; none is needed. Quick Links was the one-click route before the rail came off and is now one of the three.',
+          status: 'Decided',
         },
         {
           question: 'What does this page look like on a tablet?',
@@ -420,10 +412,8 @@ const feature: PrototypeFeature = {
         },
       ],
       openItems: [
-        'Decide whether Purchase Extension takes the expired button style (2026-11-23).',
         'Replace the certificatePdfUrl stub with the real certificate document, so View Certificate opens the course’s own certificate rather than the page (2026-11-23).',
         'Carry the course id into the course page, so a card opens the course it names.',
-        'Decide whether My Courses and My Certificates need a direct link, now that the side rail is off both pages.',
         'Lay out the tablet, which is still off — between the phone’s 640 ceiling and the desktop the page is the desktop page (2026-11-25).',
         'Confirm that archived courses are meant to be unreachable from this page, rather than simply left out.',
       ],
