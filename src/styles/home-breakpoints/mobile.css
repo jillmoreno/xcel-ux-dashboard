@@ -957,8 +957,8 @@
   margin-left: -16px !important;
   margin-right: -16px !important;
   border-radius: 0 !important;
-  /* 40 top and bottom (2026-11-25, Jillienne: "change top and bottom padding to 40 px"; 60 for an hour, 24 before that). */
-  padding: 40px 16px !important;
+  /* 30 top and bottom (2026-11-25, Jillienne: "change to 30 px top bottom"; 40, 60 and 24 earlier the same day). */
+  padding: 30px 16px !important;
   margin-bottom: -8px !important;
 }
 
