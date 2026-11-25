@@ -1067,3 +1067,24 @@
 [data-home-bp='mobile'] section:has(> .cre-dash-serif-headings) {
   padding-top: 0 !important;
 }
+
+/* STUDY PACE AND ESTIMATED COMPLETION CENTRED ON THE PHONE (2026-11-25, Jillienne: "these other 2 sections should be
+   centered when in mobile view") — as Course Progress already is in the stack: the eyebrows, the icon-rule-figure rows
+   and the standing message all on the panel's centre line. */
+[data-home-bp='mobile'] .cre-atlas-pace-list-copy[data-layout='stack'] section[aria-label='Study pace'],
+[data-home-bp='mobile'] .cre-atlas-pace-list-copy[data-layout='stack'] section[aria-label='Study pace'] > div:last-child {
+  align-items: center !important;
+}
+[data-home-bp='mobile'] .cre-atlas-pace-list-copy[data-layout='stack'] section[aria-label='Study pace'] p,
+[data-home-bp='mobile'] .cre-atlas-pace-list-copy[data-layout='stack'] section[aria-label='Study pace'] > div:last-child > p {
+  text-align: center !important;
+  align-self: stretch !important;
+}
+[data-home-bp='mobile'] .cre-atlas-pace-list-copy[data-layout='stack'] section[aria-label='Study pace'] > div:has(> svg, > span > svg),
+[data-home-bp='mobile'] .cre-atlas-pace-list-copy[data-layout='stack'] section[aria-label='Study pace'] > div:last-child > div:has(> svg, > span > svg) {
+  justify-content: center !important;
+  align-self: stretch !important;
+}
+[data-home-bp='mobile'] .cre-atlas-pace-list-copy[data-layout='stack'] section[aria-label='Study pace'] > div:last-child {
+  align-self: stretch !important;
+}
