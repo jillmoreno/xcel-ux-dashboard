@@ -31,6 +31,14 @@ import type { PrototypeFeature } from '../prototypeFeatures'
  * Jan 12 — a different product shape, several courses sold as one purchase —
  * and is OFF THE PAGE since 2026-11-24 (Jillienne: "remove this version").
  * Kept as `ATLAS_CE_PACKAGE_CARD`, with an Archive row.
+ *
+ * REFRESHED 2026-11-25 against feat/atlas-updates-11-23 ("lets do a Dev
+ * handoff page for the My Courses updates"): the description is off the card,
+ * the finished cards carry no date block, the pills are half-strength and only
+ * on a finished or last-week course, the card is the one action, the sheet
+ * carries Home's buttons and the deadline box, Home follows the card, and the
+ * phone layout draws inside the review bar's Mobile frame. The Design link is
+ * on the header's Links row.
  */
 const feature: PrototypeFeature = {
   id: 'xcel-atlas-my-courses',
@@ -41,17 +49,25 @@ const feature: PrototypeFeature = {
   devStatus: 'not-ready',
   surface: 'atlas',
   owner: 'Jill',
-  lastUpdated: '2026-11-23T18:00:00Z',
+  lastUpdated: '2026-11-25T11:44:03Z',
   accent: 'blue',
   icon: 'grid',
   brands: ['xcel'],
+  links: [
+    {
+      url: 'https://feat-atlas-updates-11-23--ux-design-xceldashboard.netlify.app/dashboard-rebrand?demo=1&section=courses&version=jill-atlas-main',
+      label: 'Design — the branch build this handoff describes',
+    },
+  ],
   // Corrected 2026-11-23 (it read: "drawn with the shared course card under a serif title, with no search, no filters, no
   // status tabs and no button on the card").
+  // Refreshed 2026-11-25 (it read: "… carrying the fields section 3 of the My Courses PRD confirms — description, labels,
+  // status, progress, one date line per status and a working button on every card, View Certificate included").
   blurb:
-    'The learner’s whole course library on one page, reached from Home’s Quick Links and drawn with the Atlas card (Figma 706:2416) carrying the fields section 3 of the My Courses PRD confirms — description, labels, status, progress, one date line per status and a working button on every card, View Certificate included.',
+    'The learner’s whole course library on one page, reached from Home’s Quick Links and drawn with the Atlas card (Figma 706:2416) taken to section 3 of the My Courses PRD — the three labels, the status and progress, an access line on every live course, a working certificate link on a finished one, and the card itself opening Home with its course active.',
   // Corrected 2026-11-23 (it read: "the shared card with a serif title, no rail and no list controls").
   tileBlurb:
-    'The course library on one page: the Atlas card to the My Courses PRD, with a working View Certificate on a finished course. No rail and no list controls.',
+    'The course library on one page: the Atlas card to the My Courses PRD, each card opening Home in its course, a working certificate link when finished.',
   pages: [
     {
       label: 'My Courses — the page itself',
@@ -70,8 +86,13 @@ const feature: PrototypeFeature = {
     },
     {
       label: 'My Courses — the PRD card, every status at once',
-      note: 'The six design cards under the PRD card: In Progress inside the warning window and In Progress well outside it (the plain pill, the blue bar), Not Started, Completed with View Certificate, Completed with its certificate pending, Expired, and Failed. The three labels, the access line on the live courses, the status and the bar at the foot.',
+      note: 'The seven design cards under the PRD card: In Progress inside its last week (the countdown pill, the amber bar) and In Progress well outside it (no pill, the blue bar), Not Started, Completed with its Certificate link, Completed with its certificate pending, Expired, and Failed. The three labels, the access line on the live courses, the status and the bar at the foot, "Details →" on every card.',
       to: '/dashboard-rebrand?demo=1&section=courses&ff=atlas-courses-card-style:atlas,atlas-courses-from-library:off,atlas-courses-card-prd-fields:on',
+    },
+    {
+      label: 'My Courses on a phone — the design-time layout',
+      note: 'The 402 × 874 breakpoint frame the review bar’s Mobile icon draws, with the page inside it: the cards in one column, each on its side, the sheet at the phone’s full width. A stylesheet for the frame, not a shipping media query — see the decisions.',
+      to: '/dashboard-rebrand?demo=1&section=courses&ff=atlas-courses-card-style:atlas,atlas-courses-from-library:off,atlas-courses-card-prd-fields:on,home-breakpoint:mobile',
     },
     {
       label: 'My Courses — the card before the PRD, for comparison',
@@ -99,11 +120,11 @@ const feature: PrototypeFeature = {
   ],
   devHandoff: {
     flagsNote:
-      'Five review controls, none of them a product setting. The card control and the PRD-fields control are the two a reviewer should expect to see turned over — the first picks the card, the second is the Jan 12 work on it; the other three exist so the page as it was can still be opened beside the page as it is.',
+      'Eight review controls, none of them a product setting. The card control and the PRD-fields control are the two a reviewer should expect to see turned over — the first picks the card, the second is the Jan 12 work on it. Three sit on the design bar to settle the PRD card itself: the card’s actions (hidden is the decision), the title’s alignment (open) and the sheet’s deadline box (on). The other three exist so the page as it was can still be opened beside the page as it is.',
     // Corrected 2026-11-23 (it read: "The card is the one the rest of the product already uses, unchanged except that its
     // title is set in the heading serif. It has never carried a button and does not gain one here.").
     intro:
-      'Two things to build, and one of them is mostly absence. The page is the section header over a grid of cards: no search, no filter column, no status tabs, no View Archived and no side rail, every one of them left out on purpose and every one still in the code behind a prop. The card is the Atlas card (Figma 706:2416), taken on 2026-11-23 to section 3 of the My Courses PRD: every card carries an image, the title and a description, the three labels, the status as text, the progress as a number and a bar, one date line for its status and one working button — View Certificate on a finished course.',
+      'Two things to build, and one of them is mostly absence. The page is the section header over a grid of cards: no search, no filter column, no status tabs, no View Archived and no side rail, every one of them left out on purpose and every one still in the code behind a prop. The card is the Atlas card (Figma 706:2416), taken to section 3 of the My Courses PRD between 2026-11-23 and 2026-11-24: every card carries an image with a status pill on its corner when there is something to say, the title, the three labels in one ruled row, the status as text beside the percentage over a bar, an access line while the course is live, and "Details →" into a sheet that holds the course’s buttons. The card has no button of its own: clicking it opens Home with that course active, and Home’s course head reads the card’s title, cover, date and progress.',
     components: [],
     uiComponents: [
       {
@@ -123,7 +144,7 @@ const feature: PrototypeFeature = {
         ctas: [
           { name: 'Back to Home', does: 'Returns to ?section=dashboard. Drawn by the Atlas section header, not by this page.' },
           { name: 'The card title', does: 'Opens the course — see the card below.' },
-          { name: 'The card ⋮', does: 'Opens the Course Details panel MyCoursesPage already owns.' },
+          { name: 'The card’s "Details →"', does: 'Opens the card’s own Course Details sheet — see the card below. The ⋮ menu the earlier card drew is built and switched off.' },
           { name: 'Browse Catalog (empty state only)', does: 'Goes to /catalog.' },
         ],
         statesMatrix: [
@@ -134,7 +155,7 @@ const feature: PrototypeFeature = {
         ],
         edgeCases: [
           'Long course titles clamp to two lines; rows stay level because every card reserves the same title height whether it wraps or not.',
-          'On a phone — the review bar’s Mobile icon, which draws the 402 × 874 breakpoint frame — the cards run in one column, each on its side: a 96px image at the left, the title beside it, the labels, access line, progress and foot full width under both; the sheet fills the phone. A design-time breakpoint stylesheet (src/styles/home-breakpoints/mobile.css), not a shipping media query; tablet is still off.',
+          'On a phone — the review bar’s Mobile icon, which draws the 402 × 874 breakpoint frame — the cards run in one column, each on its side: an 80px image at the left, the title beside it, the labels, access line, progress and foot full width under both; the sheet fills the phone. A design-time breakpoint stylesheet (src/styles/home-breakpoints/mobile.css), not a shipping media query; tablet is still off.',
         ],
         designSpec: {
           tokens: [
@@ -163,19 +184,20 @@ const feature: PrototypeFeature = {
         location:
           'src/components/compass/AtlasCourseCardFigmaV2.tsx, a copy of AtlasCourseCardFigma.tsx (the 2026-11-18 card, never edited). The flag atlas-courses-card-prd-fields chooses between them in MyCoursesSection, src/components/layout/PlatformShell.tsx. The data — one date line per status, the labels, the score, the certificate link — is built in src/data/atlasCourseCards.ts (dateLine, atlasCourseCardFor); the card only draws it.',
         summary:
-          'Section 3 of the My Courses PRD (Chi Wang, 2026-11-16), field by field. A 120px image (a default when the course has none) with the status pill straddling its top-left corner — half on the card, half on the photo, the title in the heading serif inside a fixed 60px box — three lines of 20 at most, then an ellipsis, a shorter title at the top; charcoal at rest and black when the card is hovered — no description (see the decisions), the status pill, then State | Category | Line of authority as one row in the shared card’s meta style — the state abbreviated ("FL"), values only, 12px, hairlines between — the status as text beside the 0–100 figure over a bar on a light grey track (aria-valuenow, min 0, max 100), one date line for the status with a detail line under it where the PRD asks for one — and, by default, NO button: the card is the one action and opens Home, where the buttons are (decided 2026-11-23). "Details →" at the bottom right opens the Course Details sheet either way. With the actions control set to Shown, one full-width button per status. Not Started: "Access Ends: mm/dd/yyyy, (N days)", Begin Course. In Progress: the same line, Resume Course. Failed: the same line, Retake Course. Expired: no date line — "Expired - mm/dd/yyyy" is the pill, the last progress the bar’s marker — Purchase Extension. Completed: the same access line (access ends whether or not the course is finished); the pill carries the score and the status row the completion date — View Certificate — a link, where the card before it drew a disabled "Completed". The days are usableDaysLeft — expiry minus one, the figure the study plan is built on — so the two never disagree. The line is drawn in the status row’s own clothes — 11px in the secondary ink, the label at 400 and the date and count at 700, like "In Progress" and "45%" over the bar — so the card has one body ink; the hairline sits under the title block rather than around the line (2026-11-24).',
+          'Section 3 of the My Courses PRD (Chi Wang, 2026-11-16), field by field. A 120px image (a default when the course has none) with the status pill straddling its top-left corner — half on the card, half on the photo, the title in the heading serif inside a fixed 60px box — three lines of 20 at most, then an ellipsis, a shorter title at the top; charcoal at rest and black when the card is hovered — no description (see the decisions), the status pill, then State | Category | Line of authority as one row in the shared card’s meta style — the state abbreviated ("FL"), values only, 12px, hairlines between — the status as text beside the 0–100 figure over a bar on a light grey track (aria-valuenow, min 0, max 100), one access line while the course is live, nothing under it — and, by default, no button: the card is the one action and opens Home, where the buttons are (decided 2026-11-23). "Details →" at the bottom right opens the Course Details sheet either way. With the actions control set to Shown, one full-width button per status. Not Started: "Access Ends: mm/dd/yyyy, (N days)", Begin Course. In Progress: the same line, Resume Course. Failed: the same line, Retake Course. Expired: no date line — "Expired - mm/dd/yyyy" is the pill, the last progress the bar’s marker — Purchase Extension. Completed: the same access line (access ends whether or not the course is finished); the pill carries the score and the status row the completion date — View Certificate — a link, where the card before it drew a disabled "Completed". The days are usableDaysLeft — expiry minus one, the figure the study plan is built on — so the two never disagree. The line is drawn in the status row’s own clothes — 11px in the secondary ink, the label at 400 and the date and count at 700, like "In Progress" and "45%" over the bar — so the card has one body ink; the hairline sits under the title block rather than around the line (2026-11-24).',
         variants: [
           { name: 'Every status', when: 'Always.', detail: 'One fill for every card — a lightened Secondary 100 with a 1px Primary 100 rule inside the edge. The finished card no longer steps back to a different ground (it did on the card before this one).', why: 'Asked for with the finished card selected: one material, so status is said by the pill and the line, not by the card’s colour.' },
           { name: 'Not Started', when: 'The learner has not opened the course.', detail: 'No pill — the status row says it. "Access Ends: mm/dd/yyyy, (N days)" and the outline Begin Course.' },
           { name: 'In Progress', when: 'The learner has begun.', detail: 'The same date line, the filled bar, Resume Course. No pill outside the last week — the status row says it and the bar is the primary blue; inside the last week (seven usable days, Home’s own amber tier) the pill appears, counting down — "Access Ends 5 days" — and the bar goes amber.' },
-          { name: 'Failed', when: 'Finished, not passed.', detail: 'The Failed pill — "Failed - Score: 62%" when the platform knows the score, "Failed" when it does not — the progress bar unfilled with a marker at the progress point, "Access Ends: mm/dd/yyyy, (N days)", "Score: N%" under it, Retake Course. The status text still reads "Progress Made" — see the decisions.' },
-          { name: 'Expired', when: 'Access ended before the learner finished.', detail: 'The Expired pill in dark charcoal — Neutral 800 with Neutral 50 ink, where the other pills keep their pale fills — the progress bar unfilled with a charcoal marker where the progress reached, then "Expired: mm/dd/yyyy", "Last progress: N%" under it, Purchase Extension in the outline style — see the decisions.', why: 'A pale pink pill read as a warning still in play; charcoal reads as over.' },
-          { name: 'Completed', when: 'The course is finished.', detail: 'The pill reads "Completed - Score: 92%"; the status row reads "Completed - mm/dd/yyyy" over the full bar; then "Access Ends: mm/dd/yyyy, (N days)", since access ends whether or not the course is finished; View Certificate, a link to the course’s certificate — the certificates page when none is issued.', why: 'The PRD’s "No dead ends": a disabled button on a finished course was the one dead end on the page.' },
+          { name: 'Failed', when: 'Finished, not passed.', detail: 'The Failed pill — "Failed - Score: 62%" when the platform knows the score, "Failed" when it does not — the progress bar unfilled with a charcoal marker at the progress point, "Access Ends: mm/dd/yyyy, (N days)" since the learner can still retake, and Retake Course when the actions are shown. No separate score line: the pill carries it. The status text still reads "Progress Made" — see the decisions.' },
+          { name: 'Expired', when: 'Access ended before the learner finished.', detail: 'The pill reads "Expired - mm/dd/yyyy" on a light grey fill in the primary ink, where the other pills keep their tinted fills; the status row reads "Progress Made" beside the last percentage; the bar is unfilled with a charcoal marker where the progress reached. No access line — the pill says the date, the marker says the progress. Purchase Extension in the outline style when the actions are shown — see the decisions.', why: 'A pale pink pill read as a warning still in play; grey reads as over, and the date on it says when.' },
+          { name: 'Completed', when: 'The course is finished.', detail: 'The pill reads "Completed - Score: 92%"; the status row reads "Completed - mm/dd/yyyy" over the full bar; then "Access Ends: mm/dd/yyyy, (N days)", since access ends whether or not the course is finished; at the foot, "Certificate" with the award glyph — a link to the course’s certificate, the certificates page when none is issued — or "Certificate Pending" with the hourglass, not a link, while one is still owed. With the actions shown, View Certificate as a full-width link in the button’s place.', why: 'The PRD’s "No dead ends": a disabled button on a finished course was the one dead end on the page.' },
         ],
         ctas: [
-          { name: 'Begin / Resume / Retake Course', does: 'Opens the course inside the learning shell (?section=course&coursePage=course), as before.' },
-          { name: 'Purchase Extension', does: 'Drawn, not wired — see the xcel-purchase-extension handoff.' },
-          { name: 'View Certificate', does: 'A link. Inside the learning shell it lands on the shell’s own Certificates & Transcripts page (?section=certificates) — MyCoursesSection re-points it, because AppLayout blocks /my-learning/* from inside the rebrand with a toast and the product route would be a dead end there. The card’s own data.certificateHref is that product route: certificatePdfUrl for the course’s issued certificate, else /my-learning/certificates. Stops propagation, so the click does not also open Home.' },
+          { name: 'Begin / Resume / Retake Course', does: 'Only with the actions control set to Shown — hidden is the default and the decision. Opens the course inside the learning shell (?section=course&coursePage=course), as before. The sheet carries the same button either way.' },
+          { name: 'Review Course ›', does: 'Only with the actions shown, at the right edge under the title on a finished, expired or failed card. Does what the card does: opens Home in this course.' },
+          { name: 'Purchase Extension', does: 'Only with the actions shown, on the expired card. Drawn, not wired — see the xcel-purchase-extension handoff. The sheet’s Purchase Extension is the one that goes somewhere.' },
+          { name: 'View Certificate', does: 'Only with the actions shown; the foot’s Certificate link is the everyday route. A link. Inside the learning shell it lands on the shell’s own Certificates & Transcripts page (?section=certificates) — MyCoursesSection re-points it, because AppLayout blocks /my-learning/* from inside the rebrand with a toast and the product route would be a dead end there. The card’s own data.certificateHref is that product route: certificatePdfUrl for the course’s issued certificate, else /my-learning/certificates. Stops propagation, so the click does not also open Home.' },
           { name: 'Certificate (award glyph)', does: 'At the bottom left of a completed card whose certificate is issued, in the text link’s style — the same place View Certificate goes: the shell’s Certificates & Transcripts page. When the certificate is not yet issued (an affidavit, a survey, a proctor’s sign-off still owed) the slot reads "Certificate Pending" with an hourglass, in the status row’s own text — not a link — and the sheet offers no View Certificate.' },
           { name: 'Details →', does: 'At the bottom right of every card, whatever the actions control says. Opens the PRD card’s own Course Details sheet (AtlasCourseDetailsSheetV2): under the title, the card’s ruled labels row, then the card’s own status row and progress bar; then, on a course inside its last week or past its date, the deadline box — "Access ends in 5 days" with the triangle in amber, red with the calendar mark inside two days, "Access ended 04/20/2026" in neutral once gone; one quiet line, "Your access to this course ends 05/17/2026."; Purchase Extension inside it, outlined in the tone while access lasts and primary once it has gone, opening the XCEL storefront in a new tab — then the course buttons, the primary first: Begin / Resume / Retake / Review Course, Course Overview, View Certificate at 100% (no row at all once expired); a light rule under them, then a Description sub-header over the package paragraph, then an Outline: Step 1’s six rows exactly as Home draws them — the lesson count from the card’s own percent, the done rows ticked, the current one ringed — built from the same helpers as Home’s journey so the two agree. (The three facts as rows went on 2026-11-24; the ruled row says them once.) "Course Details ›" under the title on the card before; under the button for a day.' },
           { name: 'The card itself', does: 'Opens Home in this course’s state, everywhere but on its buttons and links — Home shows the card’s own title, cover, access date, day count and progress (2026-11-24), and the demo bar’s Progress and Expires are set to the nearest presets on the way.' },
@@ -183,13 +205,16 @@ const feature: PrototypeFeature = {
         statesMatrix: [
           { question: 'Where does View Certificate land today?', answer: 'On Certificates & Transcripts inside the shell, for every completed course, issued certificate or not — certificatePdfUrl is stubbed to the certificates page until a document endpoint exists (its TODO(data)), and the shell re-points that page to its own. A real document URL passes straight through the re-point. Found by clicking it: the first cut linked /my-learning/certificates and the shell’s guard blocked it with a toast — the exact dead end the PRD forbids.' },
           { question: 'Why does every record have an access date now?', answer: 'The PRD has no "Enrolled" line, and most fixtures had no expiry, which is what the old third shape covered. Every XCEL record carries an expiresAt now; the story records’ dates are a year out so no badge changed.' },
-          { question: 'Why "Score" on the completed line but a separate line on the failed card?', answer: 'Section 3’s table: Completed puts the score on the date line; Failed lists it as an extra detail. Drawn as written.' },
+          { question: 'Where is the score?', answer: 'On the pill, for a completed and a failed course alike — "Completed - Score: 92%", "Failed - Score: 62%". Section 3’s table puts it on the completed card’s date line and lists it as an extra detail on the failed card; both lines went on 2026-11-24 once the pill carried it, so the card says each thing once.' },
+          { question: 'Which cards wear a pill at all?', answer: 'A finished one — Completed, Failed, Expired — and a live one inside its last week, where the pill counts down in usable days ("Access Ends 5 days"). In Progress and Not Started wear none: the status row already says it. The record’s own Due Soon badge fires at the catalogue’s sixty days, which is too early for this pill, so a course outside the week is drawn plain here.' },
           { question: 'Why mm/dd/yyyy on the card when the PRD writes "[date]"?', answer: 'To match the Home course head’s access row, which the card opens onto: "Course Access Ends: 06/10/2026, 29 days to complete". One deadline, said one way, in the milestone format every Completed: and Expired: line in the product already uses.' },
         ],
         edgeCases: [
-          'A completed record with no score draws "Completed: [date]" and omits the score rather than inventing one.',
-          'A record with no expiresAt would draw no date line at all — none in XCEL does, by design, since 2026-11-23.',
-          'The description clamps to three lines, so a long blurb cannot push the row’s buttons out of line.',
+          'A completed record with no score wears a plain "Completed" pill; one with no completion date reads "Completed" alone on the status row. A failed record with no score wears "Failed"; an expired one with no date, "Expired". Nothing is invented.',
+          'A record with no expiresAt would draw no access line at all — none in XCEL does, by design, since 2026-11-23.',
+          'The title clamps to three lines of 20 inside its 60px box; a shorter title sits at the top (or centred, with the title control turned over) and the box keeps its height, so the rules under the titles stay level across a row.',
+          'The ⋮ menu (Go to Course Home, Download Certificate) is built and switched off in the card; a developer will find it in the file and should not draw it.',
+          'Every link and button on the card stops its click, so only a click on the card’s ground opens Home; Enter and Space on the focused card do the same.',
         ],
         designSpec: {
           tokens: [
@@ -198,13 +223,17 @@ const feature: PrototypeFeature = {
             { role: 'Title face', token: '--font-heading-serif' },
             { role: 'Title ink', token: '--color-neutral-800 at rest · --color-text-primary on the card’s hover' },
             { role: 'Card hover', token: 'a 1px ring of --color-primary-500 at 40% (color-mix over --color-neutral-50) in place of the Primary 100 edge, the lift, and every line of text to --color-text-primary; the links keep their blue' },
-            { role: 'Description, labels, date line', token: '--font-body · --color-text-secondary' },
+            { role: 'Labels, access line, status row', token: '--font-body · 11px over 18 · --color-text-secondary; the date and the day count at 700, the rest at 400' },
             { role: 'Label rules', token: '--color-border-subtle, 1 × 12 — the shared card’s MetaRule' },
-            { role: 'Progress fill', token: 'the status pill’s strong fill (statusStrongFill)' },
+            { role: 'Progress track', token: '--color-neutral-200, 5px tall' },
+            { role: 'Progress fill', token: '--color-primary-500 on a live course; the last week’s amber (the Due Soon pill’s strong fill); no fill on an expired or failed course — a 2px --color-neutral-800 marker at the progress point' },
             { role: 'Pills on this card', token: 'the catalog fill mixed 50% with --color-neutral-50 (Due Soon, Completed, Failed); Expired on --color-neutral-100 in --color-text-primary' },
             { role: 'Button', token: '--color-primary-500' },
           ],
-          responsive: ['Each card is its own column (since 2026-11-23; a subgrid before): the image, then the title and description, the labels 12px under them, the date line, the actions when shown, the progress pinned low, and "Details →" at the bottom right. Cards in a row share a height, so the progress bars sit level across the row while the rows above them do not.'],
+          responsive: [
+            'Each card is its own column (since 2026-11-23; a subgrid before), 24px of padding and 8px between blocks: the 120px image, the title in its 60px box with the hairline under it, the ruled labels, the access line, the actions when shown, the progress pinned low, and "Details →" at the bottom right. Cards in a row share a height, so the progress bars sit level across the row while the rows above them do not.',
+            'On the phone frame (402 wide) the page is 16px in at the sides and the cards run in one column 12px apart, each 16px of padding and 24px over the pill, on its side: an 80px square image at the left, the title beside it at 16 over 20 (18 on the desktop) over the same 80px with no box height, a 16px column gap, then the labels under a hairline, the access line, the progress and the foot full width under both, 4px between rows and the blocks’ own padding trimmed. The sheet takes the phone’s full width.',
+          ],
           sources: [
             'The My Courses PRD, section 3 (Chi Wang, 2026-11-16).',
             'src/components/compass/AtlasCourseCardFigmaV2.tsx and src/data/atlasCourseCards.ts.',
@@ -374,11 +403,24 @@ const feature: PrototypeFeature = {
           owner: 'Design',
         },
         {
-          question: 'What does this page look like below 700px?',
+          question: 'What does this page look like on a tablet?',
           decision:
-            'Open. The learning shell has no narrow layout — the review bar’s tablet and mobile buttons are disabled — so this page has never been laid out for a small screen.',
+            'Open. The phone has a design-time layout now (the row above); the tablet does not — the review bar’s tablet button is still disabled, and the learning shell has no layout between the phone frame and the desktop.',
           status: 'Needs weigh-in',
           owner: 'Design',
+        },
+        {
+          question: 'Which cards wear a status pill, and in what strength?',
+          decision:
+            'Only a card with something to say beyond its status row: Completed, Failed and Expired, and a live course inside its last seven usable days, where the pill counts down. In Progress and Not Started wear none. The tinted pills are mixed half with the card’s ground so the row reads calmer; Expired is light grey with the primary ink and carries its date, so the end of access reads as over rather than as a live warning. 2026-11-24.',
+          status: 'Decided',
+        },
+        {
+          question: 'Does a short title sit at the top of its box or centred in it?',
+          decision:
+            'Open. Every title gets the same 60px box so the rules under them stay level; a one-line title then has room above or below. Top is the default; the design bar’s title control draws it centred for comparison. 2026-11-24.',
+          status: 'Needs weigh-in',
+          owner: 'Jillienne',
         },
       ],
       openItems: [
@@ -387,6 +429,7 @@ const feature: PrototypeFeature = {
         'Replace the certificatePdfUrl stub with the real certificate document, so View Certificate opens the course’s own certificate rather than the page (2026-11-23).',
         'Carry the course id into the course page, so a card opens the course it names.',
         'Decide whether My Courses and My Certificates need a direct link, now that the side rail is off both pages.',
+        'Decide whether a short title sits at the top of its box or centred (2026-11-24).',
         'Lay out the tablet, which is still off; the phone layout stays a design-time breakpoint until the shell goes responsive end to end (decided 2026-11-24).',
         'Confirm that archived courses are meant to be unreachable from this page, rather than simply left out.',
       ],
