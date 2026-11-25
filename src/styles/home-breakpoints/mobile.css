@@ -1097,3 +1097,13 @@
 [data-home-bp='mobile'] .cre-atlas-pace-list-copy[data-layout='stack'] section[aria-label='Study pace'] > div:last-child {
   align-self: stretch !important;
 }
+
+/* THE PACING SENTENCE AS A CAPTION (2026-11-25, Jillienne: "have the width of this summary be less so it feels more like
+   a centered text under the pacing details") — capped at 260 and centred under the figure, so it wraps to two or three
+   short lines instead of running the panel's width. */
+[data-home-bp='mobile'] .cre-atlas-pace-list-copy[data-layout='stack'] section[aria-label='Study pace'] > p:not(:first-child) {
+  max-width: 260px !important;
+  align-self: center !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
