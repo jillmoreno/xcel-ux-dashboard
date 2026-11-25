@@ -197,7 +197,11 @@ describe('My Certificates on the Atlas baseline', () => {
   it('draws the Transcripts table under its own title by default', () => {
     renderShell(`section=certificates&version=${BASELINE}`)
     expect(screen.getByRole('heading', { name: 'Certificates & Transcripts' })).toBeTruthy()
-    expect(screen.getByRole('tablist', { name: 'Filter transcripts' })).toBeTruthy()
+    // The table, not the certificate cards. The PRD page draws it since 2026-11-25 with no filter strip; the strip is the
+    // 2026-11-19 page's, behind `transcripts-certificate-statuses:off` (TranscriptsV2.test.tsx pins the rest).
+    expect(screen.getByRole('table')).toBeTruthy()
+    expect(screen.getByRole('columnheader', { name: /Certificate/ })).toBeTruthy()
+    expect(screen.queryByRole('tablist', { name: 'Filter transcripts' })).toBeNull()
   })
 
   it('draws no Quick Links rail', () => {
