@@ -131,7 +131,7 @@ export function VerifyEmailModalV3({
         aria-describedby={step === 'signing-in' ? undefined : 'verify-email-lead'}
         aria-label={step === 'signing-in' ? 'Signing you in' : undefined}
         tabIndex={-1}
-        style={{ ...M_CARD, ...layer.card }}
+        style={{ ...M_CARD, ...(step === 'verified' || step === 'signing-in' ? null : PAD), ...layer.card }}
       >
         {step === 'email' ? (
           <form
@@ -471,7 +471,7 @@ function EmailVerified() {
         <Check size={24} style={{ stroke: 'currentColor', strokeWidth: 28 }} />
       </span>
       <div style={{ ...HEAD, alignItems: 'center', gap: 6 }}>
-        <h2 id="verify-email-title" style={M_TITLE}>
+        <h2 id="verify-email-title" style={V_TITLE}>
           Email verified
         </h2>
         <p id="verify-email-lead" style={{ ...M_LEAD, color: 'var(--color-text-secondary)' }}>
@@ -932,7 +932,7 @@ export function KeycloakLogInCardV3({
     <section
       aria-labelledby={signingIn ? undefined : 'verify-email-title'}
       aria-label={signingIn ? 'Signing you in' : undefined}
-      style={{ ...MODAL, maxHeight: 'none', overflowY: 'visible' }}
+      style={{ ...MODAL, ...PAD, maxHeight: 'none', overflowY: 'visible' }}
     >
       {signingIn ? (
         <V3CardSigningIn />
@@ -959,14 +959,14 @@ export function KeycloakLogInCardV3({
  *  before that). */
 function ContactUsLine() {
   return (
-    <p style={{ ...NOTE, textAlign: 'center', alignSelf: 'stretch' }}>
+    <p style={{ ...NOTE, fontSize: 16, lineHeight: '24px', textAlign: 'center', alignSelf: 'stretch' }}>
       Need help?{' '}
       <a
         href={XCEL_CONTACT_US}
         target="_blank"
         rel="noopener noreferrer"
         className="cre-e2e-textlink"
-        style={{ ...TEXT_LINK, color: 'var(--color-xcel-brick)', textDecoration: 'none' }}
+        style={{ ...TEXT_LINK, fontSize: 16, color: 'var(--color-xcel-brick)', textDecoration: 'none' }}
       >
         Contact us
         <span style={VISUALLY_HIDDEN}> (opens in a new tab)</span>
@@ -985,7 +985,7 @@ function ContactUsLine() {
 export function ResetPasswordCardV3({ email }: { email: string }) {
   const [done, setDone] = useState(false)
   return (
-    <section aria-labelledby="verify-email-title" style={{ ...MODAL, maxHeight: 'none', overflowY: 'visible' }}>
+    <section aria-labelledby="verify-email-title" style={{ ...MODAL, ...PAD, maxHeight: 'none', overflowY: 'visible' }}>
       {done ? <PasswordResetDone /> : <ResetPasswordStep email={email} onReset={() => setDone(true)} />}
     </section>
   )
@@ -1109,7 +1109,7 @@ function ResetPasswordStep({ email, onReset }: { email: string; onReset: () => v
       </div>
 
       <div style={ACTIONS}>
-        <button type="submit" className="cre-e2e-cta" disabled={!ready} aria-disabled={!ready} style={ready ? CTA : CTA_OFF}>
+        <button type="submit" className="cre-xcel-btn" disabled={!ready} aria-disabled={!ready} style={ready ? CTA : CTA_OFF}>
           Reset password
         </button>
       </div>
@@ -1192,12 +1192,14 @@ const BODY: CSSProperties = {
 
 const HEAD: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 8 }
 
+/* The page cards' title — the reset page and OCD's Log in card. 22 / 30
+   until 2026-11-25, then 24 / 28 with the modals (see PAD). */
 const TITLE: CSSProperties = {
   margin: 0,
   fontFamily: 'var(--font-e2e-avenir)',
   fontWeight: 800,
-  fontSize: 22,
-  lineHeight: '30px',
+  fontSize: 24,
+  lineHeight: '28px',
   color: 'var(--color-text-primary)',
 }
 
@@ -1227,8 +1229,25 @@ const RESET_DONE_LINE: CSSProperties = {
    18 / 25 in
    XCEL red with the lighter red on hover (.cre-xcel-btn — the colour lives in
    the class so the hover can work). Only the modals take these: the reset
-   page and the Log In page cards keep TITLE, LEAD and CTA. */
-const M_TITLE: CSSProperties = { margin: 0, fontFamily: 'var(--font-e2e-avenir)', fontWeight: 800, fontSize: 18, lineHeight: '27px', color: 'var(--color-xcel-text)' }
+   page and the Log In page cards keep TITLE, LEAD and CTA.
+
+   THEN, 2026-11-25 (Afsana) — tried on Enter your email to continue first,
+   then on every screen she named: header 24 / 28, button 16 / 24, field
+   error 13 / 18, Need help? Contact us 16 / 24, 32px padding on every side.
+   The paragraph, field name and field text stay 14. Her list: Enter your
+   email, Verify your email, Enter your name, Log in to continue, Reset your
+   password (enter email), Check your email, the reset page; on the Log In
+   flow, OCD's Log in card, Keycloak's Log in card and its Reset your
+   password; and Finish setting up your account (its own file). Email
+   verified and Signing you in were not on it, so they keep 18 / 27
+   (V_TITLE) and M_CARD's 36 36 32. */
+const M_TITLE: CSSProperties = { margin: 0, fontFamily: 'var(--font-e2e-avenir)', fontWeight: 800, fontSize: 24, lineHeight: '28px', color: 'var(--color-xcel-text)' }
+
+/* Email verified's title — the 2026-11-24 size, kept (see above). */
+const V_TITLE: CSSProperties = { ...M_TITLE, fontSize: 18, lineHeight: '27px' }
+
+/* 32px on every side — the modal steps on her list, and the three cards. */
+const PAD: CSSProperties = { padding: 32 }
 
 const M_LEAD: CSSProperties = { margin: 0, fontFamily: 'var(--font-e2e-avenir)', fontWeight: 400, fontSize: 14, lineHeight: '21px', color: 'var(--color-xcel-text)' }
 
@@ -1239,8 +1258,8 @@ const M_CTA: CSSProperties = {
   border: 'none',
   fontFamily: 'var(--font-e2e-avenir)',
   fontWeight: 500,
-  fontSize: 18,
-  lineHeight: '25px',
+  fontSize: 16,
+  lineHeight: '24px',
   cursor: 'pointer',
   alignSelf: 'stretch',
   width: '100%',
@@ -1316,12 +1335,13 @@ const RESENT_BANNER: CSSProperties = {
   color: 'var(--color-success-700)',
 }
 
-/* Smaller than the lead's 14 (2026-11-05, Afsana), in the error red. */
+/* Smaller than the lead's 14 (2026-11-05, Afsana), in the error red —
+   12 / 16 until 2026-11-25, then 13 / 18 (see M_TITLE). */
 const INVALID: CSSProperties = {
   margin: 0,
   fontFamily: 'var(--font-e2e-avenir)',
-  fontSize: 12,
-  lineHeight: '16px',
+  fontSize: 13,
+  lineHeight: '18px',
   color: 'var(--color-error-600)',
 }
 
@@ -1393,12 +1413,15 @@ const CTA: CSSProperties = {
   padding: '12px 26px',
   borderRadius: 3,
   border: 'none',
-  background: 'var(--color-xcel-brick-600)',
+  /* No background: \`.cre-xcel-btn\` carries XCEL red and its lighter hover
+     (2026-11-25, Afsana — the darker #7B1618 until then). */
   color: 'var(--color-fixed-light)',
   fontFamily: 'var(--font-e2e-avenir)',
-  fontWeight: 800,
-  fontSize: 15,
-  letterSpacing: '0.02em',
+  /* Avenir Medium, as every CTA (2026-11-25, Afsana — Heavy with 0.02em
+     letter spacing until then). 15 until the same day, then 16 / 24. */
+  fontWeight: 500,
+  fontSize: 16,
+  lineHeight: '24px',
   cursor: 'pointer',
   alignSelf: 'stretch',
   width: '100%',
@@ -1577,7 +1600,7 @@ export function V3CardInput({ locked = false, ...input }: InputHTMLAttributes<HT
 export function V3CardSubmit({ ready, children }: { ready: boolean; children: ReactNode }) {
   return (
     <div style={ACTIONS}>
-      <button type="submit" className="cre-e2e-cta" disabled={!ready} aria-disabled={!ready} style={ready ? CTA : CTA_OFF}>
+      <button type="submit" className="cre-xcel-btn" disabled={!ready} aria-disabled={!ready} style={ready ? CTA : CTA_OFF}>
         {children}
       </button>
     </div>

@@ -384,7 +384,8 @@ const OCD_CARD: CSSProperties = {
   /* Keycloak's card's top: its padding, gap and logo (`VerifyEmailModalV3`),
      so Log in sits at the same height on both (2026-11-20, Afsana). */
   gap: 20,
-  padding: '36px 36px 32px',
+  /* 36 36 32 until 2026-11-25, then 32 on every side with Keycloak's. */
+  padding: 32,
   background: 'var(--color-fixed-light)',
 }
 

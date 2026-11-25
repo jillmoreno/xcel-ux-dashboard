@@ -24,7 +24,7 @@ const feature: PrototypeFeature = {
   devStatus: 'not-ready',
   surface: 'invite',
   owner: 'Afsana',
-  lastUpdated: '2026-11-24T17:47:15Z',
+  lastUpdated: '2026-11-25T19:38:22Z',
   accent: 'gold',
   icon: 'flag',
   brands: ['xcel'],
@@ -98,7 +98,7 @@ const feature: PrototypeFeature = {
           { name: 'Continue', does: 'Off until the email is valid. Then opens Log in to continue if the email has an Atlas account, otherwise Verify your email (the one-time code).' },
         ],
         statesMatrix: [
-          { question: 'What if the email is not valid?', answer: '"Please enter a valid email address" in red under the field, 12px, shown as the learner types — no red stroke on the field. Continue stays off until it is an address.' },
+          { question: 'What if the email is not valid?', answer: '"Please enter a valid email address" in red under the field, 13px / 18px, shown as the learner types — no red stroke on the field. Continue stays off until it is an address.' },
           { question: 'What if the field is empty?', answer: 'No error — there is nothing to judge yet. Continue is off.' },
           { question: 'Can the learner close it?', answer: 'No. There is no ✕ and no Escape — the checkout behind it cannot be used until the email is checked.' },
         ],
@@ -120,8 +120,8 @@ const feature: PrototypeFeature = {
           ],
           states: ['Continue: disabled (grey) until valid, then the brick primary.'],
           responsive: [
-            'Modal 460px wide, never wider than the viewport less 48px; padding 36px 36px 32px; 20px between blocks; 5px corners and XCEL’s shadow (0 0 12px 2px at 35%) over XCEL’s charcoal backdrop (2026-11-24). Logo 132 × 42, centred.',
-            'Type and buttons in XCEL’s (2026-11-24): heading Avenir Heavy 18px / 27px; body Avenir Book 14px / 21px, small notes 13px; field 38px tall; button full width, padding 12px 26px, 3px corners, Avenir Medium 18px / 25px, XCEL red with the lighter red on hover.',
+            'Modal 460px wide, never wider than the viewport less 48px; padding 32px on every side (2026-11-25); 20px between blocks; 5px corners and XCEL’s shadow (0 0 12px 2px at 35%) over XCEL’s charcoal backdrop (2026-11-24). Logo 132 × 42, centred.',
+            'Type (2026-11-25 — Enter your email, Verify your email, Enter your name, Log in to continue, Reset your password, Check your email, the reset page and the Log In flow’s cards; Email verified keeps its 18px / 27px heading): heading Avenir Heavy 24px / 28px; body Avenir Book 14px / 21px; field name Avenir Heavy 14px; field text 14px; field error 13px / 18px; field 38px tall; button full width, padding 12px 26px, 3px corners, Avenir Medium 16px / 24px, XCEL red with the lighter red on hover.',
           ],
           sources: [
             'The final prototype is the source of truth — the first Live Preview route.',
@@ -157,7 +157,7 @@ const feature: PrototypeFeature = {
           { name: 'Use a different email', does: 'Back to Enter your email to continue. Not shown on Direct Email.' },
         ],
         statesMatrix: [
-          { question: 'What if the code is wrong?', answer: '"Invalid code. Please try again." in red under the boxes, 12px (smaller than the 14px lead), with a 2px red stroke along the bottom of every box. Confirm stays on.' },
+          { question: 'What if the code is wrong?', answer: '"Invalid code. Please try again." in red under the boxes, 13px / 18px (smaller than the 14px lead), with a 2px red stroke along the bottom of every box. Confirm stays on.' },
           { question: 'What if the code has expired?', answer: '"The code has expired. Request another code." in the same treatment.' },
           { question: 'What if a pasted code has spaces or letters?', answer: 'Only the digits are kept, spread across the boxes from the one pasted into.' },
           { question: 'What if the email is very long?', answer: 'It wraps inside the sentence; the modal stays 460px wide.' },
@@ -184,7 +184,7 @@ const feature: PrototypeFeature = {
           ],
           states: [
             'Digit box focus: 2px brick outline, 1px offset.',
-            'Error: 2px red stroke inside the bottom of each box, and the 12px / 16px red line under the row.',
+            'Error: 2px red stroke inside the bottom of each box, and the 13px / 18px red line under the row.',
           ],
           responsive: [
             'Boxes 54 × 66, 12px apart, 28px digits, centred. 8px between the row, the error line and "The code expires in 10 minutes" (13px / 18px, left-aligned).',
@@ -274,7 +274,7 @@ const feature: PrototypeFeature = {
           { name: '← Back (Check your email)', does: 'Top left of the card. Returns to Log in to continue — the plain Log in, no banner: this tab cannot know whether a reset happened in another.' },
         ],
         statesMatrix: [
-          { question: 'What if the password is wrong?', answer: '"We couldn’t log you in. Please try again." in red under the field, 12px — no red stroke on the field. Log in stays on.' },
+          { question: 'What if the password is wrong?', answer: '"We couldn’t log you in. Please try again." in red under the field, 13px / 18px — no red stroke on the field. Log in stays on.' },
           { question: 'How long is Resend link disabled?', answer: '30 seconds after each send, counted down under the button.' },
           { question: 'Can the learner change the address on Check your email?', answer: 'No — it is only named in the sentence. To use a different address they go Back to sign in and click Forgot password? again.' },
           { question: 'Is the reset email field filled in from Log in?', answer: 'No. It starts empty, as "Enter your email" asks.' },
@@ -302,8 +302,8 @@ const feature: PrototypeFeature = {
             'Back to sign in: the primary’s size and shape, white with a 1px brick outline and brick text.',
           ],
           responsive: [
-            'The same 460px modal and spacing as Enter your email. Error line 12px / 16px under the field; Forgot password? 13px under that.',
-            'Reset your password — enter email: ← Back in the card’s top left; the Email field under the text, then Send reset link, full width, and "Need help? Contact us" centred under it (13px / 18px, secondary text, the link brick red).',
+            'The same 460px modal and spacing as Enter your email. Error line 13px / 18px under the field; Forgot password? 13px under that.',
+            'Reset your password — enter email: ← Back in the card’s top left; the Email field under the text, then Send reset link, full width, and "Need help? Contact us" centred under it (16px / 24px since 2026-11-25, secondary text, the link brick red).',
             'Check your email: ← Back in the card’s top left; under the text, Resend link, full width, and the countdown line under it (13px / 18px, secondary text, left-aligned).',
           ],
           sources: [
@@ -349,15 +349,15 @@ const feature: PrototypeFeature = {
             { role: 'Card', token: '--color-fixed-light, shadow --color-e2e-form-shadow' },
             { role: 'Field', token: '--color-e2e-field' },
             { role: 'Error text', token: '--color-error-600' },
-            { role: 'Primary button', token: '--color-xcel-brick-600' },
+            { role: 'Primary button — fill, hover', token: '--color-xcel-brick, --color-xcel-red-hover' },
             { role: 'Disabled button', token: '--color-e2e-form-locked' },
             { role: 'Password reset check — ring, fill, check', token: '--color-success-600, --color-e2e-verified-fill' },
             { role: 'Font', token: '--font-e2e-avenir' },
           ],
-          states: ['Reset password: disabled (grey) until it can be used, then the brick primary.'],
+          states: ['Reset password: disabled (grey) until it can be used, then XCEL red, the lighter red on hover (2026-11-25; the darker #7B1618 before). Heading Avenir Heavy 24px / 28px; Reset password Avenir Medium 16px / 24px (Heavy 15px with letter spacing until 2026-11-25).'],
           responsive: [
             'Header: 8px × 32px padding, the logo 115 × 48 on the left.',
-            'The card is the checkout modals’ card — 460px wide, 36px padding, 8px radius — centred both ways on the grey ground below the header, with at least 48px × 24px around it.',
+            'The card is the checkout modals’ card — 460px wide, 32px padding (36px until 2026-11-25), 8px radius — centred both ways on the grey ground below the header, with at least 48px × 24px around it.',
             'Password reset: centred; a 56px ring with a 2px border and a 24px check, 20px to the line (16px / 24px, regular — not bold).',
             'No XCEL logo in the card, in either state — the header’s logo top-left is the page’s one (Afsana, 2026-11-19).',
           ],
@@ -564,7 +564,7 @@ const feature: PrototypeFeature = {
         },
         {
           question: 'How are a wrong code, an expired code and a wrong password shown?',
-          decision: 'Red 12px text under the boxes or field — "Invalid code. Please try again.", "The code has expired. Request another code.", "We couldn’t log you in. Please try again.". The code boxes also get a 2px red stroke along the bottom; the log-in fields do not (2026-11-18). Smaller than the lead text so it reads as a note on the field, not a new heading.',
+          decision: 'Red 13px text under the boxes or field — "Invalid code. Please try again.", "The code has expired. Request another code.", "We couldn’t log you in. Please try again.". The code boxes also get a 2px red stroke along the bottom; the log-in fields do not (2026-11-18). Smaller than the lead text so it reads as a note on the field, not a new heading.',
           status: 'Decided',
         },
         {

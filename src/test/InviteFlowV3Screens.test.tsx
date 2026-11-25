@@ -659,22 +659,29 @@ describe('Invite Flow V3 — the email check', () => {
     renderAt(CHECKOUT, `${V3_B2B},invite-v3-email-account:atlas`)
     const dialog = screen.getByRole('dialog')
     const title = within(dialog).getByRole('heading', { name: 'Enter your email to continue' })
-    /* Avenir Heavy 18 / 27 (800 in the system Avenir family). */
-    expect([title.style.fontWeight, title.style.fontSize, title.style.lineHeight]).toEqual(['800', '18px', '27px'])
+    /* Avenir Heavy (800 in the system Avenir family) — 24 / 28 since
+       2026-11-25. */
+    expect([title.style.fontWeight, title.style.fontSize, title.style.lineHeight]).toEqual(['800', '24px', '28px'])
     const lead = dialog.querySelector<HTMLElement>('#verify-email-lead')!
     expect([lead.style.fontWeight, lead.style.fontSize, lead.style.lineHeight]).toEqual(['400', '14px', '21px'])
     const cont = within(dialog).getByRole('button', { name: 'Continue' })
     /* The red and its hover live in the class; only "off" is inline. */
     expect(cont).toHaveClass('cre-xcel-btn')
-    expect([cont.style.fontWeight, cont.style.fontSize, cont.style.lineHeight]).toEqual(['500', '18px', '25px'])
-    await userEvent.type(within(dialog).getByLabelText(/^Email\s*\*?$/), 'jordan@example.com')
+    expect([cont.style.fontWeight, cont.style.fontSize, cont.style.lineHeight]).toEqual(['500', '16px', '24px'])
+    expect(dialog.style.padding).toBe('32px')
+    const field = within(dialog).getByLabelText(/^Email\s*\*?$/)
+    await userEvent.type(field, 'jordan@')
+    const error = within(dialog).getByRole('alert')
+    expect([error.style.fontSize, error.style.lineHeight]).toEqual(['13px', '18px'])
+    await userEvent.clear(field)
+    await userEvent.type(field, 'jordan@example.com')
     expect(cont.style.background).toBe('')
     expect(dialog.style.borderRadius).toBe('5px')
     expect(dialog.style.boxShadow).toBe('0 0 12px 2px var(--color-xcel-modal-shadow)')
     expect((dialog.parentElement as HTMLElement).style.background).toBe('var(--color-xcel-overlay)')
   })
 
-  it('the reset page keeps its card, title and button as they were', () => {
+  it('the reset page keeps its card and button, with the 2026-11-25 sizes', () => {
     render(
       <MemoryRouter initialEntries={['/end-to-end-demo/reset-password?email=jordan@example.com']}>
         <ResetPasswordPageV3 />
@@ -682,8 +689,13 @@ describe('Invite Flow V3 — the email check', () => {
     )
     const card = screen.getByRole('region', { name: 'Reset your password' })
     expect(card.style.borderRadius).toBe('8px')
-    expect(within(card).getByRole('heading', { name: 'Reset your password' }).style.fontSize).toBe('22px')
-    expect(within(card).getByRole('button', { name: 'Reset password' })).toHaveClass('cre-e2e-cta')
+    expect(card.style.padding).toBe('32px')
+    const title = within(card).getByRole('heading', { name: 'Reset your password' })
+    expect([title.style.fontSize, title.style.lineHeight]).toEqual(['24px', '28px'])
+    const button = within(card).getByRole('button', { name: 'Reset password' })
+    /* XCEL red and its lighter hover, from the class (2026-11-25). */
+    expect(button).toHaveClass('cre-xcel-btn')
+    expect([button.style.fontSize, button.style.lineHeight]).toEqual(['16px', '24px'])
   })
 
   it('the reset page: header logo, the card centred, the rules and eyes, then Password reset', async () => {
