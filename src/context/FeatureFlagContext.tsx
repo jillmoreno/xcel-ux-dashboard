@@ -4865,29 +4865,6 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
-    key: 'atlas-courses-card-title-align',
-    /* WHERE A SHORT TITLE SITS IN ITS 60-TALL BOX — 2026-11-24, Jillienne:
-       "add a toggle that moves the title to the center of this section
-       vertically so i can show someone and make a decision". `center` is the
-       default since 2026-11-25 (Jillienne: "have centered on default"); `top`
-       was the default for a day, her call on 2026-11-24 ("they should align
-       to the top"), and stays as the control's other choice. A design-bar
-       control on the PRD card only; the three-line clamp is the same either
-       way. */
-    group: 'Widgets',
-    label: 'My Courses card — title',
-    description:
-      'Where a short title sits in the PRD card\u2019s fixed 60px title box. Centred (default): the title in the middle of the box, the slack split above and below. Top: the first line at the top, the slack below. Three-line titles fill the box either way.',
-    defaultEnabled: true,
-    defaultVariant: 'center',
-    variants: [
-      { value: 'top', label: 'Top' },
-      { value: 'center', label: 'Centred' },
-    ],
-    surface: 'design',
-    page: 'dashboard-rebrand',
-  },
-  {
     key: 'atlas-courses-from-library',
     /* MY COURSES READS THE LEARNER'S LIBRARY. On (`atlasCoursesFor`), the page
        renders the same fixtures `/my-learning/courses` reads, so the Demo

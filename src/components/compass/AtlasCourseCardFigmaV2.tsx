@@ -9,7 +9,6 @@ import { useLearningPathSummariesForBrand } from '@/data/learningPathsCountVaria
 import { useLearningPathsPanel } from '@/components/learning/LearningPathsPanelContext'
 import { useAccount } from '@/context/AccountContext'
 import { nearestRung } from '@/data/atlasCourseCards'
-import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { STATE_ABBR } from '@/data/catalogFixtures'
 import { EXPIRY_SOON_DAYS, courseExpiryTier, formatMilestoneDate, usableDaysLeft } from '@/data/courseExpiry'
 import { FIXTURE_TODAY } from '@/data/myCoursesFixtures'
@@ -106,8 +105,6 @@ export function AtlasCourseCardFigmaV2({
   const actionsShown = SHOW_CARD_ACTIONS
   // The sheet's deadline box, always (2026-11-24; its On / Off control retired 2026-11-25) — `SHEET_EXTENSION_IN_BOX`.
   const extensionBox = SHEET_EXTENSION_IN_BOX
-  // A short title at the top of its box, or centred — the design bar's `atlas-courses-card-title-align` (2026-11-24), to decide.
-  const titleCentred = useFeatureFlag('atlas-courses-card-title-align').variant === 'center'
   /* THE DUE SOON PILL COUNTS DOWN (2026-11-23, Jillienne, with the pill selected: "Access Ends <##> days") — the same
      `usableDaysLeft` the date line prints, so the two never disagree. A card with no date keeps "Due Soon". */
   /* THE COUNTDOWN PILL IS THE LAST WEEK'S (2026-11-24, Jillienne: "Access ends indicator should only be showing if the
@@ -209,7 +206,7 @@ export function AtlasCourseCardFigmaV2({
           {/* ONE HEIGHT FOR EVERY TITLE (2026-11-24, Jillienne, with a three-line title selected: "every title section should
               be this height … add an ellipsis"): a 66-tall box — three lines of 22 — the title clamped to three lines
               with an ellipsis, a shorter title at the top of the box. */}
-          <div style={{ ...TITLE_BOX, ...(titleCentred ? { alignItems: 'center' } : null) }} data-testid="atlas-card-title-box">
+          <div style={TITLE_BOX} data-testid="atlas-card-title-box">
             <h3 className="cre-atlas-card-v2-title" style={TITLE}>{data.title}</h3>
           </div>
           {/* NO DESCRIPTION (2026-11-24, Jillienne: "keep description hidden, and remove this flag"). It sat here under the title
@@ -507,7 +504,10 @@ const TITLE_HEAD: CSSProperties = {
 }
 /* The title's fixed box: three lines of 20, the title at its TOP (2026-11-24, Jillienne — centred for a few minutes: "they
    should not be centered - they should align to the top"; 66 for three lines of 22 until the lines tightened later that day). */
-const TITLE_BOX: CSSProperties = { alignSelf: 'stretch', height: 60, display: 'flex', alignItems: 'flex-start' }
+/* A SHORT TITLE CENTRED IN ITS BOX (decided 2026-11-25, Jillienne: "set centered as default and remove this toggle") — the
+   design bar's Top / Centred control (`atlas-courses-card-title-align`, 2026-11-24) is retired; Top, her call of the day
+   before ("they should align to the top"), was `alignItems: 'flex-start'` here. Archive row `atlas-my-courses-card-title-top`. */
+const TITLE_BOX: CSSProperties = { alignSelf: 'stretch', height: 60, display: 'flex', alignItems: 'center' }
 const TITLE: CSSProperties = {
   margin: 0,
   fontFamily: 'var(--font-heading-serif)',

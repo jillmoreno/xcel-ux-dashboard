@@ -111,14 +111,13 @@ const feature: PrototypeFeature = {
     { id: 'atlas-pages-quick-links', label: 'Quick Links on the learning pages', note: 'Hidden, which is what this page shows. Shown puts the side rail back on both learning pages and re-centres the content. Hiding it also takes away the only route to My Certificates that does not pass through Home.' },
     // Corrected 2026-11-23 (it read: "Shared is the card documented here. Atlas draws the earlier card instead").
     { id: 'atlas-courses-card-style', label: 'My Courses card', note: 'Atlas (the default since 2026-11-03) is the card documented here — Figma 706:2416 with a full-width button. Shared draws the LMS dashboard’s CourseCard instead, serif title and no button.' },
-    { id: 'atlas-courses-card-title-align', label: 'My Courses card — title', note: 'A design-bar control (2026-11-24): a short title centred in its 60px box (the default and the decision, 2026-11-25) or at the top of it. Three-line titles fill the box either way.' },
     { id: 'atlas-courses-card-prd-fields', label: 'My Courses card — PRD fields', note: 'On (2026-11-23): the Atlas card to section 3 of the My Courses PRD — description, the three labels on the card, a date line per status, the failed score and expired progress, and a working View Certificate on a completed course. Off: the card as of 2026-11-18, with the disabled Completed button. Only matters when the card control is set to Atlas.' },
     { id: 'atlas-courses-from-library', label: 'My Courses list', note: 'Only does anything when the card control is set to Atlas. Off shows three fixed example courses in place of the learner’s own.' },
     { id: 'atlas-courses-open-course', label: 'My Courses buttons open the course', note: 'Whether the card opens the course. Off, the title links out of the learning shell instead, and the earlier card’s button is drawn disabled.' },
   ],
   devHandoff: {
     flagsNote:
-      'Six review controls, none of them a product setting. The card control and the PRD-fields control are the two a reviewer should expect to see turned over — the first picks the card, the second is the Jan 12 work on it. One sits on the design bar for the PRD card itself: the title’s alignment, centred by decision with Top kept for comparison. (Two more were retired on 2026-11-25 once decided: the card’s actions, hidden; the sheet’s deadline box, on.) The other three exist so the page as it was can still be opened beside the page as it is.',
+      'Five review controls, none of them a product setting. The card control and the PRD-fields control are the two a reviewer should expect to see turned over — the first picks the card, the second is the Jan 12 work on it. (Three design-bar controls on the PRD card were retired on 2026-11-25 once decided: the card’s actions, hidden; the sheet’s deadline box, on; the title, centred.) The other three exist so the page as it was can still be opened beside the page as it is.',
     // Corrected 2026-11-23 (it read: "The card is the one the rest of the product already uses, unchanged except that its
     // title is set in the heading serif. It has never carried a button and does not gain one here.").
     intro:
@@ -210,7 +209,7 @@ const feature: PrototypeFeature = {
         edgeCases: [
           'A completed record with no score wears a plain "Completed" pill; one with no completion date reads "Completed" alone on the status row. A failed record with no score wears "Failed"; an expired one with no date, "Expired". Nothing is invented.',
           'A record with no expiresAt would draw no access line at all — none in XCEL does, by design, since 2026-11-23.',
-          'The title clamps to three lines of 20 inside its 60px box; a shorter title is centred in it (or at the top, with the title control turned over) and the box keeps its height, so the rules under the titles stay level across a row.',
+          'The title clamps to three lines of 20 inside its 60px box; a shorter title is centred in it and the box keeps its height, so the rules under the titles stay level across a row.',
           'The ⋮ menu (Go to Course Home, Download Certificate) is built and switched off in the card; a developer will find it in the file and should not draw it.',
           'Every link and button on the card stops its click, so only a click on the card’s ground opens Home; Enter and Space on the focused card do the same.',
         ],
@@ -400,7 +399,7 @@ const feature: PrototypeFeature = {
         {
           question: 'Does a short title sit at the top of its box or centred in it?',
           decision:
-            'Centred (2026-11-25). Every title gets the same 60px box so the rules under them stay level; a one-line title then has slack, and splitting it above and below keeps the title on the image’s centre line rather than hugging the photo. Top was the default for a day; the design bar’s title control still draws it for comparison.',
+            'Centred (2026-11-25). Every title gets the same 60px box so the rules under them stay level; a one-line title then has slack, and splitting it above and below keeps the title on the image’s centre line rather than hugging the photo. Top was the default for a day; the control that drew it for comparison was retired the same day the decision was made, with an Archive row.',
           status: 'Decided',
         },
       ],

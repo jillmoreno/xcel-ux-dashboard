@@ -226,14 +226,10 @@ describe('the labels, the status and the progress', () => {
   })
 
   /* 2026-11-24, Jillienne: "add a toggle that moves the title to the center of this section vertically so i can show someone
-     and make a decision". Centred is the default since 2026-11-25 ("have centered on default"); Top is the control's other
-     choice, on the design bar. */
-  it('centres a short title in its box by default, and tops it when the title control says so', () => {
-    const flag = FEATURE_FLAGS.find((f) => f.key === 'atlas-courses-card-title-align')!
-    expect(flag.surface).toBe('design')
-    expect(flag.defaultVariant).toBe('center')
-    renderShell(`${DESIGN_CARDS},atlas-courses-card-title-align:top`)
-    for (const box of screen.getAllByTestId('atlas-card-title-box')) expect(box.style.alignItems).toBe('flex-start')
+     and make a decision" — decided centred on 2026-11-25 and the control retired the same day ("set centered as default and
+     remove this toggle"). The box itself is pinned under "gives every title the same 60px box". */
+  it('has no title-alignment control any more', () => {
+    expect(FEATURE_FLAGS.find((f) => f.key === 'atlas-courses-card-title-align')).toBeUndefined()
   })
 
   /* The type audit (2026-11-24): the date line in the status row's clothes — one ink, 400 label, 700 figures, 11 / 18. */

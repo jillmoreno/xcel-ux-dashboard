@@ -116,6 +116,18 @@ export const ARCHIVED_ITEMS: ArchivedItem[] = [
     restoreNote:
       'Set `SHEET_EXTENSION_IN_BOX` false in `src/components/compass/AtlasCourseCardFigmaV2.tsx` to see the row again. For the control itself, take the `atlas-courses-sheet-extension-box` entry from commit 63ca46ed (`git show 63ca46ed:src/context/FeatureFlagContext.tsx`) back into `FEATURE_FLAGS` (`src/context/FeatureFlagContext.tsx`) and `REBRAND_FLAGS` (`src/components/account/FeatureFlagPanel.tsx`), and read it in place of the constant. The test "with the box control off, Purchase Extension is back in the row" in `src/test/AtlasCourseCardPrdFields.test.tsx` is in the same commit.',
   },
+  {
+    id: 'atlas-my-courses-card-title-top',
+    name: 'My Courses PRD card — a short title at the top of its box (the Top arm)',
+    what: 'The PRD card\u2019s title box \u2014 60 tall, three lines of 20 at most \u2014 with a shorter title sitting at the top and the slack below, on a Design-bar control `atlas-courses-card-title-align` (Top / Centred, 2026-11-24). Centred \u2014 the slack split above and below, the title on the image\u2019s centre line \u2014 became the default and the decision on 2026-11-25.',
+    location:
+      'No file of its own: it was `alignItems: \'flex-start\'` on `TITLE_BOX` in `src/components/compass/AtlasCourseCardFigmaV2.tsx`, with the `titleCentred` read beside the other flag reads. Commit 26a30bc1 on feat/atlas-updates-11-23 is the last with the control.',
+    flag: 'atlas-courses-card-title-align (removed from FEATURE_FLAGS and REBRAND_FLAGS)',
+    dateRemoved: '2026-11-25',
+    reason: 'Jillienne, with the control selected: "set centered as default and remove this toggle". The comparison the control was added for was made the same day.',
+    restoreNote:
+      'Set `alignItems: \'flex-start\'` on `TITLE_BOX` in `src/components/compass/AtlasCourseCardFigmaV2.tsx` to see the Top arm again. For the control itself, take the `atlas-courses-card-title-align` entry from commit 26a30bc1 (`git show 26a30bc1:src/context/FeatureFlagContext.tsx`) back into `FEATURE_FLAGS` (`src/context/FeatureFlagContext.tsx`) and `REBRAND_FLAGS` (`src/components/account/FeatureFlagPanel.tsx`), and the `titleCentred` read back into the card. Its test ("centres a short title in its box by default, and tops it when the title control says so") is in `src/test/AtlasCourseCardPrdFields.test.tsx` at that commit.',
+  },
   /* ── THE SIMPLE HUB, 2026-11-21 — eight sections unwired in one day ──────
      Every row below names the same place: the `hub-advanced` branch (tag
      `hub-advanced-2026-11-21`, commit 7b83b7a5), which is `main` as it stood
