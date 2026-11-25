@@ -379,13 +379,6 @@ const feature: PrototypeFeature = {
           status: 'Decided',
         },
         {
-          question: 'Where does the card land when the learner has more than one course?',
-          decision:
-            'Open. The link carries no course id and the course page would ignore one, because the prototype has a single real course behind it. Every card opening the same page is honest in a prototype and wrong in a build.',
-          status: 'Needs weigh-in',
-          owner: 'Engineering, with Design',
-        },
-        {
           question: 'How does a learner move between My Courses and My Certificates?',
           decision:
             'Not an issue (2026-11-25). There are three ways to the certificates: Home’s own My Certificates link, the Certificate link at the foot of a finished card on this page (and View Certificate in its sheet), and the header’s menu on the phone. A direct link between the two pages would be a fourth; none is needed. Quick Links was the one-click route before the rail came off and is now one of the three.',
@@ -413,7 +406,6 @@ const feature: PrototypeFeature = {
       ],
       openItems: [
         'Replace the certificatePdfUrl stub with the real certificate document, so View Certificate opens the course’s own certificate rather than the page (2026-11-23).',
-        'Carry the course id into the course page, so a card opens the course it names.',
         'Lay out the tablet, which is still off — between the phone’s 640 ceiling and the desktop the page is the desktop page (2026-11-25).',
         'Confirm that archived courses are meant to be unreachable from this page, rather than simply left out.',
       ],
