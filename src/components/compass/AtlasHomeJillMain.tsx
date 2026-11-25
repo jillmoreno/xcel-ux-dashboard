@@ -45,7 +45,7 @@
  */
 import { cloneElement, useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from 'react'
 import { ATLAS_SECTION_EYEBROW } from './atlasSectionEyebrow'
-import { useSearchParams } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { isEricAtlasWhiteLike, resolveDashboardVersion } from '@/data/dashboardVersions'
 import {
   useBeginOpensCompassSession,
@@ -383,9 +383,13 @@ export function AtlasHomeJillMain({
      cycled by a click on the panel's bottom-left corner: the two columns, the
      list (`listProgress`), and one row at a time under tabs. A demo toggle in
      page state, like the course head's cover click. */
-  // The tabs are the phone's default since 2026-11-04 (Eric's request); the
+  // The tabs were the phone's default from 2026-11-04 (Eric's request); the
   // corner still cycles on to the two columns and the list.
-  const [phoneLayout, setPhoneLayout] = useState<'columns' | 'list' | 'tabs'>('tabs')
+  /* THE STACK IS THE PHONE'S DEFAULT (2026-11-25, Jillienne, with the desktop panel selected: "on mobile, this section UI
+     should remain the same, do not shrink into tabs"): the ring card exactly as the desktop column draws it — the dial
+     centred under its eyebrow, Study Pace and Estimated Completion under their rules — at the phone's width. It takes
+     the list copy's class so the two-column rules skip it, and `data-layout="stack"` so the phone's dial rules do too. */
+  const [phoneLayout, setPhoneLayout] = useState<'columns' | 'list' | 'tabs' | 'stack'>('stack')
   const [phoneTab, setPhoneTab] = useState<PacePhoneTab>('progress')
   /* Whether the column carries Exam readiness at all — a design-bar on/off,
      see `atlas-readiness-section`. */
@@ -1283,7 +1287,26 @@ export function AtlasHomeJillMain({
              to sit in the meta row beside the access date, which left that row
              carrying a countdown and a celebration at once; the eyebrow is the
              card's status line, and a finished course is a status. */
-          eyebrow={completedView ? 'Congrats! You have completed this course.' : courseEyebrow}
+          /* AN EDIT LINK AT THE LINE'S RIGHT ON THE PHONE, when more than one course is active (2026-11-25, Jillienne: "if
+             there are multiple courses active, have an edit link. User will click this and it will take them to the my
+             courses page to select a different course to become active"). My Courses is where a card makes its course the
+             active one, so the link goes there. The Active Courses strip above keeps its chips; this is the phone's
+             second door to the same choice. A real link to `?section=courses` with the rest of the query kept, because
+             `go` is switched off with the other in-page links (`LINKS_OFF`) and a dead Edit is the one thing it must not be. */
+          eyebrow={
+            completedView ? (
+              'Congrats! You have completed this course.'
+            ) : phoneFrame && tabs.length > 1 ? (
+              <span style={EYEBROW_WITH_EDIT}>
+                {courseEyebrow}
+                <Link to={{ search: `?${withSection(searchParams, 'courses')}` }} style={EYEBROW_EDIT}>
+                  Edit
+                </Link>
+              </span>
+            ) : (
+              courseEyebrow
+            )
+          }
           beginLabel={beginLabel}
           // No layout swap on a cover click any more (2026-11-03, Eric's request).
           showOverview={LINKS_OFF || Boolean(onOverview)}
@@ -1338,6 +1361,7 @@ export function AtlasHomeJillMain({
                  list and tab rules in home-breakpoints/mobile.css target. */
               className={phoneAltLayout ? 'cre-atlas-pace-list-copy' : undefined}
               data-tab={phoneAltLayout && phoneLayout === 'tabs' ? phoneTab : undefined}
+              data-layout={phoneAltLayout && phoneLayout === 'stack' ? 'stack' : undefined}
               style={{
                 ...(onWhite
                   ? paceCard === 'ring'
@@ -1353,7 +1377,7 @@ export function AtlasHomeJillMain({
               <button
                 type="button"
                 aria-label={`Progress layout: ${phoneLayout}. Switch layout`}
-                onClick={() => setPhoneLayout((l) => (l === 'columns' ? 'list' : l === 'list' ? 'tabs' : 'columns'))}
+                onClick={() => setPhoneLayout((l) => (l === 'columns' ? 'list' : l === 'list' ? 'tabs' : l === 'tabs' ? 'stack' : 'columns'))}
                 style={PACE_LAYOUT_SWITCH}
               />
             ) : null}
@@ -1375,7 +1399,7 @@ export function AtlasHomeJillMain({
                  hardcoded week count is how those two start describing
                  different plans. `HybridHomeV1` pins its 3 deliberately and
                  records the derivation it dropped — this one keeps it. */
-              phoneAltLayout ? cloneElement(ringCard, { listProgress: true, listPace: phoneLayout === 'list' }) : ringCard
+              phoneAltLayout && phoneLayout !== 'stack' ? cloneElement(ringCard, { listProgress: true, listPace: phoneLayout === 'list' }) : ringCard
             ) : completedView ? null : (
             <AtlasCourseProgressStates
               bare={onWhite}
@@ -3400,6 +3424,28 @@ const COURSE_BOX: CSSProperties = {
   color: 'var(--color-text-primary)',
   textAlign: 'left',
   cursor: 'pointer',
+}
+/** The current query with `section` re-pointed and no `coursePage` — what `go` would set, as an href. */
+function withSection(params: URLSearchParams, section: string): string {
+  const next = new URLSearchParams(params)
+  next.set('section', section)
+  next.delete('coursePage')
+  return next.toString()
+}
+/* The eyebrow with its Edit link at the right (2026-11-25): the label and the link on one line, the link in the Atlas text
+   link's clothes — the course card's "Details →" — in sentence case against the eyebrow's capitals. */
+const EYEBROW_WITH_EDIT: CSSProperties = { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }
+const EYEBROW_EDIT: CSSProperties = {
+  margin: 0,
+  padding: 0,
+  textDecoration: 'none',
+  fontFamily: 'var(--font-body)',
+  fontSize: 11,
+  lineHeight: '16.5px',
+  fontWeight: 700,
+  letterSpacing: 0,
+  textTransform: 'none',
+  color: 'var(--color-primary-500)',
 }
 // The picked course never shrinks — its whole title, SemiBold, its angle-down 8 after it.
 const COURSE_BOX_PICKED: CSSProperties = { ...COURSE_BOX, flex: 'none', fontWeight: 600, background: 'var(--color-secondary-100)' }

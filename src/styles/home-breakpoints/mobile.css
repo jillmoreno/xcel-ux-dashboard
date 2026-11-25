@@ -419,8 +419,8 @@
 /* MY COURSES ON A PHONE — the PRD card (2026-11-24, Jillienne, no designs: "use your best judgement"), keyed on the card's
    own class hooks. Eric's 2026-11-04 rules for the earlier card matched its inline `repeat(auto-fill, 255px)` grid, which
    the page no longer draws; this replaces them. The shape is his: Home's 16 at the sides, the cards in ONE column, each on
-   its side — a 96 square image at the left with the title beside it, then the labels, the access line, the progress and
-   the foot running full width under both. A list, not a wall of tall cards. The sheet fits the phone through
+   its side — an 80 square image at the left (96 for a day; 2026-11-25, Jillienne: "reduce the course image a bit more")
+   with the title beside it, then the labels, the access line, the progress and the foot running full width under both. A list, not a wall of tall cards. The sheet fits the phone through
    `overlayFrameBounds`. */
 [data-home-bp='mobile'] header:has([data-cta-id='nav.back-home']) {
   padding: 16px 24px 0 !important;
@@ -444,20 +444,24 @@
 }
 [data-home-bp='mobile'] .cre-atlas-card-v2 {
   display: grid !important;
-  grid-template-columns: 96px minmax(0, 1fr) !important;
+  grid-template-columns: 80px minmax(0, 1fr) !important;
   column-gap: 16px !important;
-  row-gap: 8px !important;
+  /* The rows 4 apart, not 8, and the blocks' own padding trimmed below (2026-11-25, Jillienne: "reduce spacing between
+     the text to help shrink the vertical size of the card"). */
+  row-gap: 4px !important;
   align-items: start !important;
-  padding: 16px !important;
+  /* 24 on top, 16 at the sides and foot: the pill straddles the image's top edge by 10, and 16 left it 5 from the card's
+     edge — 24 is the desktop card's room over it (2026-11-25, Jillienne: "add more padding above the top badge"). */
+  padding: 24px 16px 16px !important;
 }
-/* The image, a 96 square at the left; its pill keeps straddling the corner. */
+/* The image, an 80 square at the left; its pill keeps straddling the corner. */
 [data-home-bp='mobile'] .cre-atlas-card-v2__image {
   grid-column: 1 !important;
   grid-row: 1 !important;
 }
 [data-home-bp='mobile'] .cre-atlas-card-v2__image img {
-  width: 96px !important;
-  height: 96px !important;
+  width: 80px !important;
+  height: 80px !important;
 }
 /* The title beside it, its box as tall as the image, the rule under both. */
 [data-home-bp='mobile'] .cre-atlas-card-v2__title {
@@ -466,12 +470,18 @@
   padding-top: 0 !important;
   padding-bottom: 0 !important;
   border-bottom: none !important;
-  min-height: 96px !important;
+  min-height: 80px !important;
   justify-content: center !important;
 }
 [data-home-bp='mobile'] .cre-atlas-card-v2__title [data-testid='atlas-card-title-box'] {
   height: auto !important;
   min-height: 0 !important;
+}
+/* The title one step down on the phone — 16 over 20, from 18 (2026-11-25, Jillienne: "what should the text size for mobile
+   be, can we reduce?"). The 11px lines under it stay: 11 is the floor for secondary text on a phone, not a size to cut. */
+[data-home-bp='mobile'] .cre-atlas-card-v2-title {
+  font-size: 16px !important;
+  line-height: 20px !important;
 }
 /* Everything else full width under the pair — the rule the title block lost sits over the labels. */
 [data-home-bp='mobile'] .cre-atlas-card-v2__labels,
@@ -482,16 +492,18 @@
   grid-column: 1 / -1 !important;
 }
 [data-home-bp='mobile'] .cre-atlas-card-v2__labels {
-  padding-top: 12px !important;
-  padding-bottom: 8px !important;
+  padding-top: 8px !important;
+  padding-bottom: 2px !important;
   border-top: 1px solid var(--color-primary-100) !important;
 }
 [data-home-bp='mobile'] .cre-atlas-card-v2__dates {
-  padding-bottom: 4px !important;
+  padding-bottom: 0 !important;
 }
+/* The status row 6 over its bar, not 10. */
 [data-home-bp='mobile'] .cre-atlas-card-v2__progress {
   margin-top: 0 !important;
-  padding-top: 4px !important;
+  padding-top: 0 !important;
+  gap: 6px !important;
 }
 [data-home-bp='mobile'] .cre-atlas-card-v2__foot {
   padding-top: 0 !important;
@@ -877,4 +889,181 @@
 [data-home-bp='mobile'] .cre-transcript-card-line * {
   font-size: 11px !important;
   line-height: 14px !important;
+}
+
+/* HOME ON A PHONE — THE 2026-11-25 SCAN (docs/audits/atlas-home-mobile-scan-2026-11-25.md), Jillienne: "start with your
+   suggestions yes". Four of its eight, all stylesheet-only: the course strip, the progress tabs, the head buttons, the
+   learner pill. */
+
+/* 1. THE ACTIVE COURSES STRIP IS OFF THE PHONE (2026-11-25, Jillienne: "remove this on mobile"). It was the page's one
+   sideways scroll — label and three chips at 536 in a 355 column — and for an hour its own scroller; the Edit link on the
+   head's Current Course line (AtlasHomeJillMain) is the phone's way to change the active course now, and it opens My
+   Courses, where every course is a card. The strip stays on the desktop. */
+[data-home-bp='mobile'] section[aria-label='Current course'] > nav[aria-label='Your courses'] {
+  display: none !important;
+}
+
+/* 2. THE PROGRESS TABS FIT THE ROW. "Estimated Completion" ran 5 past the frame's edge: three tabs at the 13 the phone
+   gave them (the rule above, one up from Figma's 12), 8 of padding each side — sized for 370, and the row is 357. Back to
+   Figma's 12 with 6 of padding, still sized to their text so the long one keeps its room: about 341 in 357. The selector
+   out-weighs the 13; the line-height and title case stay the rule above's. */
+[data-home-bp='mobile'] .cre-atlas-pace-list-copy[data-tab] [role='tablist'][aria-label='Course progress panel'] > [role='tab'][style] {
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  padding-left: 6px !important;
+  padding-right: 6px !important;
+  font-size: 12px !important;
+}
+
+/* 3. THE HEAD'S BUTTONS STACK, THE COURSE'S VERB ON TOP. At Not Started the pair sat side by side; at Developing "Resume
+   Course" is 16 wider, the pair no longer fit the head's 275, and the primary dropped under Course Overview. On the phone
+   they stack full width, 44 tall for the thumb, the primary first — the sheet's order. */
+[data-home-bp='mobile'] section[aria-label='Current course'] div[style*='flex-wrap: wrap']:has(> .cre-atlas-home-secondary) {
+  flex-direction: column !important;
+  align-items: stretch !important;
+  /* 20 between them (2026-11-25, Jillienne: "add 20 px padding between ctas"; 8 before). */
+  gap: 20px !important;
+}
+[data-home-bp='mobile'] section[aria-label='Current course'] div[style*='flex-wrap: wrap']:has(> .cre-atlas-home-secondary) > button,
+[data-home-bp='mobile'] section[aria-label='Current course'] div[style*='flex-wrap: wrap']:has(> .cre-atlas-home-secondary) > a {
+  flex: 1 1 auto !important;
+  width: 100% !important;
+  min-height: 44px !important;
+}
+[data-home-bp='mobile'] section[aria-label='Current course'] div[style*='flex-wrap: wrap']:has(> .cre-atlas-home-secondary) > .cre-compass-primary {
+  order: -1;
+}
+
+/* 7. THE LEARNER PILL IS ITS ICON. The pill's font-size: 0 above hid the name, but "(Learner Mode)" carries its own 12px
+   inline and survived — 129 of the 355 row. The whole text span goes. */
+[data-home-bp='mobile'] .cre-atlas-hdr .cre-atlas-hdr-pill:has(svg) > span {
+  display: none !important;
+}
+
+/* THE COURSE HEAD EDGE TO EDGE (2026-11-25, Jillienne: "remove the padding on side and have whole section be this light
+   blue background. edge to edge. Flat corners"). On this Home the head follows the Active Courses strip, so the
+   `> div:first-child` rule above never reached it and it kept its 40. The panel pulls out over the page's 16 on each
+   side, loses its corners, and keeps 16 inside — the page's own inset — so the title has the phone's width less 32. */
+[data-home-bp='mobile'] section[aria-label='Current course'] > nav + div {
+  margin-left: -16px !important;
+  margin-right: -16px !important;
+  border-radius: 0 !important;
+  /* 40 top and bottom (2026-11-25, Jillienne: "change top and bottom padding to 40 px"; 60 for an hour, 24 before that). */
+  padding: 40px 16px !important;
+  margin-bottom: -8px !important;
+}
+
+/* THE STACK — the desktop panel, unchanged, on the phone (2026-11-25, Jillienne: "on mobile, this section UI should remain
+   the same, do not shrink into tabs"). The phone's default since that day; the corner switch still reaches the other
+   three. The panel carries the list copy's class, so the two-column rules skip it; these put back what the phone's own
+   Course progress rules above take — the dial at its 149, the figure at its 38, the eyebrow centred over it. */
+[data-home-bp='mobile'] .cre-atlas-pace-list-copy[data-layout='stack'] section[aria-label='Course progress'] {
+  align-items: center !important;
+}
+[data-home-bp='mobile'] .cre-atlas-pace-list-copy[data-layout='stack'] section[aria-label='Course progress'] > div[aria-label^='Course progress'] {
+  width: 149px !important;
+  height: 149px !important;
+}
+[data-home-bp='mobile'] .cre-atlas-pace-list-copy[data-layout='stack'] section[aria-label='Course progress'] > div[aria-label^='Course progress'] > div > span:first-child {
+  font-size: 38px !important;
+  line-height: 30px !important;
+}
+[data-home-bp='mobile'] .cre-atlas-pace-list-copy[data-layout='stack'] section[aria-label='Course progress'] + span,
+[data-home-bp='mobile'] .cre-atlas-pace-list-copy[data-layout='stack'] section > p:first-child,
+[data-home-bp='mobile'] .cre-atlas-pace-list-copy[data-layout='stack'] section[aria-label='Study pace'] > div:last-child > p:first-child {
+  margin: 0 !important;
+}
+[data-home-bp='mobile'] .cre-atlas-pace-list-copy[data-layout='stack'] section[aria-label='Study pace'] > div:last-child {
+  margin-top: 0 !important;
+  padding-top: 24px !important;
+}
+
+/* THE COVER BACK ON THE PHONE'S COURSE HEAD, AT THE MY COURSES CARD'S SIZE (2026-11-25, Jillienne: "Mobile version should
+   still have an image, should be the same size as the course card images on mobile"). On this Home the head's row put the
+   256 cover on a line of its own, where its absolutely placed image had no height to fill, so nothing drew. The row is a
+   grid now: an 80 square at the left (the card's), the eyebrow and title beside it, and everything after — the access
+   line, the buttons — full width under both, the card's own shape. */
+[data-home-bp='mobile'] section[aria-label='Current course'] > nav + div > div:first-child {
+  display: grid !important;
+  grid-template-columns: 80px minmax(0, 1fr) !important;
+  column-gap: 16px !important;
+  row-gap: 16px !important;
+  align-items: start !important;
+}
+[data-home-bp='mobile'] section[aria-label='Current course'] > nav + div > div:first-child > div:first-child:has(> img:only-child) {
+  display: block !important;
+  grid-column: 1 !important;
+  grid-row: 1 !important;
+  width: 80px !important;
+  height: 80px !important;
+  min-width: 0 !important;
+  border-radius: 6px !important;
+}
+/* The text column dissolves into the grid, and so does its first block, since that block holds the eyebrow, the title AND
+   the access line: the eyebrow and title take the two rows beside the cover (the cover spans both and centres on them),
+   the access line and everything after run full width under. No row gap — each block carries its own space above. */
+[data-home-bp='mobile'] section[aria-label='Current course'] > nav + div > div:first-child {
+  row-gap: 0 !important;
+}
+/* THE EYEBROW ABOVE THE COVER, ON ITS OWN ROW (2026-11-25, Jillienne: "this should be above the course image 30 px padding
+   up and below it"): "Current course" and its Edit span the head's width in row 1, 30 under them; the cover and the title
+   share row 2, the title centred on the 80 square. The head's own 60 is the air above the line. */
+[data-home-bp='mobile'] section[aria-label='Current course'] > nav + div > div:first-child > div:first-child:has(> img:only-child) {
+  grid-row: 2 !important;
+  align-self: center !important;
+}
+[data-home-bp='mobile'] section[aria-label='Current course'] > nav + div > div:first-child > div:nth-child(2),
+[data-home-bp='mobile'] section[aria-label='Current course'] > nav + div > div:first-child > div:nth-child(2) > div:first-child {
+  display: contents !important;
+}
+[data-home-bp='mobile'] section[aria-label='Current course'] > nav + div > div:first-child > div:nth-child(2) > * ,
+[data-home-bp='mobile'] section[aria-label='Current course'] > nav + div > div:first-child > div:nth-child(2) > div:first-child > * {
+  grid-column: 1 / -1 !important;
+  margin-top: 16px !important;
+}
+[data-home-bp='mobile'] section[aria-label='Current course'] > nav + div > div:first-child > div:nth-child(2) > div:first-child > p:first-child {
+  grid-column: 1 / -1 !important;
+  grid-row: 1 !important;
+  margin: 0 0 30px !important;
+}
+[data-home-bp='mobile'] section[aria-label='Current course'] > nav + div > div:first-child > div:nth-child(2) > div:first-child > .cre-atlas-home-course-title {
+  grid-column: 2 !important;
+  grid-row: 2 !important;
+  align-self: center !important;
+  margin-top: 0 !important;
+}
+
+/* THREE MORE FROM THE SAME PASS (2026-11-25, Jillienne). */
+/* ("add padding below this" — 16 of air under the Active Courses strip — stood here for an hour; the strip is off the phone
+   since the same afternoon, see rule 1 above.) */
+/* "title of course can decrease for mobile" — one Atlas level further down beside the 80 cover: H7, 27/29 (H5's 32/34 since
+   2026-11-04). H7, not H6: under the Atlas palette H6 resolves to H5's 32, so the next size down is H7. The class is
+   repeated to outweigh the brand's own size in tokens.css, as the rule above does. */
+[data-home-bp='mobile'] section[aria-label='Current course'] .cre-atlas-home-course-title.cre-atlas-home-course-title.cre-atlas-home-course-title.cre-atlas-home-course-title[style] {
+  font-size: var(--type-atlas-h7-base-size, 27px) !important;
+  line-height: var(--type-atlas-h7-base-line, 29px) !important;
+}
+/* "this beige background should be edge to edge like the blue above it. no white showing here" — the stacked progress
+   panel pulls out over the page's 16 like the head, loses its corners, keeps 16 inside; and the head's 16 of ground
+   between the two bands goes, so the blue runs straight into the beige. */
+[data-home-bp='mobile'] .cre-atlas-pace-list-copy[data-layout='stack'] {
+  margin-left: -16px !important;
+  margin-right: -16px !important;
+  width: auto !important;
+  border-radius: 0 !important;
+  /* 40 top and bottom (2026-11-25, Jillienne: "change top and bottom padding to 40"); the inner column's own 24 on top
+     goes, so the 40 is the whole of it. */
+  padding: 40px 16px !important;
+}
+[data-home-bp='mobile'] .cre-atlas-pace-list-copy[data-layout='stack'] > div:has(> section) {
+  padding-top: 0 !important;
+}
+[data-home-bp='mobile'] section[aria-label='Current course'] > nav + div {
+  margin-bottom: -24px !important;
+}
+
+/* NO GROUND BETWEEN THE HEADER AND THE HEAD (2026-11-25, Jillienne, with the page selected: "remove top padding") — the
+   page's 16 under the header goes on the phone, so the blue band starts where the header's rule ends. The sides keep 16. */
+[data-home-bp='mobile'] section:has(> .cre-dash-serif-headings) {
+  padding-top: 0 !important;
 }

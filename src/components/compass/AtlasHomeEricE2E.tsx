@@ -2078,7 +2078,9 @@ export function AtlasCourseHeadRow({
   /** The line above the title. It carries the course's STATUS, not a fixed
    *  label: "Current course" normally, "Expired" when access has gone, and the
    *  congratulation at 100% (2026-10-21). */
-  eyebrow?: string
+  /** A string, or a node when a host lays something beside it — Jill/Atlas-Main's phone puts an Edit link at the line's
+   *  right (2026-11-25). The row only places it; `EYEBROW` still styles it. */
+  eyebrow?: ReactNode
   beginLabel: string
   /** Flips to the other header layout. A review affordance, not a feature. */
   /** A click on the cover swaps the header's layout. Absent, the cover is
